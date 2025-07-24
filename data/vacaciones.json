@@ -1,0 +1,27 @@
+{
+  "VAC_20241101_001": {
+    "empleado_id": "EMP_001",
+    "empleado_nombre": "Juan Carlos Pérez Silva",
+    "fecha_inicio": "2024-02-15",
+    "fecha_fin": "2024-02-25",
+    "dias": 10,
+    "motivo": "Vacaciones familiares",
+    "estado": "aprobada",
+    "fecha_solicitud": "2024-01-15",
+    "fecha_aprobacion": "2024-01-16",
+    "created_at": "2025-07-24T13:25:54.350600",
+    "updated_at": "2025-07-24T13:25:54.350602"
+  },
+  "VAC_20241101_002": {
+    "empleado_id": "EMP_002",
+    "empleado_nombre": "María Elena González Torres",
+    "fecha_inicio": "2024-03-01",
+    "fecha_fin": "2024-03-07",
+    "dias": 7,
+    "motivo": "Descanso médico",
+    "estado": "pendiente",
+    "fecha_solicitud": "2024-02-15",
+    "created_at": "2025-07-24T13:25:54.350793",
+    "updated_at": "2025-07-24T13:25:54.350796"
+  }
+}

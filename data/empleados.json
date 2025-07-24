@@ -1,0 +1,44 @@
+{
+  "EMP_001": {
+    "rut": "12.345.678-9",
+    "nombre": "Juan Carlos Pérez Silva",
+    "cargo": "Maestro Constructor",
+    "telefono": "+569 8765 4321",
+    "email": "juan.perez@jurmaq.cl",
+    "direccion": "Av. Libertad 123, Curicó",
+    "fecha_ingreso": "2022-01-15",
+    "sueldo_base": 800000,
+    "dias_vacaciones_disponibles": 12,
+    "activo": true,
+    "created_at": "2025-07-24T13:25:54.309357",
+    "updated_at": "2025-07-24T13:25:54.309359"
+  },
+  "EMP_002": {
+    "rut": "98.765.432-1",
+    "nombre": "María Elena González Torres",
+    "cargo": "Jefe de Obra",
+    "telefono": "+569 9876 5432",
+    "email": "maria.gonzalez@jurmaq.cl",
+    "direccion": "Los Aromos 456, Curicó",
+    "fecha_ingreso": "2021-08-20",
+    "sueldo_base": 950000,
+    "dias_vacaciones_disponibles": 15,
+    "activo": true,
+    "created_at": "2025-07-24T13:25:54.309614",
+    "updated_at": "2025-07-24T13:25:54.309617"
+  },
+  "EMP_003": {
+    "rut": "11.222.333-4",
+    "nombre": "Carlos Alberto Rojas Mendoza",
+    "cargo": "Operador de Maquinaria",
+    "telefono": "+569 1122 3344",
+    "email": "carlos.rojas@jurmaq.cl",
+    "direccion": "Santa Rosa 789, Curicó",
+    "fecha_ingreso": "2023-03-10",
+    "sueldo_base": 650000,
+    "dias_vacaciones_disponibles": 15,
+    "activo": true,
+    "created_at": "2025-07-24T13:25:54.309864",
+    "updated_at": "2025-07-24T13:25:54.309867"
+  }
+}

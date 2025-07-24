@@ -1,0 +1,49 @@
+{
+  "OC_20241101_001": {
+    "tipo": "normal",
+    "proveedor": "Ferretería Los Andes S.A.",
+    "proveedor_rut": "96.123.456-7",
+    "fecha": "2024-01-15",
+    "estado": "entregada",
+    "descripcion": "Materiales de construcción para obra Maquehua",
+    "items": [
+      {
+        "descripcion": "Cemento Ultra 42.5 kg",
+        "cantidad": 50,
+        "precio_unitario": 8500,
+        "subtotal": 425000
+      },
+      {
+        "descripcion": "Fierro 12mm x 12m",
+        "cantidad": 20,
+        "precio_unitario": 15000,
+        "subtotal": 300000
+      },
+      {
+        "descripcion": "Arena de construcción m3",
+        "cantidad": 10,
+        "precio_unitario": 25000,
+        "subtotal": 250000
+      }
+    ],
+    "total": 975000,
+    "creado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.311492",
+    "updated_at": "2025-07-24T13:25:54.311495"
+  },
+  "OC_20241101_002": {
+    "tipo": "combustible",
+    "proveedor": "COMERCIAL MAQUEHUA SPA",
+    "proveedor_rut": "77.346.747-1",
+    "fecha": "2024-01-20",
+    "estado": "entregada",
+    "descripcion": "Combustible para vehículo ABC-123",
+    "vehiculo_id": "VEH_001",
+    "vehiculo": "ABC-123",
+    "monto_combustible": 80000,
+    "total": 80000,
+    "creado_por": "secretaria",
+    "created_at": "2025-07-24T13:25:54.311775",
+    "updated_at": "2025-07-24T13:25:54.311778"
+  }
+}

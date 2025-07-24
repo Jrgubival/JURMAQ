@@ -1,0 +1,134 @@
+{
+  "COMB_20250724_000": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2025-07-24",
+    "monto": 75000,
+    "litros": 80,
+    "kilometraje": 150000,
+    "observaciones": "Carga combustible mensual July 2025",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.312244",
+    "updated_at": "2025-07-24T13:25:54.312246"
+  },
+  "COMB_20250624_001": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2025-06-24",
+    "monto": 80000,
+    "litros": 85,
+    "kilometraje": 152000,
+    "observaciones": "Carga combustible mensual June 2025",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.312428",
+    "updated_at": "2025-07-24T13:25:54.312431"
+  },
+  "COMB_20250525_002": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2025-05-25",
+    "monto": 85000,
+    "litros": 90,
+    "kilometraje": 154000,
+    "observaciones": "Carga combustible mensual May 2025",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.312676",
+    "updated_at": "2025-07-24T13:25:54.312679"
+  },
+  "COMB_20250425_003": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2025-04-25",
+    "monto": 90000,
+    "litros": 95,
+    "kilometraje": 156000,
+    "observaciones": "Carga combustible mensual April 2025",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.313045",
+    "updated_at": "2025-07-24T13:25:54.313048"
+  },
+  "COMB_20250326_004": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2025-03-26",
+    "monto": 95000,
+    "litros": 100,
+    "kilometraje": 158000,
+    "observaciones": "Carga combustible mensual March 2025",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.313379",
+    "updated_at": "2025-07-24T13:25:54.313382"
+  },
+  "COMB_20250224_005": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2025-02-24",
+    "monto": 100000,
+    "litros": 105,
+    "kilometraje": 160000,
+    "observaciones": "Carga combustible mensual February 2025",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.313685",
+    "updated_at": "2025-07-24T13:25:54.313688"
+  },
+  "COMB_20250125_006": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2025-01-25",
+    "monto": 105000,
+    "litros": 110,
+    "kilometraje": 162000,
+    "observaciones": "Carga combustible mensual January 2025",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.346896",
+    "updated_at": "2025-07-24T13:25:54.346900"
+  },
+  "COMB_20241226_007": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2024-12-26",
+    "monto": 110000,
+    "litros": 115,
+    "kilometraje": 164000,
+    "observaciones": "Carga combustible mensual December 2024",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.347270",
+    "updated_at": "2025-07-24T13:25:54.347273"
+  },
+  "COMB_20241126_008": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2024-11-26",
+    "monto": 115000,
+    "litros": 120,
+    "kilometraje": 166000,
+    "observaciones": "Carga combustible mensual November 2024",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.347614",
+    "updated_at": "2025-07-24T13:25:54.347617"
+  },
+  "COMB_20241027_009": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2024-10-27",
+    "monto": 120000,
+    "litros": 125,
+    "kilometraje": 168000,
+    "observaciones": "Carga combustible mensual October 2024",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.347973",
+    "updated_at": "2025-07-24T13:25:54.347976"
+  },
+  "COMB_20240927_010": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2024-09-27",
+    "monto": 125000,
+    "litros": 130,
+    "kilometraje": 170000,
+    "observaciones": "Carga combustible mensual September 2024",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.348406",
+    "updated_at": "2025-07-24T13:25:54.348409"
+  },
+  "COMB_20240828_011": {
+    "vehiculo_id": "VEH_001",
+    "fecha": "2024-08-28",
+    "monto": 130000,
+    "litros": 135,
+    "kilometraje": 172000,
+    "observaciones": "Carga combustible mensual August 2024",
+    "registrado_por": "admin",
+    "created_at": "2025-07-24T13:25:54.348775",
+    "updated_at": "2025-07-24T13:25:54.348779"
+  }
+}
