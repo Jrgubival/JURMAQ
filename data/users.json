@@ -1,0 +1,32 @@
+{
+  "admin": {
+    "username": "admin",
+    "password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "role": "admin",
+    "full_name": "Administrador",
+    "email": "admin@jurmaq.cl",
+    "active": true,
+    "created_at": "2025-07-24T13:25:54.307988",
+    "updated_at": "2025-07-24T13:25:54.307994"
+  },
+  "secretaria": {
+    "username": "secretaria",
+    "password": "1c392f167af58d8184653ba5f241d00f8e847e3e83211a04be121339ee2744e9",
+    "role": "secretaria",
+    "full_name": "Secretaria",
+    "email": "secretaria@jurmaq.cl",
+    "active": true,
+    "created_at": "2025-07-24T13:25:54.308297",
+    "updated_at": "2025-07-24T13:25:54.308301"
+  },
+  "operador": {
+    "username": "operador",
+    "password": "3677d8dbc62c86c0d74bc97ff581a41cfb445d9794ab29c03e3596edcb76691b",
+    "role": "operador",
+    "full_name": "Operador",
+    "email": "operador@jurmaq.cl",
+    "active": true,
+    "created_at": "2025-07-24T13:25:54.308709",
+    "updated_at": "2025-07-24T13:25:54.308712"
+  }
+}

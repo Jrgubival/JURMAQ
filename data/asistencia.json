@@ -1,0 +1,32 @@
+{
+  "EMP_001_2025-07": {
+    "empleado_id": "EMP_001",
+    "empleado_nombre": "Juan Carlos Pérez Silva",
+    "periodo": "2025-07",
+    "dias_trabajados": 22,
+    "horas_extras": 8,
+    "observaciones": "Asistencia normal",
+    "created_at": "2025-07-24T13:25:54.349092",
+    "updated_at": "2025-07-24T13:25:54.349096"
+  },
+  "EMP_002_2025-07": {
+    "empleado_id": "EMP_002",
+    "empleado_nombre": "María Elena González Torres",
+    "periodo": "2025-07",
+    "dias_trabajados": 22,
+    "horas_extras": 8,
+    "observaciones": "Asistencia normal",
+    "created_at": "2025-07-24T13:25:54.349287",
+    "updated_at": "2025-07-24T13:25:54.349290"
+  },
+  "EMP_003_2025-07": {
+    "empleado_id": "EMP_003",
+    "empleado_nombre": "Carlos Alberto Rojas Mendoza",
+    "periodo": "2025-07",
+    "dias_trabajados": 22,
+    "horas_extras": 8,
+    "observaciones": "Asistencia normal",
+    "created_at": "2025-07-24T13:25:54.349530",
+    "updated_at": "2025-07-24T13:25:54.349533"
+  }
+}
