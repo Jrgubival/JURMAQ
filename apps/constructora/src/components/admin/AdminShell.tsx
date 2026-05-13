@@ -90,6 +90,16 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    label: 'Cotizaciones arriendo',
+    href: '/admin/cotizaciones-arriendo',
+    module: 'cotizaciones',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2M9 17a4 4 0 11-4-4m4 4a4 4 0 014 4M5 13a4 4 0 100-8 4 4 0 000 8z" />
+      </svg>
+    ),
+  },
+  {
     label: 'Contratos',
     href: '/admin/contratos',
     module: 'contratos',
@@ -116,6 +126,16 @@ const navItems: NavItem[] = [
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c-3 4-5 6.5-5 9.5a5 5 0 1010 0C17 9.5 15 7 12 3z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'SII / Tributario',
+    href: '/admin/sii',
+    module: 'combustible',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
       </svg>
     ),
   },
