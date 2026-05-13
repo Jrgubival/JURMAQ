@@ -1,0 +1,14 @@
+.next/
+.vercel/
+.claude/
+.DS_Store
+*.db
+*.db-shm
+*.db-wal
+*.lock
+*.tsbuildinfo
+package-lock.json
+tsconfig.tsbuildinfo
+next-env.d.ts
+graphify-out/
+*.xlsx

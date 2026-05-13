@@ -1,0 +1,8 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Disallow native postinstall scripts (none of our packages need them)
+allowBuilds:
+  sharp: false
+  unrs-resolver: false

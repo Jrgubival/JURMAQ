@@ -1,0 +1,264 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+interface CartItem {
+  id: number;
+  producto_id: number;
+  nombre: string;
+  precio: number;
+  cantidad: number;
+  imagen: string | null;
+  medida: string | null;
+  unidad: string | null;
+}
+
+function getSessionId(): string {
+  if (typeof window === "undefined") return "";
+  let sid = localStorage.getItem("barraca_session_id");
+  if (!sid) {
+    sid = crypto.randomUUID();
+    localStorage.setItem("barraca_session_id", sid);
+  }
+  return sid;
+}
+
+export default function CarritoPage() {
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchCart() {
+    setLoading(true);
+    try {
+      const sid = getSessionId();
+      const res = await fetch("/api/barraca/carrito", {
+        headers: { "X-Session-Id": sid },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setItems(data.items || []);
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  async function updateQuantity(itemId: number, newQty: number) {
+    if (newQty < 1) return;
+    await fetch("/api/barraca/carrito", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId, cantidad: newQty }),
+    });
+    setItems(
+      items.map((i) => (i.id === itemId ? { ...i, cantidad: newQty } : i))
+    );
+    window.dispatchEvent(new Event("cart-updated"));
+  }
+
+  async function removeItem(itemId: number) {
+    await fetch("/api/barraca/carrito", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId }),
+    });
+    setItems(items.filter((i) => i.id !== itemId));
+    window.dispatchEvent(new Event("cart-updated"));
+  }
+
+  async function clearCart() {
+    for (const item of items) {
+      await fetch("/api/barraca/carrito", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId: item.id }),
+      });
+    }
+    setItems([]);
+    window.dispatchEvent(new Event("cart-updated"));
+  }
+
+  const subtotal = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+  const totalItems = items.reduce((s, i) => s + i.cantidad, 0);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      {/* Breadcrumb */}
+      <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-sm text-gray-500 mb-8">
+        <Link href="/" className="hover:text-orange-600 transition-colors">Inicio</Link>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        <span className="text-navy-950 font-medium">Carrito</span>
+      </nav>
+
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl lg:text-3xl font-bold text-navy-950">
+          Mi carrito
+        </h1>
+        {items.length > 0 && (
+          <button
+            onClick={clearCart}
+            className="min-h-[44px] px-3 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 active:bg-red-100 font-medium flex items-center gap-1.5 transition-colors touch-manipulation"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Vaciar carrito
+          </button>
+        )}
+      </div>
+
+      {items.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
+          <svg className="w-20 h-20 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+          </svg>
+          <h2 className="text-xl font-bold text-navy-950 mb-2">Tu carrito está vacío</h2>
+          <p className="text-gray-500 mb-6">Agrega productos para solicitar una cotización</p>
+          <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors">
+            Explorar categorías
+          </Link>
+        </div>
+      ) : (
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Cart Items */}
+          <div className="flex-1">
+            {/* Desktop view */}
+            <div className="hidden md:block bg-white border border-gray-200 rounded-xl overflow-hidden">
+              <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <div className="col-span-5">Producto</div>
+                <div className="col-span-2 text-center">Precio</div>
+                <div className="col-span-2 text-center">Cantidad</div>
+                <div className="col-span-2 text-right">Subtotal</div>
+                <div className="col-span-1" />
+              </div>
+
+              {items.map((item) => (
+                <div key={item.id} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 last:border-0 items-center">
+                  <div className="col-span-5 flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
+                      <img src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = '/images/barraca/default.svg'; }} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{item.nombre}</p>
+                      {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
+                    </div>
+                  </div>
+                  <div className="col-span-2 text-center text-sm font-medium text-gray-900">
+                    ${item.precio.toLocaleString("es-CL")}
+                  </div>
+                  <div className="col-span-2 flex justify-center">
+                    <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
+                      <button onClick={() => updateQuantity(item.id, item.cantidad - 1)} aria-label={`Disminuir cantidad de ${item.nombre}`} className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 font-bold transition-colors">-</button>
+                      <span className="w-11 h-11 flex items-center justify-center text-sm font-bold border-x-2 border-gray-200">{item.cantidad}</span>
+                      <button onClick={() => updateQuantity(item.id, item.cantidad + 1)} aria-label={`Aumentar cantidad de ${item.nombre}`} className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 font-bold transition-colors">+</button>
+                    </div>
+                  </div>
+                  <div className="col-span-2 text-right text-sm font-bold text-navy-950">
+                    ${(item.precio * item.cantidad).toLocaleString("es-CL")}
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <button onClick={() => removeItem(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors" aria-label={`Eliminar ${item.nombre} del carrito`}>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile card view */}
+            <div className="md:hidden space-y-3">
+              {items.map((item) => (
+                <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex gap-3">
+                    <div className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
+                      <img src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = '/images/barraca/default.svg'; }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{item.nombre}</p>
+                          {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
+                        </div>
+                        <button onClick={() => removeItem(item.id)} aria-label={`Eliminar ${item.nombre} del carrito`} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-red-500">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      <p className="text-sm font-semibold text-navy-950 mt-1">${item.precio.toLocaleString("es-CL")}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
+                      <button onClick={() => updateQuantity(item.id, item.cantidad - 1)} aria-label={`Disminuir cantidad de ${item.nombre}`} className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 font-bold transition-colors">-</button>
+                      <span className="w-11 h-11 flex items-center justify-center text-sm font-bold border-x-2 border-gray-200">{item.cantidad}</span>
+                      <button onClick={() => updateQuantity(item.id, item.cantidad + 1)} aria-label={`Aumentar cantidad de ${item.nombre}`} className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 font-bold transition-colors">+</button>
+                    </div>
+                    <p className="text-base font-bold text-navy-950">${(item.precio * item.cantidad).toLocaleString("es-CL")}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cart Summary */}
+          <div className="w-full lg:w-80 shrink-0">
+            <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-24">
+              <h2 className="text-lg font-bold text-navy-950 mb-4">Resumen del pedido</h2>
+              <div className="mb-6">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-600">Productos ({totalItems})</span>
+                  <span className="font-medium text-gray-900">${subtotal.toLocaleString("es-CL")}</span>
+                </div>
+                <div className="space-y-2 pt-4 border-t border-gray-200">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Subtotal neto</span>
+                    <span>${Math.round(subtotal / 1.19).toLocaleString("es-CL")}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">IVA (19%)</span>
+                    <span>${(subtotal - Math.round(subtotal / 1.19)).toLocaleString("es-CL")}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Despacho</span>
+                    <span className="text-gray-500">Por cotizar segun comuna</span>
+                  </div>
+                  <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
+                    <span>Total (IVA incluido)</span>
+                    <span className="text-orange-600">${subtotal.toLocaleString("es-CL")}</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mb-5">* Precios referenciales. Se confirmarán en la cotización.</p>
+              <Link href="/cotizar" className="block w-full py-3.5 text-center text-base font-bold bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-md shadow-orange-200 transition-colors">
+                Solicitar cotización
+              </Link>
+              <Link href="/categorias" className="block w-full py-3 mt-3 text-center text-sm font-semibold border-2 border-orange-600 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
+                Seguir comprando
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,1402 @@
+{
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/postcss.config.mjs": {
+    "mtime": 1774446266.1506853,
+    "hash": "239f3ebf717465dc636818a1a619398d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/eslint.config.mjs": {
+    "mtime": 1774446266.0,
+    "hash": "dfa1f5f6a7037bf39dc510f30b180002"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/next.config.ts": {
+    "mtime": 1778274282.9323685,
+    "hash": "a07c73f12a2afbfeaa3f1a967e6dcdbb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/harden-rls.js": {
+    "mtime": 1776576340.2468817,
+    "hash": "aa04d639ac5361126b6095c484f071b7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-precio-historial.sql": {
+    "mtime": 1778443195.4154282,
+    "hash": "28ecf803c1f3ae25a5285d4ffa108247"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/image-panel.mjs": {
+    "mtime": 1778272280.6756732,
+    "hash": "b5353f2b449e9a1ebba93efa2dc8388b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-cotizaciones-seq.sql": {
+    "mtime": 1778280145.7825441,
+    "hash": "5bc0d30f8dda91c1f3e35227f84be3b6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-oferta-fin.sql": {
+    "mtime": 1778367241.6814098,
+    "hash": "d180c46122e1d7eac45e264526af0c63"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/expand-names.js": {
+    "mtime": 1776269641.0589914,
+    "hash": "012458ed687bfea5758ceedd31421adc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-rate-limit-persistente.sql": {
+    "mtime": 1778376052.3031983,
+    "hash": "08c1c8f486dcd129cefb92424c0881f8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-email-queue.sql": {
+    "mtime": 1778412168.7028618,
+    "hash": "e182144e26416fd9c4da737eb35c2751"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-account-erasure-log.sql": {
+    "mtime": 1778374305.9213357,
+    "hash": "d16738c7b0bdbdbc9031ac0244d50925"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-combustible-f29.sql": {
+    "mtime": 1778374532.4619968,
+    "hash": "67e695f4d389ee67c153026b2d60157f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/assign-images.mjs": {
+    "mtime": 1778272276.3612702,
+    "hash": "cde52c36a61fa2c2d9a550ec16f80dfd"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/cleanup-audit-data.js": {
+    "mtime": 1776576621.001902,
+    "hash": "7a7d04df04883b3d90377b8fd4ec92d5"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-role-change-log.sql": {
+    "mtime": 1778420729.811865,
+    "hash": "d3163a37d73a2013557d367bc664ee10"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-pagos-eventos.sql": {
+    "mtime": 1778375353.303947,
+    "hash": "575f9b5c455b448d515b735282277d6e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/migrate-combustible-iec-tarifas.sql": {
+    "mtime": 1778376210.7796452,
+    "hash": "738f0d9a4064b20e38cd4ee03558a84c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/run-contratos-migration.js": {
+    "mtime": 1776821986.9531162,
+    "hash": "e5723c579da0db3e5b39afe6ccddc733"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/migrate-firma-fortalecida.sql": {
+    "mtime": 1777944637.4741645,
+    "hash": "2fc75c544492d997d0965b05e65a6a65"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/migrate-firma-arrendador.sql": {
+    "mtime": 1778122741.2054188,
+    "hash": "49ab764e3b29971885d2618c22853e2b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/create-promociones.sql": {
+    "mtime": 1776035247.7239456,
+    "hash": "a7089bb14eceba75da51560690c42650"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/migrate-contratos.sql": {
+    "mtime": 1776821766.6245387,
+    "hash": "b63f886bb0fffa03c087fc8e8ae35b69"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/migrate-contraoferta.mjs": {
+    "mtime": 1776036298.22466,
+    "hash": "485e06d20570a08bb8cb1895b213c712"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/migrate-combustible.sql": {
+    "mtime": 1776829037.0944798,
+    "hash": "ff108a996ed1dbc6dd6853c4c7e3b6c3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/add-price-columns.sql": {
+    "mtime": 1776033729.0091138,
+    "hash": "37544c43336fe0d0949d0d208758db1a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/enable-rls.sql": {
+    "mtime": 1776304084.5165453,
+    "hash": "18c497a18df391c66e0814b09fbf6f89"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/middleware.ts": {
+    "mtime": 1776831210.0367372,
+    "hash": "cf5070466bea32f0326e06cda673d1d1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/next-auth.d.ts": {
+    "mtime": 1776040081.4263277,
+    "hash": "f5ff26c1f7c07d06a5f278f4acd0d686"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/types/cotizacion.ts": {
+    "mtime": 1776281649.7903845,
+    "hash": "498f076490716490b6c7e822bc9fd141"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/robots.ts": {
+    "mtime": 1778436907.0886881,
+    "hash": "aaa69ef3a574529459612c32e73c469a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/sitemap.ts": {
+    "mtime": 1778425792.6517043,
+    "hash": "733736312684073fe92443c9174e0769"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/layout.tsx": {
+    "mtime": 1778416414.0635958,
+    "hash": "38697663a62d359b1cfa5a7761f7c840"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/error.tsx": {
+    "mtime": 1776025215.7411442,
+    "hash": "ab5eab69c5d4c32f3ea05d5ba014601c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/not-found.tsx": {
+    "mtime": 1776025223.486385,
+    "hash": "2a8adcebea4a1f27afe1a6270286e3cb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/layout.tsx": {
+    "mtime": 1774447152.4388196,
+    "hash": "c0129979e1a40446f5267b239ab15364"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/page.tsx": {
+    "mtime": 1777257593.851551,
+    "hash": "2b3ace4e9919dcebfac5a4b04317ba97"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/maquinarias/page.tsx": {
+    "mtime": 1777156567.2233279,
+    "hash": "1c542ed082e977553e753147d6744e21"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/proyectos/page.tsx": {
+    "mtime": 1776832748.6591907,
+    "hash": "6214f9066a5e3cf32f40a8b77ed21097"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/email-queue/page.tsx": {
+    "mtime": 1778413607.1150398,
+    "hash": "a51131a92b7debe06b4e4c89c03914d7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/solicitudes/page.tsx": {
+    "mtime": 1776820538.4959698,
+    "hash": "9dd0d4dcc254b4b0ccf833123f96f6f8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/page.tsx": {
+    "mtime": 1778436283.0951064,
+    "hash": "93037e0d21632240c8372c3b8eb028b2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/promociones/page.tsx": {
+    "mtime": 1776832712.452318,
+    "hash": "0827d80b85f80f20bc864807636baa90"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/importar/page.tsx": {
+    "mtime": 1776577683.5303516,
+    "hash": "9663fada820a39a511d9483369e66a34"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/cotizaciones/page.tsx": {
+    "mtime": 1776281828.211103,
+    "hash": "e1384ab59522519fa645b97fdd4ca063"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/categorias/page.tsx": {
+    "mtime": 1776041665.6057656,
+    "hash": "4b59cd4174ac7381b5941c99819e952e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/imagenes-masivas/page.tsx": {
+    "mtime": 1776204733.9445035,
+    "hash": "0e9165dc22c0cd3470f1139f89b4b0ee"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/imagenes/page.tsx": {
+    "mtime": 1778439443.9255173,
+    "hash": "f913be768396232e604c82f26f98e08f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/suscriptores/page.tsx": {
+    "mtime": 1776013930.9875245,
+    "hash": "a2a7e9800f4b448644a0d7cc9d45b824"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/productos/page.tsx": {
+    "mtime": 1776105698.769514,
+    "hash": "34d4fed740e21e4350ff9c630eac09d1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/barraca/precios/page.tsx": {
+    "mtime": 1778367643.8998356,
+    "hash": "e8d1aa0d566667f113ce5702af659581"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/usuarios/page.tsx": {
+    "mtime": 1777258613.7948825,
+    "hash": "f6aef288ce440e3c8a1e7a54810fad94"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/cotizaciones/page.tsx": {
+    "mtime": 1776858071.867645,
+    "hash": "c50cabeaf552f5f3be5998260cbf1fd6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/contratos/page.tsx": {
+    "mtime": 1776822540.4916644,
+    "hash": "bf7f219ed1784461fafd38ba04c1511e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/contratos/templates/page.tsx": {
+    "mtime": 1776822775.7235188,
+    "hash": "341dea579927a2358b54820a21e4dd89"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/contratos/[id]/page.tsx": {
+    "mtime": 1778123198.5698419,
+    "hash": "8b58ac94eb11862cf7716d6423aecde8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/contratos/nuevo/page.tsx": {
+    "mtime": 1776832277.5190716,
+    "hash": "89ad5b7b1639a4199a7069686530835a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/combustible/page.tsx": {
+    "mtime": 1776829894.2728357,
+    "hash": "296ab48a94587d021c419cc96492d08a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/combustible/tarifas/page.tsx": {
+    "mtime": 1778413684.627932,
+    "hash": "3bed5ef1c23b09a5895693ff9063de1f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/combustible/[id]/page.tsx": {
+    "mtime": 1776830001.5907319,
+    "hash": "20912fdd63f0f86e04368167283f5d54"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/combustible/nueva/page.tsx": {
+    "mtime": 1776832258.8914084,
+    "hash": "e044bb34ee4af8a52c66aeae9bd283ee"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/admin/clientes/page.tsx": {
+    "mtime": 1776106030.5005414,
+    "hash": "b7d12e4ee86dd5a89dc5d659ccff9a5d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/sitemap.ts": {
+    "mtime": 1778425785.136364,
+    "hash": "0b42276304d5aa2b838f580bc1951dd5"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/layout.tsx": {
+    "mtime": 1778420849.4682026,
+    "hash": "67a05d5294455c3c3ca183d5515b8862"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/error.tsx": {
+    "mtime": 1776044337.2815247,
+    "hash": "f047713d44f0f66719821cee375567a1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/loading.tsx": {
+    "mtime": 1776044328.8374035,
+    "hash": "3b61b143766f8bf7f467ce3a6f9b5cb7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/page.tsx": {
+    "mtime": 1778416189.705731,
+    "hash": "fb8ae500395798d42a3bf57843fbe22e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/not-found.tsx": {
+    "mtime": 1776285016.7833095,
+    "hash": "5bbee12895a6e97aa6b5a29e6eb8b564"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/guias/page.tsx": {
+    "mtime": 1778415258.3205338,
+    "hash": "4d3ddbc085ece250fd48baae6c0850ca"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/guias/[slug]/page.tsx": {
+    "mtime": 1778436883.0105712,
+    "hash": "6b50ad0b19b7469614c583f8d048b96f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadoras/page.tsx": {
+    "mtime": 1778425775.682629,
+    "hash": "c3e1fd0edf56e14ac56f3c4929d6ed2e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/producto/[slug]/ShareButtons.tsx": {
+    "mtime": 1776284744.8161442,
+    "hash": "c09d2a23411ea17db743f5cd15a4f43e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/producto/[slug]/AddToCartClient.tsx": {
+    "mtime": 1778416430.08352,
+    "hash": "a4df2f904b9917c6005978ea5c461df2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/producto/[slug]/page.tsx": {
+    "mtime": 1778417713.931029,
+    "hash": "b98552d518343f9ecfe077c1eb629a86"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/cotizacion/[numero]/page.tsx": {
+    "mtime": 1778417775.4964259,
+    "hash": "72cef39232ddde8116d5a87de11d7599"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-pintura/CalculadoraPinturaClient.tsx": {
+    "mtime": 1778432521.6577775,
+    "hash": "7343b9ddeb4d9d95168b2497269881b3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-pintura/page.tsx": {
+    "mtime": 1778435943.8642077,
+    "hash": "a99b6a246d3d53d7abee78a2ebd042a6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/cotizar/layout.tsx": {
+    "mtime": 1776284744.8292758,
+    "hash": "0825f6b0ecc89c8bd7d7280c30438770"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/cotizar/page.tsx": {
+    "mtime": 1778417736.0276203,
+    "hash": "f04d14fa1f395627bae2f65ce255e753"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-fierro/CalculadoraFierroClient.tsx": {
+    "mtime": 1778432501.7217274,
+    "hash": "0bef55105be6460355fe15f5da7fd5f6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-fierro/page.tsx": {
+    "mtime": 1778435870.066411,
+    "hash": "a58fde94de52a7ed842a24d87be3ba71"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/alternativa/page.tsx": {
+    "mtime": 1778424922.2197473,
+    "hash": "813fe2598b3a23ca5b8897fff0695e1d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/alternativa/[competidor]/page.tsx": {
+    "mtime": 1778424906.9171948,
+    "hash": "f42482f529ead9eeed93ff605e55fe40"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/categorias/loading.tsx": {
+    "mtime": 1776025185.860856,
+    "hash": "fb51f1db2f903d4866d03ca366edeae7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/categorias/page.tsx": {
+    "mtime": 1777402834.5435607,
+    "hash": "c2e6f01a52498c4ac35eab0ab5e934f0"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/categorias/[slug]/loading.tsx": {
+    "mtime": 1776025193.3768744,
+    "hash": "c0ca1dc444fbbf19b6d9df72ce742dcf"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/categorias/[slug]/page.tsx": {
+    "mtime": 1777773688.2371373,
+    "hash": "5a8aad298f7d1f615f65229fdc3b92e3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/cuenta/page.tsx": {
+    "mtime": 1778413540.8274298,
+    "hash": "e02df677eebf16b7ed58c67ee5d4cae4"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/cuenta/registro/layout.tsx": {
+    "mtime": 1776284744.8428323,
+    "hash": "a9855b31c2ef32f45b271ed717d52ea7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/cuenta/registro/page.tsx": {
+    "mtime": 1778417757.8539178,
+    "hash": "885a3e478a47a9a4680f3932e13f64f8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/cuenta/login/layout.tsx": {
+    "mtime": 1776284744.8455975,
+    "hash": "e66c88679cb69bb0ec6159b556a81d1d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/cuenta/login/page.tsx": {
+    "mtime": 1778417744.1324792,
+    "hash": "65a95214c5fed744055efba0f3af22be"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/pago/pendiente/page.tsx": {
+    "mtime": 1776285016.7375278,
+    "hash": "c00d28172a5a7962a8e46d99bfcae437"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/pago/error/page.tsx": {
+    "mtime": 1776285016.742916,
+    "hash": "655893c696cbd7e6bebeb88c9c8794ad"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/pago/exito/page.tsx": {
+    "mtime": 1778437291.2214131,
+    "hash": "e57c21b4b86a9d57b032d4d98818c771"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/te-mejoramos-el-precio/page.tsx": {
+    "mtime": 1778427020.1157007,
+    "hash": "8b468fdaf46cedc7fc951d3fa9b1b8b1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-cemento/CalculadoraCementoClient.tsx": {
+    "mtime": 1778432493.403841,
+    "hash": "8722ec3749db536f15c980a834f346b3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-cemento/page.tsx": {
+    "mtime": 1778435906.362887,
+    "hash": "91f5a70928965a83e1eddaa022e6fc2c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-zincalum/CalculadoraZincalumClient.tsx": {
+    "mtime": 1778432566.5350952,
+    "hash": "a310a9f0c2edbf83b6146f3c2b84bc81"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-zincalum/page.tsx": {
+    "mtime": 1778435984.5966663,
+    "hash": "ba12705f12609ffe700dfa6619fe8b38"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/en/[ciudad]/page.tsx": {
+    "mtime": 1778414655.5669954,
+    "hash": "d270afe412eaa8599319f9475d440cdf"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/carrito/layout.tsx": {
+    "mtime": 1776284744.852972,
+    "hash": "9b1aa48993fff113c8c490ce72354578"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/carrito/page.tsx": {
+    "mtime": 1777153160.68647,
+    "hash": "c5636af735229de89c424d6c2ed9c8b2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/buscar/loading.tsx": {
+    "mtime": 1778418585.0951521,
+    "hash": "4acd0171778f12a091f03aac301ec180"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/buscar/page.tsx": {
+    "mtime": 1776285016.7781162,
+    "hash": "416d1e945e2685d04321335bc2bcb318"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/material/[slug]/page.tsx": {
+    "mtime": 1777773568.2615027,
+    "hash": "77f68ab479ef9a1424d188c194377ed2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-hormigon/CalculadoraHormigonClient.tsx": {
+    "mtime": 1778432514.052535,
+    "hash": "e2ae9c3429de66245b2040f268a49835"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/barraca/calculadora-hormigon/page.tsx": {
+    "mtime": 1778435924.2442384,
+    "hash": "f697a3c0d3f412a8426092cbab633b60"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/contrato/layout.tsx": {
+    "mtime": 1776838038.756601,
+    "hash": "0b55e422aff94ee4d4059c25c4eaff61"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/contrato/firmar/[token]/SignaturePad.tsx": {
+    "mtime": 1776824279.9795182,
+    "hash": "aad2e99b8daed5713ecb00a7521975d3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/contrato/firmar/[token]/page.tsx": {
+    "mtime": 1778368183.887404,
+    "hash": "cd97d228c676e43f27703dd8275fb716"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/layout.tsx": {
+    "mtime": 1778122502.2239442,
+    "hash": "60e671b6ed53f1b2fd570bd783149b3b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/page.tsx": {
+    "mtime": 1777402874.0138955,
+    "hash": "18a0a5f66c44d8543112021555a39f05"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/maquinarias/page.tsx": {
+    "mtime": 1777402866.6293237,
+    "hash": "d255b416c4846e24ef2f3ce537f60a29"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/maquinarias/[id]/page.tsx": {
+    "mtime": 1777402858.492342,
+    "hash": "cc6681f4b1f55dff8fb724a66ba0e7d0"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/contacto/page.tsx": {
+    "mtime": 1776838022.1230729,
+    "hash": "6e65745c3b8892278dd6c09a0b7b1cc0"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/arriendo-en/[ciudad]/page.tsx": {
+    "mtime": 1778414725.4641094,
+    "hash": "1f8ec27df580ede2f2dd240bf20f81a7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/terminos/page.tsx": {
+    "mtime": 1776838157.601939,
+    "hash": "5f24a323bb5df6c3ce9a9ec7c852ba68"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/arriendo/[tipo]/page.tsx": {
+    "mtime": 1777409131.5934725,
+    "hash": "dae5bc651e992b27d7d9b94ea1deae31"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/(public)/privacidad/page.tsx": {
+    "mtime": 1777872033.6790085,
+    "hash": "6c7a32cfdd366892fe8751c91e184364"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/seed/route.ts": {
+    "mtime": 1777056535.3358212,
+    "hash": "36b20277c9511bb1bbf0a2d4d91439ac"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/auth/[...nextauth]/route.ts": {
+    "mtime": 1774446425.0,
+    "hash": "b029e647172c501173c00f0414998077"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/maquinarias/route.ts": {
+    "mtime": 1777261555.6236384,
+    "hash": "b6e379c465ea0a16a40d3260fd50764c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/maquinarias/[id]/route.ts": {
+    "mtime": 1777261590.10363,
+    "hash": "9081df753538cc26223d3ba114972e50"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/email-queue/route.ts": {
+    "mtime": 1778413577.8663678,
+    "hash": "54b7deaad37b6c2dc623726c19bcb96f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/usuarios/route.ts": {
+    "mtime": 1777258543.1584644,
+    "hash": "2bc4fb20ba7dcbf007994d997beba236"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/usuarios/[id]/route.ts": {
+    "mtime": 1778420751.7755685,
+    "hash": "6f7a00045fa8540368ff578c0f69922b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/_helpers.ts": {
+    "mtime": 1778367704.4081233,
+    "hash": "2e1bd4b9fa51103091f47011a59845e4"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/route.ts": {
+    "mtime": 1777261820.585776,
+    "hash": "aa2af8f5348906dee8550d746b649ed8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/templates/route.ts": {
+    "mtime": 1777261842.3908384,
+    "hash": "269c89be006cee5bd53a693771679384"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/templates/[id]/route.ts": {
+    "mtime": 1777261856.5316274,
+    "hash": "aaeb490c80e9ce6a6e8ae9bbed9ea948"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/[id]/route.ts": {
+    "mtime": 1777261824.220641,
+    "hash": "83e6a90ae174f75e81f9ac5bb62cfeba"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/[id]/pdf/route.ts": {
+    "mtime": 1778123077.362509,
+    "hash": "014f4863789b0d40fb48fa7a9cf4541f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/[id]/render/route.ts": {
+    "mtime": 1778123054.6158457,
+    "hash": "52c32872cb46b5ca8e30466fcc48d84c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/[id]/send-signature/route.ts": {
+    "mtime": 1778367804.8075757,
+    "hash": "276bb638fdd83f38776dca13b58f4a7e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/contratos/[id]/firma-arrendador/route.ts": {
+    "mtime": 1778122860.940046,
+    "hash": "ea83add1851e44925c3e44f9ad169ef7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/combustible/_helpers.ts": {
+    "mtime": 1776832261.5476918,
+    "hash": "28c0faba5c86ae4cc80ead1e56805d75"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/combustible/calcular-iec/route.ts": {
+    "mtime": 1778376238.8549683,
+    "hash": "7af2b60e9fca943cc2c2261e5fa480f7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/combustible/tarifas-iec/route.ts": {
+    "mtime": 1778413642.519271,
+    "hash": "2d852eeb2544c9cb93b849f6c97d3c61"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/combustible/resumen/route.ts": {
+    "mtime": 1777945323.0736153,
+    "hash": "41dd66319c08b58972f9f4fb49820a63"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/combustible/export/route.ts": {
+    "mtime": 1777945323.0640123,
+    "hash": "c381d0e327e04a0ac8309a415c513d36"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/combustible/facturas/route.ts": {
+    "mtime": 1777945334.4457488,
+    "hash": "53bd2cdf253faf3d3af601aa534d928e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/combustible/facturas/[id]/route.ts": {
+    "mtime": 1777945323.0699146,
+    "hash": "4d55a9dc494f342d12a4b53963cf885d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/admin/combustible/upload/route.ts": {
+    "mtime": 1777261949.1522274,
+    "hash": "3b58e803330f6392cff2f9b1de9e69ee"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/proyectos/route.ts": {
+    "mtime": 1777261718.202596,
+    "hash": "87ab30521302ae66b65a573ae0788417"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/proyectos/[id]/route.ts": {
+    "mtime": 1777261735.993495,
+    "hash": "195771738ec57b61012cf387dc3ab073"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/solicitudes/route.ts": {
+    "mtime": 1777408443.7753603,
+    "hash": "2321abd919850378b1a4d33238f3734b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/solicitudes/[id]/route.ts": {
+    "mtime": 1777408461.7486544,
+    "hash": "52cb96f61b990a3bf1a44ead653d4ed2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/auth/route.ts": {
+    "mtime": 1778437029.1087368,
+    "hash": "5dbdaf86c2c661f6b54e83a883d6498d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/promociones/route.ts": {
+    "mtime": 1777262036.5083787,
+    "hash": "2ae73a06fffa42c376d0bdf198305864"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/promociones/import/route.ts": {
+    "mtime": 1778436072.2289248,
+    "hash": "be4e1c0697fe96f4066c96db26e40fd1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/importar/route.ts": {
+    "mtime": 1777262086.8742177,
+    "hash": "08adf74cd8d0b42dc1735b5e82a9efc3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/importar/parse/route.ts": {
+    "mtime": 1777262064.843837,
+    "hash": "f92060ff597ee69bcbccfc471ca85a18"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/importar/preview/route.ts": {
+    "mtime": 1777262069.393145,
+    "hash": "9d636a53556b1fe52cc68277ba77e4cf"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/importar/execute/route.ts": {
+    "mtime": 1777262074.8247526,
+    "hash": "279ca642087cf46a0b0243a068c392ac"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/setup/route.ts": {
+    "mtime": 1777054345.5191996,
+    "hash": "7dec48686c40628760ee0bac3749a12d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cotizaciones/route.ts": {
+    "mtime": 1778436967.8605165,
+    "hash": "86c30b555d5de2ae3e0a4906c49c253b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cotizaciones/by-numero/[numero]/route.ts": {
+    "mtime": 1776576291.2330012,
+    "hash": "d0a96b132cc4239a5d89ac8f2b00e89a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cotizaciones/contraoferta-email/route.ts": {
+    "mtime": 1778280257.1375437,
+    "hash": "58f7af64824efbe1de6ce2dceb16f444"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cotizaciones/[id]/route.ts": {
+    "mtime": 1777408381.5904994,
+    "hash": "af2416ac1f4442c7f71826ce374176d5"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cotizaciones/[id]/accept/route.ts": {
+    "mtime": 1778280333.7521155,
+    "hash": "9d0cc35bcf326929889ff8c1e33024d0"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cotizaciones/[id]/pdf/route.ts": {
+    "mtime": 1776576439.150881,
+    "hash": "591202606a60bdd67c5f2c8d6cca06dc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cotizaciones/[id]/message/route.ts": {
+    "mtime": 1777261995.6179116,
+    "hash": "e4868341bf57664e4067a1db9ff1d61b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/categorias/route.ts": {
+    "mtime": 1776838244.8786178,
+    "hash": "04c48c36ed064a8c487afd906568eebe"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cuenta/eliminar/route.ts": {
+    "mtime": 1778374320.5878205,
+    "hash": "2e62e49f592d2f9cc28097d872c98569"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/cuenta/exportar/route.ts": {
+    "mtime": 1778375483.1830301,
+    "hash": "fd39d1367112c15e2f9b4c9e55798014"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/imagenes/similar/route.ts": {
+    "mtime": 1776042052.1470306,
+    "hash": "592f47c901b6b345fc831d54f31a2540"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/imagenes/search/route.ts": {
+    "mtime": 1776049112.1070735,
+    "hash": "8b5e87bea822aa9380bbb00d0799c974"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/imagenes/assign/route.ts": {
+    "mtime": 1776219954.2285068,
+    "hash": "f6c7ace550952acb001498e931ecf424"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/suscriptores/route.ts": {
+    "mtime": 1777056446.852057,
+    "hash": "08e6ae7cfda6685e151fd147ac82230e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/suscriptores/[id]/route.ts": {
+    "mtime": 1776832726.0846567,
+    "hash": "02ce191b62ece95286d2fecb3cb46ff1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/productos/route.ts": {
+    "mtime": 1777772117.0267956,
+    "hash": "5321e5ba454bdab256c75026c99a871b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/productos/bulk-price/route.ts": {
+    "mtime": 1778279799.3510864,
+    "hash": "8c18f2516b71768be55ea40d71255fb6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/productos/bulk-image/route.ts": {
+    "mtime": 1777262047.551132,
+    "hash": "4b9331a1bbd418c5ac0375daf892b50a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/productos/export/route.ts": {
+    "mtime": 1776229825.0053172,
+    "hash": "bde9a2606d9a0163382e77d2b0383811"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/productos/[slug]/route.ts": {
+    "mtime": 1776282880.7695942,
+    "hash": "8536b50576559a23bb6bd4b5f362ec9a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/carrito/route.ts": {
+    "mtime": 1778376293.8787208,
+    "hash": "036d2f5ec676cb5e166989b079f189de"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/buscar/route.ts": {
+    "mtime": 1776286785.0306966,
+    "hash": "5797b5a56a6a198790a2b6b7954674f8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/pagos/route.ts": {
+    "mtime": 1778279971.806824,
+    "hash": "1825dc39951604acdf00aa1cfba1e998"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/pagos/webhook/route.ts": {
+    "mtime": 1778375395.146776,
+    "hash": "da4e8a411aac3fc7f0107f65375bde8e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/email/route.ts": {
+    "mtime": 1776105896.9277751,
+    "hash": "b07076b8cf370df5d8b37393ba90f2d0"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/barraca/upload/route.ts": {
+    "mtime": 1776576560.6073174,
+    "hash": "c29020fea0d58fb9a005671c284cb8cb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/dashboard/route.ts": {
+    "mtime": 1777406975.6963544,
+    "hash": "7860205758ae4563c1041ead291a1c24"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/cotizaciones/route.ts": {
+    "mtime": 1777261668.8276653,
+    "hash": "b06ed4bbcd5fe62be1e16c1c98b758b0"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/cotizaciones/[id]/route.ts": {
+    "mtime": 1777408489.6429365,
+    "hash": "e2f5877f2ad4d3e3b73d31af195939ad"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/public/contratos/firmar/[token]/route.ts": {
+    "mtime": 1778375722.0544875,
+    "hash": "b97f407fef49a91c471cbd86e4497ed9"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/public/contratos/firmar/[token]/verify-otp/route.ts": {
+    "mtime": 1778375734.073292,
+    "hash": "b2f456b75d347290ac1fce696c32e26a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/public/contratos/firmar/[token]/request-otp/route.ts": {
+    "mtime": 1778375734.0425189,
+    "hash": "5c20cc4acb9636d7b72db8cf0e8c1e8b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/public/contratos/firmar/[token]/sign/route.ts": {
+    "mtime": 1778412265.8557901,
+    "hash": "f4d9386f9fe9eccd0d8c4c3554499514"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/public/contratos/firmar/[token]/upload-identidad/route.ts": {
+    "mtime": 1778375734.0531158,
+    "hash": "4a8f8d2295a9e1356eb18419f3a386d8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/clientes/route.ts": {
+    "mtime": 1777261745.3848777,
+    "hash": "62ba5278bd64d6c3de40a64ae134e62f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/clientes/[id]/route.ts": {
+    "mtime": 1777261762.1773627,
+    "hash": "7ffed8a3d68e70ebd7d82e9ee2a45221"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/api/cron/email-queue/retry/route.ts": {
+    "mtime": 1778412226.4258368,
+    "hash": "904cb95201b1023553deb243205eca09"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/app/login/page.tsx": {
+    "mtime": 1776040027.0117624,
+    "hash": "5b0d506e3520c075147261dafde28e3d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/Analytics.tsx": {
+    "mtime": 1778416381.6829598,
+    "hash": "726fe3dfa28e1131a49be31cfd758fa5"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/WhatsAppFloating.tsx": {
+    "mtime": 1778436326.4941142,
+    "hash": "b6ea1f9ea12ec00cffa57ac66de259df"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/GSAPInit.tsx": {
+    "mtime": 1778436343.9904666,
+    "hash": "0cfdc40b1832c7056b54d3c1fb3fef4d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/Toast.tsx": {
+    "mtime": 1776025157.6331742,
+    "hash": "d231cd8a68e272736b3153a8740758b9"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/TrustSignals.tsx": {
+    "mtime": 1778424887.449662,
+    "hash": "a45e977613d59b161de0ddcfa89dcdb9"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/admin/AdminShell.tsx": {
+    "mtime": 1778432799.8320596,
+    "hash": "1a787f6d0c6d86e6e4ba4619f98cf228"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/admin/SessionWrapper.tsx": {
+    "mtime": 1774447119.0,
+    "hash": "4d8998cd3899bcc189e7d01c7ff2845b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/AsistenteWidget.tsx": {
+    "mtime": 1778436368.8508615,
+    "hash": "8bb14049ad627240f3dcf2bd127d9b4d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/PromotedProductCard.tsx": {
+    "mtime": 1776285065.0343087,
+    "hash": "4f257e537427d535d953d5b445b6aa40"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/ProductDetailImage.tsx": {
+    "mtime": 1778436483.1609669,
+    "hash": "0cb0ec74a6a8345042c2e71f2fd1dcf3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/NewsletterPopup.tsx": {
+    "mtime": 1778436314.7910242,
+    "hash": "a07929192c0b1af7c5469316e748eeae"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/BottomNav.tsx": {
+    "mtime": 1778436362.222498,
+    "hash": "178408df342c126c6562d8f7a769c438"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/MobileHero.tsx": {
+    "mtime": 1778436527.1401517,
+    "hash": "83439bee87b90ece2f7aec82b445418c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/SearchBar.tsx": {
+    "mtime": 1778417682.5745327,
+    "hash": "fc46a76297f997d939c383d63e5c3480"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/ProductCard.tsx": {
+    "mtime": 1778444449.948414,
+    "hash": "f672e620c88b6ee468c96e927e1e6da6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/CountdownTimer.tsx": {
+    "mtime": 1776034204.5278323,
+    "hash": "f57f8f810bfd66fb713699fa87d4ebc5"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/CartDrawer.tsx": {
+    "mtime": 1778436304.30592,
+    "hash": "3adbc533d65348f7e4e5204a4a1f930e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/LoadingSkeleton.tsx": {
+    "mtime": 1776025171.2775543,
+    "hash": "2a95edfeace52df9091cea0950ce8d62"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/MobileTrustStrip.tsx": {
+    "mtime": 1777155400.6716552,
+    "hash": "3a03e00c58eef00ab8efb1cf5f21aa82"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/RelatedCalculadoras.tsx": {
+    "mtime": 1778435850.0572598,
+    "hash": "2fabfd4bc4d5ca1018a38581687d3983"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/barraca/HeroSlider.tsx": {
+    "mtime": 1776285030.141754,
+    "hash": "078ba86a904380039e80a8190c04313d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/public/MaquinariaFilters.tsx": {
+    "mtime": 1774453911.0,
+    "hash": "b2c68900f46f5ee5d04becb33e7c0fa1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/public/ContactForm.tsx": {
+    "mtime": 1777409131.6355052,
+    "hash": "028dc8e602df6bd33b61e2af5fffcccb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/animations/StaggeredGrid.tsx": {
+    "mtime": 1776007398.6770964,
+    "hash": "d2cfc3c9d78480d41c16530c392cf4f3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/animations/HeroSlideshow.tsx": {
+    "mtime": 1776105718.2080693,
+    "hash": "a6707b26b863445db243a6934c53ee37"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/animations/ScrollProgress.tsx": {
+    "mtime": 1776007403.856658,
+    "hash": "95b70b39e957a7161bd471859e9f06d0"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/animations/AnimatedSection.tsx": {
+    "mtime": 1776007384.8650303,
+    "hash": "ad73675c48501c73f5082f35ea8ea03e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/animations/AnimatedCounter.tsx": {
+    "mtime": 1776009113.6132338,
+    "hash": "e69b26dff775f90afcafe5e5eb2a7bcc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/animations/AnimatedText.tsx": {
+    "mtime": 1776007496.1126406,
+    "hash": "a3e49e0ef8413a4095d7fec8ec1bd485"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/animations/GSAPProvider.tsx": {
+    "mtime": 1776007421.901184,
+    "hash": "1b962519882e002873e2e712410e05f8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/animations/ParallaxImage.tsx": {
+    "mtime": 1776007489.6351798,
+    "hash": "1ddb8037c4f9e71150ee5846515e069d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/components/analytics/ViewItemTracker.tsx": {
+    "mtime": 1778417700.7335827,
+    "hash": "45c48e42bb4197512428a8e7f3c39d2c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/combustible-utils.ts": {
+    "mtime": 1776836768.7025678,
+    "hash": "f43472ef95a56729bc6828b0cdab5ab9"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/sanitize.ts": {
+    "mtime": 1778367738.0566,
+    "hash": "ab606f044b65ac85ed545bfb6958950f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/seo-data.ts": {
+    "mtime": 1778414576.1972587,
+    "hash": "bac97cd1b13e89d03aef39dc53b719f0"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/contrato-render.ts": {
+    "mtime": 1776822260.7097602,
+    "hash": "6b720256ac763c108e0da2ace9b54097"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/auth-guard.ts": {
+    "mtime": 1777258525.1380515,
+    "hash": "153109cf0984e5b71b4f972f56ff082f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/rut.ts": {
+    "mtime": 1776822453.8011272,
+    "hash": "5afda89ad4accfb25e52930aea28b176"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/contrato-template.ts": {
+    "mtime": 1778435829.9277616,
+    "hash": "62938c20d067dce258c8d881cd749f66"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/auth.config.ts": {
+    "mtime": 1778415855.6184375,
+    "hash": "0430854e3e6dc0cd0839550d1e0ff14b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/analytics.ts": {
+    "mtime": 1778437279.3712084,
+    "hash": "516184a359e27f2bb5bd4009283cc20f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/search.ts": {
+    "mtime": 1777772095.573108,
+    "hash": "435dd42c34a4c86376f0ec146da471ad"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/pricing.ts": {
+    "mtime": 1776577470.9719326,
+    "hash": "0f01ca0f5759842f717e9e5a7df25163"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/init-db.ts": {
+    "mtime": 1776287332.4345112,
+    "hash": "d70485de06b342e243de1b7331753049"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/email.ts": {
+    "mtime": 1778418939.205137,
+    "hash": "1c523f8538dedf9490ccc80f336a5b87"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/email-sequences.ts": {
+    "mtime": 1776231069.2288496,
+    "hash": "ea209891e7779651efb2caddd5c69c09"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/pdf-generator.ts": {
+    "mtime": 1777257743.1267757,
+    "hash": "59617028bac926b16159d66051e8f1f5"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/competidores-data.ts": {
+    "mtime": 1778437223.010974,
+    "hash": "7f9a6aea7d2e5977369c91fae0bf7f3a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/import-barraca-smart.ts": {
+    "mtime": 1776577653.435503,
+    "hash": "b0259460e902d4e4ba1c8c403a094112"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/format.ts": {
+    "mtime": 1778436268.213111,
+    "hash": "e43a068008ad59a22592096d6f3b9601"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/promociones-import-helpers.ts": {
+    "mtime": 1778436038.2672243,
+    "hash": "c97e409050477f4799ed236a67119e4a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/roles.ts": {
+    "mtime": 1777261539.1262465,
+    "hash": "6688c8f1ed1746111671f3f96db81559"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/twilio-sms.ts": {
+    "mtime": 1778368274.589084,
+    "hash": "39d16ff020d29f6a6c2c9895d2bb2ef2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/email-queue.ts": {
+    "mtime": 1778412201.0501657,
+    "hash": "8f1f09544ee47db2fe8cd2d2cc85c7cb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/supabase.ts": {
+    "mtime": 1778367989.8664634,
+    "hash": "bdbb6c86bc6c7792ecfbf5dd58c08824"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/imagenes-search.ts": {
+    "mtime": 1778439412.1976964,
+    "hash": "adf9bda5f2473c94e11d4c4610bf1232"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/guias-seo-data.ts": {
+    "mtime": 1778418370.7476175,
+    "hash": "0eec6c337794c54adf5f9a31e76f1d43"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/payments.ts": {
+    "mtime": 1777257564.4172893,
+    "hash": "be32f05d085297d5c50d9382ebf98aef"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/rate-limit.ts": {
+    "mtime": 1778376077.087238,
+    "hash": "180428e655fa14d98825e064e82ad432"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/contratos-audit.ts": {
+    "mtime": 1777945491.19213,
+    "hash": "4abeb1af3a21a20a930b0f901d0b690c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/auth.ts": {
+    "mtime": 1778415929.8665936,
+    "hash": "3d2c05a3918660282b99b0474dbcb426"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/promotions.ts": {
+    "mtime": 1777772944.473781,
+    "hash": "94dba0ca2a78d646fa3cb4178a547a24"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/utils.ts": {
+    "mtime": 1778418718.4151354,
+    "hash": "4b28146d60c826be9a32b2ae70d42e89"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/transport.ts": {
+    "mtime": 1778412442.537823,
+    "hash": "97b196d30ef33831df42500bf293d580"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/templates/cotizacion.ts": {
+    "mtime": 1778418814.813886,
+    "hash": "b3573be7b351d6b17d34b60f40a5fdfc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/templates/signed-contract.ts": {
+    "mtime": 1778418775.7649732,
+    "hash": "b7057c992553852629a41fc41de8f73d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/templates/welcome.ts": {
+    "mtime": 1778418928.096263,
+    "hash": "8eca19afca64e775398eae944c8ab580"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/templates/payment-link.ts": {
+    "mtime": 1778418873.4953547,
+    "hash": "e2ca479b2627222287a32b1c8029303e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/templates/contraoferta.ts": {
+    "mtime": 1778418906.4765184,
+    "hash": "48b33c6bf746d1b426cbf09709234a37"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/templates/otp.ts": {
+    "mtime": 1778418744.179971,
+    "hash": "474b40b4efa57c588529d93f777f2e9b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/src/lib/mail/templates/cotizacion-admin.ts": {
+    "mtime": 1778418835.37516,
+    "hash": "f01a464d6e38207611ba61b6888679e7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/SECURITY_FIXES_2026-04-19.md": {
+    "mtime": 1776576956.3292482,
+    "hash": "f03ed73813638049a0632d2c4dbdaebb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/GRAPH_REPORT_baseline_2026-05-08.md": {
+    "mtime": 1778419528.6130457,
+    "hash": "1884999a85d66309b815922504359f8e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/instagram-prompts-barraca.md": {
+    "mtime": 1777765087.0876126,
+    "hash": "8636c053bea45c30b515bf09eda6c40e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/CONTRATOS_SISTEMA.md": {
+    "mtime": 1778374600.1177034,
+    "hash": "d21cfa6e51e273dca77aa416e7010acd"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/SCHEMA_ADMIN_WEB.md": {
+    "mtime": 1778374617.2169642,
+    "hash": "d47b1924a7b27aa04974d4c1a35f9115"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/GRAPH_COMPARISON_2026-05-10.md": {
+    "mtime": 1778421003.4681094,
+    "hash": "feca98d321ded2c9c3272f0f7374c59d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/SCHEMA_PERMISOS.md": {
+    "mtime": 1777261485.2219038,
+    "hash": "7632f5418e968bb19476008da1c7a331"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/instagram-cm-barraca.md": {
+    "mtime": 1777463714.2980568,
+    "hash": "5db4f5beef828cddb1b0ae987270a52b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/SECURITY_REQUIREMENTS.md": {
+    "mtime": 1778419457.4948235,
+    "hash": "6a81aa5fd75532bd5322b455bb8d952e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/FIX_BUGS_2026-04-21.md": {
+    "mtime": 1776821049.7480779,
+    "hash": "0244da5a774532c3452a99fa32024082"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/PASOS_OPERATIVOS.md": {
+    "mtime": 1778412562.5122273,
+    "hash": "2764390bf5e3c08e0cdf4f12ca255035"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/instagram-cm-jurmaq-arriendo.md": {
+    "mtime": 1777463775.5563095,
+    "hash": "427b8131860be664b0e8fa8ec1d2f756"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/instagram-prompts-arriendo.md": {
+    "mtime": 1777770121.517977,
+    "hash": "ba72fc837ca2c49bcc3c293ad275887b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/COMBUSTIBLE_SISTEMA.md": {
+    "mtime": 1776830126.5603554,
+    "hash": "08b2a4b6048359737a6ffcb79e5c6716"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/REPORTE_TRABAJO_NOCTURNO.md": {
+    "mtime": 1776578246.013271,
+    "hash": "868293451f1b179a47be737a477943f8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/SYSTEM_ANALYSIS.md": {
+    "mtime": 1776229477.553531,
+    "hash": "3caa136268ae1981aa74b9d983363777"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/instagram-strategy/02-CALENDARIO-CONTENIDO.md": {
+    "mtime": 1776288222.777809,
+    "hash": "ff350d2af66a2208d05f541660acd07c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/instagram-strategy/01-ESTRATEGIA-INSTAGRAM-JURMAQ.md": {
+    "mtime": 1776288200.018254,
+    "hash": "8fe3b86458cd9833b8a3100263bcd3a6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/README.md": {
+    "mtime": 1774446266.0,
+    "hash": "f15aaa42d5d299d091b1171097ea56ad"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/AGENTS.md": {
+    "mtime": 1774446299.0,
+    "hash": "9e09241799026ac05be315a2f0b50055"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/CLAUDE.md": {
+    "mtime": 1774446299.0,
+    "hash": "5c27369b226fcf2be8a6cfe52224e767"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/scripts/archive/2026-04/README.md": {
+    "mtime": 1778374669.5059714,
+    "hash": "b11ab339d9ced4128114302a147f114e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/contrato-ejemplo.pdf": {
+    "mtime": 1776633513.3487093,
+    "hash": "f07f47e8ba879210f752339b564d83d8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/faviconbarraca.png": {
+    "mtime": 1777397982.0960999,
+    "hash": "ab12fbfd1e70a193bdcf245cf58ddbc1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/faviconjurmaq.png": {
+    "mtime": 1777397619.0440173,
+    "hash": "785e02435632d3d6ab3d35375e4acdcf"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/favicon-16x16.png": {
+    "mtime": 1777402598.8708673,
+    "hash": "4021f21443060798f21cd321028ee63c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/apple-touch-icon.png": {
+    "mtime": 1777402599.0307925,
+    "hash": "3273f323190e9c5aa206ff3461eea234"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/file.svg": {
+    "mtime": 1774446266.151093,
+    "hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/icon-192.png": {
+    "mtime": 1777402599.158637,
+    "hash": "5e5f35496c732aaec4633f6098f4a589"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/favicon-48x48.png": {
+    "mtime": 1777402598.9292932,
+    "hash": "f25361d854458c13f8fd4553a55f016b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/vercel.svg": {
+    "mtime": 1774446266.1513953,
+    "hash": "c0af2f507b369b085b35ef4bbe3bcf1e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/next.svg": {
+    "mtime": 1774446266.1514254,
+    "hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/LogoJurmaq.png": {
+    "mtime": 1748632377.0,
+    "hash": "1c706940811fc1e7c65160d1729521bc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/globe.svg": {
+    "mtime": 1774446266.1511984,
+    "hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/window.svg": {
+    "mtime": 1774446266.1518333,
+    "hash": "a2760511c65806022ad20adf74370ff3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/icon-512.png": {
+    "mtime": 1777402599.2155704,
+    "hash": "83c36b60c46c8b2f32543973d2c1bde1"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/favicon-32x32.png": {
+    "mtime": 1777402598.9013662,
+    "hash": "5c5278ffa4e313c4ff01d968027d84bc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/logo-jurmaq.png": {
+    "mtime": 1776837934.256019,
+    "hash": "1c706940811fc1e7c65160d1729521bc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/marcas/volcan.png": {
+    "mtime": 1776207070.5732136,
+    "hash": "5a726a72f9d0a68c64aa73456ec1d97e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/marcas/prodac.svg": {
+    "mtime": 1776207047.6298385,
+    "hash": "d9abca286e3c91456f4ccac89c58fefa"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/marcas/ternium.svg": {
+    "mtime": 1776207047.6224997,
+    "hash": "cddfeb0b455a389aa79f5f471a2c845f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/marcas/cbb.png": {
+    "mtime": 1776207047.725943,
+    "hash": "042ae73b608c0142441f83bcab86c6b3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/marcas/surfrut.svg": {
+    "mtime": 1776207047.6332726,
+    "hash": "23b4adf05ff59520623ae0629db4dbf2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/marcas/cap.svg": {
+    "mtime": 1776207047.6263187,
+    "hash": "bdc3476cc570d95358d649b83e6e3681"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/marcas/inchalam.jpg": {
+    "mtime": 1776207070.5667005,
+    "hash": "cad59039f7c616a89ca0ece6dcf3ae87"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/marcas/cintac.png": {
+    "mtime": 1776207070.5707626,
+    "hash": "4094b64a3befab79460727753bd8e680"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/minicargador-bobcat-s650.jpg": {
+    "mtime": 1774455534.0,
+    "hash": "f4c134b0fb7ef01ccf9de8f28119b077"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/plataforma-alolift-80n.jpg": {
+    "mtime": 1774455536.0,
+    "hash": "6f03b7c8f25b08f9f57dca3d13f39dd2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/retroexcavadora-hmk-102b.jpg": {
+    "mtime": 1774455530.0,
+    "hash": "939b7953e1f0de72f2d28e543b9edf6a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/plataforma-fullen-psc140.jpg": {
+    "mtime": 1774455533.0,
+    "hash": "97f8c9088283db3ee87b01694467695f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/brazo-articulado-jlg-e450aj.jpg": {
+    "mtime": 1774455530.0,
+    "hash": "d1427455c6c9f9f7ea5b21b72bf258de"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/minicargador-bobcat-s570.jpg": {
+    "mtime": 1774455562.0,
+    "hash": "87ab8fcb7dd9bc6b70952163e24c62b7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/plataforma-genie-gs1930.png": {
+    "mtime": 1774455535.0,
+    "hash": "e8a166d48e98cf973ebd2d59a222d193"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/miniexcavadora-xcmg-xe35u.jpg": {
+    "mtime": 1774455527.0,
+    "hash": "f764c1a0c644a65202c7d75a1dd9a0fd"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/maquinarias/camion-tolva-vw-constellation.jpg": {
+    "mtime": 1774455535.0,
+    "hash": "859836e49a5112a6af1de91eac048674"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/default.svg": {
+    "mtime": 1776103831.599903,
+    "hash": "29e1e7bd045f840bdc47e319c119c27c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/Techumbres.jpg": {
+    "mtime": 1776207047.7038553,
+    "hash": "1c0b020746b1b868c3f309cc7cad0f04"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/herramientas.png": {
+    "mtime": 1776207047.6567829,
+    "hash": "6ded86b2e8c0a43ce50cfd6db8726d96"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/impermeabilizante.webp": {
+    "mtime": 1776207047.6789606,
+    "hash": "d5db858cb86057c43f87b2d8a85f0fcc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/electricidad.png": {
+    "mtime": 1776207047.6622884,
+    "hash": "d44909cd8777b912f18cb6626c25c519"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/mallas.jpg": {
+    "mtime": 1776207047.6595602,
+    "hash": "b12c752e303b4fef3ae1dbbf83593d32"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/cerraduras.jpg": {
+    "mtime": 1776207047.6454372,
+    "hash": "8c02ec8c96681fe8d3627835239067f2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/fierro.jpg": {
+    "mtime": 1776207047.6541495,
+    "hash": "7964fc94d7634b94d9c0a3ede27cb4c6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/morteros.webp": {
+    "mtime": 1776207047.7104638,
+    "hash": "5261b1dcbbac5981b39b698c0a6fd514"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/tabiqueria.png": {
+    "mtime": 1776207047.6377962,
+    "hash": "3408e46287f351b71a315c4585544842"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/adhesivos.webp": {
+    "mtime": 1776207047.6827767,
+    "hash": "a646735070c283a8dcea2793c5bd6644"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/seguridad.webp": {
+    "mtime": 1776207047.6483421,
+    "hash": "820a773101eb304f6599b4cbd5394c99"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/fijaciones.jpg": {
+    "mtime": 1776207047.6966398,
+    "hash": "d78ec8bfe5f04829e079cb4d75570bc6"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/pinturas.webp": {
+    "mtime": 1776207047.6719015,
+    "hash": "85ee8a85e47dfdb9d3513d410068f92d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/quincasilleria.webp": {
+    "mtime": 1776207047.6426706,
+    "hash": "6600f14ae0cb28e52250aa701791e661"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/aislacion.webp": {
+    "mtime": 1776207047.6401305,
+    "hash": "992bc1de290acf8044fd3b61e8f8862d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/jardin.png": {
+    "mtime": 1776207047.665686,
+    "hash": "5d134e69576d95046350867537364046"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/perfiles.webp": {
+    "mtime": 1776207047.6514869,
+    "hash": "dfc1a535dad6fb1fdfd986d2299cea59"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/barraca/categorias/bano.jpg": {
+    "mtime": 1776207047.6873293,
+    "hash": "d71ec07eb8840169e992c6f617d81c65"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/clientes/miguel-torres.png": {
+    "mtime": 1776009662.9537342,
+    "hash": "dc51e21e9daf38181255c7181490a77b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/clientes/iansa.webp": {
+    "mtime": 1776009662.9465008,
+    "hash": "9a3520ee6943c68f20f53680105d4fb8"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/clientes/surfrut.svg": {
+    "mtime": 1776009642.5910242,
+    "hash": "23b4adf05ff59520623ae0629db4dbf2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/clientes/nestle.png": {
+    "mtime": 1776009662.957741,
+    "hash": "b6dd751e7e031bf90c43caeaaa36a28e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/images/clientes/cbb-cementos.png": {
+    "mtime": 1776009662.9406362,
+    "hash": "042ae73b608c0142441f83bcab86c6b3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/barraca/favicon-16x16.png": {
+    "mtime": 1777402607.0377672,
+    "hash": "bbe88bf6dac7c275d8899ff4b654bd49"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/barraca/apple-touch-icon.png": {
+    "mtime": 1777402607.1674604,
+    "hash": "3ed03fc6eb074169b86787ab912df941"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/barraca/icon-192.png": {
+    "mtime": 1777402607.194028,
+    "hash": "3ea9dfb9120a6f8f3fe3dba35ba76068"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/barraca/favicon-48x48.png": {
+    "mtime": 1777402607.089406,
+    "hash": "a90c5afb4bd9074f04816468ef84676f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/barraca/icon-512.png": {
+    "mtime": 1777402607.2261379,
+    "hash": "77ef8cfc27158dc86944789a6850a6ce"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/jurmaq-app/public/barraca/favicon-32x32.png": {
+    "mtime": 1777402607.0644104,
+    "hash": "75994e1c8bec1b75d058d9795c409469"
+  }
+}

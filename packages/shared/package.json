@@ -1,0 +1,43 @@
+{
+  "name": "@jurmaq/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./auth": "./src/auth/index.ts",
+    "./auth/config": "./src/auth/config.ts",
+    "./auth/guard": "./src/auth/guard.ts",
+    "./supabase": "./src/supabase/index.ts",
+    "./sanitize": "./src/sanitize/index.ts",
+    "./rate-limit": "./src/rate-limit/index.ts",
+    "./roles": "./src/roles/index.ts",
+    "./format": "./src/format/index.ts",
+    "./mail": "./src/mail/index.ts",
+    "./mail/email": "./src/mail/email.ts",
+    "./mail/templates/*": "./src/mail/templates/*.ts",
+    "./mail/transport": "./src/mail/transport.ts",
+    "./seo": "./src/seo/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.0",
+    "bcryptjs": "^3.0.3",
+    "next-auth": "^5.0.0-beta.30",
+    "nodemailer": "^7.0.13",
+    "resend": "^6.11.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.0",
+    "next": "^16.2.3",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0"
+  }
+}
