@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
 import { CIUDADES, TIPOS_MAQUINA, HQ } from "@jurmaq/shared/seo";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Maquinaria {
   id: number;
@@ -60,7 +61,7 @@ export async function generateMetadata({
 }
 
 function formatPrice(price: number): string {
-  return `$${price.toLocaleString("es-CL")}/día`;
+  return `${formatCLP(price)}/día`;
 }
 
 export default async function ArriendoEnCiudadPage({

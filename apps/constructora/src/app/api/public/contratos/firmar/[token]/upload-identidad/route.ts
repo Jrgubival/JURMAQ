@@ -5,6 +5,7 @@ import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { validateRut, formatRut } from '@/lib/rut';
 import { logContratoEvent, resolveIpGeolocation } from '@/lib/contratos-audit';
 import crypto from 'crypto';
+import { hid } from '@jurmaq/shared/logging';
 
 /**
  * POST /api/public/contratos/firmar/[token]/upload-identidad
@@ -194,7 +195,7 @@ export async function POST(
         cacheControl: '3600',
       });
     if (uploadError) {
-      console.error('[upload-identidad-storage-fail]', contrato.id, uploadError.message);
+      console.error('[upload-identidad-storage-fail]', hid(contrato.id), uploadError.message);
       return NextResponse.json(
         { error: 'Error al guardar la cédula. Intenta de nuevo.' },
         { status: 500 }
@@ -212,7 +213,7 @@ export async function POST(
       })
       .eq('id', contrato.id);
     if (updateError) {
-      console.error('[upload-identidad-update-fail]', contrato.id, updateError.message);
+      console.error('[upload-identidad-update-fail]', hid(contrato.id), updateError.message);
       return NextResponse.json(
         { error: 'Error al guardar la identidad. Intenta de nuevo.' },
         { status: 500 }

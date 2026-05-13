@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { showToast } from "@/components/Toast";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Producto {
   id: number;
@@ -129,7 +130,7 @@ export default function AddToCartClient({
           {selectedVariant && (
             <div className="mt-3 flex items-baseline gap-2">
               <p className="text-xl font-bold text-navy-950">
-                ${activePrecio.toLocaleString("es-CL")}
+                {formatCLP(activePrecio)}
               </p>
               {selectedVariant.stock > 0 && selectedVariant.stock < 10 && (
                 <span className="text-xs text-amber-600 font-medium">
@@ -163,7 +164,7 @@ export default function AddToCartClient({
         <div className="flex items-baseline justify-between gap-3 lg:hidden border-b border-gray-200 pb-3 -mx-1 px-1">
           <div className="min-w-0">
             <p className="text-2xl font-extrabold text-navy-950 tabular-nums leading-none">
-              ${activePrecio.toLocaleString("es-CL")}
+              {formatCLP(activePrecio)}
             </p>
             <p className="mt-1 text-[10px] uppercase tracking-wider text-gray-500">
               IVA incl.{selectedVariant?.medida ? ` · ${selectedVariant.medida}` : ""}

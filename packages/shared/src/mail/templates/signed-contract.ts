@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { ADMIN_BCC_EMAILS, EMAIL_FROM } from "../transport";
 import { escapeHtml } from "../utils";
+import { maskEmail } from "../../logging";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -122,14 +123,14 @@ export async function sendSignedContractEmail(
     });
 
     if (result.error) {
-      console.error("[signed-contract-email-fail]", { to, numero: data.numero, error: result.error });
+      console.error("[signed-contract-email-fail]", { to: maskEmail(to), numero: data.numero, error: result.error });
       return { success: false, error: result.error.message };
     }
-    console.log("[signed-contract-email-ok]", { id: result.data?.id, to, numero: data.numero, hasAttachment });
+    console.log("[signed-contract-email-ok]", { id: result.data?.id, to: maskEmail(to), numero: data.numero, hasAttachment });
     return { success: true, messageId: result.data?.id };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[signed-contract-email-throw]", { to, numero: data.numero, message: msg });
+    console.error("[signed-contract-email-throw]", { to: maskEmail(to), numero: data.numero, message: msg });
     return { success: false, error: msg };
   }
 }

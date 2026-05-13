@@ -4,6 +4,7 @@ import { authConfig } from './config';
 import bcrypt from 'bcryptjs';
 import { rateLimitPersistent } from '../rate-limit';
 import { headers } from 'next/headers';
+import { maskEmail, maskIp } from '../logging';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -70,7 +71,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             const fwd2 = hdrs2.get('x-forwarded-for') || '';
             const ip2 = fwd2.split(',')[0].trim() || hdrs2.get('x-real-ip') || 'unknown';
             const ua = hdrs2.get('user-agent') || 'unknown';
-            console.log('[admin-login-ok]', { user: user.id, email, ip: ip2, ua: ua.substring(0, 80) });
+            // PII masked (Ley 21.719 H1): email → jo***@x.com, ip → 192.168.*.*
+            console.log('[admin-login-ok]', { user: user.id, email: maskEmail(email), ip: maskIp(ip2), ua: ua.substring(0, 80) });
           } catch { /* logging es best-effort */ }
 
           return {

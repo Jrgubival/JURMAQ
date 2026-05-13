@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { showToast } from "@/components/Toast";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface CartItem {
   id: number;
@@ -633,18 +634,18 @@ export default function CotizarPage() {
                     <p className="text-gray-900 truncate">{item.nombre}</p>
                     <p className="text-xs text-gray-500">{item.medida ? `${item.medida} - ` : ""}x{item.cantidad}</p>
                   </div>
-                  <span className="font-medium text-gray-900 shrink-0">${(item.precio * item.cantidad).toLocaleString("es-CL")}</span>
+                  <span className="font-medium text-gray-900 shrink-0">{formatCLP((item.precio * item.cantidad))}</span>
                 </div>
               ))}
             </div>
             <div className="space-y-2 pt-4 border-t border-gray-200">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Subtotal neto</span>
-                <span>${Math.round(total / 1.19).toLocaleString("es-CL")}</span>
+                <span>{formatCLP(Math.round(total / 1.19))}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">IVA (19%)</span>
-                <span>${(total - Math.round(total / 1.19)).toLocaleString("es-CL")}</span>
+                <span>{formatCLP((total - Math.round(total / 1.19)))}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Despacho</span>
@@ -652,7 +653,7 @@ export default function CotizarPage() {
               </div>
               <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
                 <span>Total (IVA incluido)</span>
-                <span className="text-orange-600">${total.toLocaleString("es-CL")}</span>
+                <span className="text-orange-600">{formatCLP(total)}</span>
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-4">* Los precios son referenciales y pueden variar. Te confirmamos el valor final.</p>

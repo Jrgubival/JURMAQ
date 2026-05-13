@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
+import { formatCLP } from "@jurmaq/shared/format";
 
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
@@ -186,7 +187,7 @@ export default function PromotedProductCard({
           <div>
             <div className="flex items-baseline gap-1.5">
               <p className="text-lg font-bold text-orange-600">
-                ${precioDescuento.toLocaleString("es-CL")}
+                {formatCLP(precioDescuento)}
               </p>
               {unidad && (
                 <span className="text-xs text-gray-400 font-medium">
@@ -195,7 +196,7 @@ export default function PromotedProductCard({
               )}
             </div>
             <p className="text-xs text-gray-400 line-through">
-              ${precioOriginal.toLocaleString("es-CL")}
+              {formatCLP(precioOriginal)}
             </p>
           </div>
           <button

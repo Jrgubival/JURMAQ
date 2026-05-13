@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { transporter } from '@jurmaq/shared/mail/email';
+import { formatCLP } from "@jurmaq/shared/format";
 
 export async function GET(
   request: NextRequest,
@@ -118,7 +119,7 @@ export async function PUT(
         const escape = (s: string) => String(s).replace(/[<>&"'`=/]/g, (c) => (
           { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;', '`': '&#96;', '=': '&#61;', '/': '&#47;' }[c] || c
         ));
-        const fmt = (n: number) => '$' + Math.round(n).toLocaleString('es-CL');
+        const fmt = (n: number) => formatCLP(Math.round(n));
 
         let subject = '';
         let title = '';

@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { tiposCombustibleLabels, estadosLabels, type EstadoFactura } from '@/lib/combustible-utils';
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Item {
   id: number;
@@ -54,7 +55,6 @@ const currentMonth = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
-const formatCLP = (n: number | null | undefined) => '$' + (n || 0).toLocaleString('es-CL');
 const formatLitros = (n: number | null | undefined) => (n || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 }) + ' L';
 
 export default function CombustiblePage() {

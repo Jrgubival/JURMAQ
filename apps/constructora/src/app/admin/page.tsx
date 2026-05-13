@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface DashboardStats {
   maquinariasDisponibles: number;
@@ -30,10 +31,6 @@ interface Proyecto {
   created_at?: string;
   fecha_inicio?: string;
 }
-
-const formatCLP = (amount: number) => {
-  return '$' + amount.toLocaleString('es-CL');
-};
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('es-CL');

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
+import { formatCLP } from "@jurmaq/shared/format";
 
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
@@ -242,10 +243,10 @@ export default function ProductCard({
             ) : en_oferta && precio_original && precio_original > 0 ? (
               <div>
                 <p className="text-xs text-gray-400 line-through leading-none tabular-nums">
-                  ${precio.toLocaleString("es-CL")}{unitLabel}
+                  {formatCLP(precio)}{unitLabel}
                 </p>
                 <p className="text-xl font-extrabold text-red-600 leading-tight tabular-nums">
-                  ${precio_original.toLocaleString("es-CL")}
+                  {formatCLP(precio_original)}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
                 <p className="text-[10px] text-gray-500 tracking-wide uppercase">IVA incl.</p>
@@ -253,7 +254,7 @@ export default function ProductCard({
             ) : (
               <>
                 <p className="text-xl font-extrabold text-navy-950 leading-tight tabular-nums">
-                  ${precio.toLocaleString("es-CL")}
+                  {formatCLP(precio)}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
                 {precio > 0 && (

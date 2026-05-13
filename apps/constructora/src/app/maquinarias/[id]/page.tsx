@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
 import AnimatedSection from "@/components/animations/AnimatedSection";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Maquinaria {
   id: number;
@@ -19,7 +20,7 @@ interface Maquinaria {
 }
 
 function formatPrice(price: number): string {
-  return `$${price.toLocaleString("es-CL")}`;
+  return `${formatCLP(price)}`;
 }
 
 function getStatusLabel(estado: string): string {
@@ -77,7 +78,7 @@ export async function generateMetadata({
   }
 
   const priceText = machine.precio_dia
-    ? `Desde $${machine.precio_dia.toLocaleString("es-CL")}/día`
+    ? `Desde ${formatCLP(machine.precio_dia)}/día`
     : "Consultar precio";
   const tipoLbl = getTipoLabel(machine.tipo);
 

@@ -1,10 +1,11 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { transporter, formatCLP } from '@jurmaq/shared/mail/email';
+import { transporter } from '@jurmaq/shared/mail/email';
 import { auth } from '@jurmaq/shared/auth';
 import { can } from '@jurmaq/shared/roles';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { NextRequest, NextResponse } from 'next/server';
+import { formatCLP } from "@jurmaq/shared/format";
 
 async function sendAcceptRejectAdminEmail(
   cotizacion: { numero: string; nombre: string; email: string; total: number; contraoferta_total?: number },

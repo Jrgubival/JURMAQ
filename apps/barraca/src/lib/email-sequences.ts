@@ -1,9 +1,5 @@
 import { transporter } from "@jurmaq/shared/mail/email";
-
-function formatCLP(amount: number): string {
-  return '$' + amount.toLocaleString('es-CL');
-}
-
+import { formatCLP } from "@jurmaq/shared/format";
 const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 const WHATSAPP_NUMBER = '56976673577';
 

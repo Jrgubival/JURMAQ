@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { transporter } from '@jurmaq/shared/mail/email';
 import crypto from 'crypto';
+import { hid } from '@jurmaq/shared/logging';
 
 /**
  * Base URL used to construct the public signature link.
@@ -176,10 +177,10 @@ export async function POST(
       });
       // PII-redacted log: contract id is enough to correlate in DB without
       // leaking the customer email through Vercel function logs.
-      console.log('[contrato-signature-email-ok]', contrato.id);
+      console.log('[contrato-signature-email-ok]', hid(contrato.id));
     } catch (emailError: unknown) {
       const msg = emailError instanceof Error ? emailError.message : String(emailError);
-      console.error('[contrato-signature-email-fail]', contrato.id, msg);
+      console.error('[contrato-signature-email-fail]', hid(contrato.id), msg);
       return NextResponse.json(
         {
           success: true,

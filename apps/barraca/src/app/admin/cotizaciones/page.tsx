@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface CotizacionItem {
   productoId: number;
@@ -32,9 +33,6 @@ interface Cotizacion {
   contraoferta_mensaje: string | null;
   created_at: string;
 }
-
-const formatCLP = (amount: number) => '$' + amount.toLocaleString('es-CL');
-
 interface ContraofertaEditItem {
   nombre: string;
   cantidad: number;

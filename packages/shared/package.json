@@ -16,7 +16,8 @@
     "./mail/email": "./src/mail/email.ts",
     "./mail/templates/*": "./src/mail/templates/*.ts",
     "./mail/transport": "./src/mail/transport.ts",
-    "./seo": "./src/seo/index.ts"
+    "./seo": "./src/seo/index.ts",
+    "./logging": "./src/logging/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

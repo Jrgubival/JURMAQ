@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Cotizacion {
   id: number;
@@ -279,7 +280,7 @@ export default function CuentaPage() {
                           {new Date(cot.fecha).toLocaleDateString("es-CL")}
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                          ${cot.total.toLocaleString("es-CL")}
+                          {formatCLP(cot.total)}
                         </td>
                         <td className="px-6 py-4">
                           <span

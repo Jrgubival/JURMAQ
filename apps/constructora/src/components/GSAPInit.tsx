@@ -11,6 +11,7 @@
  */
 
 import { useEffect } from "react";
+import { formatCLP } from "@jurmaq/shared/format";
 
 declare global {
   interface Window {
@@ -100,9 +101,9 @@ function initAnimations() {
           duration: 2.5,
           ease: "power3.out",
           onUpdate: () => {
-            (el as HTMLElement).textContent = `${prefix}${Math.round(
+            (el as HTMLElement).textContent = `${prefix}{formatCLP(Math.round(
               obj.val
-            ).toLocaleString("es-CL")}${suffix}`;
+            ))}${suffix}`;
           },
         });
       },

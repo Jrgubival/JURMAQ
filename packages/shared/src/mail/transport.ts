@@ -1,5 +1,6 @@
 import 'server-only';
 import { Resend } from 'resend';
+import { maskEmail } from '../logging';
 
 /**
  * Cliente Resend + wrapper de envio. Audit D5: extraido de `lib/email.ts`
@@ -71,27 +72,28 @@ async function sendMail(options: SendMailOptions): Promise<SendMailResult> {
       html: options.html,
     });
     if (result.error) {
+      // PII masked: emails de destinatarios no van cleartext a logs (Ley 21.719 H1)
       console.error('[email-send-fail]', {
-        to: options.to,
+        to: maskEmail(options.to),
         subject: options.subject,
-        bcc,
+        bcc_count: bcc.length,
         error: result.error,
       });
       return result;
     }
     console.log('[email-send-ok]', {
       id: result.data?.id,
-      to: options.to,
-      bcc,
+      to: maskEmail(options.to),
+      bcc_count: bcc.length,
       subject: options.subject,
     });
     return result;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[email-send-throw]', {
-      to: options.to,
+      to: maskEmail(options.to),
       subject: options.subject,
-      bcc,
+      bcc_count: bcc.length,
       message,
     });
     throw err;

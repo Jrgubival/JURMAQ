@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatCLP } from "@jurmaq/shared/format";
 
 type TipoCombustible = '' | 'diesel' | 'gasolina_93' | 'gasolina_95' | 'gasolina_97' | 'kerosene' | 'otro';
 
@@ -42,10 +43,6 @@ const estadoColors: Record<string, { bg: string; text: string; label: string }> 
   disponible: { bg: 'bg-green-100', text: 'text-green-700', label: 'Disponible' },
   arrendada: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Arrendada' },
   mantencion: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Mantencion' },
-};
-
-const formatCLP = (amount: number) => {
-  return '$' + amount.toLocaleString('es-CL');
 };
 
 const emptyMaquinaria: Omit<Maquinaria, 'id'> = {

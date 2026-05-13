@@ -2,6 +2,9 @@
  * Minimal Handlebars-lite renderer for contract templates.
  * Supports {{ var }} substitution and {{#if var}}...{{else}}...{{/if}} conditionals.
  * Not a full Handlebars — just the subset we need.
+ *
+ * formatCLP local (rounds + es-CL): se mantiene exportado para retro-compat
+ * con archivos que importan `{ formatCLP } from '@/lib/contrato-render'`.
  */
 
 export type ContratoVars = Record<string, string | number | boolean | null | undefined>;

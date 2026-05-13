@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface CotizacionItem {
   nombre: string;
@@ -37,9 +38,6 @@ interface CotizacionData {
   payment_url: string | null;
   created_at: string;
 }
-
-const formatCLP = (amount: number) => "$" + amount.toLocaleString("es-CL");
-
 export default function CotizacionPublicPage() {
   const params = useParams();
   const searchParams = useSearchParams();

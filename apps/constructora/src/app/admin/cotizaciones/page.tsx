@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatCLP } from "@jurmaq/shared/format";
 
 // Aligned with the actual `cotizaciones` table schema.
 // `cliente` / `monto` / `fecha` are UI-only aliases populated in the fetch mapper below.
@@ -32,10 +33,6 @@ const estadoFlow: Record<string, string[]> = {
   enviada: ['aceptada', 'rechazada'],
   aceptada: [],
   rechazada: [],
-};
-
-const formatCLP = (amount: number) => {
-  return '$' + amount.toLocaleString('es-CL');
 };
 
 const formatDate = (dateStr?: string | null) => {

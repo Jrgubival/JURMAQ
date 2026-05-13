@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatRut, validateRut } from '@/lib/rut';
+import { formatCLP } from "@jurmaq/shared/format";
 
 type Modalidad = 'dia' | 'semana' | 'mes';
 type TipoArrendatario = 'natural' | 'juridica';
@@ -53,8 +54,6 @@ interface CondicionesForm {
   misma_direccion: boolean;
   observaciones: string;
 }
-
-const formatCLP = (n: number) => '$' + (Math.round(Number(n) || 0)).toLocaleString('es-CL');
 
 const stepNames = ['Maquinaria', 'Arrendatario', 'Condiciones', 'Preview'];
 

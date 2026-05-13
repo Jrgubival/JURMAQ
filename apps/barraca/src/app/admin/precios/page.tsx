@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Categoria {
   id: number;
@@ -15,9 +16,6 @@ interface Producto {
   peso: number | null;
   categoria_id: number | null;
 }
-
-const formatCLP = (amount: number) => '$' + amount.toLocaleString('es-CL');
-
 export default function PreciosPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);

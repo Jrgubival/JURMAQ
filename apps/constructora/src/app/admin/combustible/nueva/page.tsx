@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatRut } from '@/lib/rut';
 import { tiposCombustibleLabels, type TipoCombustible } from '@/lib/combustible-utils';
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Maquinaria {
   id: number;
@@ -394,7 +395,7 @@ export default function NuevaFacturaPage() {
         <div className="flex justify-between items-center pt-3 border-t border-gray-200 text-sm">
           <div>
             <span className="text-gray-500">Total litros:</span> <strong>{totalLitros.toFixed(2)} L</strong>
-            <span className="ml-4 text-gray-500">Suma items:</span> <strong>${totalItems.toLocaleString('es-CL')}</strong>
+            <span className="ml-4 text-gray-500">Suma items:</span> <strong>{formatCLP(totalItems)}</strong>
           </div>
           {montoTotal && diferenciaSignif && (
             <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-1">
@@ -448,5 +449,5 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function formatDiff(n: number) {
   const sign = n > 0 ? '+' : '';
-  return sign + '$' + Math.round(n).toLocaleString('es-CL');
+  return sign + formatCLP(Math.round(n));
 }

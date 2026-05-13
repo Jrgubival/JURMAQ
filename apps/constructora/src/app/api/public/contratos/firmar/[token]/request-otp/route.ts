@@ -7,6 +7,7 @@ import { sendOtpEmail } from '@jurmaq/shared/mail/email';
 import { logContratoEvent, resolveIpGeolocation } from '@/lib/contratos-audit';
 import { getClientIp } from '@jurmaq/shared/rate-limit';
 import bcrypt from 'bcryptjs';
+import { hid } from '@jurmaq/shared/logging';
 
 /**
  * POST /api/public/contratos/firmar/[token]/request-otp
@@ -137,7 +138,7 @@ export async function POST(
       contrato.arrendatario_nombre || contrato.arrendatario_razon_social || '';
     const result = await sendOtpEmail(contrato.arrendatario_email, codigo, arrendatarioName);
     if (!result.success) {
-      console.error('[contrato-otp-email-fail]', contrato.id, result.error);
+      console.error('[contrato-otp-email-fail]', hid(contrato.id), result.error);
       return NextResponse.json(
         { error: 'No se pudo enviar el código por email. Intenta nuevamente.' },
         { status: 502 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface CartItem {
   id: number;
@@ -161,7 +162,7 @@ export default function CarritoPage() {
                     </div>
                   </div>
                   <div className="col-span-2 text-center text-sm font-medium text-gray-900">
-                    ${item.precio.toLocaleString("es-CL")}
+                    {formatCLP(item.precio)}
                   </div>
                   <div className="col-span-2 flex justify-center">
                     <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
@@ -171,7 +172,7 @@ export default function CarritoPage() {
                     </div>
                   </div>
                   <div className="col-span-2 text-right text-sm font-bold text-navy-950">
-                    ${(item.precio * item.cantidad).toLocaleString("es-CL")}
+                    {formatCLP((item.precio * item.cantidad))}
                   </div>
                   <div className="col-span-1 flex justify-end">
                     <button onClick={() => removeItem(item.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors" aria-label={`Eliminar ${item.nombre} del carrito`}>
@@ -204,7 +205,7 @@ export default function CarritoPage() {
                           </svg>
                         </button>
                       </div>
-                      <p className="text-sm font-semibold text-navy-950 mt-1">${item.precio.toLocaleString("es-CL")}</p>
+                      <p className="text-sm font-semibold text-navy-950 mt-1">{formatCLP(item.precio)}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
@@ -213,7 +214,7 @@ export default function CarritoPage() {
                       <span className="w-11 h-11 flex items-center justify-center text-sm font-bold border-x-2 border-gray-200">{item.cantidad}</span>
                       <button onClick={() => updateQuantity(item.id, item.cantidad + 1)} aria-label={`Aumentar cantidad de ${item.nombre}`} className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 font-bold transition-colors">+</button>
                     </div>
-                    <p className="text-base font-bold text-navy-950">${(item.precio * item.cantidad).toLocaleString("es-CL")}</p>
+                    <p className="text-base font-bold text-navy-950">{formatCLP((item.precio * item.cantidad))}</p>
                   </div>
                 </div>
               ))}
@@ -227,16 +228,16 @@ export default function CarritoPage() {
               <div className="mb-6">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">Productos ({totalItems})</span>
-                  <span className="font-medium text-gray-900">${subtotal.toLocaleString("es-CL")}</span>
+                  <span className="font-medium text-gray-900">{formatCLP(subtotal)}</span>
                 </div>
                 <div className="space-y-2 pt-4 border-t border-gray-200">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal neto</span>
-                    <span>${Math.round(subtotal / 1.19).toLocaleString("es-CL")}</span>
+                    <span>{formatCLP(Math.round(subtotal / 1.19))}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">IVA (19%)</span>
-                    <span>${(subtotal - Math.round(subtotal / 1.19)).toLocaleString("es-CL")}</span>
+                    <span>{formatCLP((subtotal - Math.round(subtotal / 1.19)))}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Despacho</span>
@@ -244,7 +245,7 @@ export default function CarritoPage() {
                   </div>
                   <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
                     <span>Total (IVA incluido)</span>
-                    <span className="text-orange-600">${subtotal.toLocaleString("es-CL")}</span>
+                    <span className="text-orange-600">{formatCLP(subtotal)}</span>
                   </div>
                 </div>
               </div>

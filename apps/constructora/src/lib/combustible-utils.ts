@@ -1,3 +1,4 @@
+import { formatCLP as sharedFormatCLP } from "@jurmaq/shared/format";
 /**
  * Utilities for the combustible (fuel tracking) admin module.
  *
@@ -70,10 +71,11 @@ export function formatLitros(n: number | null | undefined): string {
   );
 }
 
-/** Format CLP currency. Rounds to integer and uses es-CL separators. */
+/** Format CLP currency. Rounds to integer and uses es-CL separators.
+ *  Re-export wrapper sobre @jurmaq/shared/format que tolera null/undefined. */
 export function formatCLP(n: number | null | undefined): string {
   const v = Math.round(Number(n) || 0);
-  return '$' + v.toLocaleString('es-CL');
+  return sharedFormatCLP(v);
 }
 
 /**

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import type { SignaturePadHandle } from '@/app/contrato/firmar/[token]/SignaturePad';
+import { formatCLP } from "@jurmaq/shared/format";
 
 // `react-signature-canvas` toca DOM/canvas APIs en mount → SSR off.
 const SignaturePad = dynamic(
@@ -76,9 +77,6 @@ const formatDateTime = (s?: string | null) => {
   if (isNaN(d.getTime())) return '-';
   return d.toLocaleString('es-CL');
 };
-
-const formatCLP = (n?: number | null) =>
-  '$' + (Math.round(Number(n) || 0)).toLocaleString('es-CL');
 
 export default function ContratoDetailPage({
   params,

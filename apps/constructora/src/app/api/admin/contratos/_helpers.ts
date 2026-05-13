@@ -1,6 +1,6 @@
 import 'server-only';
+import { formatCLP } from "@jurmaq/shared/format";
 import {
-  formatCLP,
   formatDate,
   numberToSpanishWords,
   daysBetween,

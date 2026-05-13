@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
 import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ } from "@jurmaq/shared/seo";
 import { applyDailyPromosToProducts } from "@/lib/promotions";
+import { formatCLP } from "@jurmaq/shared/format";
 
 /**
  * Programmatic SEO landing for `[material] en [ciudad]` queries.
@@ -122,7 +123,7 @@ export async function generateMetadata({
 }
 
 function formatPrice(p: number): string {
-  return `$${p.toLocaleString("es-CL")}`;
+  return `${formatCLP(p)}`;
 }
 
 export default async function MaterialEnCiudadPage({

@@ -8,6 +8,7 @@ import ShareButtons from "./ShareButtons";
 import ProductDetailImage from "@/components/barraca/ProductDetailImage";
 import ViewItemTracker from "@/components/analytics/ViewItemTracker";
 import { getActiveCategoryDiscountMap, getDailyPromotions } from "@/lib/promotions";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface ProductoRow {
   id: number;
@@ -76,7 +77,7 @@ export async function generateMetadata({
     : producto.en_oferta && producto.precio_original
     ? producto.precio_original
     : producto.precio;
-  const precioFormateado = `$${precioMostrar.toLocaleString("es-CL")}`;
+  const precioFormateado = `${formatCLP(precioMostrar)}`;
   const stockTexto =
     producto.stock > 0 ? "Stock disponible" : "Consultar disponibilidad";
 
@@ -323,11 +324,11 @@ export default async function ProductoPage({
                   <p className="text-sm text-orange-600 font-medium mb-1">{dailyPromoTitle}</p>
                 )}
                 <p className="text-lg text-gray-400 line-through">
-                  ${producto.precio.toLocaleString("es-CL")}
+                  {formatCLP(producto.precio)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p className="text-3xl lg:text-4xl font-extrabold text-orange-600">
-                    ${promoPrecioDescuento.toLocaleString("es-CL")}
+                    {formatCLP(promoPrecioDescuento)}
                   </p>
                   {producto.unidad && (
                     <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>
@@ -351,11 +352,11 @@ export default async function ProductoPage({
                   )}
                 </div>
                 <p className="text-lg text-gray-400 line-through">
-                  ${producto.precio.toLocaleString("es-CL")}
+                  {formatCLP(producto.precio)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p className="text-3xl lg:text-4xl font-extrabold text-red-600">
-                    ${producto.precio_original.toLocaleString("es-CL")}
+                    {formatCLP(producto.precio_original)}
                   </p>
                   {producto.unidad && (
                     <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>
@@ -376,7 +377,7 @@ export default async function ProductoPage({
               <>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p className="text-3xl lg:text-4xl font-extrabold text-navy-950">
-                    ${producto.precio.toLocaleString("es-CL")}
+                    {formatCLP(producto.precio)}
                   </p>
                   {producto.unidad && (
                     <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>

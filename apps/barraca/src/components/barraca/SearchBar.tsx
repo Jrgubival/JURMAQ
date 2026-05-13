@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface SearchResult {
   id: number;
@@ -139,7 +140,7 @@ export default function SearchBar({
                 {product.nombre}
               </span>
               <span className="text-sm font-semibold text-orange-600 shrink-0 ml-3">
-                ${product.precio.toLocaleString("es-CL")}
+                {formatCLP(product.precio)}
               </span>
             </button>
           ))}

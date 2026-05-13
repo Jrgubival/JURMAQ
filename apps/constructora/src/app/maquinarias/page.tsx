@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
 import { MaquinariaFilters } from "@/components/public/MaquinariaFilters";
+import { formatCLP } from "@jurmaq/shared/format";
 
 
 export const metadata: Metadata = {
@@ -68,7 +69,7 @@ export const metadata: Metadata = {
 };
 
 function formatPrice(price: number): string {
-  return `$${price.toLocaleString("es-CL")}`;
+  return `${formatCLP(price)}`;
 }
 
 function getStatusLabel(estado: string): string {

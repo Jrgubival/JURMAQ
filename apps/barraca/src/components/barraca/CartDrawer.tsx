@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface CartItem {
   id: number;
@@ -251,7 +252,7 @@ export default function CartDrawer({
                       <p className="text-xs text-gray-500">{item.medida}</p>
                     )}
                     <p className="text-xs text-gray-500 mt-0.5">
-                      ${item.precio.toLocaleString("es-CL")} c/u
+                      {formatCLP(item.precio)} c/u
                     </p>
                     {/* Inline quantity controls */}
                     <div className="flex items-center justify-between mt-2">
@@ -275,7 +276,7 @@ export default function CartDrawer({
                         </button>
                       </div>
                       <p className="text-sm font-bold text-navy-950">
-                        ${(item.precio * item.cantidad).toLocaleString("es-CL")}
+                        {formatCLP((item.precio * item.cantidad))}
                       </p>
                     </div>
                   </div>
@@ -307,7 +308,7 @@ export default function CartDrawer({
             <div className="flex items-baseline justify-between border-t border-gray-300 pt-3">
               <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Total</span>
               <span className="text-2xl font-extrabold text-navy-950 tabular-nums leading-none">
-                ${total.toLocaleString("es-CL")}
+                {formatCLP(total)}
               </span>
             </div>
             <Link

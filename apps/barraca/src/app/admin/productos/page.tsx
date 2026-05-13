@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Categoria {
   id: number;
@@ -27,9 +28,6 @@ interface Producto {
   destacado: boolean;
   created_at: string;
 }
-
-const formatCLP = (amount: number) => '$' + amount.toLocaleString('es-CL');
-
 const emptyForm = {
   codigo: '',
   nombre: '',

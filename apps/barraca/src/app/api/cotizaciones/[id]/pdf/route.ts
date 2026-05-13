@@ -1,11 +1,7 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
-
-function formatCLP(amount: number): string {
-  return '$' + amount.toLocaleString('es-CL');
-}
-
+import { formatCLP } from "@jurmaq/shared/format";
 function formatDate(dateStr: string): string {
   try {
     const date = new Date(dateStr);

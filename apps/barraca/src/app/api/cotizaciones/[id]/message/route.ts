@@ -1,8 +1,9 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
-import { transporter, formatCLP } from '@jurmaq/shared/mail/email';
+import { transporter } from '@jurmaq/shared/mail/email';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { NextRequest, NextResponse } from 'next/server';
+import { formatCLP } from "@jurmaq/shared/format";
 
 type MessageTipo = 'aprobada' | 'rechazada' | 'info' | 'pago' | 'custom';
 

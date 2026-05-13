@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { tiposCombustibleLabels, estadosLabels, type EstadoFactura } from '@/lib/combustible-utils';
+import { formatCLP } from "@jurmaq/shared/format";
 
 export default function FacturaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

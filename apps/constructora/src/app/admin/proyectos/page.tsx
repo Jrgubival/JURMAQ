@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { formatCLP } from "@jurmaq/shared/format";
 
 interface Proyecto {
   id: string;
@@ -19,10 +20,6 @@ const estadoColors: Record<string, { bg: string; text: string; label: string }> 
   en_progreso: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'En Progreso' },
   completado: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completado' },
   cancelado: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelado' },
-};
-
-const formatCLP = (amount: number) => {
-  return '$' + amount.toLocaleString('es-CL');
 };
 
 const formatDate = (dateStr: string) => {

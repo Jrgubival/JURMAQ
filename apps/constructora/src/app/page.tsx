@@ -4,6 +4,7 @@ import Image from "next/image";
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
 import StaggeredGrid from "@/components/animations/StaggeredGrid";
 import HeroSlideshow from "@/components/animations/HeroSlideshow";
+import { formatCLP } from "@jurmaq/shared/format";
 
 
 export const metadata: Metadata = {
@@ -114,7 +115,7 @@ const clients = [
 ];
 
 function formatPrice(price: number): string {
-  return `$${price.toLocaleString("es-CL")}/día`;
+  return `${formatCLP(price)}/día`;
 }
 
 function getStatusLabel(estado: string): string {

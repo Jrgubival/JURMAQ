@@ -7,6 +7,7 @@ import { sendSignedContractEmail } from '@jurmaq/shared/mail/email';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logContratoEvent, resolveIpGeolocation } from '@/lib/contratos-audit';
 import crypto from 'crypto';
+import { hid } from '@jurmaq/shared/logging';
 
 /**
  * Use the Node runtime (not Edge) — puppeteer-core + @sparticuz/chromium-min
@@ -293,7 +294,7 @@ export async function POST(
         // y solo habia un console.error. Ahora encolamos el reintento; el
         // cron `/api/cron/email-queue/retry` lo retoma con backoff.
         const errMsg = err instanceof Error ? err.message : String(err);
-        console.error('[signed-contract-async-fail-enqueue-retry]', contrato.id, errMsg);
+        console.error('[signed-contract-async-fail-enqueue-retry]', hid(contrato.id), errMsg);
         try {
           const { enqueueEmail } = await import('@/lib/email-queue');
           await enqueueEmail(
@@ -313,7 +314,7 @@ export async function POST(
             errMsg
           );
         } catch (queueErr) {
-          console.error('[signed-contract-enqueue-fail]', contrato.id, queueErr);
+          console.error('[signed-contract-enqueue-fail]', hid(contrato.id), queueErr);
         }
       }
     }
