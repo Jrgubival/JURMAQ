@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import type { Module } from '@jurmaq/shared/roles';
 import { visibleModules } from '@jurmaq/shared/roles';
+import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
 
 /**
  * Admin panel se separa por dominio funcional:
@@ -443,6 +444,30 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         {/* Page content */}
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">{children}</main>
       </div>
+
+      {/* Command Palette (Cmd+K) — navegación rápida por todas las secciones admin */}
+      <CommandPalette
+        items={[
+          // Operaciones
+          { label: 'Dashboard', href: '/admin', group: 'Operaciones' },
+          { label: 'Cotizaciones arriendo', href: '/admin/cotizaciones-arriendo', group: 'Operaciones', keywords: ['cotizar', 'arriendo', 'cot-ar'] },
+          { label: 'Cotizaciones (legacy)', href: '/admin/cotizaciones', group: 'Operaciones' },
+          { label: 'Contratos', href: '/admin/contratos', group: 'Operaciones', keywords: ['firma', 'contrato'] },
+          { label: 'Solicitudes', href: '/admin/solicitudes', group: 'Operaciones' },
+          { label: 'Proyectos', href: '/admin/proyectos', group: 'Operaciones' },
+          // Catálogo
+          { label: 'Maquinarias', href: '/admin/maquinarias', group: 'Catálogo' },
+          { label: 'Clientes', href: '/admin/clientes', group: 'Catálogo' },
+          { label: 'Plantillas contrato', href: '/admin/contratos/templates', group: 'Catálogo' },
+          // Tributario
+          { label: 'SII / F29', href: '/admin/sii', group: 'Tributario', keywords: ['iva', 'tributario', 'export'] },
+          { label: 'Combustible', href: '/admin/combustible', group: 'Tributario', keywords: ['iec', 'f29'] },
+          { label: 'Tarifas IEC', href: '/admin/combustible/tarifas', group: 'Tributario' },
+          // Configuración
+          { label: 'Usuarios', href: '/admin/usuarios', group: 'Configuración' },
+          { label: 'Email queue', href: '/admin/email-queue', group: 'Configuración' },
+        ]}
+      />
     </div>
   );
 }
