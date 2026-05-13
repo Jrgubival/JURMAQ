@@ -1,6 +1,6 @@
 # Progreso de la noche — JURMAQ.CL
 
-> Sesión nocturna: 23:45 → 00:55+. **8 commits**, ~110K líneas de código, build production verificado en cada commit.
+> Sesión nocturna: 23:45 → 01:00. **10 commits**, ~110K líneas de código, build production verificado en cada commit.
 
 ## ✅ Lo que se hizo
 
@@ -99,6 +99,13 @@
 ### Fase 9 — Cleanup (parcial, commit `e347e9e`)
 - `CLEANUP_CANDIDATES.md` documenta 21 componentes posiblemente sin uso
 - **NO borrados** — recomendación: review post-deploy production
+
+### EXTRA — Cmd+K Command Palette (commit `598b632`)
+- `packages/shared/ui/CommandPalette.tsx` con cmdk (instalado en shared)
+- Cmd+K (Mac) / Ctrl+K (Win/Linux) global binding + Esc cierra
+- Integrado en admin constructora con 13 atajos pre-cargados (4 grupos: Operaciones, Catálogo, Tributario, Configuración)
+- Botón flotante esquina inferior derecha = atajo descubrible
+- Productividad real: navegación admin a cualquier sección en < 1s
 
 ## ⏸ Lo que NO se hizo (todavía)
 
