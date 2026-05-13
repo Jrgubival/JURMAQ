@@ -72,6 +72,11 @@ export async function POST(request: NextRequest) {
         ? tipoCombustible
         : null;
 
+    const ALLOWED_ESTADO = new Set(['disponible', 'arrendada', 'mantencion']);
+    if (body.estado !== undefined && !ALLOWED_ESTADO.has(body.estado)) {
+      return NextResponse.json({ error: 'Estado invalido' }, { status: 400 });
+    }
+
     const { data: inserted, error } = await supabaseAdmin
       .from('maquinarias')
       .insert({

@@ -79,7 +79,13 @@ export async function PUT(
       updateData.items = typeof body.items === 'string' ? body.items : JSON.stringify(body.items);
     if (body.montoTotal !== undefined) updateData.monto_total = body.montoTotal;
     if (body.monto_total !== undefined) updateData.monto_total = body.monto_total;
-    if (body.estado !== undefined) updateData.estado = body.estado;
+    if (body.estado !== undefined) {
+      const ALLOWED_ESTADO = new Set(['pendiente', 'enviada', 'aceptada', 'rechazada']);
+      if (!ALLOWED_ESTADO.has(body.estado)) {
+        return NextResponse.json({ error: 'Estado invalido' }, { status: 400 });
+      }
+      updateData.estado = body.estado;
+    }
     if (body.notas !== undefined) updateData.notas = body.notas;
 
     // Capture previous state to know if estado just changed.
