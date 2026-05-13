@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logContratoEvent } from '@/lib/contratos-audit';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
@@ -23,6 +24,15 @@ export async function POST(
   try {
     if (!isValidOrigin(request)) {
       return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+    }
+
+    // Brute-force shield: 10 OTP attempts/IP/minute. Stops attackers who
+    // request a new OTP (resetting `intentos` to 0) and try again. The
+    // per-OTP MAX_ATTEMPTS=5 alone doesn't protect against this loop.
+    const ip = getClientIp(request);
+    const limiter = rateLimit(`otp:${ip}`, { maxAttempts: 10, windowSeconds: 60 });
+    if (!limiter.success) {
+      return NextResponse.json({ error: 'Demasiados intentos. Espera un minuto.' }, { status: 429 });
     }
 
     const { token } = await params;

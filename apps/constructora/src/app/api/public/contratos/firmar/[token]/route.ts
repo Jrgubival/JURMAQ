@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { renderContrato } from '@/lib/contrato-render';
 import { buildRenderVars } from '@/app/api/admin/contratos/_helpers';
 
@@ -16,6 +17,15 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> }
 ) {
   try {
+    // 64-hex tokens have 256 bits of entropy so guessing is hopeless, but a
+    // rate limit still blocks accidental floods and shifts the cost of any
+    // scanner away from Supabase.
+    const ip = getClientIp(request);
+    const limiter = rateLimit(`firmar-get:${ip}`, { maxAttempts: 30, windowSeconds: 60 });
+    if (!limiter.success) {
+      return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 });
+    }
+
     const { token } = await params;
     // Tokens are 64-char hex produced by crypto.randomBytes(32).toString('hex').
     // Reject anything that doesn't look like one to avoid accidental scans.
