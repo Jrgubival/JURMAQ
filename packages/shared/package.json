@@ -18,7 +18,8 @@
     "./mail/transport": "./src/mail/transport.ts",
     "./seo": "./src/seo/index.ts",
     "./seo/prerender-rules": "./src/seo/prerender-rules.ts",
-    "./logging": "./src/logging/index.ts"
+    "./logging": "./src/logging/index.ts",
+    "./a11y/reduced-motion": "./src/a11y/use-prefers-reduced-motion.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
