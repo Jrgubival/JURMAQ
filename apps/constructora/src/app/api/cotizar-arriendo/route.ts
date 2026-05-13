@@ -16,6 +16,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidOrigin, sanitizeString, isValidEmail } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { maskEmail, hid } from '@jurmaq/shared/logging';
+import { sendCotizacionArriendoEmail } from '@jurmaq/shared/mail/templates/cotizacion-arriendo';
 import {
   calcularCotizacion,
   validarInput,
@@ -266,6 +267,21 @@ export async function POST(request: NextRequest) {
 
     // Retornar al cliente (sin reservas internas)
     const { reserva_mantencion: _r, utilidad_real: _u, ...publicDesglose } = desglose;
+
+    // Enviar email de confirmación (no-blocking, no se rompe la respuesta si falla)
+    sendCotizacionArriendoEmail({
+      numero: inserted.numero,
+      cliente_nombre,
+      cliente_email,
+      maquinaria_nombre: maquinaria.nombre,
+      fecha_servicio: fechaServicio,
+      ubicacion_servicio: ubicacion,
+      unidades_solicitadas: unidades,
+      unidad: maquinaria.unidad_tarifa,
+      desglose: publicDesglose,
+    }).catch((e) => {
+      console.error('[cot-arriendo-email-async-fail]', e instanceof Error ? e.message : String(e));
+    });
 
     return NextResponse.json({
       id: inserted.id,
