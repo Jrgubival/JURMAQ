@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import StaggeredGrid from "@/components/animations/StaggeredGrid";
 import HeroSlideshow from "@/components/animations/HeroSlideshow";
 import { formatCLP } from "@jurmaq/shared/format";
@@ -128,7 +128,7 @@ function getStatusLabel(estado: string): string {
 }
 
 export default async function HomePage() {
-  const { data: featuredMachines } = await supabaseAdmin
+  const { data: featuredMachines } = await supabasePublic
     .from('maquinarias')
     .select('*')
     .limit(3);

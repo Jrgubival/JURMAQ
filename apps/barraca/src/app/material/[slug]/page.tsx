@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ } from "@jurmaq/shared/seo";
 import { applyDailyPromosToProducts } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
@@ -138,7 +138,7 @@ export default async function MaterialEnCiudadPage({
   const { material, ciudad } = parsed;
 
   // Find the category by slug — products are queried via this.
-  const { data: cat } = await supabaseAdmin
+  const { data: cat } = await supabasePublic
     .from("barraca_categorias")
     .select("id, nombre, slug")
     .eq("slug", material.categoriaSlug)
@@ -147,13 +147,13 @@ export default async function MaterialEnCiudadPage({
   let productos: ProductoRow[] = [];
   if (cat) {
     // Include subcategories of the matched category.
-    const { data: subCats } = await supabaseAdmin
+    const { data: subCats } = await supabasePublic
       .from("barraca_categorias")
       .select("id")
       .eq("padre_id", cat.id);
     const allCatIds = [cat.id, ...(subCats || []).map((s: { id: number }) => s.id)];
 
-    const { data: prods } = await supabaseAdmin
+    const { data: prods } = await supabasePublic
       .from("barraca_productos")
       .select("id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id")
       .eq("activo", true)

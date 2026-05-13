@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 /**
  * Verify MercadoPago webhook signature.
@@ -64,6 +65,15 @@ function verifyMercadoPagoSignature(request: NextRequest, dataId: string | numbe
 
 export async function POST(request: NextRequest) {
   try {
+    // Audit M3: rate-limit defensivo. MercadoPago real envía pocos events/min,
+    // pero un atacante puede spam unsigned POSTs para forzar JSON parse + sig check.
+    // 100/min/IP es generoso para legit pero corta abuso.
+    const ip = getClientIp(request);
+    const limiter = rateLimit(`mp-webhook:${ip}`, { maxAttempts: 100, windowSeconds: 60 });
+    if (!limiter.success) {
+      return NextResponse.json({ error: 'rate limited' }, { status: 429 });
+    }
+
     const body = await request.json();
 
     // MercadoPago IPN notification

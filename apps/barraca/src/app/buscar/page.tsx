@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import { searchProducts } from "@/lib/search";
 import ProductCard from "@/components/barraca/ProductCard";
 import SearchBar from "@/components/barraca/SearchBar";
@@ -59,7 +59,7 @@ export default async function BuscarPage({
     // Build category ID -> slug lookup for product images
     const catIds = [...new Set(productos.map((p) => p.categoria_id).filter(Boolean))] as number[];
     if (catIds.length > 0) {
-      const { data: catSlugs } = await supabaseAdmin
+      const { data: catSlugs } = await supabasePublic
         .from('barraca_categorias')
         .select('id, slug')
         .in('id', catIds);

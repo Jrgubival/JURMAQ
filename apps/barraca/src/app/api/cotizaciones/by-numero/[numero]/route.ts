@@ -1,12 +1,21 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ numero: string }> }
 ) {
   try {
+    // Audit M1: COT numbers (`COT-YYYYMMDD-NNN`) son enumerables.
+    // Rate limit 15/min/IP impide harvesting masivo.
+    const ip = getClientIp(request);
+    const limiter = rateLimit(`cot-by-num:${ip}`, { maxAttempts: 15, windowSeconds: 60 });
+    if (!limiter.success) {
+      return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 });
+    }
+
     const { numero: rawNumero } = await params;
 
     if (!rawNumero) {

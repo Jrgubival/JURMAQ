@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
 import ProductCard from "@/components/barraca/ProductCard";
 import { applyDailyPromosToProducts } from "@/lib/promotions";
@@ -38,7 +38,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { data: cat } = await supabaseAdmin
+  const { data: cat } = await supabasePublic
     .from('barraca_categorias')
     .select('nombre, slug, id')
     .eq('slug', slug)
@@ -47,13 +47,13 @@ export async function generateMetadata({
   if (!cat) return { title: "Categoria no encontrada" };
 
   // Get subcategory IDs
-  const { data: subcatRows } = await supabaseAdmin
+  const { data: subcatRows } = await supabasePublic
     .from('barraca_categorias')
     .select('id')
     .eq('padre_id', cat.id);
   const allCatIds = [cat.id, ...(subcatRows || []).map((s: any) => s.id)];
 
-  const { count: productTotal } = await supabaseAdmin
+  const { count: productTotal } = await supabasePublic
     .from('barraca_productos')
     .select('*', { count: 'exact', head: true })
     .eq('activo', true)
@@ -133,7 +133,7 @@ export default async function CategoriaPage({
   const sortBy = (sp.sort || 'nombre') as SortOption;
   const stockFilter = sp.stock || 'all';
 
-  const { data: categoria } = await supabaseAdmin
+  const { data: categoria } = await supabasePublic
     .from('barraca_categorias')
     .select('id, nombre, slug, imagen, padre_id')
     .eq('slug', slug)
@@ -143,7 +143,7 @@ export default async function CategoriaPage({
   if (!categoria) notFound();
 
   // Get subcategories with product counts
-  const { data: rawSubcats } = await supabaseAdmin
+  const { data: rawSubcats } = await supabasePublic
     .from('barraca_categorias')
     .select('id, nombre, slug')
     .eq('padre_id', categoria.id)
@@ -155,7 +155,7 @@ export default async function CategoriaPage({
   const catIds = [categoria.id, ...subcatIds];
   let subcatCounts: Record<number, number> = {};
   if (catIds.length > 0) {
-    const { data: countData } = await supabaseAdmin
+    const { data: countData } = await supabasePublic
       .from('barraca_productos')
       .select('categoria_id')
       .eq('activo', true)
@@ -173,13 +173,13 @@ export default async function CategoriaPage({
   }));
 
   // Build product query with price filters
-  let countQuery = supabaseAdmin
+  let countQuery = supabasePublic
     .from('barraca_productos')
     .select('*', { count: 'exact', head: true })
     .eq('activo', true)
     .in('categoria_id', catIds);
 
-  let productQuery = supabaseAdmin
+  let productQuery = supabasePublic
     .from('barraca_productos')
     .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
     .eq('activo', true)
@@ -228,7 +228,7 @@ export default async function CategoriaPage({
   // Parent category (for breadcrumb)
   let parentCat: { nombre: string; slug: string } | null = null;
   if (categoria.padre_id) {
-    const { data: parent } = await supabaseAdmin
+    const { data: parent } = await supabasePublic
       .from('barraca_categorias')
       .select('nombre, slug')
       .eq('id', categoria.padre_id)

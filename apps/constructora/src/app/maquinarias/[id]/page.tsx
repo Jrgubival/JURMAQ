@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import AnimatedSection from "@/components/animations/AnimatedSection";
 import { formatCLP } from "@jurmaq/shared/format";
 
@@ -55,7 +55,7 @@ function getTipoLabel(tipo: string): string {
 }
 
 export async function generateStaticParams() {
-  const { data: machines } = await supabaseAdmin
+  const { data: machines } = await supabasePublic
     .from('maquinarias')
     .select('id');
   return (machines || []).map((m: any) => ({ id: String(m.id) }));
@@ -67,7 +67,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const { data: machine } = await supabaseAdmin
+  const { data: machine } = await supabasePublic
     .from('maquinarias')
     .select('*')
     .eq('id', Number(id))
@@ -135,7 +135,7 @@ export default async function MaquinariaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { data: machine } = await supabaseAdmin
+  const { data: machine } = await supabasePublic
     .from('maquinarias')
     .select('*')
     .eq('id', Number(id))
@@ -146,7 +146,7 @@ export default async function MaquinariaDetailPage({
   }
 
   // Related machines (same type, excluding current)
-  const { data: related } = await supabaseAdmin
+  const { data: related } = await supabasePublic
     .from('maquinarias')
     .select('*')
     .eq('tipo', machine.tipo)

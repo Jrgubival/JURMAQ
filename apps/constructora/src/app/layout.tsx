@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
+import { buildPrerenderRules, CONSTRUCTORA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -185,32 +186,7 @@ export default function RootLayout({
         <script
           type="speculationrules"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              prerender: [
-                {
-                  where: {
-                    and: [
-                      { href_matches: "/*" },
-                      {
-                        not: {
-                          href_matches: [
-                            "/admin/*",
-                            "/cuenta/*",
-                            "/barraca/cuenta/*",
-                            "/barraca/carrito",
-                            "/barraca/cotizar",
-                            "/contrato/*",
-                            "/barraca/pago/*",
-                            "/api/*",
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                  eagerness: "moderate",
-                },
-              ],
-            }),
+            __html: JSON.stringify(buildPrerenderRules(CONSTRUCTORA_PRERENDER_EXCLUDES)),
           }}
         />
         {/* Organization + LocalBusiness JSON-LD for Google brand panel */}

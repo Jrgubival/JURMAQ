@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
@@ -85,7 +85,7 @@ interface SubCategoria {
 
 export default async function CategoriasPage() {
   // Fetch all active categories
-  const { data: allCats } = await supabaseAdmin
+  const { data: allCats } = await supabasePublic
     .from('barraca_categorias')
     .select('id, nombre, slug, imagen, padre_id')
     .eq('activa', true)
@@ -95,7 +95,7 @@ export default async function CategoriasPage() {
   const catIds = (allCats || []).map((c: any) => c.id);
   let productCounts: Record<number, number> = {};
   if (catIds.length > 0) {
-    const { data: countData } = await supabaseAdmin
+    const { data: countData } = await supabasePublic
       .from('barraca_productos')
       .select('categoria_id')
       .eq('activo', true)

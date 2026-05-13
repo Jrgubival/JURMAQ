@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import { MaquinariaFilters } from "@/components/public/MaquinariaFilters";
 import { formatCLP } from "@jurmaq/shared/format";
 
@@ -100,7 +100,7 @@ export default async function MaquinariasPage({
   searchParams: Promise<{ tipo?: string }>;
 }) {
   const params = await searchParams;
-  const { data: allMachines } = await supabaseAdmin.from('maquinarias').select('*');
+  const { data: allMachines } = await supabasePublic.from('maquinarias').select('*');
   const machines = allMachines || [];
 
   const filteredMachines = params.tipo

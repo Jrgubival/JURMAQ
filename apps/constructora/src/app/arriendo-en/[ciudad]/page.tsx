@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TIPOS_MAQUINA, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 
@@ -73,7 +73,7 @@ export default async function ArriendoEnCiudadPage({
   const c = CIUDADES.find((x) => x.slug === ciudad);
   if (!c) notFound();
 
-  const { data: machinesRaw } = await supabaseAdmin
+  const { data: machinesRaw } = await supabasePublic
     .from("maquinarias")
     .select("id, nombre, tipo, precio_dia, estado, imagen")
     .eq("estado", "disponible")

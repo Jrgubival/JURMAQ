@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import { TIPOS_MAQUINA, CIUDADES, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 
@@ -86,7 +86,7 @@ export default async function ArriendoTipoPage({
   const tipoData = TIPOS_MAQUINA.find((t) => t.slug === tipo);
   if (!tipoData) notFound();
 
-  const { data: machines } = await supabaseAdmin
+  const { data: machines } = await supabasePublic
     .from("maquinarias")
     .select("id, nombre, tipo, descripcion, precio_dia, estado, imagen")
     .eq("tipo", tipoData.tipoDb)

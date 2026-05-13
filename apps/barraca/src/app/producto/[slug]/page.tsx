@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
 import ProductCard from "@/components/barraca/ProductCard";
 import AddToCartClient from "./AddToCartClient";
@@ -48,7 +48,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const { data: producto } = await supabaseAdmin
+  const { data: producto } = await supabasePublic
     .from('barraca_productos')
     .select('nombre, precio, precio_original, en_oferta, stock, slug, imagen, codigo, categoria_id')
     .eq('slug', slug)
@@ -125,7 +125,7 @@ export default async function ProductoPage({
 }) {
   const { slug } = await params;
 
-  const { data: producto } = await supabaseAdmin
+  const { data: producto } = await supabasePublic
     .from('barraca_productos')
     .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, categoria_id, imagen, producto_padre_id, medida')
     .eq('slug', slug)
@@ -136,7 +136,7 @@ export default async function ProductoPage({
 
   let categoria: CategoriaRow | undefined = undefined;
   if (producto.categoria_id) {
-    const { data: cat } = await supabaseAdmin
+    const { data: cat } = await supabasePublic
       .from('barraca_categorias')
       .select('id, nombre, slug')
       .eq('id', producto.categoria_id)
@@ -146,7 +146,7 @@ export default async function ProductoPage({
 
   let variantes: VarianteRow[] = [];
   const parentId = producto.producto_padre_id || producto.id;
-  const { data: varData } = await supabaseAdmin
+  const { data: varData } = await supabasePublic
     .from('barraca_productos')
     .select('id, nombre, slug, precio, stock, medida')
     .eq('producto_padre_id', parentId)
@@ -175,7 +175,7 @@ export default async function ProductoPage({
         dailyPromos.find((p) => p.categoria_id === producto.categoria_id) || null;
       dailyPromoTitle = matching?.titulo || null;
       if (!dailyPromoTitle) {
-        const { data: anyPromo } = await supabaseAdmin
+        const { data: anyPromo } = await supabasePublic
           .from('barraca_promociones')
           .select('titulo')
           .eq('activa', true)
@@ -190,7 +190,7 @@ export default async function ProductoPage({
   }
 
   // Related products (random order via Supabase -- not natively supported, so we just get recent)
-  const { data: relacionados } = await supabaseAdmin
+  const { data: relacionados } = await supabasePublic
     .from('barraca_productos')
     .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida')
     .eq('categoria_id', producto.categoria_id)

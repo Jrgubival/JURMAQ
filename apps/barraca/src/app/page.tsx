@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import ProductCard from "@/components/barraca/ProductCard";
 import HeroSlider from "@/components/barraca/HeroSlider";
 import MobileHero from "@/components/barraca/MobileHero";
@@ -184,7 +184,7 @@ interface Producto {
 
 export default async function BarracaHomePage() {
   // Fetch ALL parent categories, then sort by product count (most popular first)
-  const { data: rawCategorias } = await supabaseAdmin
+  const { data: rawCategorias } = await supabasePublic
     .from('barraca_categorias')
     .select('id, nombre, slug, imagen')
     .eq('activa', true)
@@ -193,7 +193,7 @@ export default async function BarracaHomePage() {
   const allCatIds = (rawCategorias || []).map((c: any) => c.id);
   let productCounts: Record<number, number> = {};
   if (allCatIds.length > 0) {
-    const { data: countData } = await supabaseAdmin
+    const { data: countData } = await supabasePublic
       .from('barraca_productos')
       .select('categoria_id')
       .eq('activo', true)
@@ -210,7 +210,7 @@ export default async function BarracaHomePage() {
     .sort((a: Categoria, b: Categoria) => b.product_count - a.product_count)
     .slice(0, 6);
 
-  const { data: destacadosRaw } = await supabaseAdmin
+  const { data: destacadosRaw } = await supabasePublic
     .from('barraca_productos')
     .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
     .eq('activo', true)
@@ -219,7 +219,7 @@ export default async function BarracaHomePage() {
     .order('nombre')
     .limit(8);
 
-  const { data: nuevosRaw } = await supabaseAdmin
+  const { data: nuevosRaw } = await supabasePublic
     .from('barraca_productos')
     .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
     .eq('activo', true)
@@ -241,7 +241,7 @@ export default async function BarracaHomePage() {
   ];
   let catSlugMap: Record<number, string> = {};
   if (allProductCatIds.length > 0) {
-    const { data: catSlugs } = await supabaseAdmin
+    const { data: catSlugs } = await supabasePublic
       .from('barraca_categorias')
       .select('id, slug')
       .in('id', allProductCatIds);

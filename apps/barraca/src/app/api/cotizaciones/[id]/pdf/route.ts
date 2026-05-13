@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 function formatDate(dateStr: string): string {
   try {
     const date = new Date(dateStr);
@@ -31,6 +32,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Audit M2: IDs son sequenciales, enumerable. Cap a 20/min para
+    // prevenir harvesting.
+    const ip = getClientIp(request);
+    const limiter = rateLimit(`cot-pdf:${ip}`, { maxAttempts: 20, windowSeconds: 60 });
+    if (!limiter.success) {
+      return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 });
+    }
+
     const { id } = await params;
 
     const { data: cotizacion, error } = await supabaseAdmin
