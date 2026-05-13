@@ -150,6 +150,9 @@ export function validarInput(input: Partial<CotizacionInput>): string | null {
   if (input.peajes !== undefined && input.peajes < 0) {
     return 'peajes no puede ser negativo';
   }
+  if (input.peajes !== undefined && input.peajes > 1_000_000) {
+    return 'peajes superior a $1.000.000 — verificar manualmente con cliente';
+  }
   if (input.operarios !== undefined && (input.operarios < 1 || input.operarios > 10)) {
     return 'operarios debe estar entre 1 y 10';
   }

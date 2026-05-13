@@ -14,6 +14,17 @@ function formatMonto(n: number): string {
   return n.toLocaleString('es-CL');
 }
 
+/**
+ * Excel formula injection guard (Audit SECURITY_REVIEW_NEW_CODE.md M1).
+ * Si una celda empieza con =, +, -, @, \t, Excel puede interpretarla como
+ * fórmula y ejecutar comandos al abrir el archivo. Prefix con apóstrofe.
+ */
+function safeCell(v: unknown): unknown {
+  if (typeof v !== 'string') return v;
+  if (/^[=+\-@\t]/.test(v)) return `'${v}`;
+  return v;
+}
+
 export async function GET(request: NextRequest) {
   const session = await requirePermission('combustible', 'export');
   if (!session) return forbiddenResponse('No autorizado');
@@ -58,37 +69,37 @@ export async function GET(request: NextRequest) {
   // Build workbook
   const wb = XLSX.utils.book_new();
 
-  // Hoja Ventas
+  // Hoja Ventas — safeCell aplica a fields de usuario (CSV injection guard)
   const ventasData = ventas.map((v) => ({
     Fecha: v.fecha_emision,
     'Tipo doc': v.doc_tipo,
-    'N° doc': v.doc_nro,
-    'RUT cliente': v.contraparte_rut || '',
-    'Nombre cliente': v.contraparte_nombre,
+    'N° doc': safeCell(v.doc_nro),
+    'RUT cliente': safeCell(v.contraparte_rut || ''),
+    'Nombre cliente': safeCell(v.contraparte_nombre),
     'Monto neto': formatMonto(v.monto_neto),
     'IVA': formatMonto(v.iva),
     'Total': formatMonto(v.monto_total),
     'Exento': v.exento ? 'SÍ' : 'NO',
     'Origen': v.origen_tipo || '',
-    'Notas': v.notas || '',
+    'Notas': safeCell(v.notas || ''),
   }));
   const wsVentas = XLSX.utils.json_to_sheet(ventasData);
   XLSX.utils.book_append_sheet(wb, wsVentas, 'Ventas');
 
-  // Hoja Compras
+  // Hoja Compras — safeCell aplica a fields de usuario (CSV injection guard)
   const comprasData = compras.map((c) => ({
     Fecha: c.fecha_emision,
     'Tipo doc': c.doc_tipo,
-    'N° doc': c.doc_nro,
-    'RUT proveedor': c.proveedor_rut,
-    'Nombre proveedor': c.proveedor_nombre,
+    'N° doc': safeCell(c.doc_nro),
+    'RUT proveedor': safeCell(c.proveedor_rut),
+    'Nombre proveedor': safeCell(c.proveedor_nombre),
     'Monto neto': formatMonto(c.monto_neto),
     'IVA': formatMonto(c.iva),
     'Total': formatMonto(c.monto_total),
     'Exento': c.exento ? 'SÍ' : 'NO',
-    'Categoría': c.categoria || '',
+    'Categoría': safeCell(c.categoria || ''),
     'Origen': c.origen_tipo || '',
-    'Notas': c.notas || '',
+    'Notas': safeCell(c.notas || ''),
   }));
   const wsCompras = XLSX.utils.json_to_sheet(comprasData);
   XLSX.utils.book_append_sheet(wb, wsCompras, 'Compras');
