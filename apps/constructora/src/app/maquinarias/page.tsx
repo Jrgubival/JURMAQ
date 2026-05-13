@@ -3,6 +3,7 @@ import Link from "next/link";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { MaquinariaFilters } from "@/components/public/MaquinariaFilters";
 import { formatCLP } from "@jurmaq/shared/format";
+import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 
 
 export const metadata: Metadata = {
@@ -126,19 +127,22 @@ export default async function MaquinariasPage({
         url: `https://jurmaq.cl/maquinarias/${m.id}`,
         image: m.imagen || undefined,
         description: m.descripcion || undefined,
-        offers: {
-          "@type": "Offer",
-          priceCurrency: "CLP",
-          ...(m.precio_dia ? { price: m.precio_dia } : {}),
-          availability:
-            m.estado === "disponible"
-              ? "https://schema.org/InStock"
-              : "https://schema.org/OutOfStock",
-          seller: {
-            "@type": "Organization",
-            name: "Constructora Jorge Ubilla Rivera E.I.R.L.",
-          },
-        },
+        offers: (() => {
+          const desde = precioPublicoDesde(m);
+          return {
+            "@type": "Offer",
+            priceCurrency: "CLP",
+            ...(desde !== null ? { price: desde } : {}),
+            availability:
+              m.estado === "disponible"
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+            seller: {
+              "@type": "Organization",
+              name: "Constructora Jorge Ubilla Rivera E.I.R.L.",
+            },
+          };
+        })(),
       },
     })),
   };
@@ -307,40 +311,31 @@ export default async function MaquinariasPage({
                       {machine.descripcion || "Consulta por especificaciones técnicas."}
                     </p>
 
-                    {/* Pricing */}
-                    <div className="space-y-2 mb-5 p-4 bg-gray-50 rounded-xl">
-                      {machine.precio_dia && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">Precio / día</span>
-                          <span className="font-bold text-navy-950">
-                            {formatPrice(machine.precio_dia)}
-                          </span>
+                    {/* Pricing — derivado de tarifa_neta (fuente de verdad del cotizador) */}
+                    {(() => {
+                      const desde = precioPublicoDesde(machine);
+                      return (
+                        <div className="space-y-2 mb-5 p-4 bg-gray-50 rounded-xl">
+                          {desde !== null ? (
+                            <>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-500">Desde</span>
+                                <span className="font-bold text-navy-950">
+                                  {formatPrice(desde)}/día
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-gray-500 leading-tight">
+                                IVA incluido · No incluye traslado. Cotiza online para precio final.
+                              </p>
+                            </>
+                          ) : (
+                            <p className="text-sm text-gray-500 text-center">
+                              Cotiza online
+                            </p>
+                          )}
                         </div>
-                      )}
-                      {machine.precio_semana && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">Precio / semana</span>
-                          <span className="font-semibold text-gray-700">
-                            {formatPrice(machine.precio_semana)}
-                          </span>
-                        </div>
-                      )}
-                      {machine.precio_mes && (
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">Precio / mes</span>
-                          <span className="font-semibold text-gray-700">
-                            {formatPrice(machine.precio_mes)}
-                          </span>
-                        </div>
-                      )}
-                      {!machine.precio_dia &&
-                        !machine.precio_semana &&
-                        !machine.precio_mes && (
-                          <p className="text-sm text-gray-500 text-center">
-                            Consultar precio
-                          </p>
-                        )}
-                    </div>
+                      );
+                    })()}
 
                     {/* CTA */}
                     <Link
@@ -442,23 +437,26 @@ export default async function MaquinariasPage({
                   "@type": "Brand",
                   name: "JURMAQ",
                 },
-                offers: {
-                  "@type": "Offer",
-                  priceCurrency: "CLP",
-                  price: machine.precio_dia || undefined,
-                  availability:
-                    machine.estado === "disponible"
-                      ? "https://schema.org/InStock"
-                      : "https://schema.org/OutOfStock",
-                  seller: {
-                    "@type": "Organization",
-                    name: "Constructora Jorge Ubilla Rivera E.I.R.L.",
-                  },
-                  areaServed: {
-                    "@type": "Place",
-                    name: "Provincia de Curicó, Región del Maule, Chile",
-                  },
-                },
+                offers: (() => {
+                  const desde = precioPublicoDesde(machine);
+                  return {
+                    "@type": "Offer",
+                    priceCurrency: "CLP",
+                    price: desde ?? undefined,
+                    availability:
+                      machine.estado === "disponible"
+                        ? "https://schema.org/InStock"
+                        : "https://schema.org/OutOfStock",
+                    seller: {
+                      "@type": "Organization",
+                      name: "Constructora Jorge Ubilla Rivera E.I.R.L.",
+                    },
+                    areaServed: {
+                      "@type": "Place",
+                      name: "Provincia de Curicó, Región del Maule, Chile",
+                    },
+                  };
+                })(),
               },
             })),
           }),

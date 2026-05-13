@@ -4,13 +4,16 @@ import { notFound } from "next/navigation";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { TIPOS_MAQUINA, CIUDADES, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
+import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 
 interface Maquinaria {
   id: number;
   nombre: string;
   tipo: string;
   descripcion: string | null;
-  precio_dia: number | null;
+  tarifa_neta: number | null;
+  unidad_tarifa: 'hora' | 'dia' | null;
+  minimo_unidades: number | null;
   estado: string;
   imagen: string | null;
 }
@@ -88,7 +91,7 @@ export default async function ArriendoTipoPage({
 
   const { data: machines } = await supabasePublic
     .from("maquinarias")
-    .select("id, nombre, tipo, descripcion, precio_dia, estado, imagen")
+    .select("id, nombre, tipo, descripcion, tarifa_neta, unidad_tarifa, minimo_unidades, estado, imagen")
     .eq("tipo", tipoData.tipoDb)
     .order("estado", { ascending: true });
 
@@ -111,18 +114,21 @@ export default async function ArriendoTipoPage({
         },
         areaServed: CIUDADES.map((c) => ({ "@type": "City", name: c.nombre })),
         offers: flota
-          .filter((m) => m.precio_dia)
-          .map((m) => ({
-            "@type": "Offer",
-            name: m.nombre,
-            priceCurrency: "CLP",
-            price: m.precio_dia,
-            url: `https://jurmaq.cl/maquinarias/${m.id}`,
-            availability:
-              m.estado === "disponible"
-                ? "https://schema.org/InStock"
-                : "https://schema.org/OutOfStock",
-          })),
+          .map((m) => {
+            const d = precioPublicoDesde(m);
+            return d !== null ? {
+              "@type": "Offer",
+              name: m.nombre,
+              priceCurrency: "CLP",
+              price: d,
+              url: `https://jurmaq.cl/maquinarias/${m.id}`,
+              availability:
+                m.estado === "disponible"
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/OutOfStock",
+            } : null;
+          })
+          .filter((o): o is NonNullable<typeof o> => o !== null),
       },
       {
         "@type": "FAQPage",
@@ -230,9 +236,12 @@ export default async function ArriendoTipoPage({
                     )}
                     <div className="p-5">
                       <h3 className="text-lg font-bold text-navy-950 mb-2">{m.nombre}</h3>
-                      {m.precio_dia && (
-                        <p className="text-gold-600 font-semibold mb-2">{formatPrice(m.precio_dia)}</p>
-                      )}
+                      {(() => {
+                        const d = precioPublicoDesde(m);
+                        return d !== null ? (
+                          <p className="text-gold-600 font-semibold mb-2">desde {formatPrice(d)}/día</p>
+                        ) : null;
+                      })()}
                       <p className="text-sm text-gray-600 line-clamp-2">{m.descripcion}</p>
                       <span
                         className={`inline-block mt-3 px-3 py-1 text-xs font-semibold rounded-full ${

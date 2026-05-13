@@ -5,6 +5,7 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import StaggeredGrid from "@/components/animations/StaggeredGrid";
 import HeroSlideshow from "@/components/animations/HeroSlideshow";
 import { formatCLP } from "@jurmaq/shared/format";
+import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 
 
 export const metadata: Metadata = {
@@ -387,9 +388,10 @@ export default async function HomePage() {
                           Desde
                         </span>
                         <div className="text-lg font-bold text-gold-600">
-                          {machine.precio_dia
-                            ? formatPrice(machine.precio_dia)
-                            : "Consultar"}
+                          {(() => {
+                            const d = precioPublicoDesde(machine);
+                            return d !== null ? `${formatPrice(d)}/día` : "Consultar";
+                          })()}
                         </div>
                       </div>
                       <Link

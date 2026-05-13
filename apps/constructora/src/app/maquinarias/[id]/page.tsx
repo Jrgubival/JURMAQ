@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import AnimatedSection from "@/components/animations/AnimatedSection";
 import { formatCLP } from "@jurmaq/shared/format";
+import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 
 interface Maquinaria {
   id: number;
@@ -11,9 +12,9 @@ interface Maquinaria {
   tipo: string;
   descripcion: string | null;
   especificaciones: string | null;
-  precio_dia: number | null;
-  precio_semana: number | null;
-  precio_mes: number | null;
+  tarifa_neta: number | null;
+  unidad_tarifa: 'hora' | 'dia' | null;
+  minimo_unidades: number | null;
   estado: string;
   imagen: string | null;
   created_at: string;
@@ -77,8 +78,9 @@ export async function generateMetadata({
     return { title: "Maquinaria no encontrada | JURMAQ" };
   }
 
-  const priceText = machine.precio_dia
-    ? `Desde ${formatCLP(machine.precio_dia)}/día`
+  const desdePrecio = precioPublicoDesde(machine);
+  const priceText = desdePrecio !== null
+    ? `Desde ${formatCLP(desdePrecio)}/día`
     : "Consultar precio";
   const tipoLbl = getTipoLabel(machine.tipo);
 
@@ -176,12 +178,12 @@ export default async function MaquinariaDetailPage({
       "@type": "Brand",
       name: "JURMAQ",
     },
-    offers: [
-      machine.precio_dia && {
+    offers: desdePrecio !== null ? [
+      {
         "@type": "Offer",
         priceCurrency: "CLP",
-        price: machine.precio_dia,
-        name: "Arriendo por dia",
+        price: desdePrecio,
+        name: "Arriendo por dia (desde, IVA incl., sin traslado)",
         availability:
           machine.estado === "disponible"
             ? "https://schema.org/InStock"
@@ -197,27 +199,7 @@ export default async function MaquinariaDetailPage({
           { "@type": "AdministrativeArea", name: "Región del Maule" },
         ],
       },
-      machine.precio_semana && {
-        "@type": "Offer",
-        priceCurrency: "CLP",
-        price: machine.precio_semana,
-        name: "Arriendo por semana",
-        availability:
-          machine.estado === "disponible"
-            ? "https://schema.org/InStock"
-            : "https://schema.org/OutOfStock",
-      },
-      machine.precio_mes && {
-        "@type": "Offer",
-        priceCurrency: "CLP",
-        price: machine.precio_mes,
-        name: "Arriendo por mes",
-        availability:
-          machine.estado === "disponible"
-            ? "https://schema.org/InStock"
-            : "https://schema.org/OutOfStock",
-      },
-    ].filter(Boolean),
+    ] : [],
   };
 
   return (
@@ -356,20 +338,18 @@ export default async function MaquinariaDetailPage({
               {/* Price Cards */}
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
                 <h3 className="text-lg font-bold text-navy-950 mb-4">
-                  Tarifas de Arriendo
+                  Tarifa de Arriendo
                 </h3>
                 <div className="space-y-3">
-                  {/* Day */}
+                  {/* Desde X/día — derivado de tarifa_neta (fuente del cotizador) */}
                   <div className="p-4 bg-gold-500/10 border border-gold-500/20 rounded-xl">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-500 uppercase tracking-wider">
-                          Por Dia
+                          Desde
                         </p>
                         <p className="text-2xl font-extrabold text-navy-950">
-                          {machine.precio_dia
-                            ? formatPrice(machine.precio_dia)
-                            : "Consultar"}
+                          {desdePrecio !== null ? `${formatPrice(desdePrecio)}/día` : "Consultar"}
                         </p>
                       </div>
                       <div className="w-10 h-10 bg-gold-500 rounded-lg flex items-center justify-center">
@@ -390,67 +370,17 @@ export default async function MaquinariaDetailPage({
                     </div>
                   </div>
 
-                  {/* Week */}
-                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wider">
-                          Por Semana
-                        </p>
-                        <p className="text-xl font-bold text-navy-950">
-                          {machine.precio_semana
-                            ? formatPrice(machine.precio_semana)
-                            : "Consultar"}
-                        </p>
-                      </div>
-                      <div className="w-10 h-10 bg-navy-100 rounded-lg flex items-center justify-center">
-                        <svg
-                          className="w-5 h-5 text-navy-700"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    IVA incluido · No incluye traslado, peajes ni operario adicional.
+                    Para precio final usa el cotizador online — toma 1 minuto.
+                  </p>
 
-                  {/* Month */}
-                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wider">
-                          Por Mes
-                        </p>
-                        <p className="text-xl font-bold text-navy-950">
-                          {machine.precio_mes
-                            ? formatPrice(machine.precio_mes)
-                            : "Consultar"}
-                        </p>
-                      </div>
-                      <div className="w-10 h-10 bg-navy-100 rounded-lg flex items-center justify-center">
-                        <svg
-                          className="w-5 h-5 text-navy-700"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
+                  <Link
+                    href={`/cotizar-arriendo?maquinariaId=${machine.id}`}
+                    className="block w-full text-center px-4 py-3 bg-navy-950 hover:bg-navy-800 text-white font-semibold rounded-xl transition-colors text-sm"
+                  >
+                    Cotizar precio final →
+                  </Link>
                 </div>
               </div>
 
@@ -541,11 +471,14 @@ export default async function MaquinariaDetailPage({
                       <span className="text-sm text-gray-500">
                         {getTipoLabel(m.tipo)}
                       </span>
-                      {m.precio_dia && (
-                        <span className="text-sm font-bold text-gold-600">
-                          {formatPrice(m.precio_dia)}/dia
-                        </span>
-                      )}
+                      {(() => {
+                        const d = precioPublicoDesde(m);
+                        return d !== null && (
+                          <span className="text-sm font-bold text-gold-600">
+                            desde {formatPrice(d)}/día
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                 </Link>

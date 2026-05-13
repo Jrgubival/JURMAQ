@@ -4,12 +4,15 @@ import { notFound } from "next/navigation";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TIPOS_MAQUINA, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
+import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 
 interface Maquinaria {
   id: number;
   nombre: string;
   tipo: string;
-  precio_dia: number | null;
+  tarifa_neta: number | null;
+  unidad_tarifa: 'hora' | 'dia' | null;
+  minimo_unidades: number | null;
   estado: string;
   imagen: string | null;
 }
@@ -75,7 +78,7 @@ export default async function ArriendoEnCiudadPage({
 
   const { data: machinesRaw } = await supabasePublic
     .from("maquinarias")
-    .select("id, nombre, tipo, precio_dia, estado, imagen")
+    .select("id, nombre, tipo, tarifa_neta, unidad_tarifa, minimo_unidades, estado, imagen")
     .eq("estado", "disponible")
     .limit(12);
   const machines: Maquinaria[] = (machinesRaw || []) as Maquinaria[];
@@ -294,9 +297,12 @@ export default async function ArriendoEnCiudadPage({
                     )}
                     <div className="p-4">
                       <h3 className="text-base font-bold text-navy-950 mb-1">{m.nombre}</h3>
-                      {m.precio_dia && (
-                        <p className="text-gold-600 font-semibold text-sm">{formatPrice(m.precio_dia)}</p>
-                      )}
+                      {(() => {
+                        const d = precioPublicoDesde(m);
+                        return d !== null ? (
+                          <p className="text-gold-600 font-semibold text-sm">desde {formatPrice(d)}/día</p>
+                        ) : null;
+                      })()}
                     </div>
                   </Link>
                 ))}
