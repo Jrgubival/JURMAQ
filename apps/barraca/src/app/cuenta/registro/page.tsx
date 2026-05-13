@@ -48,7 +48,7 @@ export default function RegistroPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/barraca/auth", {
+      const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -251,11 +251,11 @@ export default function RegistroPage() {
             />
             <span>
               He leido y acepto los{" "}
-              <Link href="/terminos" target="_blank" className="text-orange-600 hover:underline font-medium">
+              <Link href="https://jurmaq.cl/terminos" target="_blank" className="text-orange-600 hover:underline font-medium">
                 Terminos y Condiciones
               </Link>{" "}
               y la{" "}
-              <Link href="/privacidad" target="_blank" className="text-orange-600 hover:underline font-medium">
+              <Link href="https://jurmaq.cl/privacidad" target="_blank" className="text-orange-600 hover:underline font-medium">
                 Politica de Privacidad
               </Link>
               , y autorizo el tratamiento de mis datos personales conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>

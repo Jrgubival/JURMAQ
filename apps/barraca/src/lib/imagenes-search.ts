@@ -6,7 +6,7 @@
  *      consumir billable API calls). Usa flujo de 2 requests: token vqd
  *      → imágenes JSON. Pueden cambiar el HTML de DDG y el regex falla;
  *      por eso hay fallback.
- *   2. Server API curado (`/api/barraca/imagenes/search`) que devuelve
+ *   2. Server API curado (`/api/imagenes/search`) que devuelve
  *      imágenes pre-aprobadas por categoría.
  *
  * Antes vivía inline en /admin/barraca/imagenes/page.tsx (página de
@@ -95,7 +95,7 @@ export async function searchDuckDuckGoImages(
  */
 export async function searchImageCandidates(
   productName: string,
-  fallbackEndpoint = "/api/barraca/imagenes/search"
+  fallbackEndpoint = "/api/imagenes/search"
 ): Promise<ImageCandidate[]> {
   try {
     const ddg = await searchDuckDuckGoImages(productName);

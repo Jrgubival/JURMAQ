@@ -44,7 +44,7 @@ export default function CuentaPage() {
     }
 
     // Fetch user profile & cotizaciones
-    fetch("/api/barraca/auth", {
+    fetch("/api/auth", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -92,7 +92,7 @@ export default function CuentaPage() {
     const token = localStorage.getItem("barraca_token");
     if (!token) return;
     try {
-      const res = await fetch("/api/barraca/cuenta/exportar", {
+      const res = await fetch("/api/cuenta/exportar", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -131,7 +131,7 @@ export default function CuentaPage() {
     const password = prompt("Confirma tu contrasena para eliminar la cuenta:");
     if (!password) return;
     try {
-      const res = await fetch("/api/barraca/cuenta/eliminar", {
+      const res = await fetch("/api/cuenta/eliminar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -156,7 +156,7 @@ export default function CuentaPage() {
     const token = localStorage.getItem("barraca_token");
     if (!token) return;
     try {
-      const res = await fetch("/api/barraca/auth", {
+      const res = await fetch("/api/auth", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

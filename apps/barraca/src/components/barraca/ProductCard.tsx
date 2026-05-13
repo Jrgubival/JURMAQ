@@ -100,7 +100,7 @@ export default function ProductCard({
         en_oferta && precio_original && precio_original > 0
           ? precio_original
           : null;
-      await fetch("/api/barraca/carrito", {
+      await fetch("/api/carrito", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

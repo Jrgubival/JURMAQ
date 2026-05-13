@@ -33,7 +33,7 @@ export default function BarracaCategoriasPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('/api/barraca/categorias');
+      const res = await fetch('/api/categorias');
       if (res.ok) {
         const data = await res.json();
         setCategorias(Array.isArray(data) ? data : data.data || []);
@@ -70,8 +70,8 @@ export default function BarracaCategoriasPage() {
     setSaving(true);
     try {
       const url = editing
-        ? `/api/barraca/categorias/${editing.id}`
-        : '/api/barraca/categorias';
+        ? `/api/categorias/${editing.id}`
+        : '/api/categorias';
       const method = editing ? 'PUT' : 'POST';
       const body = {
         ...form,
@@ -95,7 +95,7 @@ export default function BarracaCategoriasPage() {
 
   const toggleActiva = async (cat: Categoria) => {
     try {
-      await fetch(`/api/barraca/categorias/${cat.id}`, {
+      await fetch(`/api/categorias/${cat.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activa: !cat.activa }),
@@ -109,7 +109,7 @@ export default function BarracaCategoriasPage() {
   const moveOrder = async (cat: Categoria, direction: 'up' | 'down') => {
     const newOrder = direction === 'up' ? cat.orden - 1 : cat.orden + 1;
     try {
-      await fetch(`/api/barraca/categorias/${cat.id}`, {
+      await fetch(`/api/categorias/${cat.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orden: newOrder }),

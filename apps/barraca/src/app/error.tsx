@@ -40,7 +40,7 @@ export default function BarracaError({
             Intentar nuevamente
           </button>
           <Link
-            href="/barraca"
+            href="/"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-700 hover:border-gray-400 font-semibold rounded-xl transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

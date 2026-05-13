@@ -69,7 +69,7 @@ export default function NewsletterPopup() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/barraca/suscriptores", {
+      const res = await fetch("/api/suscriptores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
@@ -162,7 +162,7 @@ export default function NewsletterPopup() {
                 />
                 <span>
                   Acepto recibir promociones por email y la{" "}
-                  <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="underline">
+                  <a href="https://jurmaq.cl/privacidad" target="_blank" rel="noopener noreferrer" className="underline">
                     Política de Privacidad
                   </a>
                   . Puedo darme de baja desde el pie de cada email.

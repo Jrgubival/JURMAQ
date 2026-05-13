@@ -16,7 +16,7 @@ export default function BarracaSuscriptoresPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('/api/barraca/suscriptores');
+      const res = await fetch('/api/suscriptores');
       if (res.ok) {
         const data = await res.json();
         setSuscriptores(Array.isArray(data) ? data : data.data || []);
@@ -32,7 +32,7 @@ export default function BarracaSuscriptoresPage() {
 
   const toggleActivo = async (sub: Suscriptor) => {
     try {
-      await fetch(`/api/barraca/suscriptores/${sub.id}`, {
+      await fetch(`/api/suscriptores/${sub.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activo: !sub.activo }),

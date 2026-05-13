@@ -28,7 +28,7 @@ export default function NotFound() {
             Volver al Inicio
           </Link>
           <Link
-            href="/barraca"
+            href="https://barraca.jurmaq.cl"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-700 hover:border-gray-400 font-semibold rounded-xl transition-colors"
           >
             Ir a la Barraca

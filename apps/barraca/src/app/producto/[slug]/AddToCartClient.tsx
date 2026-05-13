@@ -59,7 +59,7 @@ export default function AddToCartClient({
     setAdding(true);
     try {
       const sid = getSessionId();
-      const res = await fetch("/api/barraca/carrito", {
+      const res = await fetch("/api/carrito", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

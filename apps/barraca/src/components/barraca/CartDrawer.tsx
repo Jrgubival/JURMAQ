@@ -80,7 +80,7 @@ export default function CartDrawer({
     if (!sid) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/barraca/carrito", {
+      const res = await fetch("/api/carrito", {
         headers: { "X-Session-Id": sid },
       });
       if (res.ok) {
@@ -117,7 +117,7 @@ export default function CartDrawer({
 
   async function removeItem(itemId: number) {
     const sid = getSessionId();
-    const res = await fetch("/api/barraca/carrito", {
+    const res = await fetch("/api/carrito", {
       method: "DELETE",
       headers: { "Content-Type": "application/json", "X-Session-Id": sid },
       body: JSON.stringify({ itemId }),
@@ -131,7 +131,7 @@ export default function CartDrawer({
     const sid = getSessionId();
     const results = await Promise.all(
       items.map((item) =>
-        fetch("/api/barraca/carrito", {
+        fetch("/api/carrito", {
           method: "DELETE",
           headers: { "Content-Type": "application/json", "X-Session-Id": sid },
           body: JSON.stringify({ itemId: item.id }),
@@ -149,7 +149,7 @@ export default function CartDrawer({
   async function updateQuantity(itemId: number, newQty: number) {
     if (newQty < 1) return;
     const sid = getSessionId();
-    const res = await fetch("/api/barraca/carrito", {
+    const res = await fetch("/api/carrito", {
       method: "PUT",
       headers: { "Content-Type": "application/json", "X-Session-Id": sid },
       body: JSON.stringify({ itemId, cantidad: newQty }),

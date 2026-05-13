@@ -22,7 +22,7 @@ export default function LoginPage() {
     setError("");
     try {
       // 1. Try unified barraca auth (checks both barraca_usuarios and users tables)
-      const res = await fetch("/api/barraca/auth", {
+      const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "login", email, password }),

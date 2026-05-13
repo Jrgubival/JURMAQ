@@ -71,7 +71,7 @@ export default function BarracaImportarPage() {
   async function handleExport() {
     setLoading(true);
     try {
-      const res = await fetch('/api/barraca/productos/export');
+      const res = await fetch('/api/productos/export');
       if (!res.ok) throw new Error('Error al exportar');
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -114,7 +114,7 @@ export default function BarracaImportarPage() {
     try {
       const fd = new FormData();
       fd.append('file', file);
-      const res = await fetch('/api/barraca/importar/parse', { method: 'POST', body: fd });
+      const res = await fetch('/api/importar/parse', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al procesar archivo');
       setParseResult(data);
@@ -157,7 +157,7 @@ export default function BarracaImportarPage() {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('config', JSON.stringify({ columnMapping: getApiMapping(), matchBy, fieldsToUpdate, createNew, createPromotionalPrices }));
-      const res = await fetch('/api/barraca/importar/preview', { method: 'POST', body: fd });
+      const res = await fetch('/api/importar/preview', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al generar vista previa');
       setPreviewResult(data);
@@ -179,7 +179,7 @@ export default function BarracaImportarPage() {
       const fd = new FormData();
       fd.append('file', file);
       fd.append('config', JSON.stringify({ columnMapping: getApiMapping(), matchBy, fieldsToUpdate, createNew, createPromotionalPrices }));
-      const res = await fetch('/api/barraca/importar/execute', { method: 'POST', body: fd });
+      const res = await fetch('/api/importar/execute', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al ejecutar importacion');
       setImportResult(data);

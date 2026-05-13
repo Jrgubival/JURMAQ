@@ -33,7 +33,7 @@ export default function CarritoPage() {
     setLoading(true);
     try {
       const sid = getSessionId();
-      const res = await fetch("/api/barraca/carrito", {
+      const res = await fetch("/api/carrito", {
         headers: { "X-Session-Id": sid },
       });
       if (res.ok) {
@@ -53,7 +53,7 @@ export default function CarritoPage() {
 
   async function updateQuantity(itemId: number, newQty: number) {
     if (newQty < 1) return;
-    await fetch("/api/barraca/carrito", {
+    await fetch("/api/carrito", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itemId, cantidad: newQty }),
@@ -65,7 +65,7 @@ export default function CarritoPage() {
   }
 
   async function removeItem(itemId: number) {
-    await fetch("/api/barraca/carrito", {
+    await fetch("/api/carrito", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ itemId }),
@@ -76,7 +76,7 @@ export default function CarritoPage() {
 
   async function clearCart() {
     for (const item of items) {
-      await fetch("/api/barraca/carrito", {
+      await fetch("/api/carrito", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId: item.id }),

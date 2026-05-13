@@ -61,8 +61,8 @@ export default function BarracaProductosPage() {
   const fetchData = async () => {
     try {
       const [prodRes, catRes] = await Promise.all([
-        fetch('/api/barraca/productos?all=true&limit=5000'),
-        fetch('/api/barraca/categorias'),
+        fetch('/api/productos?all=true&limit=5000'),
+        fetch('/api/categorias'),
       ]);
       if (prodRes.ok) {
         const data = await prodRes.json();
@@ -125,8 +125,8 @@ export default function BarracaProductosPage() {
     setSaving(true);
     try {
       const url = editing
-        ? `/api/barraca/productos/${editing.id}`
-        : '/api/barraca/productos';
+        ? `/api/productos/${editing.id}`
+        : '/api/productos';
       const method = editing ? 'PUT' : 'POST';
       const body = {
         ...form,
@@ -151,7 +151,7 @@ export default function BarracaProductosPage() {
 
   const toggleActivo = async (p: Producto) => {
     try {
-      await fetch(`/api/barraca/productos/${p.id}`, {
+      await fetch(`/api/productos/${p.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activo: !p.activo }),
@@ -164,7 +164,7 @@ export default function BarracaProductosPage() {
 
   const toggleDestacado = async (p: Producto) => {
     try {
-      await fetch(`/api/barraca/productos/${p.id}`, {
+      await fetch(`/api/productos/${p.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ destacado: !p.destacado }),

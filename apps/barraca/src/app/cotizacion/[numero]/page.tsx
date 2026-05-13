@@ -60,8 +60,8 @@ export default function CotizacionPublicPage() {
   async function fetchCotizacion() {
     try {
       const url = emailQuery
-        ? `/api/barraca/cotizaciones/by-numero/${numero}?email=${encodeURIComponent(emailQuery)}`
-        : `/api/barraca/cotizaciones/by-numero/${numero}`;
+        ? `/api/cotizaciones/by-numero/${numero}?email=${encodeURIComponent(emailQuery)}`
+        : `/api/cotizaciones/by-numero/${numero}`;
       const res = await fetch(url);
       if (!res.ok) {
         setError("Cotizacion no encontrada");
@@ -80,7 +80,7 @@ export default function CotizacionPublicPage() {
     if (!cotizacion) return;
     setActionLoading(true);
     try {
-      const res = await fetch(`/api/barraca/cotizaciones/${cotizacion.id}/accept`, {
+      const res = await fetch(`/api/cotizaciones/${cotizacion.id}/accept`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -149,7 +149,7 @@ export default function CotizacionPublicPage() {
           </svg>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Cotizacion no encontrada</h1>
           <p className="text-gray-500 mb-6">El enlace puede estar incorrecto o la cotizacion ya no existe.</p>
-          <Link href="/barraca" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors">
             Ir al Inicio
           </Link>
         </div>

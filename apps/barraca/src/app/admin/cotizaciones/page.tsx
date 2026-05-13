@@ -116,7 +116,7 @@ export default function BarracaCotizacionesPage() {
     if (!selectedCot || editItems.length === 0) return;
     setSavingEdit(true);
     try {
-      const res = await fetch(`/api/barraca/cotizaciones/${selectedCot.id}`, {
+      const res = await fetch(`/api/cotizaciones/${selectedCot.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: editItems, total: Math.max(0, editTotal) }),
@@ -134,7 +134,7 @@ export default function BarracaCotizacionesPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch('/api/barraca/cotizaciones');
+      const res = await fetch('/api/cotizaciones');
       if (res.ok) {
         const data = await res.json();
         setCotizaciones(Array.isArray(data) ? data : data.data || []);
@@ -150,7 +150,7 @@ export default function BarracaCotizacionesPage() {
 
   const changeEstado = async (cot: Cotizacion, nuevoEstado: string) => {
     try {
-      await fetch(`/api/barraca/cotizaciones/${cot.id}`, {
+      await fetch(`/api/cotizaciones/${cot.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: nuevoEstado }),
@@ -168,7 +168,7 @@ export default function BarracaCotizacionesPage() {
     setActionLoading(cot.id);
     setActionError('');
     try {
-      const res = await fetch('/api/barraca/pagos', {
+      const res = await fetch('/api/pagos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cotizacionId: cot.id, method }),
@@ -193,7 +193,7 @@ export default function BarracaCotizacionesPage() {
   const markAsPaid = async (cot: Cotizacion) => {
     setActionLoading(cot.id);
     try {
-      await fetch(`/api/barraca/cotizaciones/${cot.id}`, {
+      await fetch(`/api/cotizaciones/${cot.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: 'pagada' }),
@@ -254,7 +254,7 @@ export default function BarracaCotizacionesPage() {
         (sum, item) => sum + item.precioOriginal * item.cantidad,
         0
       );
-      const res = await fetch(`/api/barraca/cotizaciones/${cot.id}`, {
+      const res = await fetch(`/api/cotizaciones/${cot.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -272,7 +272,7 @@ export default function BarracaCotizacionesPage() {
       }
 
       // 2. Send email
-      const emailRes = await fetch('/api/barraca/cotizaciones/contraoferta-email', {
+      const emailRes = await fetch('/api/cotizaciones/contraoferta-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -327,7 +327,7 @@ export default function BarracaCotizacionesPage() {
     setSendingMessage(true);
     setActionError('');
     try {
-      const res = await fetch(`/api/barraca/cotizaciones/${selectedCot.id}/message`, {
+      const res = await fetch(`/api/cotizaciones/${selectedCot.id}/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -494,7 +494,7 @@ export default function BarracaCotizacionesPage() {
                           Mensaje
                         </button>
                         <a
-                          href={`/api/barraca/cotizaciones/${cot.id}/pdf`}
+                          href={`/api/cotizaciones/${cot.id}/pdf`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition flex items-center gap-1"
@@ -1174,7 +1174,7 @@ export default function BarracaCotizacionesPage() {
                   Enviar Mensaje
                 </button>
                 <a
-                  href={`/api/barraca/cotizaciones/${selectedCot.id}/pdf`}
+                  href={`/api/cotizaciones/${selectedCot.id}/pdf`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 text-sm font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition flex items-center gap-2"

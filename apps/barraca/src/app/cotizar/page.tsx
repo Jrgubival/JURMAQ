@@ -100,7 +100,7 @@ export default function CotizarPage() {
 
   useEffect(() => {
     const sid = getSessionId();
-    fetch("/api/barraca/carrito", { headers: { "X-Session-Id": sid } })
+    fetch("/api/carrito", { headers: { "X-Session-Id": sid } })
       .then((r) => r.json())
       .then((d) => {
         const list: CartItem[] = d.items || [];
@@ -170,7 +170,7 @@ export default function CotizarPage() {
         setUploadingFile(true);
         const formDataUpload = new FormData();
         formDataUpload.append("file", archivoCompetencia);
-        const uploadRes = await fetch("/api/barraca/upload", {
+        const uploadRes = await fetch("/api/upload", {
           method: "POST",
           body: formDataUpload,
         });
@@ -201,7 +201,7 @@ export default function CotizarPage() {
       } catch { /* no user */ }
 
       const sid = getSessionId();
-      const res = await fetch("/api/barraca/cotizaciones", {
+      const res = await fetch("/api/cotizaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -232,7 +232,7 @@ export default function CotizarPage() {
         // If the client opted into marketing, subscribe them to the newsletter.
         // Fire-and-forget; duplicates/rate-limits are silently ignored.
         if (aceptaMarketing && form.email) {
-          fetch("/api/barraca/suscriptores", {
+          fetch("/api/suscriptores", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: form.email, nombre: form.nombre || "" }),
@@ -590,8 +590,8 @@ export default function CotizarPage() {
                 />
                 <span>
                   He leido y acepto los{" "}
-                  <a href="/terminos" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline font-medium">Terminos y Condiciones</a>{" "}y la{" "}
-                  <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline font-medium">Politica de Privacidad</a>, y autorizo el tratamiento de mis datos personales conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>
+                  <a href="https://jurmaq.cl/terminos" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline font-medium">Terminos y Condiciones</a>{" "}y la{" "}
+                  <a href="https://jurmaq.cl/privacidad" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline font-medium">Politica de Privacidad</a>, y autorizo el tratamiento de mis datos personales conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>
                 </span>
               </label>
               <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
@@ -659,7 +659,7 @@ export default function CotizarPage() {
             <p className="text-xs text-gray-500 mt-4">* Los precios son referenciales y pueden variar. Te confirmamos el valor final.</p>
             <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
               Al enviar esta cotizacion aceptas los terminos del servicio. Consulta nuestras{" "}
-              <a href="/terminos#garantia" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">politicas de garantia y devolucion</a>.
+              <a href="https://jurmaq.cl/terminos#garantia" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">politicas de garantia y devolucion</a>.
             </p>
             <Link href="/carrito" className="block text-center text-sm text-orange-600 font-medium hover:text-orange-700 mt-4 transition-colors">
               Modificar carrito

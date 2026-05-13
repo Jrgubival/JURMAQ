@@ -83,8 +83,8 @@ export default function PreciosPage() {
   const fetchData = async () => {
     try {
       const [catRes, prodRes] = await Promise.all([
-        fetch('/api/barraca/categorias'),
-        fetch('/api/barraca/productos'),
+        fetch('/api/categorias'),
+        fetch('/api/productos'),
       ]);
       if (catRes.ok) {
         const data = await catRes.json();
@@ -169,7 +169,7 @@ export default function PreciosPage() {
   const applyPercentage = async () => {
     setPctApplying(true);
     try {
-      const res = await fetch('/api/barraca/productos/bulk-price', {
+      const res = await fetch('/api/productos/bulk-price', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -201,7 +201,7 @@ export default function PreciosPage() {
         const fierroCat = categorias.find((c) => c.nombre.toLowerCase().includes('fierro'));
         catId = fierroCat?.id || null;
       }
-      const res = await fetch('/api/barraca/productos/bulk-price', {
+      const res = await fetch('/api/productos/bulk-price', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -229,7 +229,7 @@ export default function PreciosPage() {
   const applyImage = async () => {
     setImgApplying(true);
     try {
-      const res = await fetch('/api/barraca/productos/bulk-image', {
+      const res = await fetch('/api/productos/bulk-image', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -261,7 +261,7 @@ export default function PreciosPage() {
     try {
       const fd = new FormData();
       fd.append('file', promoFile);
-      const res = await fetch('/api/barraca/promociones/import?mode=preview', {
+      const res = await fetch('/api/promociones/import?mode=preview', {
         method: 'POST',
         body: fd,
       });
@@ -289,7 +289,7 @@ export default function PreciosPage() {
     try {
       const fd = new FormData();
       fd.append('file', promoFile);
-      const res = await fetch('/api/barraca/promociones/import?mode=execute', {
+      const res = await fetch('/api/promociones/import?mode=execute', {
         method: 'POST',
         body: fd,
       });
@@ -313,7 +313,7 @@ export default function PreciosPage() {
   const promoExpire = async () => {
     setPromoExpireLoading(true);
     try {
-      const res = await fetch('/api/barraca/promociones/import?mode=expire', {
+      const res = await fetch('/api/promociones/import?mode=expire', {
         method: 'POST',
       });
       const data = await res.json();
@@ -335,7 +335,7 @@ export default function PreciosPage() {
     setOfertasLoading(true);
     setOfertasActivas([]);
     try {
-      const res = await fetch('/api/barraca/productos/bulk-price', {
+      const res = await fetch('/api/productos/bulk-price', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -364,7 +364,7 @@ export default function PreciosPage() {
   const removeOffers = async () => {
     setRemoveOfferApplying(true);
     try {
-      const res = await fetch('/api/barraca/productos/bulk-price', {
+      const res = await fetch('/api/productos/bulk-price', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -392,7 +392,7 @@ export default function PreciosPage() {
   const applyCotizar = async () => {
     setCotizarApplying(true);
     try {
-      const res = await fetch('/api/barraca/productos/bulk-price', {
+      const res = await fetch('/api/productos/bulk-price', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

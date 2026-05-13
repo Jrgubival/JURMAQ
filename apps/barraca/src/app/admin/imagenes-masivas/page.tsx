@@ -41,7 +41,7 @@ export default function ImagenesMasivasPage() {
 
   async function fetchCategorias() {
     try {
-      const res = await fetch('/api/barraca/categorias');
+      const res = await fetch('/api/categorias');
       const data = await res.json();
       // Flatten: include parent categories and subcategories
       const flat: Categoria[] = [];
@@ -66,7 +66,7 @@ export default function ImagenesMasivasPage() {
     setApplyingCat(cat.id);
     setCatResults((prev) => ({ ...prev, [cat.id]: '' }));
     try {
-      const res = await fetch('/api/barraca/productos/bulk-image', {
+      const res = await fetch('/api/productos/bulk-image', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -105,7 +105,7 @@ export default function ImagenesMasivasPage() {
     setBulkResult('');
     try {
       const res = await fetch(
-        `/api/barraca/productos?buscar=${encodeURIComponent(searchTerm)}&limit=200&all=true`
+        `/api/productos?buscar=${encodeURIComponent(searchTerm)}&limit=200&all=true`
       );
       const data = await res.json();
       setSearchResults(data.productos || []);
@@ -144,7 +144,7 @@ export default function ImagenesMasivasPage() {
     setApplyingBulk(true);
     setBulkResult('');
     try {
-      const res = await fetch('/api/barraca/productos/bulk-image', {
+      const res = await fetch('/api/productos/bulk-image', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -173,7 +173,7 @@ export default function ImagenesMasivasPage() {
     setApplyingBulk(true);
     setBulkResult('');
     try {
-      const res = await fetch('/api/barraca/productos/bulk-image', {
+      const res = await fetch('/api/productos/bulk-image', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

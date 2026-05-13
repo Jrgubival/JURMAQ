@@ -282,7 +282,7 @@ export default async function ProductoPage({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 pb-56 lg:pb-12">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8 flex-wrap">
-          <Link href="/barraca" className="hover:text-orange-600 transition-colors">Inicio</Link>
+          <Link href="/" className="hover:text-orange-600 transition-colors">Inicio</Link>
           {categoria && (
             <>
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>

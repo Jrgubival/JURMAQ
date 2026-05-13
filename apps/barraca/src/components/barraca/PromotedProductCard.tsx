@@ -91,7 +91,7 @@ export default function PromotedProductCard({
   async function handleAdd() {
     setAdding(true);
     try {
-      await fetch("/api/barraca/carrito", {
+      await fetch("/api/carrito", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

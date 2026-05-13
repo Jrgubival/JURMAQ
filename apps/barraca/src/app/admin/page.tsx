@@ -101,16 +101,16 @@ export default function BarracaAdminDashboard() {
         // ese KPI queda en 0 y no rompe la UI. Los routes auth-gated (admin)
         // requieren cookie de sesión; credentials:'include' garantiza el envío.
         const [cotizRes, prodRes, subsRes, promoRes] = await Promise.all([
-          fetch('/api/barraca/cotizaciones?limit=10', { credentials: 'include' })
+          fetch('/api/cotizaciones?limit=10', { credentials: 'include' })
             .then((r) => (r.ok ? r.json() : null))
             .catch(() => null),
-          fetch('/api/barraca/productos?limit=1', { credentials: 'include' })
+          fetch('/api/productos?limit=1', { credentials: 'include' })
             .then((r) => (r.ok ? r.json() : null))
             .catch(() => null),
-          fetch('/api/barraca/suscriptores?limit=1', { credentials: 'include' })
+          fetch('/api/suscriptores?limit=1', { credentials: 'include' })
             .then((r) => (r.ok ? r.json() : null))
             .catch(() => null),
-          fetch('/api/barraca/promociones?activa=1', { credentials: 'include' })
+          fetch('/api/promociones?activa=1', { credentials: 'include' })
             .then((r) => (r.ok ? r.json() : null))
             .catch(() => null),
         ]);
@@ -214,7 +214,7 @@ export default function BarracaAdminDashboard() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">Últimas cotizaciones</h2>
-          <Link href="/admin/barraca/cotizaciones" className="text-xs font-semibold text-orange-700 hover:text-orange-800">
+          <Link href="/admin/cotizaciones" className="text-xs font-semibold text-orange-700 hover:text-orange-800">
             Ver todas →
           </Link>
         </div>

@@ -118,7 +118,7 @@ function Navbar() {
   }, [mobileOpen, cartOpen]);
 
   useEffect(() => {
-    fetch("/api/barraca/categorias")
+    fetch("/api/categorias")
       .then((r) => r.json())
       .then((d) => setCategorias(Array.isArray(d) ? d : d.categorias || []))
       .catch(() => {});
@@ -166,7 +166,7 @@ function Navbar() {
   function fetchCartCount() {
     const sid = getSessionId();
     if (!sid) return;
-    fetch("/api/barraca/carrito", {
+    fetch("/api/carrito", {
       headers: { "X-Session-Id": sid },
     })
       .then((r) => r.json())

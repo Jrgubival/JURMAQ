@@ -29,7 +29,7 @@ function ExitoContent() {
       for (let attempts = 0; attempts < maxAttempts && !cancelled; attempts++) {
         try {
           const res = await fetch(
-            `/api/barraca/cotizaciones/by-numero/${encodeURIComponent(externalReference!)}`
+            `/api/cotizaciones/by-numero/${encodeURIComponent(externalReference!)}`
           );
           if (res.ok) {
             const data = await res.json();
@@ -137,7 +137,7 @@ function ExitoContent() {
             Volver al Inicio
           </Link>
           <Link
-            href="/catalogo"
+            href="/categorias"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold rounded-lg transition-colors"
           >
             Seguir Comprando

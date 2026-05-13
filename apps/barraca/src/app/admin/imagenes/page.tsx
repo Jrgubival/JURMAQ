@@ -58,7 +58,7 @@ export default function ImagenesBarracaPage() {
     try {
       // Fetch all active products, we'll filter client-side for those needing images
       const res = await fetch(
-        `/api/barraca/productos?page=${pageNum}&limit=50`
+        `/api/productos?page=${pageNum}&limit=50`
       );
       const data = await res.json();
 
@@ -113,7 +113,7 @@ export default function ImagenesBarracaPage() {
     setLoadingSimilar(true);
     try {
       const res = await fetch(
-        `/api/barraca/imagenes/similar?productoId=${productoId}`
+        `/api/imagenes/similar?productoId=${productoId}`
       );
       const data = await res.json();
       const sims: SimilarProduct[] = data.similar || [];
@@ -147,7 +147,7 @@ export default function ImagenesBarracaPage() {
     // Actually save
     setSaving(true);
     try {
-      const res = await fetch('/api/barraca/imagenes/assign', {
+      const res = await fetch('/api/imagenes/assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

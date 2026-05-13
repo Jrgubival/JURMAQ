@@ -47,7 +47,7 @@ function ErrorContent() {
             Volver al Inicio
           </Link>
           <Link
-            href="/catalogo"
+            href="/categorias"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold rounded-lg transition-colors"
           >
             Seguir Comprando

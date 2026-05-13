@@ -65,8 +65,8 @@ export default function PromocionesAdminPage() {
     setLoading(true);
     try {
       const [promoRes, catRes] = await Promise.all([
-        fetch('/api/barraca/promociones'),
-        fetch('/api/barraca/categorias'),
+        fetch('/api/promociones'),
+        fetch('/api/categorias'),
       ]);
       const promoData = await promoRes.json();
       const catData = await catRes.json();
@@ -86,7 +86,7 @@ export default function PromocionesAdminPage() {
 
   async function handleSeed() {
     try {
-      const res = await fetch('/api/barraca/setup', { method: 'POST' });
+      const res = await fetch('/api/setup', { method: 'POST' });
       const data = await res.json();
       if (data.sql) {
         setSetupSql(data.sql);
@@ -131,13 +131,13 @@ export default function PromocionesAdminPage() {
     e.preventDefault();
     try {
       if (editPromo) {
-        await fetch('/api/barraca/promociones', {
+        await fetch('/api/promociones', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: editPromo.id, ...form }),
         });
       } else {
-        await fetch('/api/barraca/promociones', {
+        await fetch('/api/promociones', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
@@ -151,7 +151,7 @@ export default function PromocionesAdminPage() {
   }
 
   async function toggleActiva(promo: Promocion) {
-    await fetch('/api/barraca/promociones', {
+    await fetch('/api/promociones', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: promo.id, activa: !promo.activa }),
@@ -161,7 +161,7 @@ export default function PromocionesAdminPage() {
 
   async function handleDelete(id: number) {
     if (!confirm('Eliminar esta promocion?')) return;
-    await fetch(`/api/barraca/promociones?id=${id}`, { method: 'DELETE' });
+    await fetch(`/api/promociones?id=${id}`, { method: 'DELETE' });
     loadData();
   }
 
