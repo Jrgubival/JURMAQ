@@ -51,15 +51,10 @@ export async function GET(
     const emailMatches = !!emailParam && !!data.email && emailParam === String(data.email).trim().toLowerCase();
     const fullAccess = isAdmin || emailMatches;
 
-    // Fetch cotizacion items if they exist
-    const { data: items } = await supabaseAdmin
-      .from('barraca_cotizacion_items')
-      .select('*')
-      .eq('cotizacion_id', data.id)
-      .order('id', { ascending: true });
-
+    // items vive como TEXT (JSON) en barraca_cotizaciones; la pagina llama
+    // parseItems() para deserializar. No hay tabla separada de items.
     if (fullAccess) {
-      return NextResponse.json({ ...data, items: items || [] });
+      return NextResponse.json(data);
     }
 
     // Public (limited) response: strip PII
@@ -74,7 +69,6 @@ export async function GET(
       ...safe,
       // Mask nombre to first name only
       nombre: typeof data.nombre === 'string' ? data.nombre.split(' ')[0] : null,
-      items: items || [],
       _limited: true,
     });
   } catch (error) {

@@ -28,10 +28,10 @@ import {
 async function loadMaquinaria(id: number): Promise<MaquinariaPricing | null> {
   const { data } = await supabaseAdmin
     .from('maquinarias')
-    .select('id, nombre, tarifa_neta, unidad_tarifa, minimo_unidades, requiere_traslado, activo')
+    .select('id, nombre, tarifa_neta, unidad_tarifa, minimo_unidades, requiere_traslado, estado')
     .eq('id', id)
     .single();
-  if (!data || !data.activo) return null;
+  if (!data || data.estado !== 'disponible') return null;
   if (!data.tarifa_neta || !data.unidad_tarifa || !data.minimo_unidades) return null;
   return {
     id: data.id,
