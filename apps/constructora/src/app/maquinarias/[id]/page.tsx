@@ -165,6 +165,8 @@ export default async function MaquinariaDetailPage({
     }
   }
 
+  const desdePrecio = precioPublicoDesde(machine);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
