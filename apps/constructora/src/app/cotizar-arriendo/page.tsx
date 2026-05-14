@@ -21,7 +21,15 @@ interface MaquinariaCatalog {
   requiere_traslado: boolean;
 }
 
-export default async function CotizarArriendoPage() {
+export default async function CotizarArriendoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ maquinariaId?: string }>;
+}) {
+  const sp = await searchParams;
+  const preselectId = sp.maquinariaId ? Number.parseInt(sp.maquinariaId, 10) : null;
+  const validPreselect = Number.isFinite(preselectId) && preselectId! > 0 ? preselectId! : null;
+
   // Solo máquinas con tarifa configurada (lo demás aún no soporta cotización online)
   const { data } = await supabasePublic
     .from('maquinarias')
@@ -64,7 +72,7 @@ export default async function CotizarArriendoPage() {
             </p>
           </div>
         ) : (
-          <WizardClient maquinarias={maquinarias} />
+          <WizardClient maquinarias={maquinarias} preselectId={validPreselect} />
         )}
 
         {/* Trust signals */}
