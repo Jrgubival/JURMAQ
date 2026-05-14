@@ -261,8 +261,12 @@ export default async function MaquinariasPage({
                   key={machine.id}
                   className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  {/* Image */}
-                  <div className="relative h-52 bg-gradient-to-br from-navy-900 to-navy-800 flex items-center justify-center overflow-hidden">
+                  {/* Image (clickable → detalle) */}
+                  <Link
+                    href={`/maquinarias/${machine.id}`}
+                    aria-label={`Ver detalle de ${machine.nombre}`}
+                    className="relative h-52 bg-gradient-to-br from-navy-900 to-navy-800 flex items-center justify-center overflow-hidden block"
+                  >
                     {machine.imagen ? (
                       <img
                         src={machine.imagen}
@@ -300,12 +304,17 @@ export default async function MaquinariasPage({
                         {getTipoLabel(machine.tipo)}
                       </span>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Content */}
                   <div className="p-6">
                     <h3 className="text-lg font-bold text-navy-950 mb-2">
-                      {machine.nombre}
+                      <Link
+                        href={`/maquinarias/${machine.id}`}
+                        className="hover:text-gold-600 transition-colors"
+                      >
+                        {machine.nombre}
+                      </Link>
                     </h3>
                     <p className="text-sm text-gray-600 mb-5 line-clamp-3 leading-relaxed">
                       {machine.descripcion || "Consulta por especificaciones técnicas."}
