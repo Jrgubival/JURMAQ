@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 export async function PUT(request: NextRequest) {
   if (!isValidOrigin(request)) {
@@ -11,6 +12,14 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await requirePermission('barraca_precios', 'update');
     if (!session) return forbiddenResponse('No tienes permiso');
+
+    // Bulk price update can rewrite hundreds of rows; cap to 5/min/IP so a
+    // mis-typed multiplier or a runaway script can't churn the DB.
+    const ip = getClientIp(request);
+    const limiter = rateLimit(`bulk-price:${ip}`, { maxAttempts: 5, windowSeconds: 60 });
+    if (!limiter.success) {
+      return NextResponse.json({ error: 'Demasiadas operaciones masivas. Espera un minuto.' }, { status: 429 });
+    }
 
     const body = await request.json();
     const { action } = body;
