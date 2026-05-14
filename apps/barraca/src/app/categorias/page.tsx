@@ -150,7 +150,7 @@ export default async function CategoriasPage() {
               key={cat.id}
               className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-orange-200 transition-all"
             >
-              <Link href={`/barraca/categorias/${cat.slug}`}>
+              <Link href={`/categorias/${cat.slug}`}>
                 <div className="aspect-[16/9] bg-gray-100 relative overflow-hidden">
                   {getCategoryImage(cat.imagen, cat.slug) ? (
                     <img
@@ -186,7 +186,7 @@ export default async function CategoriasPage() {
                     {subcats.map((sub) => (
                       <Link
                         key={sub.id}
-                        href={`/barraca/categorias/${sub.slug}`}
+                        href={`/categorias/${sub.slug}`}
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-orange-100 hover:text-orange-700 transition-colors"
                       >
                         {sub.nombre}

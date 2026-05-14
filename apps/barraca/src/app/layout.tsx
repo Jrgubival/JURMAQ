@@ -266,7 +266,7 @@ function Navbar() {
                       {categorias.map((cat) => (
                         <Link
                           key={cat.id}
-                          href={`/barraca/categorias/${cat.slug}`}
+                          href={`/categorias/${cat.slug}`}
                           className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                         >
                           <svg className="w-4 h-4 text-orange-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -440,7 +440,7 @@ function Navbar() {
               {categorias.slice(0, 8).map((cat) => (
                 <Link
                   key={cat.id}
-                  href={`/barraca/categorias/${cat.slug}`}
+                  href={`/categorias/${cat.slug}`}
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center px-8 min-h-[44px] py-2.5 text-sm text-gray-400 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
                 >
