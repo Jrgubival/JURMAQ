@@ -167,3 +167,32 @@ export function validarInput(input: Partial<CotizacionInput>): string | null {
   }
   return null;
 }
+
+/**
+ * Precio "Desde X/dia" para vitrina pública (listings, detalle, landings).
+ *
+ * Es un piso visible derivado de la MISMA fuente que el cotizador (tarifa_neta
+ * + mínimo de unidades), con IVA incluido y SIN traslado/peajes/operario. Sirve
+ * para que cliente entienda el orden de magnitud antes de cotizar. El precio
+ * real (con traslado) lo calcula el wizard.
+ *
+ * Formula:
+ *   base_neta = tarifa_neta × max(minimo_unidades, 1)   // si unidad=hora, 1 día = minimo_unidades horas
+ *   total_dia = base_neta × 1.19                        // IVA Chile 2026
+ *
+ * Retorna null si la máquina no tiene tarifa configurada (estaba pendiente
+ * de migración) — el caller debe mostrar "Cotiza online" en ese caso.
+ */
+export function precioPublicoDesde(m: {
+  tarifa_neta?: number | null;
+  unidad_tarifa?: string | null;
+  minimo_unidades?: number | null;
+}): number | null {
+  if (!m.tarifa_neta || m.tarifa_neta <= 0) return null;
+  if (m.unidad_tarifa !== 'hora' && m.unidad_tarifa !== 'dia') return null;
+  const minimo = Math.max(Number(m.minimo_unidades) || 1, 1);
+  const baseNeta = m.unidad_tarifa === 'hora'
+    ? Number(m.tarifa_neta) * minimo
+    : Number(m.tarifa_neta);
+  return Math.round(baseNeta * (1 + IVA_RATE));
+}

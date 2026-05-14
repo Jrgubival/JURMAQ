@@ -1,5 +1,5 @@
 import 'server-only';
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { supabasePublic } from "@jurmaq/shared/supabase";
 import { escapeLikePattern } from "@jurmaq/shared/sanitize";
 import { applyDailyPromosToProducts } from './promotions';
 
@@ -61,7 +61,7 @@ export async function searchProducts(q: string, limit: number = 48) {
   const fullPattern = `%${escapeLikePattern(q.trim())}%`;
 
   // Strategy 1: exact substring match
-  const { data: exactResults } = await supabaseAdmin
+  const { data: exactResults } = await supabasePublic
     .from('barraca_productos')
     .select('*, barraca_categorias!left(nombre, slug)')
     .eq('activo', true)
@@ -86,7 +86,7 @@ export async function searchProducts(q: string, limit: number = 48) {
 
   // Try AND logic (all words must match via any synonym)
   if (words.length > 1) {
-    let query = supabaseAdmin
+    let query = supabasePublic
       .from('barraca_productos')
       .select('*, barraca_categorias!left(nombre, slug)')
       .eq('activo', true)
@@ -108,7 +108,7 @@ export async function searchProducts(q: string, limit: number = 48) {
 
   // Strategy 3: OR logic (any word matches — broadest)
   const allConditions = wordFilters.flat().concat([`codigo.ilike.${fullPattern}`]);
-  const { data } = await supabaseAdmin
+  const { data } = await supabasePublic
     .from('barraca_productos')
     .select('*, barraca_categorias!left(nombre, slug)')
     .eq('activo', true)

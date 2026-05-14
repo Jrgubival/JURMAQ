@@ -3,13 +3,27 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { data, error } = await supabaseAdmin
+    // Solo admin/panel — exposiciones publicas pasan por
+    // src/lib/promotions.ts (que filtra activa+fechas vigentes via supabasePublic).
+    // Antes este GET devolvia todo el catalogo de promociones (inactivas,
+    // futuras, borradores) sin gate — business-intelligence leak.
+    const session = await requirePermission('barraca_promociones', 'read');
+    if (!session) return forbiddenResponse('No tienes permiso');
+    void session;
+
+    // El admin dashboard usa `?activa=1` para mostrar solo activas.
+    const { searchParams } = new URL(request.url);
+    const onlyActive = searchParams.get('activa') === '1';
+
+    let query = supabaseAdmin
       .from('barraca_promociones')
       .select('*, barraca_categorias(nombre, slug)')
       .order('id', { ascending: false });
+    if (onlyActive) query = query.eq('activa', true);
 
+    const { data, error } = await query;
     if (error) throw error;
 
     return NextResponse.json({ promociones: data || [] });

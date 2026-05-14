@@ -100,7 +100,7 @@ export default function ProductCard({
         en_oferta && precio_original && precio_original > 0
           ? precio_original
           : null;
-      await fetch("/api/carrito", {
+      const res = await fetch("/api/carrito", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,6 +113,15 @@ export default function ProductCard({
           ...(overridePrice ? { precioOverride: overridePrice } : {}),
         }),
       });
+      if (!res.ok) {
+        // 429 rate-limit, 403 origin, 400 stock — todos surface al usuario.
+        // Antes el catch solo agarraba network errors y mostrabamos "Agregado"
+        // aunque el server hubiera rechazado el item.
+        const data = await res.json().catch(() => ({} as { error?: string }));
+        const msg = (data as { error?: string }).error || (res.status === 429 ? "Demasiadas solicitudes" : "No se pudo agregar al carrito");
+        showToast(msg, "error");
+        return;
+      }
       setAdded(true);
       window.dispatchEvent(new Event("cart-updated"));
       showToast("Agregado al carrito", "success");

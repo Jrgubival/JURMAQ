@@ -71,7 +71,13 @@ export async function PUT(
     if (body.tipo !== undefined) updateData.tipo = body.tipo;
     if (body.descripcion !== undefined) updateData.descripcion = body.descripcion;
     if (body.monto !== undefined) updateData.monto = body.monto;
-    if (body.estado !== undefined) updateData.estado = body.estado;
+    if (body.estado !== undefined) {
+      const ALLOWED_ESTADO = new Set(['pendiente', 'en_progreso', 'completado', 'cancelado']);
+      if (!ALLOWED_ESTADO.has(body.estado)) {
+        return NextResponse.json({ error: 'Estado invalido' }, { status: 400 });
+      }
+      updateData.estado = body.estado;
+    }
     if (body.fechaInicio !== undefined) updateData.fecha_inicio = body.fechaInicio;
     if (body.fecha_inicio !== undefined) updateData.fecha_inicio = body.fecha_inicio;
     if (body.fechaFin !== undefined) updateData.fecha_fin = body.fechaFin;

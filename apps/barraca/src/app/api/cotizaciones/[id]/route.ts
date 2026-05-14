@@ -95,7 +95,13 @@ export async function PUT(
     }
 
     const updateData: Record<string, unknown> = {};
-    if (body.estado !== undefined) updateData.estado = body.estado;
+    if (body.estado !== undefined) {
+      const ALLOWED_ESTADO = new Set(['pendiente', 'enviada', 'aprobada', 'rechazada', 'contraoferta', 'pagada']);
+      if (!ALLOWED_ESTADO.has(body.estado)) {
+        return NextResponse.json({ error: 'Estado invalido' }, { status: 400 });
+      }
+      updateData.estado = body.estado;
+    }
     if (body.notas !== undefined) updateData.notas = body.notas;
     if (body.contraoferta_items !== undefined) updateData.contraoferta_items = typeof body.contraoferta_items === 'string' ? body.contraoferta_items : JSON.stringify(body.contraoferta_items);
     if (body.contraoferta_total !== undefined) updateData.contraoferta_total = body.contraoferta_total;

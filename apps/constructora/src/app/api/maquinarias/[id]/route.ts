@@ -103,7 +103,13 @@ export async function PUT(
       if (body.imagen !== undefined) updateData.imagen = body.imagen;
     }
     // Estado lo puede cambiar tanto admin/gerente como operador.
-    if (body.estado !== undefined) updateData.estado = body.estado;
+    if (body.estado !== undefined) {
+      const ALLOWED_ESTADO = new Set(['disponible', 'arrendada', 'mantencion']);
+      if (!ALLOWED_ESTADO.has(body.estado)) {
+        return NextResponse.json({ error: 'Estado invalido' }, { status: 400 });
+      }
+      updateData.estado = body.estado;
+    }
 
     const { data: result, error } = await supabaseAdmin
       .from('maquinarias')

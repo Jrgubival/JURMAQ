@@ -81,7 +81,13 @@ export async function PUT(
     if (body.fecha_inicio !== undefined) updateData.fecha_inicio = body.fecha_inicio;
     if (body.fechaFin !== undefined) updateData.fecha_fin = body.fechaFin;
     if (body.fecha_fin !== undefined) updateData.fecha_fin = body.fecha_fin;
-    if (body.estado !== undefined) updateData.estado = body.estado;
+    if (body.estado !== undefined) {
+      const ALLOWED_ESTADO = new Set(['pendiente', 'aprobada', 'rechazada']);
+      if (!ALLOWED_ESTADO.has(body.estado)) {
+        return NextResponse.json({ error: 'Estado invalido' }, { status: 400 });
+      }
+      updateData.estado = body.estado;
+    }
     if (body.servicio !== undefined) updateData.servicio = body.servicio;
     if (body.mensaje !== undefined) updateData.mensaje = body.mensaje;
     if (body.notas !== undefined) updateData.notas = body.notas;

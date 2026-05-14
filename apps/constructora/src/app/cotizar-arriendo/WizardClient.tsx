@@ -30,9 +30,21 @@ interface Desglose {
 const STEPS = ['Máquina', 'Servicio', 'Detalles', 'Confirmar'] as const;
 type Step = (typeof STEPS)[number];
 
-export default function WizardClient({ maquinarias }: { maquinarias: MaquinariaCatalog[] }) {
-  const [step, setStep] = useState<number>(0);
-  const [selectedMaq, setSelectedMaq] = useState<MaquinariaCatalog | null>(null);
+export default function WizardClient({
+  maquinarias,
+  preselectId = null,
+}: {
+  maquinarias: MaquinariaCatalog[];
+  preselectId?: number | null;
+}) {
+  const initialPreselect = useMemo(
+    () => (preselectId ? maquinarias.find((m) => m.id === preselectId) ?? null : null),
+    [preselectId, maquinarias],
+  );
+  // Si el usuario viene con ?maquinariaId desde la página de detalle, ya eligió
+  // máquina — saltamos el step 0 para no obligarlo a re-confirmar.
+  const [step, setStep] = useState<number>(initialPreselect ? 1 : 0);
+  const [selectedMaq, setSelectedMaq] = useState<MaquinariaCatalog | null>(initialPreselect);
   const [unidades, setUnidades] = useState<number>(0);
   const [fecha, setFecha] = useState<string>('');
   const [ubicacion, setUbicacion] = useState<string>('');

@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 export async function PUT(request: NextRequest) {
   if (!isValidOrigin(request)) {
@@ -11,6 +12,13 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await requirePermission('barraca_imagenes', 'update');
     if (!session) return forbiddenResponse('No tienes permiso');
+
+    // Bulk image update touches many rows; cap to 5/min/IP.
+    const ip = getClientIp(request);
+    const limiter = rateLimit(`bulk-image:${ip}`, { maxAttempts: 5, windowSeconds: 60 });
+    if (!limiter.success) {
+      return NextResponse.json({ error: 'Demasiadas operaciones masivas. Espera un minuto.' }, { status: 429 });
+    }
 
     const body = await request.json();
     const { action, categoriaId, ids, namePrefix, imagen } = body;

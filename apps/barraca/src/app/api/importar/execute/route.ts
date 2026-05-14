@@ -3,6 +3,7 @@ export const maxDuration = 60; // Allow up to 60 seconds for large imports
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { parseExcelFile, matchProducts, executeImport } from '@/lib/import-barraca-smart';
 
 export async function POST(request: NextRequest) {
@@ -11,6 +12,13 @@ export async function POST(request: NextRequest) {
   }
   const session = await requirePermission('barraca_importar', 'create');
   if (!session) return forbiddenResponse('No tienes permiso');
+
+  // Excel import can rewrite the whole catalog; cap aggressively.
+  const ip = getClientIp(request);
+  const limiter = rateLimit(`import-exec:${ip}`, { maxAttempts: 3, windowSeconds: 300 });
+  if (!limiter.success) {
+    return NextResponse.json({ error: 'Demasiadas importaciones. Espera 5 minutos.' }, { status: 429 });
+  }
 
   const formData = await request.formData();
   const file = formData.get('file') as File;

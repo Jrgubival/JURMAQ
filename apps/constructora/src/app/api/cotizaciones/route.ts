@@ -77,6 +77,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'El servicio es requerido' }, { status: 400 });
     }
 
+    const ALLOWED_ESTADO = new Set(['pendiente', 'enviada', 'aceptada', 'rechazada']);
+    if (body.estado !== undefined && !ALLOWED_ESTADO.has(body.estado)) {
+      return NextResponse.json({ error: 'Estado invalido' }, { status: 400 });
+    }
+
     const { data: result, error } = await supabaseAdmin
       .from('cotizaciones')
       .insert({

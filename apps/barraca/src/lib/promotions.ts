@@ -1,5 +1,8 @@
 import 'server-only';
-import { supabaseAdmin } from "@jurmaq/shared/supabase";
+// Reads only public slices (activa promotions, activo products, top-level
+// categories). All three tables have RLS policies that allow anon SELECT
+// on these slices, so we use supabasePublic — principle of least privilege.
+import { supabasePublic } from "@jurmaq/shared/supabase";
 
 export interface Promocion {
   id: number;
@@ -40,7 +43,7 @@ export interface ProductoPromocionado {
  * Same date always returns the same promotions, enabling caching.
  */
 export async function getDailyPromotions(count: number = 4): Promise<Promocion[]> {
-  const { data: promos } = await supabaseAdmin
+  const { data: promos } = await supabasePublic
     .from('barraca_promociones')
     .select('*, barraca_categorias(nombre, slug)')
     .eq('activa', true);
@@ -72,7 +75,7 @@ export async function getPromotedProducts(
   limit: number = 8
 ): Promise<ProductoPromocionado[]> {
   // Get subcategories of the promo's category to include their products too
-  const { data: subCats } = await supabaseAdmin
+  const { data: subCats } = await supabasePublic
     .from('barraca_categorias')
     .select('id')
     .eq('padre_id', promocion.categoria_id)
@@ -81,7 +84,7 @@ export async function getPromotedProducts(
   const catIds = [promocion.categoria_id, ...(subCats || []).map((s: any) => s.id)];
 
   // Query products from parent AND subcategories
-  const { data: products } = await supabaseAdmin
+  const { data: products } = await supabasePublic
     .from('barraca_productos')
     .select('*')
     .in('categoria_id', catIds)
@@ -115,7 +118,7 @@ export async function getPromotedProducts(
  */
 export async function getActiveCategoryDiscountMap(): Promise<Map<number, number>> {
   const map = new Map<number, number>();
-  const { data: activePromos } = await supabaseAdmin
+  const { data: activePromos } = await supabasePublic
     .from('barraca_promociones')
     .select('id, categoria_id, descuento_porcentaje, activa')
     .eq('activa', true);
@@ -128,7 +131,7 @@ export async function getActiveCategoryDiscountMap(): Promise<Map<number, number
 
   // Cascade promo to subcategories of each promo'd category.
   const promoCatIds = Array.from(map.keys());
-  const { data: subCats } = await supabaseAdmin
+  const { data: subCats } = await supabasePublic
     .from('barraca_categorias')
     .select('id, padre_id')
     .in('padre_id', promoCatIds);
