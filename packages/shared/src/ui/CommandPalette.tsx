@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Command } from "cmdk";
 import { useRouter } from "next/navigation";
 
@@ -21,7 +21,7 @@ export interface CommandItem {
   href: string;
   keywords?: string[];
   group?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 interface Props {

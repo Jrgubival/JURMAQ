@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import NextAuth from 'next-auth';
 import { authConfig } from '@jurmaq/shared/auth/config';
 
-const authMiddleware = NextAuth(authConfig).auth;
+const authMiddleware = NextAuth({
+  ...authConfig,
+  pages: {
+    ...authConfig.pages,
+    signIn: '/barraca/cuenta/login',
+  },
+}).auth;
 
 export default async function middleware(request: NextRequest) {
   // En apps/constructora el dominio canónico es jurmaq.cl directo.
@@ -17,7 +23,7 @@ export default async function middleware(request: NextRequest) {
   }
   // NextAuth protection en /admin/*
   if (pathname.startsWith('/admin')) {
-    // @ts-ignore
+    // @ts-expect-error — NextAuth middleware spread compatibility
     return authMiddleware(request);
   }
   return NextResponse.next();

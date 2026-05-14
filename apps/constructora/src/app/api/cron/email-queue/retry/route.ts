@@ -64,9 +64,8 @@ export async function POST(request: NextRequest) {
             };
             await sendSignedContractEmail(item.to, {
               numero: p.numero,
-              nombre: p.nombre,
-              html: p.html,
-              pdfUrl: p.pdfUrl,
+              arrendatarioNombre: p.nombre,
+              pdfUrl: p.pdfUrl ?? '',
               pdfBuffer: p.pdfBufferBase64 ? Buffer.from(p.pdfBufferBase64, 'base64') : undefined,
             });
             break;

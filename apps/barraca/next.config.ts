@@ -25,7 +25,6 @@ import path from "node:path";
 
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
-  typescript: { ignoreBuildErrors: true },
   serverExternalPackages: ['bcryptjs', 'xlsx'],
   transpilePackages: ['@jurmaq/shared'],
   // Monorepo: punto a la raíz del workspace (donde vive pnpm-lock).

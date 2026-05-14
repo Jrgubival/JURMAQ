@@ -60,7 +60,7 @@ export default function CotizacionesPage() {
   const [editing, setEditing] = useState<Cotizacion | null>(null);
   const [form, setForm] = useState(emptyCotizacion);
   const [saving, setSaving] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | number | null>(null);
 
   const fetchData = async () => {
     try {
@@ -139,7 +139,7 @@ export default function CotizacionesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string | number) => {
     try {
       const res = await fetch(`/api/cotizaciones/${id}`, { method: 'DELETE' });
       if (res.ok) {

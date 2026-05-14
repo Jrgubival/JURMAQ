@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { tiposCombustibleLabels, estadosLabels, type EstadoFactura } from '@/lib/combustible-utils';
+import { tiposCombustibleLabels, estadosLabels, type EstadoFactura, type TipoCombustible } from '@/lib/combustible-utils';
 import { formatCLP } from "@jurmaq/shared/format";
 
 export default function FacturaDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -127,7 +127,7 @@ export default function FacturaDetailPage({ params }: { params: Promise<{ id: st
               <tr key={it.id}>
                 <td className="py-2">{it.maquinarias?.nombre || <span className="text-gray-400">sin asignar</span>}</td>
                 <td className="py-2">{it.contratos?.numero || '-'}</td>
-                <td className="py-2">{tiposCombustibleLabels[it.tipo_combustible as any] || it.tipo_combustible}</td>
+                <td className="py-2">{tiposCombustibleLabels[it.tipo_combustible as TipoCombustible] || it.tipo_combustible}</td>
                 <td className="py-2 text-right">{formatLitros(Number(it.litros))}</td>
                 <td className="py-2 text-right">{formatCLP(Number(it.monto))}</td>
                 <td className="py-2 text-right">{it.precio_por_litro ? '$' + Number(it.precio_por_litro).toFixed(1) : '-'}</td>

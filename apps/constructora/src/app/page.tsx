@@ -135,8 +135,9 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ===== HERO SECTION ===== */}
-      <section className="relative bg-navy-950 overflow-hidden min-h-[90vh] flex items-center">
+      <main id="main-content">
+        {/* ===== HERO SECTION ===== */}
+        <section className="relative bg-navy-950 overflow-hidden min-h-[90vh] flex items-center">
         {/* Slideshow Background */}
         <HeroSlideshow />
 
@@ -210,7 +211,7 @@ export default async function HomePage() {
       </section>
 
       {/* ===== DIVISIONS SECTION ===== */}
-      <section id="divisiones" className="py-16 lg:py-24 bg-white content-auto">
+        <section id="divisiones" className="py-16 lg:py-24 bg-white content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 lg:mb-16">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-navy-950 mb-3">
@@ -306,8 +307,8 @@ export default async function HomePage() {
       </section>
 
       {/* ===== FEATURED MACHINERY ===== */}
-      {(featuredMachines || []).length > 0 && (
-        <section className="py-16 lg:py-24 bg-gray-50 content-auto">
+        {(featuredMachines || []).length > 0 && (
+          <section className="py-16 lg:py-24 bg-gray-50 content-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
               <div>
@@ -404,11 +405,11 @@ export default async function HomePage() {
               ))}
             </StaggeredGrid>
           </div>
-        </section>
-      )}
+          </section>
+        )}
 
       {/* ===== CLIENTS SECTION ===== */}
-      <section className="py-16 lg:py-20 bg-white border-y border-gray-100 content-auto">
+        <section className="py-16 lg:py-20 bg-white border-y border-gray-100 content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl lg:text-3xl font-extrabold text-navy-950">
@@ -439,7 +440,7 @@ export default async function HomePage() {
       </section>
 
       {/* ===== PROJECTS PREVIEW ===== */}
-      <section id="proyectos" className="py-16 lg:py-24 bg-gray-50 content-auto">
+        <section id="proyectos" className="py-16 lg:py-24 bg-gray-50 content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 lg:mb-16">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-navy-950 mb-4">
@@ -503,7 +504,7 @@ export default async function HomePage() {
       </section>
 
       {/* ===== CTA SECTION ===== */}
-      <section className="bg-navy-950 py-16 lg:py-20">
+        <section className="bg-navy-950 py-16 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4">
             Cotiza ahora y recibe respuesta hoy
@@ -531,7 +532,8 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+        </section>
+      </main>
 
       {/* JSON-LD Structured Data */}
       <script

@@ -25,7 +25,9 @@ export type ContratoAuditEventType =
   | 'otp_verified'
   | 'otp_failed'
   | 'sign_completed'
-  | 'sign_failed';
+  | 'sign_failed'
+  | 'arrendador_signed'
+  | 'arrendador_unsigned';
 
 export interface ContratoAuditMetadata {
   // Free-form JSON for event-specific details. NEVER include the OTP code,

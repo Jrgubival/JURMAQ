@@ -6,6 +6,22 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
+interface PaymentItem {
+  nombre: string;
+  cantidad: number;
+  precio: number;
+  subtotal?: number;
+}
+
+interface CotizacionPago {
+  id: number;
+  numero: string;
+  nombre: string;
+  email: string;
+  total: number;
+  items: string | PaymentItem[];
+}
+
 export async function POST(request: NextRequest) {
   // Endpoint admin-only: solo el panel /admin/barraca/cotizaciones lo invoca
   // cuando un admin/vendedor aprueba una cotizacion y genera link de pago.
@@ -45,7 +61,7 @@ export async function POST(request: NextRequest) {
     // Splicing the raw string into a PostgREST .or() clause is injectable
     // (commas/parentheses escape the expression); use separate queries.
     const asInt = Number(cotizacionId);
-    let cotizacion: Record<string, unknown> | null = null;
+    let cotizacion: CotizacionPago | null = null;
     let error: { message?: string } | null = null;
     if (Number.isFinite(asInt) && Number.isInteger(asInt) && asInt > 0) {
       const r = await supabaseAdmin
@@ -53,7 +69,7 @@ export async function POST(request: NextRequest) {
         .select('*')
         .eq('id', asInt)
         .maybeSingle();
-      cotizacion = r.data as Record<string, unknown> | null;
+      cotizacion = r.data as CotizacionPago | null;
       error = r.error;
     }
     if (!cotizacion) {
@@ -66,7 +82,7 @@ export async function POST(request: NextRequest) {
         .select('*')
         .eq('numero', num)
         .maybeSingle();
-      cotizacion = r.data as Record<string, unknown> | null;
+      cotizacion = r.data as CotizacionPago | null;
       error = r.error;
     }
 
@@ -78,9 +94,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse items
-    let items: Array<{ nombre: string; cantidad: number; precio: number; subtotal?: number }> = [];
+    let items: PaymentItem[] = [];
     try {
-      items = typeof cotizacion.items === 'string' ? JSON.parse(cotizacion.items) : cotizacion.items;
+      items = typeof cotizacion.items === 'string'
+        ? JSON.parse(cotizacion.items) as PaymentItem[]
+        : cotizacion.items;
     } catch {
       return NextResponse.json(
         { error: 'Error al procesar los items de la cotizacion' },

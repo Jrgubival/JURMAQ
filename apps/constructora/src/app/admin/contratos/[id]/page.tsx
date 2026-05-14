@@ -352,9 +352,9 @@ export default function ContratoDetailPage({
               <MetaRow label="Modalidad" value={contrato.precio_unidad ? `Por ${contrato.precio_unidad}` : '-'} />
               <MetaRow label="Fecha inicio" value={formatDate(contrato.fecha_inicio)} />
               <MetaRow label="Fecha termino" value={formatDate(contrato.fecha_termino)} />
-              <MetaRow label={`Precio por ${contrato.precio_unidad || 'unidad'}`} value={formatCLP(contrato.precio_por_unidad)} />
-              <MetaRow label="Total" value={formatCLP(contrato.precio_total)} highlight />
-              <MetaRow label="Garantia" value={formatCLP(contrato.garantia_monto)} />
+              <MetaRow label={`Precio por ${contrato.precio_unidad || 'unidad'}`} value={formatCLP(contrato.precio_por_unidad ?? 0)} />
+              <MetaRow label="Total" value={formatCLP(contrato.precio_total ?? 0)} highlight />
+              <MetaRow label="Garantia" value={formatCLP(contrato.garantia_monto ?? 0)} />
               <MetaRow
                 label="Operador"
                 value={contrato.con_operador ? (contrato.operador_nombre || 'Si') : 'No'}

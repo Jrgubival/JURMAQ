@@ -13,11 +13,9 @@ export async function createMercadoPagoPreference(cotizacion: {
     return null;
   }
 
-  // The barraca lives on its own subdomain. We always send the user back
-  // there after MercadoPago, regardless of NEXTAUTH_URL. The webhook
-  // however lives on jurmaq.cl (admin domain) where API routes resolve.
-  const barracaUrl = 'https://barraca.jurmaq.cl';
-  const apiUrl = process.env.NEXTAUTH_URL || 'https://jurmaq.cl';
+  // The barraca lives on its own subdomain. Payment returns and webhooks must
+  // both target that app because the MercadoPago webhook route lives there.
+  const barracaUrl = process.env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl';
 
   const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
@@ -42,7 +40,7 @@ export async function createMercadoPagoPreference(cotizacion: {
       },
       auto_return: 'approved',
       external_reference: cotizacion.numero,
-      notification_url: `${apiUrl}/api/barraca/pagos/webhook`,
+      notification_url: `${barracaUrl}/api/pagos/webhook`,
       statement_descriptor: 'JURMAQ Barraca',
     }),
   });

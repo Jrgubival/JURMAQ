@@ -1,4 +1,5 @@
 import XLSX from 'xlsx';
+import { readFile } from 'node:fs/promises';
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
 
 // ---------------------------------------------------------------------------
@@ -431,4 +432,38 @@ export async function executeImport(
   }
 
   return { updated, created, skipped, errors };
+}
+
+export async function importBarracaFromXLSX(filePath: string): Promise<{
+  categories: number;
+  products: number;
+  updated: number;
+  created: number;
+  skipped: number;
+  errors: string[];
+}> {
+  const buffer = await readFile(filePath);
+  const parsed = parseExcelFile(buffer);
+  const mapping = detectColumnMapping(parsed.headers);
+  const matchBy = mapping.codigo ? 'codigo' : 'nombre';
+  const fieldsToUpdate = Object.keys(mapping).filter(
+    (field) => Boolean(mapping[field]) && field !== 'categoria' && field !== 'subcategoria'
+  );
+  const matches = await matchProducts(
+    parsed.rows,
+    mapping,
+    matchBy,
+    fieldsToUpdate,
+    true
+  );
+  const result = await executeImport(matches, {
+    createNew: true,
+    createPromotionalPrices: true,
+  });
+
+  return {
+    categories: 0,
+    products: result.updated + result.created,
+    ...result,
+  };
 }

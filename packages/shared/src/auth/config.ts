@@ -8,7 +8,7 @@ const COOKIE_DOMAIN = IS_PROD ? '.jurmaq.cl' : undefined;
 // This config is edge-compatible (no DB imports)
 export const authConfig: NextAuthConfig = {
   pages: {
-    signIn: '/barraca/cuenta/login',
+    signIn: '/cuenta/login',
   },
   session: {
     strategy: 'jwt',
@@ -70,8 +70,8 @@ export const authConfig: NextAuthConfig = {
         return Response.redirect(new URL('/admin', nextUrl));
       }
 
-      // Also handle /barraca/cuenta/login for already logged-in admin users
-      if (nextUrl.pathname === '/barraca/cuenta/login' && isLoggedIn) {
+      // Also handle login pages for already logged-in admin users
+      if ((nextUrl.pathname === '/cuenta/login' || nextUrl.pathname === '/barraca/cuenta/login') && isLoggedIn) {
         return Response.redirect(new URL('/admin', nextUrl));
       }
 

@@ -46,7 +46,7 @@ const ESTADO_COLOR: Record<string, string> = {
 
 const ATAJOS = [
   {
-    href: '/admin/barraca/cotizaciones',
+    href: '/admin/cotizaciones',
     titulo: 'Cotizaciones',
     descripcion: 'Atender cotizaciones nuevas, enviar contraofertas',
     icon: (
@@ -56,7 +56,7 @@ const ATAJOS = [
     ),
   },
   {
-    href: '/admin/barraca/promociones',
+    href: '/admin/promociones',
     titulo: 'Promociones',
     descripcion: 'Activar ofertas y subir Excel de promociones',
     icon: (
@@ -67,7 +67,7 @@ const ATAJOS = [
     ),
   },
   {
-    href: '/admin/barraca/precios',
+    href: '/admin/precios',
     titulo: 'Precios',
     descripcion: 'Revisar y ajustar precios del catálogo',
     icon: (
@@ -77,7 +77,7 @@ const ATAJOS = [
     ),
   },
   {
-    href: '/admin/barraca/importar',
+    href: '/admin/importar',
     titulo: 'Importar',
     descripcion: 'Subir catálogo masivo desde Excel',
     icon: (
@@ -228,7 +228,7 @@ export default function BarracaAdminDashboard() {
               {cotizaciones.map((c) => (
                 <li key={c.id}>
                   <Link
-                    href={`/admin/barraca/cotizaciones?id=${c.id}`}
+                    href={`/admin/cotizaciones?id=${c.id}`}
                     className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                   >
                     <div className="min-w-0 flex-1">

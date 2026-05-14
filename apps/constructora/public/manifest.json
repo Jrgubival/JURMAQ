@@ -1,0 +1,18 @@
+{
+  "name": "JURMAQ — Arriendo Maquinaria, Constructora y Barraca de Fierros",
+  "short_name": "JURMAQ",
+  "description": "Arriendo de maquinaria pesada, constructora, maestranza y barraca de fierros en Curicó, Molina y toda la Región del Maule. Súbenos tu cotización y en menos de 2 horas te mejoramos el precio.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c1d3a",
+  "theme_color": "#0c1d3a",
+  "lang": "es-CL",
+  "icons": [
+    { "src": "/favicon-16x16.png", "sizes": "16x16", "type": "image/png" },
+    { "src": "/favicon-32x32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/favicon-48x48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -112,7 +112,7 @@ export default function AddToCartClient({
                 key={v.id}
                 onClick={() => {
                   setSelectedVariant(v);
-                  router.push(`/barraca/producto/${v.slug}`, { scroll: false });
+                  router.push(`/producto/${v.slug}`, { scroll: false });
                 }}
                 className={`px-4 py-2.5 text-sm font-semibold rounded-full border-2 transition-all ${
                   selectedVariant?.id === v.id

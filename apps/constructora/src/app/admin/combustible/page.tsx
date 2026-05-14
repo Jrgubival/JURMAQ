@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { tiposCombustibleLabels, estadosLabels, type EstadoFactura } from '@/lib/combustible-utils';
-import { formatCLP } from "@jurmaq/shared/format";
+import { tiposCombustibleLabels, estadosLabels, formatCLP, type EstadoFactura, type TipoCombustible } from '@/lib/combustible-utils';
 
 interface Item {
   id: number;
@@ -297,7 +296,7 @@ export default function CombustiblePage() {
                                 <tr key={it.id} className="border-t border-gray-100">
                                   <td className="px-2 py-1">{it.maquinarias?.nombre || <span className="text-gray-400">(sin asignar)</span>}</td>
                                   <td className="px-2 py-1">{it.contratos?.numero || '-'}</td>
-                                  <td className="px-2 py-1">{tiposCombustibleLabels[it.tipo_combustible as any] || it.tipo_combustible}</td>
+                                  <td className="px-2 py-1">{tiposCombustibleLabels[it.tipo_combustible as TipoCombustible] || it.tipo_combustible}</td>
                                   <td className="px-2 py-1 text-right">{formatLitros(Number(it.litros))}</td>
                                   <td className="px-2 py-1 text-right">{formatCLP(Number(it.monto))}</td>
                                   <td className="px-2 py-1 text-right">{it.precio_por_litro ? '$' + Number(it.precio_por_litro).toFixed(1) : '-'}</td>

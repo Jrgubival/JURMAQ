@@ -3,24 +3,24 @@ import Link from "next/link";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 
 const categoryImages: Record<string, string> = {
-  'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
-  'fijaciones': '/images/barraca/categorias/fijaciones.jpg',
-  'herramientas-y-maq': '/images/barraca/categorias/herramientas.png',
-  'pinturas': '/images/barraca/categorias/pinturas.webp',
-  'perfiles-y-planchas': '/images/barraca/categorias/perfiles.webp',
-  'electricidad-e-iluminacion': '/images/barraca/categorias/electricidad.png',
-  'bano-cocina-y-loggia': '/images/barraca/categorias/Baño.jpg',
-  'seguridad-industrial': '/images/barraca/categorias/seguridad.webp',
-  'jardin': '/images/barraca/categorias/jardin.png',
-  'adhesivos-y-sellantes': '/images/barraca/categorias/adhesivos.webp',
-  'cerraduras': '/images/barraca/categorias/cerraduras.jpg',
-  'quincalleria': '/images/barraca/categorias/quincasilleria.webp',
-  'cercos-y-mallas': '/images/barraca/categorias/mallas.jpg',
-  'aridos-y-morteros': '/images/barraca/categorias/morteros.webp',
-  'tabiqueria': '/images/barraca/categorias/tabiqueria.png',
-  'techumbre': '/images/barraca/categorias/Techumbres.jpg',
-  'aditivos-e-impermeabilizantes': '/images/barraca/categorias/impermeabilizante.webp',
-  'aislacion': '/images/barraca/categorias/aislacion.webp',
+  'fierros-construccion': '/images/categorias/fierro.jpg',
+  'fijaciones': '/images/categorias/fijaciones.jpg',
+  'herramientas-y-maq': '/images/categorias/herramientas.png',
+  'pinturas': '/images/categorias/pinturas.webp',
+  'perfiles-y-planchas': '/images/categorias/perfiles.webp',
+  'electricidad-e-iluminacion': '/images/categorias/electricidad.png',
+  'bano-cocina-y-loggia': '/images/categorias/Baño.jpg',
+  'seguridad-industrial': '/images/categorias/seguridad.webp',
+  'jardin': '/images/categorias/jardin.png',
+  'adhesivos-y-sellantes': '/images/categorias/adhesivos.webp',
+  'cerraduras': '/images/categorias/cerraduras.jpg',
+  'quincalleria': '/images/categorias/quincasilleria.webp',
+  'cercos-y-mallas': '/images/categorias/mallas.jpg',
+  'aridos-y-morteros': '/images/categorias/morteros.webp',
+  'tabiqueria': '/images/categorias/tabiqueria.png',
+  'techumbre': '/images/categorias/Techumbres.jpg',
+  'aditivos-e-impermeabilizantes': '/images/categorias/impermeabilizante.webp',
+  'aislacion': '/images/categorias/aislacion.webp',
 };
 
 function getCategoryImage(imagen: string | null, slug: string): string | null {
@@ -150,7 +150,7 @@ export default async function CategoriasPage() {
               key={cat.id}
               className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-orange-200 transition-all"
             >
-              <Link href={`/barraca/categorias/${cat.slug}`}>
+              <Link href={`/categorias/${cat.slug}`}>
                 <div className="aspect-[16/9] bg-gray-100 relative overflow-hidden">
                   {getCategoryImage(cat.imagen, cat.slug) ? (
                     <img
@@ -186,7 +186,7 @@ export default async function CategoriasPage() {
                     {subcats.map((sub) => (
                       <Link
                         key={sub.id}
-                        href={`/barraca/categorias/${sub.slug}`}
+                        href={`/categorias/${sub.slug}`}
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-orange-100 hover:text-orange-700 transition-colors"
                       >
                         {sub.nombre}

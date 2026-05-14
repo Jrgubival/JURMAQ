@@ -30,7 +30,6 @@ export async function htmlToPdfBuffer(html: string): Promise<Buffer> {
 
   const browser = await puppeteer.default.launch({
     args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
     executablePath: await chromium.executablePath(CHROMIUM_TAR),
     headless: true,
   });
@@ -40,7 +39,7 @@ export async function htmlToPdfBuffer(html: string): Promise<Buffer> {
     // Use `setContent` instead of navigating — we already have the HTML.
     // `waitUntil: 'networkidle0'` so any external assets (logo, CSS) load
     // before we snapshot.
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30_000 });
+    await page.setContent(html, { waitUntil: 'load', timeout: 30_000 });
 
     // Render. Letter format works fine for A4-ish content; the contract
     // template uses CSS that adapts.

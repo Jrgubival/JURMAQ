@@ -83,7 +83,7 @@ export default function CuentaPage() {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("barraca-auth-changed"));
     }
-    router.push("/barraca");
+    router.push("/");
   }
 
   // Audit A11: derecho de portabilidad/acceso (Ley 21.719). Descarga un

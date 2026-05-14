@@ -366,7 +366,7 @@ export default async function CategoriaPage({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
             <Link
-              href={`/barraca/categorias/${parentCat.slug}`}
+              href={`/categorias/${parentCat.slug}`}
               className="hover:text-orange-600 transition-colors"
             >
               {parentCat.nombre}
@@ -406,7 +406,7 @@ export default async function CategoriaPage({
                   {subcats.map((sub) => (
                     <li key={sub.id}>
                       <Link
-                        href={`/barraca/categorias/${sub.slug}`}
+                        href={`/categorias/${sub.slug}`}
                         className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                       >
                         <span>{sub.nombre}</span>
@@ -433,7 +433,7 @@ export default async function CategoriaPage({
                 ].map((opt) => (
                   <Link
                     key={opt.value}
-                    href={`/barraca/categorias/${slug}?stock=${opt.value}${sp.min ? `&min=${sp.min}` : ''}${sp.max ? `&max=${sp.max}` : ''}${sp.sort ? `&sort=${sp.sort}` : ''}`}
+                    href={`/categorias/${slug}?stock=${opt.value}${sp.min ? `&min=${sp.min}` : ''}${sp.max ? `&max=${sp.max}` : ''}${sp.sort ? `&sort=${sp.sort}` : ''}`}
                     className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors ${
                       stockFilter === opt.value
                         ? 'bg-orange-50 text-orange-700 font-semibold border border-orange-200'
@@ -498,7 +498,7 @@ export default async function CategoriaPage({
                 </button>
                 {(sp.min || sp.max) && (
                   <Link
-                    href={`/barraca/categorias/${slug}${sp.sort ? `?sort=${sp.sort}` : ''}${sp.stock ? `${sp.sort ? '&' : '?'}stock=${sp.stock}` : ''}`}
+                    href={`/categorias/${slug}${sp.sort ? `?sort=${sp.sort}` : ''}${sp.stock ? `${sp.sort ? '&' : '?'}stock=${sp.stock}` : ''}`}
                     className="block text-center text-xs text-orange-600 hover:text-orange-700 font-medium"
                   >
                     Limpiar filtro de precio
@@ -528,7 +528,7 @@ export default async function CategoriaPage({
                 <div className="relative w-full sm:w-auto">
                   {(() => {
                     const buildSortUrl = (sort: string) => {
-                      const parts = [`/barraca/categorias/${slug}?sort=${sort}`];
+                      const parts = [`/categorias/${slug}?sort=${sort}`];
                       if (sp.min) parts.push(`min=${sp.min}`);
                       if (sp.max) parts.push(`max=${sp.max}`);
                       if (sp.stock) parts.push(`stock=${sp.stock}`);
@@ -605,7 +605,7 @@ export default async function CategoriaPage({
                 <nav aria-label="Paginacion" className="flex items-center justify-center gap-1.5 mt-10">
                   {page > 1 && (
                     <Link
-                      href={`/barraca/categorias/${slug}?page=${page - 1}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
+                      href={`/categorias/${slug}?page=${page - 1}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
                       className="inline-flex items-center gap-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -625,7 +625,7 @@ export default async function CategoriaPage({
                           <span className="px-1.5 text-gray-400 select-none">...</span>
                         )}
                         <Link
-                          href={`/barraca/categorias/${slug}?page=${p}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
+                          href={`/categorias/${slug}?page=${p}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
                           className={`w-10 h-10 flex items-center justify-center text-sm font-semibold rounded-lg transition-colors ${
                             p === page
                               ? "bg-orange-600 text-white shadow-sm"
@@ -638,7 +638,7 @@ export default async function CategoriaPage({
                     ))}
                   {page < totalPages && (
                     <Link
-                      href={`/barraca/categorias/${slug}?page=${page + 1}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
+                      href={`/categorias/${slug}?page=${page + 1}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
                       className="inline-flex items-center gap-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-orange-50 hover:border-orange-300 hover:text-orange-600 transition-colors"
                     >
                       Siguiente

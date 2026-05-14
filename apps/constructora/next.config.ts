@@ -25,7 +25,6 @@ import path from "node:path";
 
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
-  typescript: { ignoreBuildErrors: true },
   serverExternalPackages: ['bcryptjs', 'xlsx'],
   transpilePackages: ['@jurmaq/shared'],
   outputFileTracingRoot: path.resolve(__dirname, '../../'),
