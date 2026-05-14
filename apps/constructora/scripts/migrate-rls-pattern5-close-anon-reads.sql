@@ -17,8 +17,10 @@
 BEGIN;
 
 -- 1) cotizaciones_arriendo: dropear la policy permisiva "USING (true)" y
---    reemplazarla por ninguna (anon nunca debe llegar acá; backend ya usa admin).
+--    revocar SELECT a anon (la policy sola no basta — el GRANT SELECT
+--    residual deja a PostgREST exponiendo la tabla aunque vacía).
 DROP POLICY IF EXISTS cot_arriendo_anon_read_by_email ON public.cotizaciones_arriendo;
+REVOKE SELECT ON public.cotizaciones_arriendo FROM anon;
 
 -- 2) proyectos: revocar SELECT a anon. RLS sigue habilitada, falta de policy
 --    significa "deny all" para anon.
@@ -43,14 +45,13 @@ REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
   FROM anon, authenticated;
 -- (Mantenemos SELECT en la view — esa es su razón de ser.)
 
--- 6) Verificación final (lee y muestra)
-SELECT 'cot_arriendo policies after' AS check, count(*) AS n
-  FROM pg_policies WHERE schemaname='public' AND tablename='cotizaciones_arriendo';
-SELECT 'proyectos anon grants after' AS check, count(*) AS n
-  FROM information_schema.role_table_grants
-  WHERE table_schema='public' AND table_name='proyectos' AND grantee='anon';
-SELECT 'iva_libro anon grants after' AS check, count(*) AS n
-  FROM information_schema.role_table_grants
-  WHERE table_schema='public' AND table_name IN ('iva_libro_ventas','iva_libro_compras') AND grantee='anon';
+-- 6) Verificación final — TODAS las 4 tablas deben dar 0 anon SELECT grants.
+SELECT table_name, count(*) FILTER (WHERE privilege_type='SELECT') AS anon_select_grants
+FROM information_schema.role_table_grants
+WHERE table_schema='public'
+  AND table_name IN ('cotizaciones_arriendo','proyectos','iva_libro_ventas','iva_libro_compras')
+  AND grantee='anon'
+GROUP BY table_name
+ORDER BY table_name;
 
 COMMIT;
