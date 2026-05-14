@@ -91,7 +91,7 @@ export default function PromotedProductCard({
   async function handleAdd() {
     setAdding(true);
     try {
-      await fetch("/api/carrito", {
+      const res = await fetch("/api/carrito", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,6 +104,12 @@ export default function PromotedProductCard({
           precioOverride: precioDescuento,
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({} as { error?: string }));
+        const msg = (data as { error?: string }).error || (res.status === 429 ? "Demasiadas solicitudes" : "No se pudo agregar al carrito");
+        showToast(msg, "error");
+        return;
+      }
       setAdded(true);
       window.dispatchEvent(new Event("cart-updated"));
       showToast("Agregado al carrito con descuento", "success");
