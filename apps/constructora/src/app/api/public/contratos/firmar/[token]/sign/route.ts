@@ -383,7 +383,7 @@ async function sendSignedContractEmailAsync(args: {
     pdfBuffer = await htmlToPdfBuffer(htmlWithFirma);
     console.log('[signed-contract-pdf-ok]', args.contratoId, 'bytes=', pdfBuffer.length);
   } catch (err) {
-    console.error('[signed-contract-pdf-fail]', args.contratoId, err instanceof Error ? err.message : err);
+    console.error('[signed-contract-pdf-fail]', hid(args.contratoId), err instanceof Error ? err.message : err);
     pdfBuffer = undefined;
   }
 

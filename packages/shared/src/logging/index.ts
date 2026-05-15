@@ -119,6 +119,33 @@ export function redactPII<T extends Record<string, unknown>>(obj: T): Record<str
 }
 
 /**
+ * Log seguro que enmascara PII antes de escribir a consola.
+ *
+ *   logSafe('user-login', { email, ip, user_id }) →
+ *     logs: [log-safe] user-login { email: 'jo***@x.com', ip: '192.168.*.*', user_id: 42 }
+ */
+export function logSafe(message: string, context?: Record<string, unknown>): void {
+  const safeContext = context ? redactPII(context) : undefined;
+  if (safeContext) {
+    console.log('[log-safe]', message, safeContext);
+  } else {
+    console.log('[log-safe]', message);
+  }
+}
+
+/**
+ * Log seguro para errores con masking automático de PII.
+ */
+export function logSafeError(message: string, context?: Record<string, unknown>): void {
+  const safeContext = context ? redactPII(context) : undefined;
+  if (safeContext) {
+    console.error('[log-safe]', message, safeContext);
+  } else {
+    console.error('[log-safe]', message);
+  }
+}
+
+/**
  * Hash corto (sha256 primeros 8 chars) de un identificador interno — sincrónico.
  * Útil para correlar logs sin exponer IDs reales.
  *

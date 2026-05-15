@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { logContratoEvent } from '@/lib/contratos-audit';
+import { hid } from '@jurmaq/shared/logging';
 
 /**
  * POST   /api/admin/contratos/[id]/firma-arrendador
@@ -82,7 +83,7 @@ export async function POST(
     .eq('id', contratoId);
 
   if (updateError) {
-    console.error('[firma-arrendador-update-fail]', contratoId, updateError.message);
+    console.error('[firma-arrendador-update-fail]', hid(contratoId), updateError.message);
     return NextResponse.json({ error: 'Error al guardar la firma' }, { status: 500 });
   }
 
@@ -139,7 +140,7 @@ export async function DELETE(
     .eq('id', contratoId);
 
   if (error) {
-    console.error('[firma-arrendador-delete-fail]', contratoId, error.message);
+    console.error('[firma-arrendador-delete-fail]', hid(contratoId), error.message);
     return NextResponse.json({ error: 'Error al borrar la firma' }, { status: 500 });
   }
 

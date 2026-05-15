@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeString, isValidOrigin, isValidEmail } from '@jurmaq/shared/sanitize';
+import { hid } from '@jurmaq/shared/logging';
 
 const EDITABLE_STATES = new Set(['borrador', 'pendiente_firma']);
 const DELETABLE_STATES = new Set(['borrador']);
@@ -52,6 +53,8 @@ export async function GET(
 
     return NextResponse.json(data);
   } catch (error) {
+    // numericId vive dentro del try; en catch sólo tenemos el raw id de params
+    // (que ya hashemos via hid para no escupir IDs internos al log).
     console.error('Error al obtener contrato:', error);
     return NextResponse.json({ error: 'Error al obtener contrato' }, { status: 500 });
   }

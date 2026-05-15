@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { sanitizeString, isValidEmail, isValidOrigin } from '@jurmaq/shared/sanitize';
+import { logSafe, maskEmail, logSafeError } from '@jurmaq/shared/logging';
 
 // Generate secure token: base64 of (userId + ':' + randomBytes)
 function generateToken(userId: number): string {
@@ -228,7 +229,7 @@ export async function POST(request: NextRequest) {
       try {
         await sendWelcomeEmail(email, nombre);
       } catch (emailError) {
-        console.error('Error al enviar email de bienvenida:', emailError);
+        logSafeError('welcome-email-fail', { email: email, error: String(emailError) });
       }
 
       // Return secure token for session persistence
@@ -312,7 +313,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Accion no valida' }, { status: 400 });
     }
   } catch (error) {
-    console.error('Error en autenticacion barraca:', error);
+    logSafeError('auth-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error en el proceso de autenticacion' },
       { status: 500 }

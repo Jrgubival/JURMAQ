@@ -1,25 +1,3 @@
-/**
- * Pricing engine para sistema de arriendo v2.
- *
- * Calcula el costo total de un servicio de arriendo siguiendo el algoritmo
- * documentado en MAQUINARIAS_PRICING.md:
- *
- *   precio_uso         = tarifa_neta × max(unidades_solicitadas, mínimo)
- *   km_total           = distancia_km × 2  (ida + vuelta)
- *   traslado_comb      = km_total × costo_km
- *   traslado_carga     = carga_descarga_horas × costo_hora_operario
- *   traslado_operario  = horas_operario × costo_hora_operario
- *   subtotal_neto      = precio_uso + traslado_comb + traslado_carga + traslado_operario + peajes
- *   iva                = subtotal_neto × 0.19
- *   total              = subtotal_neto + iva
- *
- *   // Internos (NO se muestran al cliente):
- *   reserva_mantencion = subtotal_neto × mantencion_pct
- *   utilidad_real      = subtotal_neto × utilidad_pct
- *
- * IVA Chile 2026: 19%.
- */
-
 export interface MaquinariaPricing {
   id: number;
   nombre: string;
@@ -40,18 +18,16 @@ export interface TarifasTraslado {
 export interface CotizacionInput {
   maquinaria: MaquinariaPricing;
   tarifas: TarifasTraslado;
-  unidades_solicitadas: number;        // horas o días según maquinaria.unidad_tarifa
-  distancia_km?: number;                // 0 si maquinaria.requiere_traslado=false o pickup
-  peajes?: number;                      // CLP, default 0
-  operarios?: number;                   // default 1
-  horas_operario_estimadas?: number;    // default 0 (solo carga/descarga)
+  unidades_solicitadas: number;
+  distancia_km?: number;
+  peajes?: number;
+  operarios?: number;
+  horas_operario_estimadas?: number;
 }
 
 export interface CotizacionDesglose {
-  // Inputs efectivos (después de aplicar mínimos)
   unidades_aplicadas: number;
   km_total: number;
-  // Componentes (todo NETO)
   precio_uso: number;
   traslado_combustible: number;
   traslado_carga: number;
@@ -60,23 +36,12 @@ export interface CotizacionDesglose {
   subtotal_neto: number;
   iva: number;
   total: number;
-  // Internos (admin only)
   reserva_mantencion: number;
   utilidad_real: number;
 }
 
 const IVA_RATE = 0.19;
 
-/**
- * Calcula la cotización completa con desglose.
- *
- * Reglas:
- *  - Si `unidades_solicitadas < maquinaria.minimo_unidades`, se cobra el mínimo.
- *  - Si `maquinaria.requiere_traslado=false`, traslado_combustible y traslado_carga = 0.
- *  - peajes se suma al subtotal pero no genera IVA adicional (se asume IVA ya incluido en peaje).
- *    Si querés tratarlos como gasto, asumir net entonces el sistema multiplica por 1.19.
- *  - Todo redondeado a entero (CLP no usa centavos).
- */
 export function calcularCotizacion(input: CotizacionInput): CotizacionDesglose {
   const {
     maquinaria,
@@ -88,34 +53,26 @@ export function calcularCotizacion(input: CotizacionInput): CotizacionDesglose {
     horas_operario_estimadas = 0,
   } = input;
 
-  // 1. Precio de uso (aplicar mínimo)
   const unidades_aplicadas = Math.max(unidades_solicitadas, maquinaria.minimo_unidades);
   const precio_uso = Math.round(maquinaria.tarifa_neta * unidades_aplicadas);
 
-  // 2. Traslado combustible (ida + vuelta)
-  const km_total = Math.round(distancia_km * 2 * 10) / 10; // 1 decimal
+  const km_total = Math.round(distancia_km * 2 * 10) / 10;
   const traslado_combustible = maquinaria.requiere_traslado
     ? Math.round(km_total * tarifas.costo_km)
     : 0;
 
-  // 3. Carga y descarga (tiempo fijo)
   const traslado_carga = maquinaria.requiere_traslado
     ? Math.round(tarifas.carga_descarga_horas * tarifas.costo_hora_operario * operarios)
     : 0;
 
-  // 4. Operario tiempo trabajado
   const traslado_operario = Math.round(horas_operario_estimadas * tarifas.costo_hora_operario * operarios);
 
-  // 5. Subtotal neto
   const subtotal_neto = precio_uso + traslado_combustible + traslado_carga + traslado_operario + peajes;
 
-  // 6. IVA
   const iva = Math.round(subtotal_neto * IVA_RATE);
 
-  // 7. Total con IVA
   const total = subtotal_neto + iva;
 
-  // 8. Internos
   const reserva_mantencion = Math.round(subtotal_neto * tarifas.reserva_mantencion_pct);
   const utilidad_real = Math.round(subtotal_neto * tarifas.reserva_utilidad_pct);
 
@@ -135,9 +92,6 @@ export function calcularCotizacion(input: CotizacionInput): CotizacionDesglose {
   };
 }
 
-/**
- * Validación de inputs antes de calcular. Retorna primer error o null.
- */
 export function validarInput(input: Partial<CotizacionInput>): string | null {
   if (!input.maquinaria) return 'maquinaria es requerida';
   if (!input.tarifas) return 'tarifas es requerida';
@@ -168,21 +122,49 @@ export function validarInput(input: Partial<CotizacionInput>): string | null {
   return null;
 }
 
-/**
- * Precio "Desde X/dia" para vitrina pública (listings, detalle, landings).
- *
- * Es un piso visible derivado de la MISMA fuente que el cotizador (tarifa_neta
- * + mínimo de unidades), con IVA incluido y SIN traslado/peajes/operario. Sirve
- * para que cliente entienda el orden de magnitud antes de cotizar. El precio
- * real (con traslado) lo calcula el wizard.
- *
- * Formula:
- *   base_neta = tarifa_neta × max(minimo_unidades, 1)   // si unidad=hora, 1 día = minimo_unidades horas
- *   total_dia = base_neta × 1.19                        // IVA Chile 2026
- *
- * Retorna null si la máquina no tiene tarifa configurada (estaba pendiente
- * de migración) — el caller debe mostrar "Cotiza online" en ese caso.
- */
+export interface DisponibilidadResultado {
+  disponible: boolean;
+  conflictos: Array<{
+    tipo: 'bloqueo' | 'cotizacion';
+    fecha_inicio: string;
+    fecha_fin: string;
+    motivo?: string;
+    numero?: string;
+    estado?: string;
+  }>;
+}
+
+export async function verificarDisponibilidad(
+  maquinariaId: number,
+  fechaInicio: string,
+  fechaFin: string,
+): Promise<DisponibilidadResultado> {
+  const { supabaseAdmin } = await import('@jurmaq/shared/supabase');
+
+  const { data, error } = await supabaseAdmin.rpc('verificar_disponibilidad_maquinaria', {
+    p_maquinaria_id: maquinariaId,
+    p_fecha_inicio: fechaInicio,
+    p_fecha_fin: fechaFin,
+  });
+
+  if (error || !data || data.length === 0) {
+    return { disponible: true, conflictos: [] };
+  }
+
+  const row = data[0];
+  return {
+    disponible: row.disponible,
+    conflictos: (row.conflictos || []).map((c: Record<string, unknown>) => ({
+      tipo: c.tipo as 'bloqueo' | 'cotizacion',
+      fecha_inicio: String(c.fecha_inicio),
+      fecha_fin: String(c.fecha_fin),
+      motivo: c.motivo ? String(c.motivo) : undefined,
+      numero: c.numero ? String(c.numero) : undefined,
+      estado: c.estado ? String(c.estado) : undefined,
+    })),
+  };
+}
+
 export function precioPublicoDesde(m: {
   tarifa_neta?: number | null;
   unidad_tarifa?: string | null;

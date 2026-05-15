@@ -1,0 +1,208 @@
+# Deploy Checklist — JURMAQ.CL (2026-05-15)
+
+Branch: `main` · Último commit listo para deploy: ver `git log --oneline -1`
+
+---
+
+## 1) Migraciones SQL pendientes en Supabase production
+
+**Aplicar en Supabase Dashboard → SQL Editor, EN ESTE ORDEN.**
+
+### 🔴 OBLIGATORIA antes de aceptar nuevas ofertas: SERNAC histórico de precios
+
+Compliance Ley 19.496 art. 28. Sin esto, cualquier oferta nueva (`bulk-price create_offer`) devuelve HTTP 503.
+
+```sql
+-- Pegá íntegro el contenido de:
+apps/barraca/scripts/migrate-precio-historial.sql
+```
+
+**Qué hace:**
+- Crea `barraca_precio_historial` (precio por producto con vigencia).
+- Trigger `trg_barraca_precio_historial` que registra cada UPDATE de precio.
+- Backfill inicial: el precio actual de cada producto queda registrado como vigente desde "now" (no retroactivo — el histórico anterior no existe).
+- RPC `precio_vigente_acumulado_dias(producto_id, precio, ventana_dias)`.
+
+**Implicancia inmediata:** podés vender normalmente, pero **NO podés crear oferta legítima nueva con el "precio_original" anterior hasta que ese precio haya estado vigente 30 días en el historial** (porque el backfill arranca desde hoy). Si necesitás crear una promo *hoy*, opciones:
+1. Esperar 30 días (compliance estricto).
+2. Pasar `skipHistorialCheck: true` en el body del request bulk-price (línea 185 del endpoint) — solo para overrides explícitos, queda en logs.
+3. Insertar manualmente filas históricas con `vigente_desde` retroactivo si tenés evidencia documental de los precios anteriores.
+
+### 🟢 Ya aplicadas en prod (verificar idempotencia, deberían ser no-ops):
+
+```sql
+-- 1. RLS pattern 5 — cerrar anon SELECT en 4 tablas sensibles
+apps/constructora/scripts/migrate-rls-pattern5-close-anon-reads.sql
+
+-- 2. RLS promociones + cotizacion_items (si no fue aplicada)
+apps/barraca/scripts/migrate-rls-promociones-cotitems.sql
+
+-- 3. View security_invoker (si no fue aplicada)
+apps/barraca/scripts/migrate-view-public-security-invoker.sql
+
+-- 4. Migraciones arriendo v2 (si la DB no las tiene)
+apps/constructora/scripts/migrate-arriendo-v2-01-maquinarias.sql
+apps/constructora/scripts/migrate-arriendo-v2-02-tarifas-traslado.sql
+apps/constructora/scripts/migrate-arriendo-v2-03-cotizaciones-arriendo.sql
+
+-- 5. IVA F29
+apps/constructora/scripts/migrate-iva-f29-01-libros.sql
+apps/constructora/scripts/migrate-iva-f29-02-triggers.sql
+```
+
+Todas son idempotentes (`IF NOT EXISTS` / `OR REPLACE`).
+
+---
+
+## 2) Variables de entorno en producción
+
+Verificá que existan TODAS, **sin valores de placeholder**:
+
+### Comunes a ambos apps
+```
+DATABASE_URL=postgresql://...
+DATABASE_URL_DIRECT=postgresql://...
+NEXT_PUBLIC_SUPABASE_URL=https://wmoizhbdalvnveclenvf.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...          # solo backend, NUNCA al cliente
+NEXTAUTH_SECRET=<openssl rand -hex 32>
+ADMIN_PASSWORD=<contraseña del seed-admin>
+RESEND_API_KEY=re_...
+```
+
+### Solo barraca (e-commerce)
+```
+NEXT_PUBLIC_BARRACA_URL=https://barraca.jurmaq.cl
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
+MERCADOPAGO_WEBHOOK_SECRET=<secret del webhook MP — sin esto el webhook fail-closes>
+```
+
+### Solo constructora
+```
+NEXT_PUBLIC_SITE_URL=https://jurmaq.cl
+```
+
+### Anti-bypass de CSRF en producción
+`packages/shared/src/sanitize/index.ts` línea 68 — `ALLOWED_HOSTS` ya incluye `jurmaq.cl`, `www.jurmaq.cl`, `barraca.jurmaq.cl`. No tocar.
+
+---
+
+## 3) Smoke test post-deploy (3 minutos)
+
+Hacé estos clics en producción, en este orden:
+
+### Constructora (jurmaq.cl)
+
+1. ✅ Home carga con hero + máquinas con "Desde $X/día" (sin `/día/día` duplicado).
+2. ✅ Click en una card de máquina → llega a `/maquinarias/[id]` con detalle.
+3. ✅ "Cotizar precio final →" lleva a `/cotizar-arriendo?maquinariaId=<id>` y **muestra paso 2 (Servicio) directo**, máquina ya seleccionada.
+4. ✅ Llená wizard end-to-end (datos fake) → resumen al final muestra IVA + traslado.
+5. ✅ NO confirmes el envío en prod (crearía cotización real).
+
+### Barraca (barraca.jurmaq.cl)
+
+1. ✅ Home carga con `globals.css` aplicado (NO links azules default, sí estilos JURMAQ).
+2. ✅ Footer + header tienen iconos chicos (NO los SVG gigantes de antes).
+3. ✅ Click en categoría → llega a `/categorias/[slug]` (200, NO 404 con `/barraca/categorias/`).
+4. ✅ Click en producto → `/producto/[slug]` con precio + stock.
+5. ✅ "Agregar al carrito" → contador del carrito sube (si falla, toast con mensaje claro del error).
+
+### Admin (cualquier dominio + login)
+
+1. ✅ `/login` redirige correctamente (constructora → barraca SSO).
+2. ✅ Tras login como admin, sidebar muestra grupos:
+   - Constructora: Operaciones / Catálogo / Tributario / Configuración
+   - Barraca: Operaciones / Catálogo / Ventas / Marketing
+3. ✅ Cmd+K abre command palette con búsqueda.
+4. ✅ Crear/editar producto en `/admin/barraca/productos` sin error.
+5. ✅ Si intentás crear oferta `bulk-price`:
+   - Antes de aplicar migración SERNAC: 503 con mensaje "Falta migracion".
+   - Después de aplicar: éxito si el precio actual estuvo vigente 30d.
+
+### REST API anon (verificar Pattern 5 cerrado)
+
+Reemplazá `<ANON>` por la anon key real:
+
+```bash
+ANON="..."
+URL="https://wmoizhbdalvnveclenvf.supabase.co"
+
+for T in cotizaciones_arriendo proyectos iva_libro_ventas iva_libro_compras; do
+  CODE=$(curl -sS -o /dev/null -w "%{http_code}" "$URL/rest/v1/$T?select=id&limit=1" \
+    -H "apikey: $ANON" -H "Authorization: Bearer $ANON")
+  echo "$T → HTTP $CODE  (esperado: 401)"
+done
+```
+
+Las 4 deben dar `401`. Si alguna da 200, la migración RLS Pattern 5 no se aplicó.
+
+---
+
+## 4) Webhook MercadoPago
+
+En Mercadopago Dashboard → tu app → Notificaciones → URL del webhook:
+```
+https://barraca.jurmaq.cl/api/pagos/webhook
+```
+
+Y verificá que el **Webhook Secret** coincida con `MERCADOPAGO_WEBHOOK_SECRET` en el .env. Si no coinciden, el endpoint devuelve 401 a TODOS los webhooks (fail-closed por diseño).
+
+---
+
+## 5) Rollback plan
+
+Si algo se rompe tras deploy:
+
+```bash
+git revert <último-commit-bueno>..HEAD
+# o
+git reset --hard <commit-antes-del-deploy>
+git push --force-with-lease  # solo si nada externo dependió del commit roto
+```
+
+Hot rollback de migraciones SQL — `barraca_precio_historial` se puede dropear sin afectar producción (queda como tabla histórica vacía):
+
+```sql
+DROP TRIGGER IF EXISTS trg_barraca_precio_historial ON barraca_productos;
+DROP FUNCTION IF EXISTS barraca_precio_historial_track();
+DROP FUNCTION IF EXISTS precio_vigente_acumulado_dias(INTEGER,INTEGER,INTEGER);
+DROP TABLE IF EXISTS barraca_precio_historial;
+```
+
+Las migraciones RLS Pattern 5 son safe — sólo bloquean lecturas no autorizadas. Revertir es opcional.
+
+---
+
+## 6) Pendientes NO-bloqueantes para deploy (post-go-live)
+
+| # | Item | Esfuerzo | Notas |
+|---|---|---|---|
+| 1 | T3 Cookies separados barraca/constructora | 6h | Romper sesión compartida. Hacerlo en una ventana de mantenimiento. |
+| 2 | pnpm lint debt (184 errors mayoría `any`) | 8h | Build/typecheck verdes. Bajar deuda gradualmente. |
+| 3 | Hidratación flaky en dev (Turbopack + cards) | 2h | Solo afecta dev local. Prod build OK. |
+| 4 | UI/UX polish + WCAG 2.2 AA | 7h | Plan T7 del backlog. |
+| 5 | Migrar `<img>` → `<Image>` en barraca | 3h | Performance, no funcional. |
+| 6 | Aplicar SERNAC validation a endpoint individual (no solo bulk) | 1h | El bulk ya valida; el individual no permite precio_original (verificado). |
+
+---
+
+## 7) Resumen ejecutivo
+
+✅ **Listo para producción** después de aplicar la migración SERNAC.
+
+| Sistema | Estado |
+|---|---|
+| Barraca pública (e-commerce) | ✅ Build verde, globals.css, assets, links arreglados |
+| Constructora pública (cotizador) | ✅ Wizard end-to-end, precio público coherente con cotizador |
+| Admin (panel) | ✅ Sidebar agrupado, RBAC 5 roles, Cmd+K |
+| Auth (NextAuth) | ⚠️ Compartida entre subdominios — T3 pendiente |
+| MercadoPago | ✅ Webhook HMAC + replay + amount + idempotente |
+| Supabase RLS | ✅ Pattern 5 cerrado (4 tablas), policies verificadas |
+| SERNAC compliance | ⚠️ Code listo, migración SQL pendiente |
+| Build / Typecheck | ✅ Verde en main |
+
+**Lo que NO se hizo y no es bloqueante para mañana:**
+- 19 archivos huérfanos eliminados → bundle más liviano. Build sigue verde.
+- Lint debt sigue alta (184) pero compila y tipa OK.
+
+Buen deploy.

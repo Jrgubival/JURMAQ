@@ -3,6 +3,7 @@ import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeString, isValidEmail, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { logSafeError } from '@jurmaq/shared/logging';
 
 export async function GET() {
   try {
@@ -18,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json(suscriptores);
   } catch (error) {
-    console.error('Error al obtener suscriptores:', error);
+    logSafeError('suscriptores-list-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error al obtener suscriptores' },
       { status: 500 }
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ mensaje: 'Suscripcion exitosa' }, { status: 201 });
   } catch (error) {
-    console.error('Error al suscribir:', error);
+    logSafeError('suscribe-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error al procesar suscripcion' },
       { status: 500 }

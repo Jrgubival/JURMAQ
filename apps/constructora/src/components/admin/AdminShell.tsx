@@ -21,11 +21,13 @@ import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
  * ver "Solicitudes de maquinaria" todo el día.
  */
 type AdminContext = 'construct' | 'barraca';
+type NavGroup = 'Operaciones' | 'Catálogo' | 'Ventas' | 'Marketing' | 'Tributario' | 'Configuración';
 
 interface NavItem {
   label: string;
   href: string;
   module: Module;
+  group: NavGroup;
   icon: React.ReactNode;
 }
 
@@ -34,6 +36,7 @@ const navItems: NavItem[] = [
     label: 'Dashboard',
     href: '/admin',
     module: 'dashboard',
+    group: 'Operaciones',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
@@ -44,6 +47,7 @@ const navItems: NavItem[] = [
     label: 'Maquinarias',
     href: '/admin/maquinarias',
     module: 'maquinarias',
+    group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -54,6 +58,7 @@ const navItems: NavItem[] = [
     label: 'Solicitudes',
     href: '/admin/solicitudes',
     module: 'solicitudes',
+    group: 'Operaciones',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01" />
@@ -64,6 +69,7 @@ const navItems: NavItem[] = [
     label: 'Proyectos',
     href: '/admin/proyectos',
     module: 'proyectos',
+    group: 'Operaciones',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
@@ -74,6 +80,7 @@ const navItems: NavItem[] = [
     label: 'Clientes',
     href: '/admin/clientes',
     module: 'clientes',
+    group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -84,6 +91,7 @@ const navItems: NavItem[] = [
     label: 'Cotizaciones',
     href: '/admin/cotizaciones',
     module: 'cotizaciones',
+    group: 'Operaciones',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" />
@@ -94,6 +102,7 @@ const navItems: NavItem[] = [
     label: 'Cotizaciones arriendo',
     href: '/admin/cotizaciones-arriendo',
     module: 'cotizaciones',
+    group: 'Operaciones',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2M9 17a4 4 0 11-4-4m4 4a4 4 0 014 4M5 13a4 4 0 100-8 4 4 0 000 8z" />
@@ -104,6 +113,7 @@ const navItems: NavItem[] = [
     label: 'Contratos',
     href: '/admin/contratos',
     module: 'contratos',
+    group: 'Operaciones',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -114,6 +124,7 @@ const navItems: NavItem[] = [
     label: 'Plantillas contrato',
     href: '/admin/contratos/templates',
     module: 'contratos',
+    group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -124,6 +135,7 @@ const navItems: NavItem[] = [
     label: 'Combustible',
     href: '/admin/combustible',
     module: 'combustible',
+    group: 'Tributario',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c-3 4-5 6.5-5 9.5a5 5 0 1010 0C17 9.5 15 7 12 3z" />
@@ -134,6 +146,7 @@ const navItems: NavItem[] = [
     label: 'SII / Tributario',
     href: '/admin/sii',
     module: 'combustible',
+    group: 'Tributario',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -144,6 +157,7 @@ const navItems: NavItem[] = [
     label: 'Usuarios',
     href: '/admin/usuarios',
     module: 'usuarios',
+    group: 'Configuración',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -157,6 +171,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Dashboard Barraca',
     href: '/admin/barraca',
     module: 'dashboard',
+    group: 'Operaciones',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
@@ -167,6 +182,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Productos',
     href: '/admin/barraca/productos',
     module: 'barraca_productos',
+    group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -177,6 +193,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Categorias',
     href: '/admin/barraca/categorias',
     module: 'barraca_categorias',
+    group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -187,6 +204,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Cotizaciones Barraca',
     href: '/admin/barraca/cotizaciones',
     module: 'barraca_cotizaciones',
+    group: 'Ventas',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -197,6 +215,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Precios',
     href: '/admin/barraca/precios',
     module: 'barraca_precios',
+    group: 'Ventas',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -207,6 +226,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Importar',
     href: '/admin/barraca/importar',
     module: 'barraca_importar',
+    group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -217,6 +237,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Promociones',
     href: '/admin/barraca/promociones',
     module: 'barraca_promociones',
+    group: 'Marketing',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
@@ -227,6 +248,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Suscriptores',
     href: '/admin/barraca/suscriptores',
     module: 'barraca_suscriptores',
+    group: 'Marketing',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -237,6 +259,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Imagenes',
     href: '/admin/barraca/imagenes',
     module: 'barraca_imagenes',
+    group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -248,6 +271,7 @@ const barracaNavItems: NavItem[] = [
     label: 'Imagenes masivas',
     href: '/admin/barraca/imagenes-masivas',
     module: 'barraca_imagenes',
+    group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -324,8 +348,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
 
           {/* Nav — sólo el set del contexto actual (construct vs barraca),
-              filtrado por permisos del rol. */}
-          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+              filtrado por permisos del rol, AGRUPADO por área funcional. */}
+          <nav className="flex-1 px-3 py-4 overflow-y-auto">
             {(() => {
               const role = (session?.user as { role?: string })?.role;
               const allowedModules = new Set(visibleModules(role));
@@ -334,25 +358,50 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               const accentBg = ctx === 'barraca' ? '#ea580c' : '#e6b422';
               const accentFg = ctx === 'barraca' ? '#fff' : '#0c1d3a';
 
-              return filtered.map((item) => {
-                const active = isActive(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active
-                        ? 'text-white'
-                        : 'text-gray-400 hover:text-white hover:bg-white/5'
-                    }`}
-                    style={active ? { backgroundColor: accentBg, color: accentFg } : {}}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </Link>
-                );
-              });
+              // Orden de grupos según contexto: Operaciones primero (lo más
+              // usado), Configuración al final.
+              const groupOrder: NavGroup[] = ctx === 'barraca'
+                ? ['Operaciones', 'Catálogo', 'Ventas', 'Marketing', 'Configuración']
+                : ['Operaciones', 'Catálogo', 'Tributario', 'Configuración'];
+
+              // Agrupar items por group field, preservando el orden de items
+              // dentro de cada grupo.
+              const grouped = new Map<NavGroup, NavItem[]>();
+              for (const it of filtered) {
+                if (!grouped.has(it.group)) grouped.set(it.group, []);
+                grouped.get(it.group)!.push(it);
+              }
+
+              return groupOrder
+                .filter((g) => grouped.has(g))
+                .map((group, idx) => (
+                  <div key={group} className={idx > 0 ? 'mt-4' : ''}>
+                    <div className="px-3 mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                      {group}
+                    </div>
+                    <div className="space-y-0.5">
+                      {grouped.get(group)!.map((item) => {
+                        const active = isActive(item.href);
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                              active
+                                ? 'text-white'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                            }`}
+                            style={active ? { backgroundColor: accentBg, color: accentFg } : {}}
+                          >
+                            {item.icon}
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ));
             })()}
           </nav>
 

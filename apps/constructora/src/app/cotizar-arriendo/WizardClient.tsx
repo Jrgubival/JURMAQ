@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { formatCLP } from '@jurmaq/shared/format';
 
 interface MaquinariaCatalog {
@@ -28,7 +28,6 @@ interface Desglose {
 }
 
 const STEPS = ['Máquina', 'Servicio', 'Detalles', 'Confirmar'] as const;
-type Step = (typeof STEPS)[number];
 
 export default function WizardClient({
   maquinarias,
@@ -41,12 +40,11 @@ export default function WizardClient({
     () => (preselectId ? maquinarias.find((m) => m.id === preselectId) ?? null : null),
     [preselectId, maquinarias],
   );
-  // Si el usuario viene con ?maquinariaId desde la página de detalle, ya eligió
-  // máquina — saltamos el step 0 para no obligarlo a re-confirmar.
   const [step, setStep] = useState<number>(initialPreselect ? 1 : 0);
   const [selectedMaq, setSelectedMaq] = useState<MaquinariaCatalog | null>(initialPreselect);
   const [unidades, setUnidades] = useState<number>(0);
-  const [fecha, setFecha] = useState<string>('');
+  const [fechaInicio, setFechaInicio] = useState<string>('');
+  const [fechaFin, setFechaFin] = useState<string>('');
   const [ubicacion, setUbicacion] = useState<string>('');
   const [km, setKm] = useState<number>(0);
   const [peajes, setPeajes] = useState<number>(0);
@@ -59,15 +57,14 @@ export default function WizardClient({
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ numero: string; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
 
-  // Set default unidades when maquinaria selected
   useEffect(() => {
     if (selectedMaq && unidades < selectedMaq.minimo_unidades) {
       setUnidades(selectedMaq.minimo_unidades);
     }
   }, [selectedMaq]);
 
-  // Live preview on step 3+
   useEffect(() => {
     if (step < 2 || !selectedMaq) {
       setDesglose(null);
@@ -91,12 +88,18 @@ export default function WizardClient({
       .finally(() => setLoading(false));
   }, [step, selectedMaq, unidades, km, peajes, operarios, horasOp]);
 
+  // Note: previously animated step-3 summary with gsap.fromTo, but the package
+  // isn't a constructora dep (lived in barraca only) so we drop the animation
+  // rather than ship a runtime require failure. CSS transitions handle the
+  // visual cue well enough; if we want polished motion again add gsap to
+  // apps/constructora/package.json.
+
   const canAdvance = useMemo(() => {
     if (step === 0) return !!selectedMaq;
-    if (step === 1) return !!fecha && !!ubicacion && unidades > 0;
+    if (step === 1) return !!fechaInicio && !!ubicacion && unidades > 0;
     if (step === 2) return !!cliente.nombre && !!cliente.email && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cliente.email);
     return false;
-  }, [step, selectedMaq, fecha, ubicacion, unidades, cliente]);
+  }, [step, selectedMaq, fechaInicio, ubicacion, unidades, cliente]);
 
   async function submit() {
     if (!selectedMaq) return;
@@ -113,7 +116,8 @@ export default function WizardClient({
           peajes,
           operarios,
           horas_operario_estimadas: horasOp,
-          fecha_servicio: fecha,
+          fecha_inicio: fechaInicio,
+          fecha_fin: fechaFin || fechaInicio,
           ubicacion_servicio: ubicacion,
           cliente_nombre: cliente.nombre,
           cliente_email: cliente.email,
@@ -136,7 +140,6 @@ export default function WizardClient({
     }
   }
 
-  // Success screen
   if (success) {
     return (
       <div className="bg-white rounded-lg shadow p-8 text-center">
@@ -164,7 +167,6 @@ export default function WizardClient({
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
-      {/* Step progress */}
       <div className="bg-navy-950 text-white px-6 py-4">
         <div className="flex items-center gap-2">
           {STEPS.map((label, i) => (
@@ -184,7 +186,6 @@ export default function WizardClient({
       </div>
 
       <div className="p-6 md:p-8">
-        {/* Step 0: Selección máquina */}
         {step === 0 && (
           <div>
             <h2 className="text-xl font-bold mb-4 text-navy-950">Elige la máquina</h2>
@@ -217,7 +218,6 @@ export default function WizardClient({
           </div>
         )}
 
-        {/* Step 1: Servicio */}
         {step === 1 && selectedMaq && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold mb-4 text-navy-950">Detalles del servicio</h2>
@@ -225,15 +225,27 @@ export default function WizardClient({
               <strong>{selectedMaq.nombre}</strong> · {formatCLP(selectedMaq.tarifa_neta)}/{selectedMaq.unidad_tarifa} (mín {selectedMaq.minimo_unidades})
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold mb-1">Fecha de servicio *</label>
-              <input
-                type="date"
-                value={fecha}
-                onChange={(e) => setFecha(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full border rounded px-3 py-2"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-semibold mb-1">Fecha inicio *</label>
+                <input
+                  type="date"
+                  value={fechaInicio}
+                  onChange={(e) => setFechaInicio(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">Fecha fin</label>
+                <input
+                  type="date"
+                  value={fechaFin}
+                  onChange={(e) => setFechaFin(e.target.value)}
+                  min={fechaInicio || new Date().toISOString().split('T')[0]}
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-semibold mb-1">Ubicación del servicio *</label>
@@ -254,7 +266,7 @@ export default function WizardClient({
                 value={unidades}
                 onChange={(e) => setUnidades(Number(e.target.value))}
                 min={selectedMaq.minimo_unidades}
-                step={selectedMaq.unidad_tarifa === 'hora' ? 1 : 1}
+                step={1}
                 className="w-full border rounded px-3 py-2"
               />
             </div>
@@ -288,7 +300,6 @@ export default function WizardClient({
           </div>
         )}
 
-        {/* Step 2: Datos cliente + Desglose preview */}
         {step === 2 && selectedMaq && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold mb-4 text-navy-950">Tus datos</h2>
@@ -341,6 +352,17 @@ export default function WizardClient({
                 />
               </div>
               <div className="md:col-span-2">
+                <label className="block text-sm font-semibold mb-1">Cantidad de operarios</label>
+                <input
+                  type="number"
+                  value={operarios}
+                  onChange={(e) => setOperarios(Math.max(1, Math.min(10, Number(e.target.value))))}
+                  min={1}
+                  max={10}
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold mb-1">Notas adicionales</label>
                 <textarea
                   value={notas}
@@ -354,14 +376,13 @@ export default function WizardClient({
           </div>
         )}
 
-        {/* Step 3: Confirmación */}
         {step === 3 && selectedMaq && desglose && (
-          <div>
+          <div ref={summaryRef}>
             <h2 className="text-xl font-bold mb-4 text-navy-950">Confirma tu cotización</h2>
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <p className="font-bold text-navy-950">{selectedMaq.nombre}</p>
               <p className="text-sm text-gray-600">
-                {fecha} en {ubicacion} · {desglose.unidades_aplicadas} {selectedMaq.unidad_tarifa}
+                {fechaInicio}{fechaFin ? ` → ${fechaFin}` : ''} en {ubicacion} · {desglose.unidades_aplicadas} {selectedMaq.unidad_tarifa}
                 {desglose.unidades_aplicadas !== 1 ? 's' : ''}
               </p>
             </div>
@@ -412,7 +433,7 @@ export default function WizardClient({
             </table>
 
             <div className="bg-blue-50 border border-blue-200 p-3 rounded text-sm mb-4">
-              💌 Al confirmar te enviamos la cotización en PDF a <strong>{cliente.email}</strong>.
+              Al confirmar te enviamos la cotización a <strong>{cliente.email}</strong>.
               No te cobramos nada todavía — solo cuando aceptes y firmemos el contrato.
             </div>
           </div>
@@ -424,7 +445,6 @@ export default function WizardClient({
           </div>
         )}
 
-        {/* Footer nav */}
         <div className="mt-8 flex justify-between gap-3">
           <button
             type="button"

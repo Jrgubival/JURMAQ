@@ -6,6 +6,7 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
+import { logSafeError } from '@jurmaq/shared/logging';
 
 async function sendAcceptRejectAdminEmail(
   cotizacion: { numero: string; nombre: string; email: string; total: number; contraoferta_total?: number },
@@ -222,7 +223,7 @@ export async function POST(
       );
     } catch (emailError) {
       // Log but don't fail the request - the status was already updated
-      console.error('Error al enviar email de notificacion al admin:', emailError);
+      logSafeError('accept-admin-email-fail', { error: String(emailError) });
     }
 
     return NextResponse.json({
@@ -233,7 +234,7 @@ export async function POST(
         : 'Contraoferta rechazada.',
     });
   } catch (error) {
-    console.error('Error al procesar accion:', error);
+    logSafeError('accept-action-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error al procesar la accion' },
       { status: 500 }

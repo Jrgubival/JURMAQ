@@ -5,6 +5,7 @@ import { isValidOrigin, isValidEmail } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import crypto from 'node:crypto';
+import { logSafeError } from '@jurmaq/shared/logging';
 
 export async function POST(request: NextRequest) {
   try {

@@ -9,6 +9,7 @@ import ProductDetailImage from "@/components/barraca/ProductDetailImage";
 import ViewItemTracker from "@/components/analytics/ViewItemTracker";
 import { getActiveCategoryDiscountMap, getDailyPromotions } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
+import { resolvePrice } from "@/lib/pricing";
 
 interface ProductoRow {
   id: number;
@@ -50,7 +51,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const { data: producto } = await supabasePublic
     .from('barraca_productos')
-    .select('nombre, precio, precio_original, en_oferta, stock, slug, imagen, codigo, categoria_id')
+    .select('nombre, precio, precio_original, en_oferta, solo_cotizar, stock, slug, imagen, codigo, categoria_id')
     .eq('slug', slug)
     .single();
 
@@ -68,15 +69,13 @@ export async function generateMetadata({
       metaPromoPrecio = Math.round(producto.precio * (1 - discountPct / 100));
     }
   } catch {
-    // silently ignore
   }
 
-  // Para metadata, usar promo price > precio_original (real) si esta en oferta > precio
-  const precioMostrar = metaPromoPrecio
-    ? metaPromoPrecio
-    : producto.en_oferta && producto.precio_original
-    ? producto.precio_original
-    : producto.precio;
+  const metaResolved = resolvePrice(
+    { precio: producto.precio, precio_original: producto.precio_original, en_oferta: producto.en_oferta, solo_cotizar: producto.solo_cotizar },
+    metaPromoPrecio ? (producto.precio - metaPromoPrecio) / producto.precio * 100 : null,
+  );
+  const precioMostrar = metaResolved.precioFinal > 0 ? metaResolved.precioFinal : producto.precio;
   const precioFormateado = `${formatCLP(precioMostrar)}`;
   const stockTexto =
     producto.stock > 0 ? "Stock disponible" : "Consultar disponibilidad";
@@ -167,9 +166,6 @@ export default async function ProductoPage({
     const discountPct = producto.categoria_id != null ? promoMap.get(producto.categoria_id) : undefined;
     if (discountPct && discountPct > 0 && producto.precio > 0) {
       dailyPromoDiscount = discountPct;
-      promoPrecioDescuento = Math.round(producto.precio * (1 - discountPct / 100));
-      // Find the promo title (best-effort): try the daily rotation first, then
-      // any active promo for this category.
       const dailyPromos = await getDailyPromotions(4);
       const matching =
         dailyPromos.find((p) => p.categoria_id === producto.categoria_id) || null;
@@ -186,8 +182,10 @@ export default async function ProductoPage({
       }
     }
   } catch {
-    // Promotions table may not exist yet - fail silently
   }
+
+  const precioResuelto = resolvePrice(producto, dailyPromoDiscount, dailyPromoTitle);
+  promoPrecioDescuento = precioResuelto.tipo === 'promo_dia' ? precioResuelto.precioFinal : null;
 
   // Related products (random order via Supabase -- not natively supported, so we just get recent)
   const { data: relacionados } = await supabasePublic
@@ -211,11 +209,7 @@ export default async function ProductoPage({
     offers: {
       "@type": "Offer",
       url: `https://barraca.jurmaq.cl/producto/${producto.slug}`,
-      price: promoPrecioDescuento
-        ? promoPrecioDescuento
-        : producto.en_oferta && producto.precio_original
-        ? producto.precio_original
-        : producto.precio,
+      price: precioResuelto.precioFinal,
       priceCurrency: "CLP",
       availability:
         producto.stock > 0
@@ -310,25 +304,27 @@ export default async function ProductoPage({
             {producto.medida && <p className="text-gray-500 mb-4">{producto.medida}</p>}
 
             {/* Daily promotion discount (virtual, calculated on-the-fly) */}
-            {promoPrecioDescuento && dailyPromoDiscount ? (
+            {precioResuelto.tipo === 'promo_dia' ? (
               <>
                 <div className="flex items-center gap-3 mb-1">
                   <span className="inline-flex px-2.5 py-0.5 text-xs font-bold bg-orange-500 text-white rounded-full">
-                    OFERTA DEL DIA
+                    {precioResuelto.label || 'OFERTA DEL DIA'}
                   </span>
-                  <span className="inline-flex px-2 py-0.5 text-xs font-bold bg-red-100 text-red-700 rounded-full">
-                    -{dailyPromoDiscount}%
-                  </span>
+                  {precioResuelto.porcentajeDescuento && (
+                    <span className="inline-flex px-2 py-0.5 text-xs font-bold bg-red-100 text-red-700 rounded-full">
+                      -{precioResuelto.porcentajeDescuento}%
+                    </span>
+                  )}
                 </div>
                 {dailyPromoTitle && (
                   <p className="text-sm text-orange-600 font-medium mb-1">{dailyPromoTitle}</p>
                 )}
                 <p className="text-lg text-gray-400 line-through">
-                  {formatCLP(producto.precio)}
+                  {formatCLP(precioResuelto.precioTachado!)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p className="text-3xl lg:text-4xl font-extrabold text-orange-600">
-                    {formatCLP(promoPrecioDescuento)}
+                    {formatCLP(precioResuelto.precioFinal)}
                   </p>
                   {producto.unidad && (
                     <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>
@@ -339,24 +335,24 @@ export default async function ProductoPage({
                   Precio tachado: valor de venta vigente en los ultimos 30 dias.
                 </p>
               </>
-            ) : producto.en_oferta && producto.precio_original && producto.precio_original > 0 ? (
+            ) : precioResuelto.tipo === 'oferta_real' ? (
               <>
                 <div className="flex items-center gap-3 mb-1">
                   <span className="inline-flex px-2.5 py-0.5 text-xs font-bold bg-red-600 text-white rounded-full">
-                    OFERTA
+                    {precioResuelto.label || 'OFERTA'}
                   </span>
-                  {producto.precio > producto.precio_original && (
+                  {precioResuelto.porcentajeDescuento && (
                     <span className="inline-flex px-2 py-0.5 text-xs font-bold bg-red-100 text-red-700 rounded-full">
-                      -{Math.round((1 - producto.precio_original / producto.precio) * 100)}%
+                      -{precioResuelto.porcentajeDescuento}%
                     </span>
                   )}
                 </div>
                 <p className="text-lg text-gray-400 line-through">
-                  {formatCLP(producto.precio)}
+                  {formatCLP(precioResuelto.precioTachado!)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p className="text-3xl lg:text-4xl font-extrabold text-red-600">
-                    {formatCLP(producto.precio_original)}
+                    {formatCLP(precioResuelto.precioFinal)}
                   </p>
                   {producto.unidad && (
                     <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>
@@ -367,7 +363,7 @@ export default async function ProductoPage({
                   Precio tachado: valor de venta vigente en los ultimos 30 dias.
                 </p>
               </>
-            ) : producto.solo_cotizar ? (
+            ) : precioResuelto.tipo === 'cotizar' ? (
               <div className="flex items-baseline gap-2 mb-2">
                 <p className="text-2xl lg:text-3xl font-bold text-indigo-700">
                   Consultar precio
@@ -377,18 +373,18 @@ export default async function ProductoPage({
               <>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p className="text-3xl lg:text-4xl font-extrabold text-navy-950">
-                    {formatCLP(producto.precio)}
+                    {formatCLP(precioResuelto.precioFinal)}
                   </p>
                   {producto.unidad && (
                     <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>
                   )}
                 </div>
-                {producto.precio > 0 && (
+                {precioResuelto.precioFinal > 0 && (
                   <p className="text-[10px] text-gray-500">IVA incluido</p>
                 )}
               </>
             )}
-            {producto.unidad && !producto.solo_cotizar && (
+            {producto.unidad && precioResuelto.tipo !== 'cotizar' && (
               <p className="text-sm text-gray-500 mb-4 mt-1">Precio por {producto.unidad}</p>
             )}
 

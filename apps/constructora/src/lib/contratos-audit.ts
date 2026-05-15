@@ -2,6 +2,7 @@ import 'server-only';
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
 import { NextRequest } from 'next/server';
 import { getClientIp } from "@jurmaq/shared/rate-limit";
+import { hid } from '@jurmaq/shared/logging';
 
 /**
  * Audit log for contract signing flow.
@@ -101,6 +102,6 @@ export async function logContratoEvent(
   } catch (err) {
     // Never propagate — this is best-effort observability. The signing flow
     // must continue even if the log write fails.
-    console.error('[contrato-audit-fail]', contratoId, eventType, err);
+    console.error('[contrato-audit-fail]', hid(contratoId), eventType, err);
   }
 }

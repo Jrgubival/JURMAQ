@@ -4,7 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { tiposCombustibleLabels, estadosLabels, type EstadoFactura, type TipoCombustible } from '@/lib/combustible-utils';
-import { formatCLP } from "@jurmaq/shared/format";
+import { formatCLP as sharedFormatCLP } from "@jurmaq/shared/format";
 
 export default function FacturaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -55,7 +55,7 @@ export default function FacturaDetailPage({ params }: { params: Promise<{ id: st
   if (error) return <div className="p-8 text-sm text-red-600">{error}</div>;
   if (!factura) return null;
 
-  const formatCLP = (n: number | null | undefined) => '$' + (n || 0).toLocaleString('es-CL');
+  const formatCLP = (n: number | null | undefined) => sharedFormatCLP(Math.round(Number(n) || 0));
   const formatLitros = (n: number | null | undefined) => (n || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 }) + ' L';
 
   return (

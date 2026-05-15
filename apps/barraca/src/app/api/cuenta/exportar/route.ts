@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { logSafeError } from '@jurmaq/shared/logging';
 
 /**
  * POST /api/barraca/cuenta/exportar
@@ -142,7 +143,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error al exportar datos:', error);
+    logSafeError('export-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error al generar la exportacion' },
       { status: 500 }

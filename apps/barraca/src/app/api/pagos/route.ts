@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { logSafeError } from '@jurmaq/shared/logging';
 
 interface PaymentItem {
   nombre: string;
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
         method
       );
     } catch (emailError) {
-      console.error('Error al enviar email de pago:', emailError);
+      logSafeError('payment-email-fail', { error: String(emailError) });
       // Continue even if email fails
     }
 
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
         : 'Datos de transferencia enviados al cliente',
     });
   } catch (error) {
-    console.error('Error al procesar pago:', error);
+    logSafeError('payment-process-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error al procesar el pago' },
       { status: 500 }

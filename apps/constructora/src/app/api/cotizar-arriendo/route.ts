@@ -20,6 +20,7 @@ import { sendCotizacionArriendoEmail } from '@jurmaq/shared/mail/templates/cotiz
 import {
   calcularCotizacion,
   validarInput,
+  verificarDisponibilidad,
   type CotizacionInput,
   type MaquinariaPricing,
   type TarifasTraslado,
@@ -139,13 +140,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
     }
 
-    // Rate-limit estricto: 5 cotizaciones/15min/IP. Crear cotizaciones lleva
-    // a email enviado + entrada en DB; no queremos spam.
     const ip = getClientIp(request);
-    const limiter = rateLimit(`cot-create:${ip}`, { maxAttempts: 5, windowSeconds: 900 });
+    const limiter = rateLimit(`cot-create:${ip}`, { maxAttempts: 20, windowSeconds: 60 });
     if (!limiter.success) {
       return NextResponse.json(
-        { error: 'Demasiados intentos. Espera 15 minutos.' },
+        { error: 'Demasiados intentos. Espera un minuto.' },
         { status: 429 },
       );
     }
@@ -203,6 +202,21 @@ export async function POST(request: NextRequest) {
     }
 
     const desglose = calcularCotizacion(input);
+
+    const disponibilidad = await verificarDisponibilidad(
+      maquinaria.id,
+      fechaServicio,
+      fechaServicio,
+    );
+    if (!disponibilidad.disponible) {
+      return NextResponse.json(
+        {
+          error: 'Maquinaria no disponible en la fecha solicitada',
+          conflictos: disponibilidad.conflictos,
+        },
+        { status: 409 },
+      );
+    }
 
     // Generar número
     const { data: numeroRpc, error: numeroErr } = await supabaseAdmin.rpc('next_cot_arriendo_numero');

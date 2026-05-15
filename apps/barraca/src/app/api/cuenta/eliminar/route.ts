@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { logSafe, logSafeError, hid } from '@jurmaq/shared/logging';
 
 /**
  * POST /api/barraca/cuenta/eliminar
@@ -203,9 +204,9 @@ export async function POST(request: NextRequest) {
         suscripcion_borrada: (suscripcionCount ?? 0) > 0,
       });
     } catch (logErr) {
-      console.error('[account-erased] no se pudo escribir erasure_log (falta migrate-account-erasure-log.sql?)', logErr);
+      logSafe('account-erased-log-fail', { error: String(logErr) });
     }
-    console.log('[account-erased]', user.id);
+    logSafe('account-erased', { userId: hid(user.id) });
 
     return NextResponse.json({
       mensaje:
@@ -213,7 +214,7 @@ export async function POST(request: NextRequest) {
         'Las cotizaciones y contratos legalmente requeridos se conservan sin tus datos identificables.',
     });
   } catch (error) {
-    console.error('Error al eliminar cuenta:', error);
+    logSafe('account-delete-error', { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       { error: 'Error al eliminar cuenta' },
       { status: 500 }

@@ -3,6 +3,7 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { NextRequest, NextResponse } from 'next/server';
 import { renderContrato } from '@/lib/contrato-render';
 import { buildRenderVars, injectFirmasIntoHtml } from '../../_helpers';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 /**
  * GET /api/admin/contratos/[id]/pdf
@@ -17,6 +18,12 @@ export async function GET(
   try {
     const session = await requirePermission('contratos', 'read');
     if (!session) return forbiddenResponse('No tienes permiso');
+
+    const ip = getClientIp(request);
+    const limiter = rateLimit(`contrato-pdf:${ip}`, { maxAttempts: 20, windowSeconds: 60 });
+    if (!limiter.success) {
+      return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 });
+    }
 
     const { id } = await params;
     const numericId = parseInt(id, 10);

@@ -4,6 +4,7 @@ import { sendCotizacionEmail, sendCotizacionAdminEmail } from '@jurmaq/shared/ma
 import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeString, isValidEmail, escapeLikePattern, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +15,6 @@ export async function GET(request: NextRequest) {
     const estado = searchParams.get('estado');
     const buscar = searchParams.get('buscar');
 
-    // Explicit column list — defense in depth. If a future migration adds a
-    // sensitive column (mfa_secret, internal_notes, audit_payload), it
-    // doesn't auto-leak through this admin endpoint.
     let query = supabaseAdmin
       .from('barraca_cotizaciones')
       .select('id, numero, usuario_id, nombre, empresa, email, telefono, rut, items, total, estado, notas, created_at, cotizacion_competencia, nombre_competencia, contraoferta_items, contraoferta_total, contraoferta_mensaje, metodo_pago')
@@ -39,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(cotizaciones);
   } catch (error) {
-    console.error('Error al obtener cotizaciones:', error);
+    logSafeError('cotizaciones-get-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error al obtener cotizaciones' },
       { status: 500 }
@@ -155,8 +153,7 @@ export async function POST(request: NextRequest) {
           totalRecalculado = trustedItems.reduce((s, i) => s + i.precio * i.cantidad, 0);
         }
       } catch (cartErr) {
-        // Falla del lookup no bloquea, pero loguea para revisar.
-        console.warn('[cotizaciones POST] no se pudo reconstruir carrito para sessionId:', cartErr);
+        logSafeError('cotizaciones-cart-rebuild-fail', { sessionId });
       }
     }
 
@@ -282,21 +279,21 @@ export async function POST(request: NextRequest) {
       }),
     ]);
     if (clientResult.status === 'fulfilled') {
-      console.log('[email-client-ok]', numero);
+      logSafe('email-client-ok', { numero });
     } else {
       const msg = clientResult.reason instanceof Error ? clientResult.reason.message : String(clientResult.reason);
-      console.error('[email-client-fail]', numero, msg);
+      logSafeError('email-client-fail', { numero, msg });
     }
     if (adminResult.status === 'fulfilled') {
-      console.log('[email-admin-ok]', numero);
+      logSafe('email-admin-ok', { numero });
     } else {
       const msg = adminResult.reason instanceof Error ? adminResult.reason.message : String(adminResult.reason);
-      console.error('[email-admin-fail]', numero, msg);
+      logSafeError('email-admin-fail', { numero, msg });
     }
 
     return NextResponse.json(cotizacion, { status: 201 });
   } catch (error) {
-    console.error('Error al crear cotizacion:', error);
+    logSafeError('cotizaciones-create-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error al crear cotizacion' },
       { status: 500 }

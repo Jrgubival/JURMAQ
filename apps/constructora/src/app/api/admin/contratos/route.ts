@@ -7,6 +7,7 @@ import {
   escapeLikePattern,
   isValidOrigin,
 } from '@jurmaq/shared/sanitize';
+import { hid } from '@jurmaq/shared/logging';
 import crypto from 'crypto';
 
 const ALLOWED_PRECIO_UNIDAD = new Set(['dia', 'semana', 'mes']);

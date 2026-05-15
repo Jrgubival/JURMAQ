@@ -28,7 +28,6 @@ const TIPOS = [
 // Format especial: acepta null + permite decimales (tarifas IEC en CLP/litro).
 function formatCLP(n: number | null): string {
   if (n == null) return '—';
-  // Si es entero, usa el shared formatCLP; si tiene decimales, los preserva.
   if (Number.isInteger(n)) return sharedFormatCLP(n);
   return '$' + n.toLocaleString('es-CL', { maximumFractionDigits: 2 });
 }

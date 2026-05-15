@@ -4,6 +4,7 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { escapeLikePattern, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { transporter } from '@jurmaq/shared/mail/email';
+import { logSafeError } from '@jurmaq/shared/logging';
 
 export async function GET(request: NextRequest) {
   try {
@@ -150,7 +151,7 @@ export async function POST(request: NextRequest) {
         html,
       });
     } catch (mailErr) {
-      console.error('[solicitud-email-fail]', mailErr);
+      logSafeError('solicitud-email-fail', { error: String(mailErr) });
       // Don't fail the request — the solicitud was saved, the email is best-effort.
     }
 

@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { formatCLP } from '@jurmaq/shared/format';
+import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 function escapeHtml(s: string): string {
   return s
@@ -20,11 +21,17 @@ function escapeHtml(s: string): string {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await requirePermission('cotizaciones', 'read');
   if (!session) return forbiddenResponse('No autorizado');
+
+  const ip = getClientIp(request);
+  const limiter = rateLimit(`cot-arriendo-pdf:${ip}`, { maxAttempts: 20, windowSeconds: 60 });
+  if (!limiter.success) {
+    return NextResponse.json({ error: 'Demasiadas solicitudes' }, { status: 429 });
+  }
 
   const { id } = await params;
   const { data: cot, error } = await supabaseAdmin

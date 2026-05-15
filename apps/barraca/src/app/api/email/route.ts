@@ -2,6 +2,7 @@ import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendFollowUpEmail, sendAbandonedCartEmail, sendMonthlyOffersEmail } from '@/lib/email-sequences';
 import { isValidEmail, isValidOrigin } from '@jurmaq/shared/sanitize';
+import { logSafeError } from '@jurmaq/shared/logging';
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
-    console.error('Error enviando email de secuencia:', error);
+    logSafeError('email-sequence-error', { error: String(error) });
     return NextResponse.json(
       { error: 'Error interno al enviar el correo' },
       { status: 500 }

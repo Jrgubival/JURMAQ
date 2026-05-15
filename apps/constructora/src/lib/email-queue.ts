@@ -1,5 +1,6 @@
 import 'server-only';
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { maskEmail } from '@jurmaq/shared/logging';
 
 /**
  * Cola de retry para envios de email que fallan (audit M3).
@@ -69,7 +70,7 @@ export async function enqueueEmail(item: EmailQueueItem, errorMessage: string): 
         console.warn('[email-queue] tabla no existe, falla silenciosa. Ejecuta migrate-email-queue.sql');
         return;
       }
-      console.error('[email-queue] no se pudo encolar:', error, item);
+      console.error('[email-queue] no se pudo encolar:', error, { to: maskEmail(item.to) });
     }
   } catch (err) {
     console.error('[email-queue] excepcion al encolar:', err);
