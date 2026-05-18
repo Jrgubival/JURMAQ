@@ -1,4 +1,4 @@
-# Deploy Checklist — JURMAQ.CL (2026-05-15)
+# Deploy Checklist — JURMAQ.CL (actualizado 2026-05-18)
 
 Branch: `main` · Último commit listo para deploy: ver `git log --oneline -1`
 
@@ -7,6 +7,23 @@ Branch: `main` · Último commit listo para deploy: ver `git log --oneline -1`
 ## 1) Migraciones SQL pendientes en Supabase production
 
 **Aplicar en Supabase Dashboard → SQL Editor, EN ESTE ORDEN.**
+
+### 🟠 NUEVA: Documentos por maquinaria
+
+Feature pedido por el dueño (subir/descargar revisión técnica, permisos, etc. desde el admin en 1 click). Endpoints + UI ya están en main. Sin la migración el endpoint responde 503 con un mensaje explicando que falta aplicarla.
+
+```sql
+-- Pegá íntegro el contenido de:
+apps/constructora/scripts/migrate-maquinaria-documentos.sql
+```
+
+**Qué hace:**
+- Tabla `maquinaria_documentos` (9 tipos: rt, permiso_circulacion, soap, seguro_rc, ficha_tecnica, manual_operacion, mantencion, capacitacion_operador, foto).
+- Trigger `maq_docs_updated_at_trigger`.
+- Bucket Storage `maquinaria-documentos` privado, 10MB max, MIME pdf/jpeg/png/webp.
+- RLS habilitada sin policies para anon/authenticated → solo service_role accede.
+
+**Tras aplicarla:** entrá a `/admin/maquinarias/[id]` (cualquier máquina) → tab Documentos → subí los archivos de `_tmp_docs_maquinaria/` que están en el repo (no commiteados — están en .gitignore).
 
 ### 🔴 OBLIGATORIA antes de aceptar nuevas ofertas: SERNAC histórico de precios
 
@@ -204,5 +221,71 @@ Las migraciones RLS Pattern 5 son safe — sólo bloquean lecturas no autorizada
 **Lo que NO se hizo y no es bloqueante para mañana:**
 - 19 archivos huérfanos eliminados → bundle más liviano. Build sigue verde.
 - Lint debt sigue alta (184) pero compila y tipa OK.
+
+---
+
+## 8) Post-deploy roadmap (iteración 2)
+
+Plan completo en `/Users/jorgeubilla/.claude/plans/agregaste-lo-de-revision-rosy-biscuit.md`. Resumen de lo que quedó **deferido** del plan consolidado:
+
+### Bloque 1 — Aislamiento de sesión (~5h, **security urgent**)
+
+Hoy un admin de Barraca con su sesión activa puede entrar al admin de Constructora porque cookie en `domain: '.jurmaq.cl'`, AUTH_SECRET compartido, tabla `users` sin scope. Las 6 acciones del bloque:
+
+1. `packages/shared/src/auth/config.ts`: refactor a `createAuthConfig({ scope })` factory.
+2. Cookies por host con prefijo `__Host-barraca.session-token` / `__Host-constructora.session-token` (sin `domain` attribute — el browser fuerza el aislamiento).
+3. `AUTH_SECRET` distinto por app (generar 2 con `openssl rand -base64 32`).
+4. `AUTH_SCOPE=barraca|constructora` env var por app, leída por el factory.
+5. Migración `users.scope` column (text, check IN barraca|constructora|both, default constructora).
+6. `packages/shared/src/auth/index.ts:51`: cambiar `.from('users').eq('email', email)` por `.in('scope', [scope, 'both'])`. Callback `session()` valida scope.
+
+**Riesgo de deploy**: rompe sesiones activas (relogin obligatorio). Hacer en ventana de baja actividad. Comunicar a los <10 admins.
+
+### Bloque 2 — AdminShell split (~3h)
+
+`AdminShell.tsx` de constructora (522 LOC) tiene una rama `'barraca'` con `barracaNavItems[]` apuntando a `/admin/barraca/*` (rutas que NO existen post-split — links rotos). Y `apps/barraca/src/app/admin/` no tiene `layout.tsx` propio.
+
+- Eliminar rama `'barraca'` del AdminShell constructora → ~200 LOC menos.
+- Crear `apps/barraca/src/components/admin/AdminShell.tsx` con hrefs corregidos (`/admin/productos`, no `/admin/barraca/productos`).
+- Crear `apps/barraca/src/app/admin/layout.tsx` con `<SessionProvider>` + `<AdminShell>`.
+- Cross-link entre admins via `NEXT_PUBLIC_BARRACA_URL` / `NEXT_PUBLIC_CONSTRUCTORA_URL`.
+
+### Bloque 3.6 — Documentos de personal (~1.5h)
+
+Mirror de Bloque 3 (maquinaria docs) para operarios. Los 22 docs de Matías y Mauricio (en `_tmp_docs_maquinaria/`) entran ahí.
+
+- `apps/constructora/scripts/migrate-users-documentos.sql` (tabla `users_documentos` + bucket `users-documentos`).
+- Tipos: `licencia_municipal`, `cedula`, `contrato_laboral`, `capacitacion`, `examen_psicosensometrico`, `foto`, `otro`.
+- 4 endpoints en `/api/admin/usuarios/[id]/documentos/`.
+- UI tab en `/admin/usuarios/[id]`.
+
+### Bloque 4 — Polish restante (~2h)
+
+- Migrar 8 archivos con `confirm()` nativo a `<ConfirmDialog>` (componente ya disponible en `packages/shared/src/ui/`):
+  - barraca: promociones, precios
+  - constructora: cotizaciones-arriendo/[id], email-queue, contratos/[id], combustible (3 archivos)
+- `min`/`max`/`step` en inputs numéricos admin (categorias parcial, falta productos + maquinarias + precios completos).
+- `<label htmlFor>` para a11y en formularios admin.
+- Normalizar `rounded-lg` → `rounded-xl` (sed global, low risk).
+- Responsive `sm:`/`md:` en /admin/cotizaciones, /admin/suscriptores barraca.
+
+### Bloque 6 — `packages/shared` cleanup (~5h)
+
+- Deprecar `supabaseAdmin` singleton → `createAdminClient()` factory (76 imports).
+- Mover 8 mail templates a su app correspondiente.
+- `rateLimit()` con `scope` namespace.
+- Split `Module` enum en `BarracaModule` + `ConstructoraModule`.
+- Mover `CommandPalette.tsx` a constructora.
+
+### Verificación OWASP / blast radius
+
+Después de Bloque 1 + 2:
+
+1. Test aislamiento 2 browsers: barraca login → constructora pide login → ✓.
+2. `git ls-files | grep -E '\.env(\.local)?$'` → silencio.
+3. `pnpm audit --prod` → 0 highs/criticals.
+4. `MERCADOPAGO_WEBHOOK_SECRET` set en prod env.
+
+---
 
 Buen deploy.
