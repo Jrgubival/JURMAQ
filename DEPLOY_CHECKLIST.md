@@ -23,7 +23,24 @@ apps/constructora/scripts/migrate-maquinaria-documentos.sql
 - Bucket Storage `maquinaria-documentos` privado, 10MB max, MIME pdf/jpeg/png/webp.
 - RLS habilitada sin policies para anon/authenticated → solo service_role accede.
 
-**Tras aplicarla:** entrá a `/admin/maquinarias/[id]` (cualquier máquina) → tab Documentos → subí los archivos de `_tmp_docs_maquinaria/` que están en el repo (no commiteados — están en .gitignore).
+**Tras aplicarla:** entrá a `/admin/maquinarias/[id]` (cualquier máquina) → sección Documentos → subí los archivos de `_tmp_docs_maquinaria/` que están en el repo (no commiteados — están en .gitignore).
+
+### 🟠 NUEVA: Documentos por usuario / operario
+
+Mismo flujo que documentos de maquinaria, pero para licencias, contratos, capacitaciones y exámenes psicosensométricos de operarios (ej. carpetas de Matías Zúñiga y Mauricio Ricciardi). Endpoints + UI listos en main; sin migración devuelve 503.
+
+```sql
+-- Pegá íntegro el contenido de:
+apps/constructora/scripts/migrate-users-documentos.sql
+```
+
+**Qué hace:**
+- Tabla `users_documentos` (7 tipos: licencia_municipal, cedula, contrato_laboral, capacitacion, examen_psicosensometrico, foto, otro).
+- Trigger `users_docs_updated_at_trigger`.
+- Bucket Storage `users-documentos` privado, 10MB max, MIME pdf/jpeg/png/webp.
+- RLS habilitada sin policies para anon/authenticated.
+
+**Tras aplicarla:** entrá a `/admin/usuarios/[id]` → sección Documentos → subir.
 
 ### 🔴 OBLIGATORIA antes de aceptar nuevas ofertas: SERNAC histórico de precios
 

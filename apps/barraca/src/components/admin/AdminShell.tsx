@@ -9,18 +9,19 @@ import { visibleModules } from '@jurmaq/shared/roles';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
 
 /**
- * Admin panel se separa por dominio funcional:
- *   - "construct"  → /admin (excepto /admin/barraca/*): maquinaria, contratos,
- *                    combustible, etc. Es el panel histórico de la constructora.
- *   - "barraca"    → /admin/barraca/*: e-commerce JURMAQ Barraca (productos,
- *                    promociones, importar Excel, imágenes, etc).
+ * AdminShell — panel admin de Barraca (e-commerce de fierros y materiales).
  *
- * Decisión: dos sidebars separados, mismo shell. El usuario alterna con un
- * switcher al pie. Antes ambos navs aparecían juntos lo cual saturaba la
- * pantalla y mezclaba responsabilidades — un vendedor de barraca no necesita
- * ver "Solicitudes de maquinaria" todo el día.
+ * Antes esto vivía dentro del shell de constructora con detección por path
+ * (`/admin/barraca/*`), pero post-split barraca tiene su propio dominio
+ * (barraca.jurmaq.cl) con su propio admin (`barraca.jurmaq.cl/admin/*`).
+ * Cada app tiene su layout admin independiente para que el branding,
+ * navegación, y sesión queden aislados.
+ *
+ * SEO: este shell solo se monta bajo /admin/*, que `robots.txt` ya
+ * bloquea explícitamente. No hay impacto en las páginas públicas
+ * (catálogo, producto, búsqueda, calculadoras, landings).
  */
-type NavGroup = 'Operaciones' | 'Catálogo' | 'Tributario' | 'Configuración';
+type NavGroup = 'Operaciones' | 'Catálogo' | 'Ventas' | 'Marketing';
 
 interface NavItem {
   label: string;
@@ -43,76 +44,66 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: 'Maquinarias',
-    href: '/admin/maquinarias',
-    module: 'maquinarias',
+    label: 'Productos',
+    href: '/admin/productos',
+    module: 'barraca_productos',
     group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
       </svg>
     ),
   },
   {
-    label: 'Solicitudes',
-    href: '/admin/solicitudes',
-    module: 'solicitudes',
-    group: 'Operaciones',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Proyectos',
-    href: '/admin/proyectos',
-    module: 'proyectos',
-    group: 'Operaciones',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Clientes',
-    href: '/admin/clientes',
-    module: 'clientes',
+    label: 'Categorías',
+    href: '/admin/categorias',
+    module: 'barraca_categorias',
     group: 'Catálogo',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Importar',
+    href: '/admin/importar',
+    module: 'barraca_importar',
+    group: 'Catálogo',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Imágenes',
+    href: '/admin/imagenes',
+    module: 'barraca_imagenes',
+    group: 'Catálogo',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Imágenes masivas',
+    href: '/admin/imagenes-masivas',
+    module: 'barraca_imagenes',
+    group: 'Catálogo',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
   },
   {
     label: 'Cotizaciones',
     href: '/admin/cotizaciones',
-    module: 'cotizaciones',
-    group: 'Operaciones',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Cotizaciones arriendo',
-    href: '/admin/cotizaciones-arriendo',
-    module: 'cotizaciones',
-    group: 'Operaciones',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2M9 17a4 4 0 11-4-4m4 4a4 4 0 014 4M5 13a4 4 0 100-8 4 4 0 000 8z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Contratos',
-    href: '/admin/contratos',
-    module: 'contratos',
-    group: 'Operaciones',
+    module: 'barraca_cotizaciones',
+    group: 'Ventas',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -120,56 +111,39 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: 'Plantillas contrato',
-    href: '/admin/contratos/templates',
-    module: 'contratos',
-    group: 'Catálogo',
+    label: 'Precios',
+    href: '/admin/precios',
+    module: 'barraca_precios',
+    group: 'Ventas',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
   },
   {
-    label: 'Combustible',
-    href: '/admin/combustible',
-    module: 'combustible',
-    group: 'Tributario',
+    label: 'Promociones',
+    href: '/admin/promociones',
+    module: 'barraca_promociones',
+    group: 'Marketing',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c-3 4-5 6.5-5 9.5a5 5 0 1010 0C17 9.5 15 7 12 3z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
       </svg>
     ),
   },
   {
-    label: 'SII / Tributario',
-    href: '/admin/sii',
-    module: 'combustible',
-    group: 'Tributario',
+    label: 'Suscriptores',
+    href: '/admin/suscriptores',
+    module: 'barraca_suscriptores',
+    group: 'Marketing',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Usuarios',
-    href: '/admin/usuarios',
-    module: 'usuarios',
-    group: 'Configuración',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     ),
   },
 ];
-
-// NOTE: el array `barracaNavItems[]` vivía aquí porque el AdminShell
-// pintaba ambos paneles según `pathname.startsWith('/admin/barraca')`.
-// Post-split, Barraca tiene su propio shell en
-// apps/barraca/src/components/admin/AdminShell.tsx — los items se movieron
-// allí. Este shell ahora sirve EXCLUSIVAMENTE al admin de Constructora.
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -179,7 +153,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
-    router.push('/login');
+    router.push('/cuenta/login');
   };
 
   const isActive = (href: string) => {
@@ -187,10 +161,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     return pathname.startsWith(href);
   };
 
-  // Si el sysadmin tiene acceso al admin de barraca también, ofrecemos un
-  // link de cross-admin (configurable via env). Quita la necesidad del
-  // switcher que vivía dentro del shell antes.
-  const barracaUrl = process.env.NEXT_PUBLIC_BARRACA_URL || '';
+  // Si el sysadmin tiene acceso al admin de constructora, ofrecemos un link
+  // de cross-admin (configurable via env). En dev queda apuntando al puerto
+  // de constructora; en prod a admin.jurmaq.cl o jurmaq.cl según deploy.
+  const constructoraUrl = process.env.NEXT_PUBLIC_CONSTRUCTORA_URL || '';
 
   return (
     <div className="min-h-screen flex bg-gray-50">
@@ -204,7 +178,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-out lg:translate-x-0 lg:static lg:inset-auto ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{ backgroundColor: '#0c1d3a' }}
@@ -214,15 +188,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <div className="flex items-center gap-3 px-6 py-6 border-b border-white/10">
             <div
               className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: '#e6b422' }}
+              style={{ backgroundColor: '#ea580c' }}
             >
-              <span className="text-lg font-black" style={{ color: '#0c1d3a' }}>J</span>
+              <span className="text-lg font-black text-white">B</span>
             </div>
             <div>
               <h1 className="text-white font-bold text-lg leading-tight">JURMAQ</h1>
-              <p className="text-gray-400 text-xs">Panel Constructora</p>
+              <p className="text-gray-400 text-xs">Panel Barraca</p>
             </div>
-            {/* Close button mobile */}
             <button
               onClick={() => setSidebarOpen(false)}
               className="ml-auto lg:hidden text-gray-400 hover:text-white"
@@ -234,27 +207,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             </button>
           </div>
 
-          {/* Nav — items de constructora filtrados por permisos del rol,
-              agrupados por área funcional. */}
+          {/* Nav agrupado */}
           <nav className="flex-1 px-3 py-4 overflow-y-auto">
             {(() => {
               const role = (session?.user as { role?: string })?.role;
               const allowedModules = new Set(visibleModules(role));
               const filtered = navItems.filter((it) => allowedModules.has(it.module));
-              const accentBg = '#e6b422';
-              const accentFg = '#0c1d3a';
+              const accentBg = '#ea580c';
+              const accentFg = '#fff';
 
-              // Orden de grupos: Operaciones primero (lo más usado),
-              // Configuración al final.
-              const groupOrder: NavGroup[] = [
-                'Operaciones',
-                'Catálogo',
-                'Tributario',
-                'Configuración',
-              ];
-
-              // Agrupar items por group field, preservando el orden de items
-              // dentro de cada grupo.
+              const groupOrder: NavGroup[] = ['Operaciones', 'Catálogo', 'Ventas', 'Marketing'];
               const grouped = new Map<NavGroup, NavItem[]>();
               for (const it of filtered) {
                 if (!grouped.has(it.group)) grouped.set(it.group, []);
@@ -294,31 +256,20 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             })()}
           </nav>
 
-          {/* Cross-admin link (a barraca admin, opcional). Aparece solo si
-              NEXT_PUBLIC_BARRACA_URL está configurada Y el usuario tiene
-              permiso en al menos un módulo de barraca (rol con scope
-              barraca/both). */}
-          {barracaUrl && (() => {
-            const role = (session?.user as { role?: string })?.role;
-            const allowedModules = new Set(visibleModules(role));
-            const hasBarracaAccess = Array.from(allowedModules).some((m) =>
-              String(m).startsWith('barraca_')
-            );
-            if (!hasBarracaAccess) return null;
-            return (
-              <div className="px-3 pb-2 border-t border-white/10 pt-3">
-                <a
-                  href={`${barracaUrl}/admin`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-                >
-                  <span aria-hidden="true">→</span>
-                  Panel Barraca
-                </a>
-              </div>
-            );
-          })()}
+          {/* Cross-admin link (solo si hay env var configurada) */}
+          {constructoraUrl && (
+            <div className="px-3 pb-2 border-t border-white/10 pt-3">
+              <a
+                href={`${constructoraUrl}/admin`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                <span aria-hidden="true">→</span>
+                Panel Constructora
+              </a>
+            </div>
+          )}
 
           {/* Sign out */}
           <div className="px-3 py-4 border-t border-white/10">
@@ -329,7 +280,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              Cerrar Sesion
+              Cerrar sesión
             </button>
           </div>
         </div>
@@ -337,11 +288,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Top bar */}
         <header className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden text-gray-600 hover:text-gray-900"
+            aria-label="Abrir menú"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -351,9 +302,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <div className="hidden lg:flex items-center gap-3">
             <span
               className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded"
-              style={{ backgroundColor: '#fef3c7', color: '#92400e' }}
+              style={{ backgroundColor: '#fff7ed', color: '#9a3412' }}
             >
-              Constructora
+              Barraca
             </span>
             <h2 className="text-lg font-semibold text-gray-800">
               {navItems.find((item) => isActive(item.href))?.label || 'Admin'}
@@ -361,7 +312,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="text-right">
+            <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-gray-700">
                 {session?.user?.name || 'Administrador'}
               </p>
@@ -376,31 +327,22 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">{children}</main>
       </div>
 
-      {/* Command Palette (Cmd+K) — navegación rápida por todas las secciones admin */}
+      {/* Command Palette (Cmd+K) */}
       <CommandPalette
         items={[
-          // Operaciones
           { label: 'Dashboard', href: '/admin', group: 'Operaciones' },
-          { label: 'Cotizaciones arriendo', href: '/admin/cotizaciones-arriendo', group: 'Operaciones', keywords: ['cotizar', 'arriendo', 'cot-ar'] },
-          { label: 'Cotizaciones (legacy)', href: '/admin/cotizaciones', group: 'Operaciones' },
-          { label: 'Contratos', href: '/admin/contratos', group: 'Operaciones', keywords: ['firma', 'contrato'] },
-          { label: 'Solicitudes', href: '/admin/solicitudes', group: 'Operaciones' },
-          { label: 'Proyectos', href: '/admin/proyectos', group: 'Operaciones' },
-          // Catálogo
-          { label: 'Maquinarias', href: '/admin/maquinarias', group: 'Catálogo' },
-          { label: 'Clientes', href: '/admin/clientes', group: 'Catálogo' },
-          { label: 'Plantillas contrato', href: '/admin/contratos/templates', group: 'Catálogo' },
-          // Tributario
-          { label: 'SII / F29', href: '/admin/sii', group: 'Tributario', keywords: ['iva', 'tributario', 'export'] },
-          { label: 'Combustible', href: '/admin/combustible', group: 'Tributario', keywords: ['iec', 'f29'] },
-          { label: 'Tarifas IEC', href: '/admin/combustible/tarifas', group: 'Tributario' },
-          // Configuración
-          { label: 'Usuarios', href: '/admin/usuarios', group: 'Configuración' },
-          { label: 'Email queue', href: '/admin/email-queue', group: 'Configuración' },
+          { label: 'Productos', href: '/admin/productos', group: 'Catálogo' },
+          { label: 'Categorías', href: '/admin/categorias', group: 'Catálogo' },
+          { label: 'Imágenes', href: '/admin/imagenes', group: 'Catálogo' },
+          { label: 'Imágenes masivas', href: '/admin/imagenes-masivas', group: 'Catálogo' },
+          { label: 'Importar', href: '/admin/importar', group: 'Catálogo' },
+          { label: 'Cotizaciones', href: '/admin/cotizaciones', group: 'Ventas', keywords: ['cot', 'cotizar'] },
+          { label: 'Precios', href: '/admin/precios', group: 'Ventas' },
+          { label: 'Promociones', href: '/admin/promociones', group: 'Marketing' },
+          { label: 'Suscriptores', href: '/admin/suscriptores', group: 'Marketing' },
         ]}
       />
     </div>

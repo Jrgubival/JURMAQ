@@ -3,6 +3,7 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
 import ToastContainer from "@/components/Toast";
 
@@ -711,6 +712,17 @@ export default function BarracaShell({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  // Rutas administrativas (/admin/*) tienen su propio layout anidado
+  // (apps/barraca/src/app/admin/layout.tsx + AdminShell). Si el shell público
+  // se renderiza encima quedan dos headers, dos toasts, dos widgets de chat,
+  // etc. SEO: /admin/* está disallow en robots.txt y noindex en metadata,
+  // así que ocultar el shell público acá no impacta crawling.
+  const isAdmin = pathname?.startsWith("/admin");
+  if (isAdmin) {
+    return <>{children}</>;
+  }
+
   return (
     <>
       <a href="#main-content" className="skip-to-content">

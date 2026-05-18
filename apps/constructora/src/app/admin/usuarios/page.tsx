@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 type RoleId = 'admin' | 'gerente' | 'vendedor' | 'operador' | 'contador';
 
@@ -248,6 +249,13 @@ export default function UsuariosAdminPage() {
                     <td className="px-4 py-3 text-center text-gray-500 text-xs">{formatDate(u.created_at)}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 justify-end">
+                        <Link
+                          href={`/admin/usuarios/${u.id}`}
+                          className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50 inline-flex items-center gap-1"
+                          title="Ver detalle y documentos"
+                        >
+                          Detalle
+                        </Link>
                         <button
                           onClick={() => openEdit(u)}
                           className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
