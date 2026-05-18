@@ -350,7 +350,7 @@ export default async function MaquinariaDetailPage({
                         <p className="text-xs text-gray-500 uppercase tracking-wider">
                           Desde
                         </p>
-                        <p className="text-2xl font-extrabold text-navy-950">
+                        <p className="text-2xl font-extrabold text-navy-950 tabular-nums">
                           {desdePrecio !== null ? `${formatPrice(desdePrecio)}/día` : "Consultar"}
                         </p>
                       </div>

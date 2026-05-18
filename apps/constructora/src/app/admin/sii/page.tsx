@@ -125,7 +125,7 @@ export default function SiiDashboard() {
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 border-b text-xs font-semibold text-gray-600 uppercase">
+            <thead className="bg-gray-50 border-b text-xs font-semibold text-gray-600 uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3 text-left">Período</th>
                 <th className="px-4 py-3 text-right">Ventas neto</th>

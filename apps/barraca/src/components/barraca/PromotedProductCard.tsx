@@ -128,7 +128,7 @@ export default function PromotedProductCard({
         <span className="px-2 py-0.5 text-xs font-bold bg-red-600 text-white rounded-full">
           -{descuento}%
         </span>
-        <span className="px-2 py-0.5 text-[10px] font-bold bg-orange-500 text-white rounded-full uppercase">
+        <span className="px-2 py-0.5 text-[10px] font-bold bg-orange-500 text-white rounded-full uppercase tracking-wider">
           Oferta del Dia
         </span>
       </div>

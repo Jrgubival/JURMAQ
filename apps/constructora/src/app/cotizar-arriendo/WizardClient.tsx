@@ -476,7 +476,7 @@ export default function WizardClient({
         </div>
 
         {loading && step >= 2 && (
-          <p className="text-xs text-gray-400 mt-2 text-center">Calculando...</p>
+          <p className="text-xs text-gray-400 mt-2 text-center">Calculando…</p>
         )}
       </div>
     </div>

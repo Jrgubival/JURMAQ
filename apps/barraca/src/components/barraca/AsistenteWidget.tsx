@@ -165,7 +165,7 @@ export default function AsistenteWidget() {
               {/* Quick actions */}
               {messages.length === 0 && (
                 <div className="px-4 py-3 bg-gray-50 border-b">
-                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase">Acciones rápidas</p>
+                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Acciones rápidas</p>
                   <div className="grid grid-cols-2 gap-2">
                     {QUICK_ACTIONS.map((a) => (
                       <Link

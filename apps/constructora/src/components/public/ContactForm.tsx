@@ -271,7 +271,7 @@ export function ContactForm() {
           value={formData.mensaje}
           onChange={handleChange}
           rows={5}
-          placeholder="Describe brevemente tu necesidad o proyecto..."
+          placeholder="Describe brevemente tu necesidad o proyecto…"
           className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow resize-none"
         />
       </div>

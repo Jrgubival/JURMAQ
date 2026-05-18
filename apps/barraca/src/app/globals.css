@@ -350,3 +350,89 @@ body.overflow-hidden {
 /* Smooth page transitions */
 .page-transition-enter { opacity: 0; transform: translateY(10px); }
 .page-transition-active { opacity: 1; transform: none; transition: all 0.4s ease; }
+
+/* ========== TASTE PASS (Emil Kowalski's "Agents with Taste" principles) ========== */
+/*
+ * Source: https://emilkowal.ski/ui/agents-with-taste
+ *
+ * Goal: encode design taste centrally so individual components don't have to
+ * remember to add `tabular-nums`, `tracking-wider`, `active:scale-97`, etc.
+ * Anything we can't sensibly default globally lives near the component.
+ */
+
+/* TYPOGRAPHY ---------------------------------------------------------------- */
+
+/* Tabular figures for any monetary / quantitative context.
+   Cards, tables, totals, badges with numbers — all align column-wise.
+   Opt-in via `tabular-nums` Tailwind utility or `.price` / `[data-price]`. */
+table,
+table *,
+.tabular-figures,
+[data-numeric],
+.price,
+[data-price] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+
+/* Loosen letter-spacing on every uppercase label so caps don't cramp.
+   Emil: "loosen letter-spacing on uppercase labels". Tailwind already
+   applies tracking-wider in many places — this catches the ones that don't. */
+.uppercase {
+  letter-spacing: 0.05em;
+}
+
+/* Reading width cap for body prose — Emil: ~65 characters. */
+.prose,
+.prose-content,
+article p,
+[data-prose] p {
+  max-width: 65ch;
+}
+
+/* Links are the only place underlines belong. Strip the browser default
+   underline on anything that isn't an explicit text link. */
+a:not([class*="underline"]):not(.link) {
+  text-decoration: none;
+}
+
+/* MOTION ------------------------------------------------------------------- */
+
+/* Default easing for any element using Tailwind's `transition-*` utilities,
+   unless the component overrides with ease-in/out/linear. ease-out for
+   entrances is the safe global default per Emil. */
+*[class*="transition"]:not([class*="ease-"]) {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Buttons: tactile feedback on press. 0.97 scale, instant, no flicker.
+   Excluded for explicit disabled state. Skip a-tag-styled-as-button cases
+   where it would interfere with anchor behavior. */
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled):not([aria-disabled="true"]):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: scale(0.97);
+    transition: transform 75ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* Hover flicker fix on cards with nested decorations:
+   animate children, not the parent. */
+[data-card-hover] {
+  transition: none;
+}
+[data-card-hover] > * {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Respect reduced motion globally. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

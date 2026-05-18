@@ -112,7 +112,7 @@ export default function CotizacionesArriendoListPage() {
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full">
             <thead className="bg-gray-50 border-b">
-              <tr className="text-left text-xs font-semibold text-gray-600 uppercase">
+              <tr className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 <th className="px-4 py-3">Número</th>
                 <th className="px-4 py-3">Cliente</th>
                 <th className="px-4 py-3">Máquina</th>

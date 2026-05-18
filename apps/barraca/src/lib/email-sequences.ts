@@ -208,7 +208,7 @@ ${emailHeader()}
                 ${itemCards}
               </table>
 
-              ${items.length > 6 ? `<p style="text-align: center; color: #6b7280; font-size: 13px; margin: 0 0 16px;">...y ${items.length - 6} producto(s) mas</p>` : ''}
+              ${items.length > 6 ? `<p style="text-align: center; color: #6b7280; font-size: 13px; margin: 0 0 16px;">…y ${items.length - 6} producto(s) más</p>` : ''}
 
               <!-- CTA -->
               <div style="text-align: center; margin-bottom: 16px;">

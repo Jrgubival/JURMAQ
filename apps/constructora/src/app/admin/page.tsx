@@ -173,7 +173,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-xs text-gray-500 uppercase bg-gray-50">
+                <tr className="text-left text-xs text-gray-500 uppercase tracking-wider bg-gray-50">
                   <th className="px-6 py-3">#</th>
                   <th className="px-6 py-3">Cliente</th>
                   <th className="px-6 py-3">Servicio</th>
@@ -217,7 +217,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-xs text-gray-500 uppercase bg-gray-50">
+                <tr className="text-left text-xs text-gray-500 uppercase tracking-wider bg-gray-50">
                   <th className="px-6 py-3">Nombre</th>
                   <th className="px-6 py-3">Cliente</th>
                   <th className="px-6 py-3">Estado</th>
