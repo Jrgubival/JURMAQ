@@ -59,3 +59,4 @@ graphify-out/archive/
 **/package-lock.json
 !package-lock.json
 **/yarn.lock
+_tmp_docs_maquinaria/

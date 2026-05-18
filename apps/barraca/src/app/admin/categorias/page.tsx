@@ -257,8 +257,16 @@ export default function BarracaCategoriasPage() {
                 <input type="text" value={form.imagen} onChange={(e) => setForm({ ...form, imagen: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="https://..." />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Orden</label>
-                <input type="number" value={form.orden} onChange={(e) => setForm({ ...form, orden: Number(e.target.value) })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" />
+                <label htmlFor="cat-orden" className="block text-sm font-medium text-gray-700 mb-1">Orden</label>
+                <input
+                  id="cat-orden"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={form.orden}
+                  onChange={(e) => setForm({ ...form, orden: Math.max(0, Number(e.target.value) || 0) })}
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm tabular-nums"
+                />
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.activa} onChange={(e) => setForm({ ...form, activa: e.target.checked })} className="rounded border-gray-300" />

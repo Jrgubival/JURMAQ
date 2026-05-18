@@ -48,6 +48,7 @@ export default function UsuariosAdminPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<UserRow | null>(null);
+  const [search, setSearch] = useState('');
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
@@ -193,9 +194,23 @@ export default function UsuariosAdminPage() {
 
       {/* Tabla de usuarios */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {/* Search bar */}
+        <div className="border-b border-gray-200 px-4 py-3">
+          <label htmlFor="usuarios-search" className="sr-only">
+            Buscar usuario
+          </label>
+          <input
+            id="usuarios-search"
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nombre o email…"
+            className="w-full max-w-sm px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+          />
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+            <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3 text-left">Nombre</th>
                 <th className="px-4 py-3 text-left">Email</th>
@@ -205,14 +220,23 @@ export default function UsuariosAdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {users.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
-                    No hay usuarios registrados
-                  </td>
-                </tr>
-              ) : (
-                users.map((u) => (
+              {(() => {
+                const q = search.trim().toLowerCase();
+                const filtered = q
+                  ? users.filter((u) =>
+                      u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+                    )
+                  : users;
+                if (filtered.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
+                        {q ? `Sin resultados para "${search}"` : 'No hay usuarios registrados'}
+                      </td>
+                    </tr>
+                  );
+                }
+                return filtered.map((u) => (
                   <tr key={u.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
                     <td className="px-4 py-3 text-gray-600">{u.email}</td>
@@ -256,8 +280,8 @@ export default function UsuariosAdminPage() {
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
+                ));
+              })()}
             </tbody>
           </table>
         </div>

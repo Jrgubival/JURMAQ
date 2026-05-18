@@ -12,6 +12,23 @@ interface CotizacionItem {
   subtotal: number;
 }
 
+/**
+ * Shape de un item mientras se edita en el modo "Editar cotización".
+ * Extiende CotizacionItem con `tipo` (producto/flete/servicio/otro) y
+ * `descuento` (porcentaje 0-100). Algunas filas pueden ser ítems custom
+ * sin productoId — por eso productoId es opcional acá.
+ */
+interface EditableCotizacionItem {
+  productoId?: number;
+  nombre: string;
+  medida?: string;
+  cantidad: number;
+  precio: number;
+  subtotal?: number;
+  tipo: 'producto' | 'flete' | 'servicio' | 'otro';
+  descuento: number;
+}
+
 interface Cotizacion {
   id: number;
   numero: string;
@@ -72,7 +89,7 @@ export default function BarracaCotizacionesPage() {
 
   // Edit mode state
   const [editMode, setEditMode] = useState(false);
-  const [editItems, setEditItems] = useState<any[]>([]);
+  const [editItems, setEditItems] = useState<EditableCotizacionItem[]>([]);
   const [savingEdit, setSavingEdit] = useState(false);
 
   const TIPO_OPTIONS = [
@@ -82,7 +99,7 @@ export default function BarracaCotizacionesPage() {
     { value: 'otro', label: 'Otro' },
   ];
 
-  const computeSubtotal = (item: any) => {
+  const computeSubtotal = (item: EditableCotizacionItem) => {
     const base = (item.precio || 0) * (item.cantidad || 1);
     if (item.descuento && item.descuento > 0) return Math.round(base * (1 - item.descuento / 100));
     return base;
@@ -91,17 +108,26 @@ export default function BarracaCotizacionesPage() {
   const editTotal = editItems.reduce((sum, item) => sum + computeSubtotal(item), 0);
 
   const openEditMode = (cot: Cotizacion) => {
-    const items = parseItems(cot.items).map(item => ({
-      ...item,
-      tipo: (item as any).tipo || 'producto',
-      descuento: (item as any).descuento || 0,
+    const items: EditableCotizacionItem[] = parseItems(cot.items).map((item) => ({
+      productoId: item.productoId,
+      nombre: item.nombre,
+      medida: item.medida,
+      cantidad: item.cantidad,
+      precio: item.precio,
+      subtotal: item.subtotal,
+      tipo: (item as Partial<EditableCotizacionItem>).tipo || 'producto',
+      descuento: (item as Partial<EditableCotizacionItem>).descuento || 0,
     }));
     setEditItems(items);
     setEditMode(true);
   };
 
-  const updateEditItem = (idx: number, field: string, value: any) => {
-    setEditItems(prev => prev.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  const updateEditItem = <K extends keyof EditableCotizacionItem>(
+    idx: number,
+    field: K,
+    value: EditableCotizacionItem[K]
+  ) => {
+    setEditItems((prev) => prev.map((item, i) => (i === idx ? { ...item, [field]: value } : item)));
   };
 
   const addCustomItem = () => {
@@ -782,7 +808,7 @@ export default function BarracaCotizacionesPage() {
                               <td className="px-1 py-1.5">
                                 <select
                                   value={item.tipo || 'producto'}
-                                  onChange={(e) => updateEditItem(idx, 'tipo', e.target.value)}
+                                  onChange={(e) => updateEditItem(idx, 'tipo', e.target.value as EditableCotizacionItem['tipo'])}
                                   className="w-full border border-gray-200 rounded px-1 py-1 text-xs focus:ring-1 focus:ring-blue-300 outline-none"
                                 >
                                   {TIPO_OPTIONS.map(o => (
