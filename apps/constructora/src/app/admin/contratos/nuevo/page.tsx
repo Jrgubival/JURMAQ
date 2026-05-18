@@ -459,12 +459,12 @@ export default function NuevoContratoPage() {
               value={maqSearch}
               onChange={(e) => setMaqSearch(e.target.value)}
               placeholder="Buscar..."
-              className="px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+              className="px-3 py-2 rounded-xl border border-gray-300 text-sm focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
             />
           </div>
 
           {maqError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
               {maqError}
             </div>
           )}
@@ -548,7 +548,7 @@ export default function NuevoContratoPage() {
                 <button
                   key={t}
                   onClick={() => setArrendatario((a) => ({ ...a, tipo: t }))}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition border ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition border ${
                     active
                       ? 'text-white border-transparent'
                       : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
@@ -572,7 +572,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, nombre: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="Nombre y apellido"
                     />
                   </Field>
@@ -586,7 +586,7 @@ export default function NuevoContratoPage() {
                       onBlur={(e) =>
                         setArrendatario({ ...arrendatario, rut: formatRut(e.target.value) })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="12.345.678-9"
                     />
                   </Field>
@@ -598,7 +598,7 @@ export default function NuevoContratoPage() {
                     onChange={(e) =>
                       setArrendatario({ ...arrendatario, domicilio: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                     placeholder="Calle, numero, comuna"
                   />
                 </Field>
@@ -610,7 +610,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, telefono: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="+56 9 ..."
                     />
                   </Field>
@@ -621,7 +621,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, email: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="correo@ejemplo.cl"
                     />
                   </Field>
@@ -633,7 +633,7 @@ export default function NuevoContratoPage() {
                     onChange={(e) =>
                       setArrendatario({ ...arrendatario, profesion: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                     placeholder="(opcional)"
                   />
                 </Field>
@@ -648,7 +648,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, razon_social: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="Nombre legal de la empresa"
                     />
                   </Field>
@@ -665,7 +665,7 @@ export default function NuevoContratoPage() {
                           rut_empresa: formatRut(e.target.value),
                         })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="76.123.456-7"
                     />
                   </Field>
@@ -678,7 +678,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, giro: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="Giro de la empresa"
                     />
                   </Field>
@@ -689,7 +689,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, domicilio_fiscal: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="Calle, numero, comuna"
                     />
                   </Field>
@@ -702,7 +702,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, rep_legal: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="Nombre del representante"
                     />
                   </Field>
@@ -719,7 +719,7 @@ export default function NuevoContratoPage() {
                           rep_rut: formatRut(e.target.value),
                         })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="12.345.678-9"
                     />
                   </Field>
@@ -732,7 +732,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, telefono: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="+56 9 ..."
                     />
                   </Field>
@@ -743,7 +743,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setArrendatario({ ...arrendatario, email: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="correo@empresa.cl"
                     />
                   </Field>
@@ -778,7 +778,7 @@ export default function NuevoContratoPage() {
                       onClick={() =>
                         setCondiciones({ ...condiciones, con_operador: v })
                       }
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition border ${
+                      className={`px-4 py-2 rounded-xl text-sm font-medium transition border ${
                         active
                           ? 'text-white border-transparent'
                           : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
@@ -799,7 +799,7 @@ export default function NuevoContratoPage() {
                       onChange={(e) =>
                         setCondiciones({ ...condiciones, operador_nombre: e.target.value })
                       }
-                      className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                       placeholder="Se puede asignar mas tarde"
                     />
                   </Field>
@@ -815,7 +815,7 @@ export default function NuevoContratoPage() {
                   onChange={(e) =>
                     setCondiciones({ ...condiciones, fecha_inicio: e.target.value })
                   }
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                 />
               </Field>
               <Field label="Fecha termino" error={step3Errors.fecha_termino} required>
@@ -826,7 +826,7 @@ export default function NuevoContratoPage() {
                   onChange={(e) =>
                     setCondiciones({ ...condiciones, fecha_termino: e.target.value })
                   }
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                 />
               </Field>
             </div>
@@ -845,7 +845,7 @@ export default function NuevoContratoPage() {
                       total_manual: false,
                     }));
                   }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                 >
                   <option value="dia">Por dia</option>
                   <option value="semana">Por semana</option>
@@ -868,7 +868,7 @@ export default function NuevoContratoPage() {
                       total_manual: false,
                     })
                   }
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                 />
               </Field>
               <Field label={`Total (${units} ${condiciones.modalidad}${units === 1 ? '' : 's'})`} error={step3Errors.total}>
@@ -883,7 +883,7 @@ export default function NuevoContratoPage() {
                       total_manual: true,
                     })
                   }
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Auto:{' '}
@@ -916,7 +916,7 @@ export default function NuevoContratoPage() {
                     garantia_monto: Number(e.target.value) || 0,
                   })
                 }
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
               />
               <p className="text-xs text-gray-500 mt-1">
                 Valor por defecto de la maquinaria: {formatCLP(selectedMaq?.garantia_monto || 0)}
@@ -930,7 +930,7 @@ export default function NuevoContratoPage() {
                 onChange={(e) =>
                   setCondiciones({ ...condiciones, direccion_entrega: e.target.value })
                 }
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                 placeholder="Calle, numero, comuna"
               />
             </Field>
@@ -956,7 +956,7 @@ export default function NuevoContratoPage() {
                   onChange={(e) =>
                     setCondiciones({ ...condiciones, direccion_retiro: e.target.value })
                   }
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
                   placeholder="Calle, numero, comuna"
                 />
               </Field>
@@ -969,14 +969,14 @@ export default function NuevoContratoPage() {
                   setCondiciones({ ...condiciones, observaciones: e.target.value })
                 }
                 rows={3}
-                className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900 resize-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900 resize-none"
                 placeholder="Notas adicionales que aparecen en el contrato"
               />
             </Field>
           </div>
 
           {createError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
               {createError}
             </div>
           )}
@@ -989,7 +989,7 @@ export default function NuevoContratoPage() {
           <h2 className="text-lg font-semibold text-gray-900">Vista previa del contrato</h2>
 
           {createError && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
               {createError}
             </div>
           )}
@@ -1025,7 +1025,7 @@ export default function NuevoContratoPage() {
         <button
           onClick={handleBack}
           disabled={step === 1 || creating}
-          className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="px-4 py-2 text-sm font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
         >
           Atras
         </button>
@@ -1035,7 +1035,7 @@ export default function NuevoContratoPage() {
             <button
               onClick={handleNext}
               disabled={(step === 1 && !canAdvanceFromStep(1)) || creating}
-              className="px-4 py-2 text-sm font-semibold rounded-lg text-white hover:opacity-90 disabled:opacity-50 transition inline-flex items-center gap-2"
+              className="px-4 py-2 text-sm font-semibold rounded-xl text-white hover:opacity-90 disabled:opacity-50 transition inline-flex items-center gap-2"
               style={{ backgroundColor: '#0c1d3a' }}
             >
               {creating && (
@@ -1048,14 +1048,14 @@ export default function NuevoContratoPage() {
               <button
                 onClick={saveDraftAndExit}
                 disabled={savingDraft || sendingSignature}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
               >
                 Guardar como borrador
               </button>
               <button
                 onClick={sendForSignature}
                 disabled={sendingSignature || savingDraft || !createdId}
-                className="px-4 py-2 text-sm font-semibold rounded-lg text-white hover:opacity-90 disabled:opacity-50 transition inline-flex items-center gap-2"
+                className="px-4 py-2 text-sm font-semibold rounded-xl text-white hover:opacity-90 disabled:opacity-50 transition inline-flex items-center gap-2"
                 style={{ backgroundColor: '#ea580c' }}
               >
                 {sendingSignature && (

@@ -239,14 +239,14 @@ export default function ImagenesMasivasPage() {
             {categorias.map((cat) => (
               <div
                 key={cat.id}
-                className="border border-gray-200 rounded-lg p-4 flex flex-col"
+                className="border border-gray-200 rounded-xl p-4 flex flex-col"
               >
                 <h3 className="font-medium text-gray-800 text-sm truncate mb-2">
                   {cat.nombre}
                 </h3>
 
                 {/* Image preview */}
-                <div className="w-full h-32 bg-gray-100 rounded-lg mb-3 overflow-hidden flex items-center justify-center">
+                <div className="w-full h-32 bg-gray-100 rounded-xl mb-3 overflow-hidden flex items-center justify-center">
                   {cat.imagen ? (
                     <img
                       src={cat.imagen}
@@ -281,7 +281,7 @@ export default function ImagenesMasivasPage() {
                 <button
                   onClick={() => applyCategoryImage(cat)}
                   disabled={!cat.imagen || applyingCat === cat.id}
-                  className={`mt-auto w-full py-2 px-3 rounded-lg text-xs font-medium transition-colors ${
+                  className={`mt-auto w-full py-2 px-3 rounded-xl text-xs font-medium transition-colors ${
                     cat.imagen
                       ? 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -316,12 +316,12 @@ export default function ImagenesMasivasPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && searchProducts()}
             placeholder="Ej: FIERRO ESTRIADO, CLAVO, TORNILLO..."
-            className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <button
             onClick={searchProducts}
             disabled={searching || !searchTerm.trim()}
-            className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+            className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
           >
             {searching ? 'Buscando...' : 'Buscar'}
           </button>
@@ -345,7 +345,7 @@ export default function ImagenesMasivasPage() {
             </div>
 
             {/* Grouped results */}
-            <div className="space-y-4 max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-3">
+            <div className="space-y-4 max-h-96 overflow-y-auto border border-gray-200 rounded-xl p-3">
               {Object.entries(groupedResults).map(([baseName, products]) => (
                 <div key={baseName}>
                   {Object.keys(groupedResults).length > 1 && (
@@ -418,12 +418,12 @@ export default function ImagenesMasivasPage() {
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
                 placeholder="https://images.unsplash.com/..."
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
 
               {/* Preview */}
               {newImageUrl && (
-                <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                <div className="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden">
                   <img
                     src={newImageUrl}
                     alt="Preview"
@@ -442,7 +442,7 @@ export default function ImagenesMasivasPage() {
                   disabled={
                     applyingBulk || selectedIds.size === 0 || !newImageUrl.trim()
                   }
-                  className="bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+                  className="bg-green-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
                 >
                   {applyingBulk
                     ? 'Aplicando...'
@@ -454,7 +454,7 @@ export default function ImagenesMasivasPage() {
                   disabled={
                     applyingBulk || !searchTerm.trim() || !newImageUrl.trim()
                   }
-                  className="bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                  className="bg-purple-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-purple-700 disabled:opacity-50 transition-colors"
                 >
                   {applyingBulk
                     ? 'Aplicando...'

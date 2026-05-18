@@ -68,27 +68,27 @@ export default function FacturaDetailPage({ params }: { params: Promise<{ id: st
         </div>
         <div className="flex gap-2 flex-wrap">
           {factura.archivo_signed_url && (
-            <a href={factura.archivo_signed_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200">
+            <a href={factura.archivo_signed_url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-sm rounded-xl bg-gray-100 hover:bg-gray-200">
               Ver archivo
             </a>
           )}
           {factura.estado === 'registrada' && (
-            <button onClick={() => updateEstado('validada')} disabled={saving} className="px-3 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
+            <button onClick={() => updateEstado('validada')} disabled={saving} className="px-3 py-2 text-sm rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50">
               Validar
             </button>
           )}
           {factura.estado === 'validada' && (
-            <button onClick={() => updateEstado('recuperada')} disabled={saving} className="px-3 py-2 text-sm rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">
+            <button onClick={() => updateEstado('recuperada')} disabled={saving} className="px-3 py-2 text-sm rounded-xl bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">
               Marcar recuperada
             </button>
           )}
           {factura.estado !== 'anulada' && factura.estado !== 'recuperada' && (
-            <button onClick={() => updateEstado('anulada')} disabled={saving} className="px-3 py-2 text-sm rounded-lg bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50">
+            <button onClick={() => updateEstado('anulada')} disabled={saving} className="px-3 py-2 text-sm rounded-xl bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50">
               Anular
             </button>
           )}
           {factura.estado !== 'recuperada' && (
-            <button onClick={deleteFactura} className="px-3 py-2 text-sm rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+            <button onClick={deleteFactura} className="px-3 py-2 text-sm rounded-xl bg-red-50 text-red-600 hover:bg-red-100">
               Eliminar
             </button>
           )}

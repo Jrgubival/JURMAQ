@@ -500,7 +500,7 @@ export default function ImagenesBarracaPage() {
                   />
                   {/* Number badge */}
                   <span
-                    className={`absolute top-2 left-2 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shadow-lg ${
+                    className={`absolute top-2 left-2 w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold shadow-lg ${
                       selectedImage === i
                         ? 'bg-green-500 text-white'
                         : 'bg-white/90 text-gray-600'

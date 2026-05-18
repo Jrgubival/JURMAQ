@@ -56,7 +56,7 @@ export default function SiiDashboard() {
       </header>
 
       {/* Selector de período */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6 flex flex-wrap items-center gap-3">
+      <div className="bg-white rounded-xl shadow p-4 mb-6 flex flex-wrap items-center gap-3">
         <label className="text-sm font-semibold">Período:</label>
         <input
           type="month"
@@ -101,7 +101,7 @@ export default function SiiDashboard() {
         />
       </div>
 
-      <div className="bg-navy-950 text-white rounded-lg p-6 mb-6">
+      <div className="bg-navy-950 text-white rounded-xl p-6 mb-6">
         <p className="text-sm uppercase tracking-wide opacity-80 mb-1">F29 a pagar al SII</p>
         <p className="text-3xl font-bold">{formatCLP(periodoActual.f29_a_pagar)}</p>
         <p className="text-sm opacity-80 mt-2">
@@ -123,7 +123,7 @@ export default function SiiDashboard() {
           &quot;contrato_creado&quot; o &quot;finalizada&quot; aparecerán automáticamente acá.
         </p>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-xl shadow overflow-hidden">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 border-b text-xs font-semibold text-gray-600 uppercase tracking-wider">
               <tr>
@@ -180,7 +180,7 @@ function KpiCard({ label, value, subtitle, color }: {
     purple: 'border-purple-200 text-purple-700',
   };
   return (
-    <div className={`bg-white rounded-lg border-l-4 ${colors[color]} p-4 shadow-sm`}>
+    <div className={`bg-white rounded-xl border-l-4 ${colors[color]} p-4 shadow-sm`}>
       <p className="text-xs uppercase tracking-wide text-gray-500 font-semibold">{label}</p>
       <p className={`text-xl font-bold mt-1 ${colors[color]}`}>{value}</p>
       <p className="text-xs text-gray-500 mt-1">{subtitle}</p>

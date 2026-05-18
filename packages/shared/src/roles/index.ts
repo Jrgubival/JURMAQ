@@ -29,7 +29,11 @@ export type Action =
   /** Exportar reportes (Excel SII, etc.). */
   | 'export';
 
-export type Module =
+/**
+ * Módulos del admin Constructora — operaciones, catálogo, tributario,
+ * configuración. NO incluye barraca_* (esos viven en BarracaModule).
+ */
+export type ConstructoraModule =
   | 'dashboard'
   | 'maquinarias'
   | 'solicitudes'
@@ -38,7 +42,15 @@ export type Module =
   | 'clientes'
   | 'contratos'
   | 'combustible'
-  | 'usuarios'
+  | 'usuarios';
+
+/**
+ * Módulos del admin Barraca — todos prefijados con `barraca_*` por
+ * convención. Mantenemos `dashboard` también acá porque cada panel tiene
+ * su propia home, aunque el módulo conceptual sea el mismo.
+ */
+export type BarracaModule =
+  | 'dashboard'
   | 'barraca_productos'
   | 'barraca_categorias'
   | 'barraca_cotizaciones'
@@ -47,6 +59,14 @@ export type Module =
   | 'barraca_precios'
   | 'barraca_importar'
   | 'barraca_suscriptores';
+
+/**
+ * Union de ambos. `Module` queda como type-alias para no romper los ~30
+ * call sites que ya importan `Module`. La intención del split es que
+ * código nuevo prefiera `ConstructoraModule` o `BarracaModule` según
+ * scope, pero `Module` sigue válido (subset = ambos).
+ */
+export type Module = ConstructoraModule | BarracaModule;
 
 interface RoleDef {
   label: string;

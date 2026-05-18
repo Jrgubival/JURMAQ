@@ -149,7 +149,7 @@ export default function DashboardPage() {
           <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center"
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: card.color + '15', color: card.color }}
               >
                 {card.icon}

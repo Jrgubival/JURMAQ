@@ -202,7 +202,7 @@ export default function CotizacionesPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -326,7 +326,7 @@ export default function CotizacionesPage() {
                     type="text"
                     value={form.cliente_nombre}
                     onChange={(e) => setForm({ ...form, cliente_nombre: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="Nombre del cliente"
                   />
                 </div>
@@ -336,7 +336,7 @@ export default function CotizacionesPage() {
                     type="email"
                     value={form.cliente_email}
                     onChange={(e) => setForm({ ...form, cliente_email: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="correo@ejemplo.cl"
                   />
                 </div>
@@ -348,7 +348,7 @@ export default function CotizacionesPage() {
                     type="text"
                     value={form.cliente_empresa}
                     onChange={(e) => setForm({ ...form, cliente_empresa: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="(opcional)"
                   />
                 </div>
@@ -358,7 +358,7 @@ export default function CotizacionesPage() {
                     type="tel"
                     value={form.cliente_telefono}
                     onChange={(e) => setForm({ ...form, cliente_telefono: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="+56 9 ..."
                   />
                 </div>
@@ -369,7 +369,7 @@ export default function CotizacionesPage() {
                   type="text"
                   value={form.servicio}
                   onChange={(e) => setForm({ ...form, servicio: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   placeholder="Ej: Arriendo Retroexcavadora"
                 />
               </div>
@@ -394,21 +394,21 @@ export default function CotizacionesPage() {
                         type="text"
                         value={item.descripcion}
                         onChange={(e) => updateItem(idx, 'descripcion', e.target.value)}
-                        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+                        className="flex-1 px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
                         placeholder="Descripcion"
                       />
                       <input
                         type="number"
                         value={item.cantidad}
                         onChange={(e) => updateItem(idx, 'cantidad', Number(e.target.value))}
-                        className="w-20 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+                        className="w-20 px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
                         placeholder="Cant."
                       />
                       <input
                         type="number"
                         value={item.precio_unitario}
                         onChange={(e) => updateItem(idx, 'precio_unitario', Number(e.target.value))}
-                        className="w-32 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+                        className="w-32 px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
                         placeholder="Precio unit."
                       />
                       <span className="py-2 text-sm text-gray-600 w-28 text-right">
@@ -442,7 +442,7 @@ export default function CotizacionesPage() {
                   value={form.notas}
                   onChange={(e) => setForm({ ...form, notas: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 resize-none"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 resize-none"
                   placeholder="Notas internas o detalles adicionales..."
                 />
               </div>
@@ -450,14 +450,14 @@ export default function CotizacionesPage() {
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.cliente_nombre}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
                 style={{ backgroundColor: '#0c1d3a' }}
               >
                 {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear'}

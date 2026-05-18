@@ -137,7 +137,7 @@ export default function ProyectosPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +247,7 @@ export default function ProyectosPage() {
                   type="text"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   placeholder="Ej: Construccion Edificio Central"
                 />
               </div>
@@ -258,7 +258,7 @@ export default function ProyectosPage() {
                     type="text"
                     value={form.cliente}
                     onChange={(e) => setForm({ ...form, cliente: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="Nombre del cliente"
                   />
                 </div>
@@ -268,7 +268,7 @@ export default function ProyectosPage() {
                     type="text"
                     value={form.tipo}
                     onChange={(e) => setForm({ ...form, tipo: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="Ej: Construccion, Demolicion"
                   />
                 </div>
@@ -280,7 +280,7 @@ export default function ProyectosPage() {
                     type="number"
                     value={form.monto}
                     onChange={(e) => setForm({ ...form, monto: Number(e.target.value) })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="5000000"
                   />
                 </div>
@@ -289,7 +289,7 @@ export default function ProyectosPage() {
                   <select
                     value={form.estado}
                     onChange={(e) => setForm({ ...form, estado: e.target.value as Proyecto['estado'] })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   >
                     <option value="pendiente">Pendiente</option>
                     <option value="en_progreso">En Progreso</option>
@@ -305,7 +305,7 @@ export default function ProyectosPage() {
                     type="date"
                     value={form.fecha_inicio}
                     onChange={(e) => setForm({ ...form, fecha_inicio: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   />
                 </div>
                 <div>
@@ -314,7 +314,7 @@ export default function ProyectosPage() {
                     type="date"
                     value={form.fecha_fin}
                     onChange={(e) => setForm({ ...form, fecha_fin: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   />
                 </div>
               </div>
@@ -324,7 +324,7 @@ export default function ProyectosPage() {
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 resize-none"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 resize-none"
                   placeholder="Descripcion del proyecto..."
                 />
               </div>
@@ -332,14 +332,14 @@ export default function ProyectosPage() {
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.nombre}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
                 style={{ backgroundColor: '#0c1d3a' }}
               >
                 {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear'}

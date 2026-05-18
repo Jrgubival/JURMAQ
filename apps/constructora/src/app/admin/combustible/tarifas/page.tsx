@@ -144,7 +144,7 @@ export default function TarifasIECPage() {
       </div>
 
       {msg && (
-        <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${msg.kind === 'ok' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+        <div className={`mb-4 px-4 py-3 rounded-xl text-sm ${msg.kind === 'ok' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
           {msg.text}
         </div>
       )}
@@ -158,7 +158,7 @@ export default function TarifasIECPage() {
             <select
               value={tipo}
               onChange={(e) => setTipo(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"
             >
               {TIPOS.map((t) => (
                 <option key={t.key} value={t.key}>{t.label}</option>
@@ -171,7 +171,7 @@ export default function TarifasIECPage() {
               type="date"
               value={vigenteDesde}
               onChange={(e) => setVigenteDesde(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"
               required
             />
           </div>
@@ -182,7 +182,7 @@ export default function TarifasIECPage() {
               value={decreto}
               onChange={(e) => setDecreto(e.target.value)}
               placeholder="Ej: DS 567/2024"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"
             />
           </div>
           <div>
@@ -193,7 +193,7 @@ export default function TarifasIECPage() {
               value={componenteFijo}
               onChange={(e) => setComponenteFijo(e.target.value)}
               placeholder="Ej: 60.5"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"
               required
             />
           </div>
@@ -205,7 +205,7 @@ export default function TarifasIECPage() {
               value={componenteVariable}
               onChange={(e) => setComponenteVariable(e.target.value)}
               placeholder="Ej: 1.5"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"
             />
           </div>
           <div>
@@ -215,7 +215,7 @@ export default function TarifasIECPage() {
               value={utmRef}
               onChange={(e) => setUtmRef(e.target.value)}
               placeholder="Ej: 67429"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"
             />
           </div>
         </div>
@@ -225,13 +225,13 @@ export default function TarifasIECPage() {
             type="text"
             value={notas}
             onChange={(e) => setNotas(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"
           />
         </div>
         <button
           type="submit"
           disabled={creating || !componenteFijo}
-          className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg disabled:opacity-50"
+          className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-xl disabled:opacity-50"
         >
           {creating ? 'Guardando...' : 'Crear tarifa'}
         </button>

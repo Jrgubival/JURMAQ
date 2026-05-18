@@ -111,7 +111,7 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Cliente */}
-        <section className="bg-white rounded-lg shadow p-5">
+        <section className="bg-white rounded-xl shadow p-5">
           <h2 className="font-bold mb-3 text-navy-950">Cliente</h2>
           <dl className="text-sm space-y-2">
             <div><dt className="text-gray-500 inline">Nombre:</dt> <dd className="font-semibold inline">{cot.cliente_nombre}</dd></div>
@@ -123,7 +123,7 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
         </section>
 
         {/* Servicio */}
-        <section className="bg-white rounded-lg shadow p-5">
+        <section className="bg-white rounded-xl shadow p-5">
           <h2 className="font-bold mb-3 text-navy-950">Servicio</h2>
           <dl className="text-sm space-y-2">
             <div><dt className="text-gray-500 inline">Máquina:</dt> <dd className="font-semibold inline">{cot.maquinarias?.nombre || '—'}</dd></div>
@@ -138,7 +138,7 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Desglose financiero */}
-      <section className="bg-white rounded-lg shadow p-5 mb-6">
+      <section className="bg-white rounded-xl shadow p-5 mb-6">
         <h2 className="font-bold mb-3 text-navy-950">Desglose</h2>
         <table className="w-full text-sm">
           <tbody>

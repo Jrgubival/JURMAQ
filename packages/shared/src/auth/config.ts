@@ -1,14 +1,53 @@
 import type { NextAuthConfig } from 'next-auth';
 
-// Share cookies across jurmaq.cl and barraca.jurmaq.cl in production.
-// In dev (localhost) no domain is set so cookies work normally.
+/**
+ * Aislamiento de sesión entre barraca y constructora:
+ *
+ * - Antes: cookie con `domain: '.jurmaq.cl'` compartida cross-subdomain.
+ *   Cualquier sesión en barraca.jurmaq.cl también valía en jurmaq.cl
+ *   (admin de constructora). El RBAC limitaba acciones pero la superficie
+ *   de ataque era la suma de ambas apps.
+ *
+ * - Ahora: cada app lee `AUTH_SCOPE` ('barraca' | 'constructora') de su
+ *   env, y la cookie se nombra `__Host-{scope}.session-token` con
+ *   prefijo `__Host-` que FUERZA `Secure + Path=/ + sin Domain`. El
+ *   navegador rechaza cookies cross-subdomain por arquitectura, no por
+ *   configuración. Doble cinturón con los callbacks abajo que validan
+ *   que `token.scope` coincide con AUTH_SCOPE.
+ *
+ * - Dev (HTTP localhost): se usa prefijo de cookie sin `__Host-` porque
+ *   ese prefijo requiere HTTPS. El aislamiento por scope sigue activo a
+ *   nivel JWT.
+ */
 const IS_PROD = process.env.NODE_ENV === 'production';
-const COOKIE_DOMAIN = IS_PROD ? '.jurmaq.cl' : undefined;
+
+function getAuthScope(): 'barraca' | 'constructora' | 'app' {
+  const s = process.env.AUTH_SCOPE;
+  return s === 'barraca' || s === 'constructora' ? s : 'app';
+}
+
+const SCOPE = getAuthScope();
+
+/**
+ * `__Host-` prefix en prod fuerza:
+ *   - Secure (HTTPS only)
+ *   - Path=/
+ *   - NO Domain attribute → cookie es host-only, no cross-subdomain.
+ *
+ * En dev (HTTP) no podemos usar `__Host-` (requiere Secure que requiere
+ * HTTPS), así que prefijamos con `dev-{scope}` solamente.
+ */
+const COOKIE_PREFIX = IS_PROD ? '__Host-' : 'dev-';
+const SESSION_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.session-token`;
+const CALLBACK_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.callback-url`;
+const CSRF_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.csrf-token`;
+
+const SIGN_IN_PATH = SCOPE === 'barraca' ? '/cuenta/login' : '/login';
 
 // This config is edge-compatible (no DB imports)
 export const authConfig: NextAuthConfig = {
   pages: {
-    signIn: '/cuenta/login',
+    signIn: SIGN_IN_PATH,
   },
   session: {
     strategy: 'jwt',
@@ -22,29 +61,27 @@ export const authConfig: NextAuthConfig = {
   },
   cookies: {
     sessionToken: {
-      // __Secure- prefix works with domain; __Host- would NOT allow domain.
-      name: IS_PROD ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      name: SESSION_COOKIE_NAME,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
         secure: IS_PROD,
-        domain: COOKIE_DOMAIN,
+        // __Host- prefix REQUIRES no `domain` attribute (browser rechaza
+        // la cookie si lo seteamos). Es esto exactamente lo que nos da el
+        // aislamiento cross-subdomain.
       },
     },
     callbackUrl: {
-      name: IS_PROD ? '__Secure-next-auth.callback-url' : 'next-auth.callback-url',
+      name: CALLBACK_COOKIE_NAME,
       options: {
         sameSite: 'lax',
         path: '/',
         secure: IS_PROD,
-        domain: COOKIE_DOMAIN,
       },
     },
     csrfToken: {
-      // __Host- prefix REQUIRES no domain attribute — keep CSRF token host-scoped (both
-      // subdomains set their own, which is fine since CSRF tokens are per-origin).
-      name: IS_PROD ? '__Host-next-auth.csrf-token' : 'next-auth.csrf-token',
+      name: CSRF_COOKIE_NAME,
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -137,13 +174,34 @@ export const authConfig: NextAuthConfig = {
       if (user) {
         token.role = user.role;
         token.sub = user.id;
+        // Persistir scope del usuario en el token. authorize() en index.ts
+        // ya garantiza que el `user.scope` viene filtrado por AUTH_SCOPE,
+        // pero también lo guardamos acá para que session() pueda hacer
+        // doble-cinturón.
+        const u = user as { scope?: 'barraca' | 'constructora' | 'both' };
+        if (u.scope) token.scope = u.scope;
       }
       return token;
     },
     async session({ session, token }) {
+      // Cinturón #2: si por cualquier motivo (cookie de otra app robada y
+      // pegada acá, JWT secret leaked, etc.) un token con scope='barraca'
+      // llega a un proceso con AUTH_SCOPE='constructora', cerramos la
+      // sesión retornando un objeto sin user.
+      if (token.scope && SCOPE !== 'app') {
+        const s = token.scope as string;
+        if (s !== SCOPE && s !== 'both') {
+          // session.user undefined fuerza al consumer a tratar como anónimo;
+          // NextAuth lo entiende como "no autenticado" en `auth()`.
+          return { ...session, user: undefined as unknown as typeof session.user };
+        }
+      }
       if (session.user) {
         if (token.role) session.user.role = token.role;
         if (token.sub) session.user.id = token.sub;
+        if (token.scope) {
+          (session.user as { scope?: string }).scope = token.scope as string;
+        }
       }
       return session;
     },

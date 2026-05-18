@@ -198,7 +198,7 @@ export default function TemplatesPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +209,7 @@ export default function TemplatesPage() {
       </div>
 
       {loadError && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
           {loadError}
         </div>
       )}
@@ -250,7 +250,7 @@ export default function TemplatesPage() {
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => openEdit(t)}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                      className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                     >
                       Editar
                     </button>
@@ -304,7 +304,7 @@ export default function TemplatesPage() {
                     type="text"
                     value={form.nombre}
                     onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="Ej: Contrato estandar"
                   />
                 </div>
@@ -335,7 +335,7 @@ export default function TemplatesPage() {
                   value={form.contenido}
                   onChange={(e) => setForm({ ...form, contenido: e.target.value })}
                   rows={18}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-xs font-mono resize-y"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-xs font-mono resize-y"
                   placeholder="<html>...{{arrendatario_nombre}}...</html>"
                   spellCheck={false}
                 />
@@ -352,7 +352,7 @@ export default function TemplatesPage() {
                   <div className="text-xs font-semibold text-gray-700 mb-2">
                     Preview con variables de prueba
                   </div>
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <iframe
                       srcDoc={renderPreview(form.contenido, DUMMY_VARS)}
                       title="Preview plantilla"
@@ -364,7 +364,7 @@ export default function TemplatesPage() {
               )}
 
               {saveError && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
                   {saveError}
                 </div>
               )}
@@ -373,14 +373,14 @@ export default function TemplatesPage() {
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
               <button
                 onClick={closeModal}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.nombre.trim() || !form.contenido.trim()}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
                 style={{ backgroundColor: '#0c1d3a' }}
               >
                 {saving ? 'Guardando...' : isNew ? 'Crear' : 'Guardar nueva version'}

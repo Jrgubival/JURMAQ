@@ -216,7 +216,7 @@ export default function MaquinariasPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,7 +267,7 @@ export default function MaquinariasPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/admin/maquinarias/${maq.id}`}
-                    className="flex-1 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition text-center inline-flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2 text-sm font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition text-center inline-flex items-center justify-center gap-1.5"
                     title="Ver detalle y documentos"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,7 +277,7 @@ export default function MaquinariasPage() {
                   </Link>
                   <button
                     onClick={() => openEdit(maq)}
-                    className="flex-1 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                    className="flex-1 py-2 text-sm font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                   >
                     Editar
                   </button>
@@ -285,13 +285,13 @@ export default function MaquinariasPage() {
                     <div className="flex gap-1">
                       <button
                         onClick={() => handleDelete(maq.id)}
-                        className="px-3 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
+                        className="px-3 py-2 text-sm font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 transition"
                       >
                         Si
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(null)}
-                        className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                        className="px-3 py-2 text-sm font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                       >
                         No
                       </button>
@@ -299,7 +299,7 @@ export default function MaquinariasPage() {
                   ) : (
                     <button
                       onClick={() => setDeleteConfirm(maq.id)}
-                      className="px-3 py-2 text-sm font-medium rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition"
+                      className="px-3 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition"
                     >
                       Eliminar
                     </button>
@@ -344,7 +344,7 @@ export default function MaquinariasPage() {
                   type="text"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   placeholder="Ej: Retroexcavadora CAT 320"
                 />
               </div>
@@ -355,7 +355,7 @@ export default function MaquinariasPage() {
                     type="text"
                     value={form.tipo}
                     onChange={(e) => setForm({ ...form, tipo: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="Ej: Excavadora"
                   />
                 </div>
@@ -364,7 +364,7 @@ export default function MaquinariasPage() {
                   <select
                     value={form.estado}
                     onChange={(e) => setForm({ ...form, estado: e.target.value as Maquinaria['estado'] })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   >
                     <option value="disponible">Disponible</option>
                     <option value="arrendada">Arrendada</option>
@@ -373,7 +373,7 @@ export default function MaquinariasPage() {
                 </div>
               </div>
               {/* Especificaciones técnicas — usadas en el contrato PDF */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-3">
                   Especificaciones técnicas (aparecen en el contrato)
                 </p>
@@ -384,7 +384,7 @@ export default function MaquinariasPage() {
                       type="text"
                       value={form.marca || ''}
                       onChange={(e) => setForm({ ...form, marca: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
                       placeholder="Hidromek, Bobcat, JLG..."
                     />
                   </div>
@@ -394,7 +394,7 @@ export default function MaquinariasPage() {
                       type="text"
                       value={form.modelo || ''}
                       onChange={(e) => setForm({ ...form, modelo: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
                       placeholder="HMK 102B, S650..."
                     />
                   </div>
@@ -404,7 +404,7 @@ export default function MaquinariasPage() {
                       type="text"
                       value={form.serie || ''}
                       onChange={(e) => setForm({ ...form, serie: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
                       placeholder="Identificador único de la máquina"
                     />
                   </div>
@@ -415,7 +415,7 @@ export default function MaquinariasPage() {
                       inputMode="numeric"
                       value={form.anio || ''}
                       onChange={(e) => setForm({ ...form, anio: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
                       placeholder="2024"
                     />
                   </div>
@@ -429,7 +429,7 @@ export default function MaquinariasPage() {
                     min={0}
                     value={form.precio_dia}
                     onChange={(e) => setForm({ ...form, precio_dia: Number(e.target.value) || 0 })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="200000"
                   />
                 </div>
@@ -440,7 +440,7 @@ export default function MaquinariasPage() {
                     min={0}
                     value={form.precio_semana}
                     onChange={(e) => setForm({ ...form, precio_semana: Number(e.target.value) || 0 })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="Opcional"
                   />
                 </div>
@@ -451,7 +451,7 @@ export default function MaquinariasPage() {
                     min={0}
                     value={form.precio_mes}
                     onChange={(e) => setForm({ ...form, precio_mes: Number(e.target.value) || 0 })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="Opcional"
                   />
                 </div>
@@ -464,7 +464,7 @@ export default function MaquinariasPage() {
                     min={0}
                     value={form.garantia_monto}
                     onChange={(e) => setForm({ ...form, garantia_monto: Number(e.target.value) || 0 })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                     placeholder="500000"
                   />
                   <p className="text-xs text-gray-500 mt-1">Usado como valor por defecto al crear contratos.</p>
@@ -474,7 +474,7 @@ export default function MaquinariasPage() {
                   <select
                     value={form.tipo_combustible}
                     onChange={(e) => setForm({ ...form, tipo_combustible: e.target.value as TipoCombustible })}
-                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                    className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   >
                     <option value="">— Sin especificar —</option>
                     <option value="diesel">Diésel</option>
@@ -493,7 +493,7 @@ export default function MaquinariasPage() {
                   type="text"
                   value={form.imagen}
                   onChange={(e) => setForm({ ...form, imagen: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"
                   placeholder="https://..."
                 />
               </div>
@@ -503,7 +503,7 @@ export default function MaquinariasPage() {
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 resize-none"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 resize-none"
                   placeholder="Descripcion de la maquinaria..."
                 />
               </div>
@@ -511,14 +511,14 @@ export default function MaquinariasPage() {
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.nombre}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
                 style={{ backgroundColor: '#0c1d3a' }}
               >
                 {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear'}

@@ -199,7 +199,7 @@ export default function BarracaProductosPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,13 +217,13 @@ export default function BarracaProductosPage() {
             placeholder="Buscar por nombre o codigo..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
           />
         </div>
         <select
           value={filterCat}
           onChange={(e) => { setFilterCat(e.target.value); setPage(1); }}
-          className="px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+          className="px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
         >
           <option value="">Todas las categorias</option>
           {categorias.map((c) => (
@@ -253,7 +253,7 @@ export default function BarracaProductosPage() {
               {paginated.map((p) => (
                 <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">
-                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                    <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
                       {p.imagen ? (
                         <img src={p.imagen} alt={p.nombre} className="w-full h-full object-cover" />
                       ) : (
@@ -292,7 +292,7 @@ export default function BarracaProductosPage() {
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => openEdit(p)}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                      className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                     >
                       Editar
                     </button>
@@ -320,7 +320,7 @@ export default function BarracaProductosPage() {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition"
+                className="px-3 py-1.5 text-sm rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition"
               >
                 Anterior
               </button>
@@ -330,7 +330,7 @@ export default function BarracaProductosPage() {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`px-3 py-1.5 text-sm rounded-lg border transition ${
+                    className={`px-3 py-1.5 text-sm rounded-xl border transition ${
                       page === p
                         ? 'text-white border-transparent'
                         : 'border-gray-200 hover:bg-gray-50'
@@ -344,7 +344,7 @@ export default function BarracaProductosPage() {
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition"
+                className="px-3 py-1.5 text-sm rounded-xl border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition"
               >
                 Siguiente
               </button>
@@ -371,24 +371,24 @@ export default function BarracaProductosPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Codigo</label>
-                  <input type="text" value={form.codigo} onChange={(e) => setForm({ ...form, codigo: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="SKU-001" />
+                  <input type="text" value={form.codigo} onChange={(e) => setForm({ ...form, codigo: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="SKU-001" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Unidad</label>
-                  <input type="text" value={form.unidad} onChange={(e) => setForm({ ...form, unidad: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="UN, KG, ML" />
+                  <input type="text" value={form.unidad} onChange={(e) => setForm({ ...form, unidad: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="UN, KG, ML" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                <input type="text" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="Fierro estriado 8mm" />
+                <input type="text" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="Fierro estriado 8mm" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Medida</label>
-                <input type="text" value={form.medida} onChange={(e) => setForm({ ...form, medida: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="8mm x 6m" />
+                <input type="text" value={form.medida} onChange={(e) => setForm({ ...form, medida: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="8mm x 6m" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                <select value={form.categoria_id} onChange={(e) => setForm({ ...form, categoria_id: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm">
+                <select value={form.categoria_id} onChange={(e) => setForm({ ...form, categoria_id: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm">
                   <option value="">Sin categoria</option>
                   {categorias.map((c) => (
                     <option key={c.id} value={String(c.id)}>{c.nombre}</option>
@@ -398,24 +398,24 @@ export default function BarracaProductosPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-                  <input type="number" value={form.precio} onChange={(e) => setForm({ ...form, precio: Number(e.target.value) })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" />
+                  <input type="number" value={form.precio} onChange={(e) => setForm({ ...form, precio: Number(e.target.value) })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Costo</label>
-                  <input type="number" value={form.costo} onChange={(e) => setForm({ ...form, costo: Number(e.target.value) })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" />
+                  <input type="number" value={form.costo} onChange={(e) => setForm({ ...form, costo: Number(e.target.value) })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                  <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" />
+                  <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">URL Imagen</label>
-                <input type="text" value={form.imagen} onChange={(e) => setForm({ ...form, imagen: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="https://..." />
+                <input type="text" value={form.imagen} onChange={(e) => setForm({ ...form, imagen: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="https://..." />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Descripcion</label>
-                <textarea value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm resize-none" />
+                <textarea value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm resize-none" />
               </div>
               <div className="flex items-center gap-6">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -429,10 +429,10 @@ export default function BarracaProductosPage() {
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition">
                 Cancelar
               </button>
-              <button onClick={handleSave} disabled={saving || !form.nombre} className="px-4 py-2.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60" style={{ backgroundColor: '#0c1d3a' }}>
+              <button onClick={handleSave} disabled={saving || !form.nombre} className="px-4 py-2.5 rounded-xl text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60" style={{ backgroundColor: '#0c1d3a' }}>
                 {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear'}
               </button>
             </div>

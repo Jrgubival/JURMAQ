@@ -118,7 +118,7 @@ export default function ContratosListPage() {
         </div>
         <Link
           href="/admin/contratos/nuevo"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +129,7 @@ export default function ContratosListPage() {
       </div>
 
       {fetchError && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
           {fetchError}
         </div>
       )}
@@ -183,7 +183,7 @@ export default function ContratosListPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre, RUT o numero..."
-            className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
+            className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-sm text-gray-900"
           />
         </div>
       </div>
@@ -240,7 +240,7 @@ export default function ContratosListPage() {
                       <div className="flex items-center justify-center gap-2">
                         <Link
                           href={`/admin/contratos/${c.id}`}
-                          className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                          className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                         >
                           Ver
                         </Link>
@@ -248,7 +248,7 @@ export default function ContratosListPage() {
                           href={`/api/admin/contratos/${c.id}/pdf`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition inline-flex items-center gap-1"
+                          className="px-3 py-1.5 text-xs font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition inline-flex items-center gap-1"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -317,7 +317,7 @@ export default function ContratosListPage() {
                 <div className="flex gap-2 pt-2">
                   <Link
                     href={`/admin/contratos/${c.id}`}
-                    className="flex-1 text-center px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                    className="flex-1 text-center px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                   >
                     Ver
                   </Link>
@@ -325,7 +325,7 @@ export default function ContratosListPage() {
                     href={`/api/admin/contratos/${c.id}/pdf`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 text-center px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+                    className="flex-1 text-center px-3 py-1.5 text-xs font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
                   >
                     PDF
                   </a>

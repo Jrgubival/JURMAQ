@@ -232,10 +232,10 @@ export default function NuevaFacturaPage() {
         <h2 className="font-semibold text-gray-900">Datos de la factura</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="Fecha *">
-            <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
           <Field label="Tipo de documento">
-            <select value={tipoDocumento} onChange={(e) => setTipoDocumento(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <select value={tipoDocumento} onChange={(e) => setTipoDocumento(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm">
               <option value="factura_electronica">Factura electrónica</option>
               <option value="boleta">Boleta</option>
               <option value="factura_exenta">Factura exenta</option>
@@ -243,12 +243,12 @@ export default function NuevaFacturaPage() {
             </select>
           </Field>
           <Field label="Folio *">
-            <input type="text" value={folio} onChange={(e) => setFolio(e.target.value)} placeholder="Ej: 12345" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <input type="text" value={folio} onChange={(e) => setFolio(e.target.value)} placeholder="Ej: 12345" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="Proveedor (estación) *">
-            <input type="text" value={proveedorNombre} onChange={(e) => setProveedorNombre(e.target.value)} placeholder="Ej: Copec Curicó" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <input type="text" value={proveedorNombre} onChange={(e) => setProveedorNombre(e.target.value)} placeholder="Ej: Copec Curicó" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
           <Field label="RUT proveedor">
             <input
@@ -257,11 +257,11 @@ export default function NuevaFacturaPage() {
               onChange={(e) => setProveedorRut(e.target.value)}
               onBlur={(e) => setProveedorRut(formatRut(e.target.value))}
               placeholder="99.500.140-9"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Dirección del proveedor">
-            <input type="text" value={proveedorDireccion} onChange={(e) => setProveedorDireccion(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <input type="text" value={proveedorDireccion} onChange={(e) => setProveedorDireccion(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
         </div>
       </div>
@@ -271,16 +271,16 @@ export default function NuevaFacturaPage() {
         <h2 className="font-semibold text-gray-900">Montos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <Field label="Monto total *">
-            <input type="number" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)} placeholder="0" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <input type="number" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)} placeholder="0" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
           <Field label="Neto (sin IVA)">
-            <input type="number" value={montoNeto} onChange={(e) => setMontoNeto(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <input type="number" value={montoNeto} onChange={(e) => setMontoNeto(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
           <Field label="IVA (19%)">
-            <input type="number" value={montoIva} onChange={(e) => setMontoIva(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <input type="number" value={montoIva} onChange={(e) => setMontoIva(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
           <Field label="IEC recuperable">
-            <input type="number" value={montoIec} onChange={(e) => setMontoIec(e.target.value)} placeholder="Opcional" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+            <input type="number" value={montoIec} onChange={(e) => setMontoIec(e.target.value)} placeholder="Opcional" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -293,7 +293,7 @@ export default function NuevaFacturaPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="font-semibold text-gray-900">Archivo de la factura</h2>
         {archivoUrl ? (
-          <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center justify-between bg-gray-50 rounded-xl p-3">
             <div>
               <div className="text-sm font-medium">{archivoNombre}</div>
               <div className="text-xs text-gray-500">{archivoTamano ? Math.round(archivoTamano / 1024) + ' KB' : ''}</div>
@@ -318,7 +318,7 @@ export default function NuevaFacturaPage() {
               accept=".pdf,.jpg,.jpeg,.png,.webp"
               onChange={handleFile}
               disabled={uploading}
-              className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+              className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
             />
             <p className="text-xs text-gray-500 mt-2">PDF, JPG, PNG o WEBP. Máximo 10MB.</p>
             {uploading && <p className="text-xs text-orange-600 mt-1">Subiendo...</p>}
@@ -340,7 +340,7 @@ export default function NuevaFacturaPage() {
 
         <div className="space-y-3">
           {items.map((it, idx) => (
-            <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-3 bg-gray-50/30">
+            <div key={idx} className="border border-gray-200 rounded-xl p-3 space-y-3 bg-gray-50/30">
               <div className="flex items-start justify-between">
                 <div className="text-xs font-semibold text-gray-600">Equipo #{idx + 1}</div>
                 {items.length > 1 && (
@@ -349,7 +349,7 @@ export default function NuevaFacturaPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field label="Maquinaria">
-                  <select value={it.maquinaria_id} onChange={(e) => onMaquinariaChange(idx, e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <select value={it.maquinaria_id} onChange={(e) => onMaquinariaChange(idx, e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm">
                     <option value="">— Sin asignar —</option>
                     {maquinarias.map((m) => (
                       <option key={m.id} value={m.id}>{m.nombre}</option>
@@ -357,7 +357,7 @@ export default function NuevaFacturaPage() {
                   </select>
                 </Field>
                 <Field label="Contrato asociado (opcional)">
-                  <select value={it.contrato_id} onChange={(e) => updateItem(idx, 'contrato_id', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <select value={it.contrato_id} onChange={(e) => updateItem(idx, 'contrato_id', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm">
                     <option value="">— Ninguno —</option>
                     {contratos
                       .filter((c) => !it.maquinaria_id || c.maquinaria_id === Number(it.maquinaria_id))
@@ -367,7 +367,7 @@ export default function NuevaFacturaPage() {
                   </select>
                 </Field>
                 <Field label="Tipo combustible">
-                  <select value={it.tipo_combustible} onChange={(e) => updateItem(idx, 'tipo_combustible', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <select value={it.tipo_combustible} onChange={(e) => updateItem(idx, 'tipo_combustible', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm">
                     {Object.entries(tiposCombustibleLabels).map(([k, v]) => (
                       <option key={k} value={k}>{v}</option>
                     ))}
@@ -376,16 +376,16 @@ export default function NuevaFacturaPage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Field label="Litros *">
-                  <input type="number" step="0.01" value={it.litros} onChange={(e) => updateItem(idx, 'litros', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                  <input type="number" step="0.01" value={it.litros} onChange={(e) => updateItem(idx, 'litros', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
                 </Field>
                 <Field label="Monto CLP">
-                  <input type="number" value={it.monto} onChange={(e) => updateItem(idx, 'monto', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                  <input type="number" value={it.monto} onChange={(e) => updateItem(idx, 'monto', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
                 </Field>
                 <Field label="Horómetro (opc.)">
-                  <input type="number" step="0.1" value={it.horometro} onChange={(e) => updateItem(idx, 'horometro', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                  <input type="number" step="0.1" value={it.horometro} onChange={(e) => updateItem(idx, 'horometro', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
                 </Field>
                 <Field label="Observaciones">
-                  <input type="text" value={it.observaciones} onChange={(e) => updateItem(idx, 'observaciones', e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                  <input type="text" value={it.observaciones} onChange={(e) => updateItem(idx, 'observaciones', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
                 </Field>
               </div>
             </div>
@@ -408,26 +408,26 @@ export default function NuevaFacturaPage() {
       {/* Notas + acciones */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <Field label="Notas (opcional)">
-          <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={2} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+          <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={2} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
         </Field>
 
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">{error}</div>}
+        {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-3">{error}</div>}
 
         <div className="flex gap-3 justify-end">
-          <Link href="/admin/combustible" className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50">
+          <Link href="/admin/combustible" className="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50">
             Cancelar
           </Link>
           <button
             onClick={() => handleSubmit('registrada')}
             disabled={saving}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="px-4 py-2 rounded-xl border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 disabled:opacity-50"
           >
             {saving ? 'Guardando...' : 'Guardar como borrador'}
           </button>
           <button
             onClick={() => handleSubmit('validada')}
             disabled={saving}
-            className="px-4 py-2 rounded-lg text-white font-medium text-sm hover:opacity-90 disabled:opacity-50"
+            className="px-4 py-2 rounded-xl text-white font-medium text-sm hover:opacity-90 disabled:opacity-50"
             style={{ backgroundColor: '#0c1d3a' }}
           >
             {saving ? 'Guardando...' : 'Guardar y validar'}

@@ -94,7 +94,7 @@ export default function SolicitudesPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
         {tabs.map((tab) => (
           <button
             key={tab.value}

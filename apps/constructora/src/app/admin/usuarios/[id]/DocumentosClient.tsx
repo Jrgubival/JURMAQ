@@ -247,14 +247,14 @@ export default function DocumentosClient({
         <button
           type="button"
           onClick={() => { setShowForm((v) => !v); setFormError(null); }}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-navy-950 hover:bg-navy-800 text-white text-sm font-semibold rounded-lg transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-navy-950 hover:bg-navy-800 text-white text-sm font-semibold rounded-xl transition-colors"
         >
           {showForm ? 'Cancelar' : '+ Subir documento'}
         </button>
       </header>
 
       {showForm && (
-        <form onSubmit={handleUpload} className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+        <form onSubmit={handleUpload} className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label htmlFor="udoc-tipo" className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">
@@ -360,7 +360,7 @@ export default function DocumentosClient({
               type="submit"
               disabled={uploading}
               aria-busy={uploading}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-gold-500 hover:bg-gold-600 disabled:opacity-60 disabled:cursor-not-allowed text-navy-950 text-sm font-bold rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-gold-500 hover:bg-gold-600 disabled:opacity-60 disabled:cursor-not-allowed text-navy-950 text-sm font-bold rounded-xl transition-colors"
             >
               {uploading ? 'Subiendo…' : 'Subir documento'}
             </button>
@@ -383,7 +383,7 @@ export default function DocumentosClient({
           {error}
         </div>
       ) : totalCount === 0 ? (
-        <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-lg">
+        <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl">
           <p className="text-gray-500 text-sm">Aún no hay documentos para {userName}.</p>
           <p className="text-gray-400 text-xs mt-1">Sube licencia, cédula, contrato, capacitación…</p>
         </div>
@@ -440,7 +440,7 @@ function DocCard({
   }
 
   return (
-    <article className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
+    <article className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors">
       <header className="flex items-start justify-between gap-2 mb-2">
         <h4 className="font-semibold text-sm text-navy-950 leading-tight">{doc.nombre}</h4>
         {vencBadge && (
@@ -528,7 +528,7 @@ function ConfirmDelete({
             onClick={onConfirm}
             disabled={pending}
             aria-busy={pending}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-bold rounded-lg transition-colors"
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors"
           >
             {pending ? 'Eliminando…' : 'Eliminar'}
           </button>

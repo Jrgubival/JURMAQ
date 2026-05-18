@@ -428,7 +428,7 @@ export default function PreciosPage() {
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+      className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
     >
       <option value="">Seleccionar categoria</option>
       {categorias.map((c) => (
@@ -447,7 +447,7 @@ export default function PreciosPage() {
 
       {/* Message */}
       {message && (
-        <div className={`px-4 py-3 rounded-lg text-sm font-medium ${
+        <div className={`px-4 py-3 rounded-xl text-sm font-medium ${
           message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
         }`}>
           {message.text}
@@ -472,13 +472,13 @@ export default function PreciosPage() {
               value={pctValue}
               onChange={(e) => setPctValue(e.target.value)}
               placeholder="Ej: 20 o -10"
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
             />
           </div>
         </div>
 
         {pctPreview && (
-          <div className="bg-gray-50 rounded-lg p-4 mb-4 text-sm">
+          <div className="bg-gray-50 rounded-xl p-4 mb-4 text-sm">
             <p className="text-gray-700">
               <span className="font-semibold">{pctPreview.count}</span> productos seran afectados
             </p>
@@ -493,7 +493,7 @@ export default function PreciosPage() {
         <button
           onClick={applyPercentage}
           disabled={pctApplying || !pctCat || !pctValue}
-          className="px-5 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50"
+          className="px-5 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           {pctApplying ? 'Aplicando...' : 'Aplicar'}
@@ -520,12 +520,12 @@ export default function PreciosPage() {
                 value={valorKg}
                 onChange={(e) => setValorKg(e.target.value)}
                 placeholder="Ej: 950"
-                className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
               />
               <button
                 onClick={loadWeightPreview}
                 disabled={!valorKg || weightLoading}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
               >
                 {weightLoading ? '...' : 'Vista previa'}
               </button>
@@ -561,7 +561,7 @@ export default function PreciosPage() {
         <button
           onClick={applyWeight}
           disabled={weightApplying || !valorKg}
-          className="px-5 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50"
+          className="px-5 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           {weightApplying ? 'Aplicando...' : 'Aplicar'}
@@ -586,7 +586,7 @@ export default function PreciosPage() {
               value={imgUrl}
               onChange={(e) => setImgUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
             />
           </div>
         </div>
@@ -594,14 +594,14 @@ export default function PreciosPage() {
         {imgUrl && (
           <div className="mb-4">
             <p className="text-xs text-gray-500 mb-2">Vista previa:</p>
-            <img src={imgUrl} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-gray-200" />
+            <img src={imgUrl} alt="Preview" className="w-24 h-24 object-cover rounded-xl border border-gray-200" />
           </div>
         )}
 
         <button
           onClick={applyImage}
           disabled={imgApplying || !imgCat || !imgUrl}
-          className="px-5 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50"
+          className="px-5 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           {imgApplying ? 'Aplicando...' : 'Aplicar a todos'}
@@ -636,14 +636,14 @@ export default function PreciosPage() {
           <button
             onClick={promoUploadAndPreview}
             disabled={!promoFile || promoPreviewLoading}
-            className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
+            className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
           >
             {promoPreviewLoading ? 'Validando...' : 'Validar (preview)'}
           </button>
           <button
             onClick={promoExpire}
             disabled={promoExpireLoading}
-            className="ml-auto px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition"
+            className="ml-auto px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition"
             title="Revierte automaticamente las ofertas cuya fecha_fin ya paso"
           >
             {promoExpireLoading ? 'Expirando...' : 'Expirar vencidas'}
@@ -652,15 +652,15 @@ export default function PreciosPage() {
 
         {promoSummary && (
           <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-            <div className="bg-gray-50 rounded-lg p-3">
+            <div className="bg-gray-50 rounded-xl p-3">
               <div className="text-2xl font-semibold text-gray-900">{promoSummary.total}</div>
               <div className="text-xs text-gray-500">Total filas</div>
             </div>
-            <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+            <div className="bg-green-50 rounded-xl p-3 border border-green-200">
               <div className="text-2xl font-semibold text-green-700">{promoSummary.ok}</div>
               <div className="text-xs text-green-700">{promoExecuted ? 'Aplicadas' : 'Validas'}</div>
             </div>
-            <div className="bg-red-50 rounded-lg p-3 border border-red-200">
+            <div className="bg-red-50 rounded-xl p-3 border border-red-200">
               <div className="text-2xl font-semibold text-red-700">{promoSummary.reject}</div>
               <div className="text-xs text-red-700">Rechazadas</div>
             </div>
@@ -669,7 +669,7 @@ export default function PreciosPage() {
 
         {promoRows.length > 0 && (
           <div className="space-y-3">
-            <div className="overflow-x-auto max-h-96 border border-gray-200 rounded-lg">
+            <div className="overflow-x-auto max-h-96 border border-gray-200 rounded-xl">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
@@ -713,13 +713,13 @@ export default function PreciosPage() {
                 <button
                   onClick={promoExecute}
                   disabled={promoApplying}
-                  className="px-5 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50 bg-green-600 hover:bg-green-700"
+                  className="px-5 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50 bg-green-600 hover:bg-green-700"
                 >
                   {promoApplying ? 'Aplicando...' : `Aplicar ${promoSummary?.ok} promocion(es)`}
                 </button>
                 <button
                   onClick={() => { setPromoRows([]); setPromoSummary(null); }}
-                  className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
                 >
                   Cancelar
                 </button>
@@ -761,7 +761,7 @@ export default function PreciosPage() {
                 value={removeOfferCodigo}
                 onChange={(e) => { setRemoveOfferCodigo(e.target.value.toUpperCase()); setOfertasActivas([]); }}
                 placeholder='Ej: "FE", "ACH", "AM"'
-                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm uppercase"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm uppercase"
               />
             </div>
           )}
@@ -769,7 +769,7 @@ export default function PreciosPage() {
             <button
               onClick={loadOfertasActivas}
               disabled={ofertasLoading || (removeFiltro === 'categoria' && !removeOfferCat) || (removeFiltro === 'codigo' && !removeOfferCodigo.trim())}
-              className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
+              className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition"
             >
               {ofertasLoading ? 'Cargando...' : 'Ver Ofertas Activas'}
             </button>
@@ -779,7 +779,7 @@ export default function PreciosPage() {
         {/* Active offers table */}
         {ofertasActivas.length > 0 && (
           <div className="space-y-4">
-            <div className="bg-orange-50 rounded-lg p-3 text-sm text-orange-800 border border-orange-200">
+            <div className="bg-orange-50 rounded-xl p-3 text-sm text-orange-800 border border-orange-200">
               <p className="font-medium">{ofertasActivas.length} productos actualmente en oferta</p>
             </div>
             <div className="overflow-x-auto">
@@ -809,7 +809,7 @@ export default function PreciosPage() {
             <button
               onClick={removeOffers}
               disabled={removeOfferApplying}
-              className="px-5 py-2.5 rounded-lg text-sm font-medium border border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-50 transition bg-red-50"
+              className="px-5 py-2.5 rounded-xl text-sm font-medium border border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-50 transition bg-red-50"
             >
               {removeOfferApplying ? 'Restaurando...' : `Restaurar Precios (${ofertasActivas.length} productos)`}
             </button>
@@ -833,7 +833,7 @@ export default function PreciosPage() {
               id="cotizar-mode"
               value={cotizarValue ? 'true' : 'false'}
               onChange={(e) => setCotizarValue(e.target.value === 'true')}
-              className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
             >
               <option value="true">Activar &quot;Solo Cotizar&quot;</option>
               <option value="false">Desactivar &quot;Solo Cotizar&quot; (mostrar precios)</option>
@@ -844,7 +844,7 @@ export default function PreciosPage() {
         <button
           onClick={applyCotizar}
           disabled={cotizarApplying || !cotizarCat}
-          className="px-5 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50"
+          className="px-5 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           {cotizarApplying ? 'Aplicando...' : 'Aplicar'}

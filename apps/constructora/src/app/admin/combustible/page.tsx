@@ -121,7 +121,7 @@ export default function CombustiblePage() {
         <div className="flex gap-2">
           <a
             href={exportUrl}
-            className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 inline-flex items-center gap-2"
+            className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 inline-flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -130,7 +130,7 @@ export default function CombustiblePage() {
           </a>
           <Link
             href="/admin/combustible/nueva"
-            className="px-4 py-2.5 rounded-lg text-white font-medium text-sm hover:opacity-90 inline-flex items-center gap-2"
+            className="px-4 py-2.5 rounded-xl text-white font-medium text-sm hover:opacity-90 inline-flex items-center gap-2"
             style={{ backgroundColor: '#0c1d3a' }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +149,7 @@ export default function CombustiblePage() {
             type="month"
             value={mes}
             onChange={(e) => setMes(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -157,7 +157,7 @@ export default function CombustiblePage() {
           <select
             value={estado}
             onChange={(e) => setEstado(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm"
           >
             <option value="">Todos</option>
             <option value="registrada">Registrada</option>
@@ -173,7 +173,7 @@ export default function CombustiblePage() {
             value={buscar}
             onChange={(e) => setBuscar(e.target.value)}
             placeholder="Ej: 12345 o Copec"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm"
           />
         </div>
       </div>

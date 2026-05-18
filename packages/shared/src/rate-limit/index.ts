@@ -33,16 +33,36 @@ interface RateLimitResult {
   resetAt: number;
 }
 
+/**
+ * Auto-prefix por scope para aislar contadores entre apps.
+ *
+ * El store es in-memory por lambda; en serverless cada cold start arranca con
+ * Map vacío. Aún así, si barraca y constructora corren en el MISMO proceso
+ * (dev local, o un edge worker compartido en el futuro), key colisiones tipo
+ * `cot-create:1.2.3.4` podrían contar requests de una app contra el límite
+ * de la otra. El prefijo del scope evita eso sin que cada call site tenga
+ * que recordar agregarlo.
+ *
+ * Lee `AUTH_SCOPE` del env (lo seteamos por app en .env.local + Vercel).
+ * Si no está, fallback a 'app' — comportamiento idéntico al pre-prefix
+ * para compat hacia atrás durante el rollout.
+ */
+function getScopePrefix(): string {
+  const scope = process.env.AUTH_SCOPE;
+  return scope === 'barraca' || scope === 'constructora' ? scope : 'app';
+}
+
 export function rateLimit(
   key: string,
   options: RateLimitOptions = { maxAttempts: 10, windowSeconds: 60 }
 ): RateLimitResult {
+  const scopedKey = `${getScopePrefix()}:${key}`;
   const now = Date.now();
-  const entry = store.get(key);
+  const entry = store.get(scopedKey);
 
   if (!entry || now > entry.resetAt) {
     // First request or window expired
-    store.set(key, {
+    store.set(scopedKey, {
       count: 1,
       resetAt: now + options.windowSeconds * 1000,
     });
@@ -95,9 +115,12 @@ export async function rateLimitPersistent(
   key: string,
   options: RateLimitOptions = { maxAttempts: 10, windowSeconds: 60 }
 ): Promise<RateLimitResult> {
+  // Mismo namespace que el limiter en memoria — barraca y constructora no
+  // compiten por el mismo contador en DB aunque usen la misma key lógica.
+  const scopedKey = `${getScopePrefix()}:${key}`;
   try {
     const { data, error } = await supabaseAdmin.rpc('rate_limit_check_and_increment', {
-      p_key: key,
+      p_key: scopedKey,
       p_max_attempts: options.maxAttempts,
       p_window_seconds: options.windowSeconds,
     });

@@ -263,7 +263,7 @@ export default function ContratoDetailPage({
           </svg>
           Volver
         </Link>
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
           {loadError || 'Contrato no encontrado'}
         </div>
       </div>
@@ -307,7 +307,7 @@ export default function ContratoDetailPage({
             href={`/api/admin/contratos/${contrato.id}/pdf`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition inline-flex items-center gap-1"
+            className="px-3 py-2 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition inline-flex items-center gap-1"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -319,7 +319,7 @@ export default function ContratoDetailPage({
             target="_blank"
             rel="noopener noreferrer"
             title="Abre el contrato con espacio para firma manual. Usa Cmd+P / Ctrl+P para imprimir o guardar como PDF."
-            className="px-3 py-2 text-sm font-medium rounded-lg bg-navy-950 text-white hover:bg-navy-900 transition inline-flex items-center gap-1"
+            className="px-3 py-2 text-sm font-medium rounded-xl bg-navy-950 text-white hover:bg-navy-900 transition inline-flex items-center gap-1"
             style={{ backgroundColor: '#0c1d3a' }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -332,7 +332,7 @@ export default function ContratoDetailPage({
 
       {(actionError || actionInfo) && (
         <div
-          className={`p-3 rounded-lg text-sm border ${
+          className={`p-3 rounded-xl text-sm border ${
             actionError
               ? 'bg-red-50 border-red-200 text-red-700'
               : 'bg-green-50 border-green-200 text-green-700'
@@ -530,7 +530,7 @@ export default function ContratoDetailPage({
                 <button
                   onClick={sendSignature}
                   disabled={busy}
-                  className="w-full px-4 py-2 text-sm font-semibold rounded-lg text-white hover:opacity-90 disabled:opacity-50 transition"
+                  className="w-full px-4 py-2 text-sm font-semibold rounded-xl text-white hover:opacity-90 disabled:opacity-50 transition"
                   style={{ backgroundColor: '#ea580c' }}
                 >
                   {busy ? 'Enviando...' : 'Enviar para firma'}
@@ -549,7 +549,7 @@ export default function ContratoDetailPage({
                     href={contrato.signature_link_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                    className="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                   >
                     Ver link de firma
                   </a>
@@ -557,7 +557,7 @@ export default function ContratoDetailPage({
                 <button
                   onClick={sendSignature}
                   disabled={busy}
-                  className="w-full px-4 py-2 text-sm font-semibold rounded-lg text-white hover:opacity-90 disabled:opacity-50 transition"
+                  className="w-full px-4 py-2 text-sm font-semibold rounded-xl text-white hover:opacity-90 disabled:opacity-50 transition"
                   style={{ backgroundColor: '#0c1d3a' }}
                 >
                   {busy ? 'Enviando...' : 'Reenviar email'}
@@ -567,13 +567,13 @@ export default function ContratoDetailPage({
                     <button
                       onClick={() => updateEstado('anulado')}
                       disabled={busy}
-                      className="flex-1 px-3 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
+                      className="flex-1 px-3 py-2 text-sm font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
                     >
                       Confirmar anular
                     </button>
                     <button
                       onClick={() => setConfirmAnular(false)}
-                      className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                      className="px-3 py-2 text-sm font-medium rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                     >
                       Cancelar
                     </button>
@@ -582,7 +582,7 @@ export default function ContratoDetailPage({
                   <button
                     onClick={() => setConfirmAnular(true)}
                     disabled={busy}
-                    className="w-full px-4 py-2 text-sm font-medium rounded-lg border border-red-200 text-red-700 hover:bg-red-50 transition"
+                    className="w-full px-4 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-700 hover:bg-red-50 transition"
                   >
                     Anular
                   </button>
@@ -595,7 +595,7 @@ export default function ContratoDetailPage({
                 <button
                   onClick={() => updateEstado('vigente')}
                   disabled={busy}
-                  className="w-full px-4 py-2 text-sm font-semibold rounded-lg text-white hover:opacity-90 disabled:opacity-50 transition"
+                  className="w-full px-4 py-2 text-sm font-semibold rounded-xl text-white hover:opacity-90 disabled:opacity-50 transition"
                   style={{ backgroundColor: '#0c1d3a' }}
                 >
                   Marcar como vigente
@@ -608,7 +608,7 @@ export default function ContratoDetailPage({
                 <button
                   onClick={() => updateEstado('vencido')}
                   disabled={busy}
-                  className="w-full px-4 py-2 text-sm font-medium rounded-lg border border-orange-200 text-orange-700 hover:bg-orange-50 disabled:opacity-50 transition"
+                  className="w-full px-4 py-2 text-sm font-medium rounded-xl border border-orange-200 text-orange-700 hover:bg-orange-50 disabled:opacity-50 transition"
                 >
                   Marcar como vencido
                 </button>
@@ -617,13 +617,13 @@ export default function ContratoDetailPage({
                     <button
                       onClick={() => updateEstado('anulado')}
                       disabled={busy}
-                      className="flex-1 px-3 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
+                      className="flex-1 px-3 py-2 text-sm font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
                     >
                       Confirmar anular
                     </button>
                     <button
                       onClick={() => setConfirmAnular(false)}
-                      className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                      className="px-3 py-2 text-sm font-medium rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                     >
                       Cancelar
                     </button>
@@ -632,7 +632,7 @@ export default function ContratoDetailPage({
                   <button
                     onClick={() => setConfirmAnular(true)}
                     disabled={busy}
-                    className="w-full px-4 py-2 text-sm font-medium rounded-lg border border-red-200 text-red-700 hover:bg-red-50 transition"
+                    className="w-full px-4 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-700 hover:bg-red-50 transition"
                   >
                     Anular
                   </button>
@@ -653,13 +653,13 @@ export default function ContratoDetailPage({
                     <button
                       onClick={handleDelete}
                       disabled={busy}
-                      className="flex-1 px-3 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
+                      className="flex-1 px-3 py-2 text-sm font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
                     >
                       Confirmar eliminar
                     </button>
                     <button
                       onClick={() => setConfirmDelete(false)}
-                      className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                      className="px-3 py-2 text-sm font-medium rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                     >
                       Cancelar
                     </button>
@@ -668,7 +668,7 @@ export default function ContratoDetailPage({
                   <button
                     onClick={() => setConfirmDelete(true)}
                     disabled={busy}
-                    className="w-full px-4 py-2 text-sm font-medium rounded-lg border border-red-200 text-red-700 hover:bg-red-50 transition"
+                    className="w-full px-4 py-2 text-sm font-medium rounded-xl border border-red-200 text-red-700 hover:bg-red-50 transition"
                   >
                     Eliminar borrador
                   </button>

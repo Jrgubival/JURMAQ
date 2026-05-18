@@ -436,7 +436,7 @@ export default function BarracaCotizacionesPage() {
         <select
           value={filterEstado}
           onChange={(e) => setFilterEstado(e.target.value)}
-          className="px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
+          className="px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
         >
           <option value="">Todos los estados</option>
           <option value="pendiente">Pendiente</option>
@@ -506,13 +506,13 @@ export default function BarracaCotizacionesPage() {
                       <div className="flex items-center justify-center gap-1 flex-wrap">
                         <button
                           onClick={() => openDetail(cot)}
-                          className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                          className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                         >
                           Ver
                         </button>
                         <button
                           onClick={() => openMessageModal(cot)}
-                          className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
+                          className="px-3 py-1.5 text-xs font-medium rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-1"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -523,7 +523,7 @@ export default function BarracaCotizacionesPage() {
                           href={`/api/cotizaciones/${cot.id}/pdf`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition flex items-center gap-1"
+                          className="px-3 py-1.5 text-xs font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition flex items-center gap-1"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -535,14 +535,14 @@ export default function BarracaCotizacionesPage() {
                             <button
                               onClick={() => approveAndSendPayment(cot, 'mercadopago')}
                               disabled={isProcessing}
-                              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition disabled:opacity-50"
+                              className="px-3 py-1.5 text-xs font-medium rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition disabled:opacity-50"
                             >
                               {isProcessing ? '...' : 'MercadoPago'}
                             </button>
                             <button
                               onClick={() => approveAndSendPayment(cot, 'efectivo')}
                               disabled={isProcessing}
-                              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-green-50 text-green-700 hover:bg-green-100 transition disabled:opacity-50"
+                              className="px-3 py-1.5 text-xs font-medium rounded-xl bg-green-50 text-green-700 hover:bg-green-100 transition disabled:opacity-50"
                             >
                               {isProcessing ? '...' : 'Efectivo'}
                             </button>
@@ -552,7 +552,7 @@ export default function BarracaCotizacionesPage() {
                           <button
                             onClick={() => markAsPaid(cot)}
                             disabled={isProcessing}
-                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition disabled:opacity-50"
+                            className="px-3 py-1.5 text-xs font-medium rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition disabled:opacity-50"
                           >
                             {isProcessing ? '...' : 'Marcar Pagado'}
                           </button>
@@ -560,7 +560,7 @@ export default function BarracaCotizacionesPage() {
                         {cot.estado === 'pendiente' && (
                           <button
                             onClick={() => changeEstado(cot, 'rechazada')}
-                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition"
+                            className="px-3 py-1.5 text-xs font-medium rounded-xl bg-red-50 text-red-700 hover:bg-red-100 transition"
                           >
                             Rechazar
                           </button>
@@ -604,7 +604,7 @@ export default function BarracaCotizacionesPage() {
                 <select
                   value={messageForm.tipo}
                   onChange={(e) => setMessageForm((prev) => ({ ...prev, tipo: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 >
                   <option value="Aprobada">Aprobada</option>
                   <option value="Rechazada">Rechazada</option>
@@ -621,7 +621,7 @@ export default function BarracaCotizacionesPage() {
                   type="text"
                   value={messageForm.asunto}
                   onChange={(e) => setMessageForm((prev) => ({ ...prev, asunto: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Asunto del correo"
                 />
               </div>
@@ -633,7 +633,7 @@ export default function BarracaCotizacionesPage() {
                   value={messageForm.mensaje}
                   onChange={(e) => setMessageForm((prev) => ({ ...prev, mensaje: e.target.value }))}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Escriba el mensaje para el cliente..."
                 />
               </div>
@@ -645,14 +645,14 @@ export default function BarracaCotizacionesPage() {
                   type="url"
                   value={messageForm.linkPago}
                   onChange={(e) => setMessageForm((prev) => ({ ...prev, linkPago: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="https://www.webpay.cl/..."
                 />
               </div>
 
               {/* Error */}
               {actionError && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
                   {actionError}
                 </div>
               )}
@@ -662,7 +662,7 @@ export default function BarracaCotizacionesPage() {
                 <button
                   onClick={sendMessage}
                   disabled={sendingMessage || !messageForm.mensaje.trim()}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {sendingMessage ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -675,7 +675,7 @@ export default function BarracaCotizacionesPage() {
                 </button>
                 <button
                   onClick={() => setMessageModal(false)}
-                  className="px-4 py-2.5 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                  className="px-4 py-2.5 text-sm font-medium rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                 >
                   Cancelar
                 </button>
@@ -730,7 +730,7 @@ export default function BarracaCotizacionesPage() {
               </div>
 
               {/* Payment Status */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 rounded-xl p-4">
                 <div className="flex items-center gap-4">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Estado</p>
@@ -760,7 +760,7 @@ export default function BarracaCotizacionesPage() {
                   {!editMode && ['pendiente', 'enviada', 'contraoferta'].includes(selectedCot.estado) && (
                     <button
                       onClick={() => openEditMode(selectedCot)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -772,7 +772,7 @@ export default function BarracaCotizacionesPage() {
 
                 {/* Warning if editing cotización with contraoferta */}
                 {editMode && selectedCot.contraoferta_items && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3 text-xs text-amber-800">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3 text-xs text-amber-800">
                     <strong>Nota:</strong> Esta cotizacion tiene una contraoferta activa. Estos cambios aplican solo a la cotizacion original.
                   </div>
                 )}
@@ -780,7 +780,7 @@ export default function BarracaCotizacionesPage() {
                 {/* Edit Mode Table */}
                 {editMode ? (
                   <div className="space-y-3">
-                    <div className="border border-blue-200 rounded-lg overflow-hidden bg-blue-50/30">
+                    <div className="border border-blue-200 rounded-xl overflow-hidden bg-blue-50/30">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-blue-50 border-b border-blue-200">
@@ -874,7 +874,7 @@ export default function BarracaCotizacionesPage() {
                     <div className="flex items-center justify-between">
                       <button
                         onClick={addCustomItem}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 transition"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 transition"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -884,14 +884,14 @@ export default function BarracaCotizacionesPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => setEditMode(false)}
-                          className="px-4 py-1.5 text-xs font-medium rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                          className="px-4 py-1.5 text-xs font-medium rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
                         >
                           Cancelar
                         </button>
                         <button
                           onClick={saveEditedCotizacion}
                           disabled={savingEdit || editItems.length === 0}
-                          className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-lg text-white transition hover:opacity-90 disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium rounded-xl text-white transition hover:opacity-90 disabled:opacity-50"
                           style={{ backgroundColor: '#0c1d3a' }}
                         >
                           {savingEdit ? (
@@ -905,7 +905,7 @@ export default function BarracaCotizacionesPage() {
                   </div>
                 ) : (
                   /* Read-only Items Table */
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="border border-gray-200 rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-200">
@@ -964,7 +964,7 @@ export default function BarracaCotizacionesPage() {
 
               {/* Competitor Quote */}
               {selectedCot.cotizacion_competencia && (
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
                   <h4 className="text-sm font-semibold text-purple-800 mb-2 flex items-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -975,7 +975,7 @@ export default function BarracaCotizacionesPage() {
                     href={selectedCot.cotizacion_competencia}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg bg-purple-100 text-purple-700 hover:bg-purple-200 transition"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-xl bg-purple-100 text-purple-700 hover:bg-purple-200 transition"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -987,14 +987,14 @@ export default function BarracaCotizacionesPage() {
                       <img
                         src={selectedCot.cotizacion_competencia}
                         alt="Cotización competencia"
-                        className="max-w-full max-h-48 rounded-lg border border-purple-200"
+                        className="max-w-full max-h-48 rounded-xl border border-purple-200"
                       />
                     </div>
                   )}
                   {!showContraoferta && (selectedCot.estado === 'pendiente' || selectedCot.estado === 'enviada') && (
                     <button
                       onClick={() => openContraofertaForm(selectedCot)}
-                      className="mt-3 px-4 py-2 text-sm font-semibold rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition flex items-center gap-2"
+                      className="mt-3 px-4 py-2 text-sm font-semibold rounded-xl bg-purple-600 text-white hover:bg-purple-700 transition flex items-center gap-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1007,7 +1007,7 @@ export default function BarracaCotizacionesPage() {
 
               {/* Counter-offer form */}
               {showContraoferta && selectedCot && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-4">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-4">
                   <h4 className="text-sm font-semibold text-green-800 flex items-center gap-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1016,7 +1016,7 @@ export default function BarracaCotizacionesPage() {
                   </h4>
 
                   {/* Editable items table */}
-                  <div className="border border-green-200 rounded-lg overflow-hidden">
+                  <div className="border border-green-200 rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-green-100 border-b border-green-200">
@@ -1058,7 +1058,7 @@ export default function BarracaCotizacionesPage() {
                     const ahorro = totalOrig - contraofertaTotal;
                     const pct = totalOrig > 0 ? Math.round((ahorro / totalOrig) * 100) : 0;
                     return (
-                      <div className="bg-green-600 text-white rounded-lg p-3 text-center">
+                      <div className="bg-green-600 text-white rounded-xl p-3 text-center">
                         <p className="text-xs opacity-80">Ahorro para el cliente</p>
                         <p className="text-xl font-bold">{formatCLP(ahorro)} ({pct}%)</p>
                       </div>
@@ -1072,7 +1072,7 @@ export default function BarracaCotizacionesPage() {
                       value={contraofertaMensaje}
                       onChange={(e) => setContraofertaMensaje(e.target.value)}
                       rows={2}
-                      className="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-gray-900"
+                      className="w-full px-3 py-2 border border-green-300 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-green-500 text-gray-900"
                       placeholder="Ej: Le mejoramos los precios de Sodimac en un 15%"
                     />
                   </div>
@@ -1082,7 +1082,7 @@ export default function BarracaCotizacionesPage() {
                     <button
                       onClick={() => sendContraoferta(selectedCot)}
                       disabled={sendingContraoferta}
-                      className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-xl bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {sendingContraoferta ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -1095,7 +1095,7 @@ export default function BarracaCotizacionesPage() {
                     </button>
                     <button
                       onClick={() => setShowContraoferta(false)}
-                      className="px-4 py-2.5 text-sm font-medium rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                      className="px-4 py-2.5 text-sm font-medium rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
                     >
                       Cancelar
                     </button>
@@ -1105,7 +1105,7 @@ export default function BarracaCotizacionesPage() {
 
               {/* Existing counter-offer info (already sent) */}
               {selectedCot.estado === 'contraoferta' && selectedCot.contraoferta_items && (
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
                   <h4 className="text-sm font-semibold text-purple-800 mb-2">Contraoferta Enviada</h4>
                   <p className="text-xs text-purple-600 mb-2">
                     Total contraoferta: <strong>{formatCLP(selectedCot.contraoferta_total || 0)}</strong>
@@ -1127,7 +1127,7 @@ export default function BarracaCotizacionesPage() {
 
               {/* Action error */}
               {actionError && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
                   {actionError}
                 </div>
               )}
@@ -1139,7 +1139,7 @@ export default function BarracaCotizacionesPage() {
                     <button
                       onClick={() => approveAndSendPayment(selectedCot, 'mercadopago')}
                       disabled={actionLoading === selectedCot.id}
-                      className="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 flex items-center gap-2"
+                      className="px-4 py-2 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50 flex items-center gap-2"
                     >
                       {actionLoading === selectedCot.id ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -1153,7 +1153,7 @@ export default function BarracaCotizacionesPage() {
                     <button
                       onClick={() => approveAndSendPayment(selectedCot, 'efectivo')}
                       disabled={actionLoading === selectedCot.id}
-                      className="px-4 py-2 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50 flex items-center gap-2"
+                      className="px-4 py-2 text-sm font-semibold rounded-xl bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-50 flex items-center gap-2"
                     >
                       {actionLoading === selectedCot.id ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -1166,7 +1166,7 @@ export default function BarracaCotizacionesPage() {
                     </button>
                     <button
                       onClick={() => changeEstado(selectedCot, 'rechazada')}
-                      className="px-4 py-2 text-sm font-semibold rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition"
+                      className="px-4 py-2 text-sm font-semibold rounded-xl bg-red-50 text-red-700 hover:bg-red-100 transition"
                     >
                       Rechazar
                     </button>
@@ -1177,7 +1177,7 @@ export default function BarracaCotizacionesPage() {
                   <button
                     onClick={() => markAsPaid(selectedCot)}
                     disabled={actionLoading === selectedCot.id}
-                    className="px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition disabled:opacity-50 flex items-center gap-2"
+                    className="px-4 py-2 text-sm font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition disabled:opacity-50 flex items-center gap-2"
                   >
                     {actionLoading === selectedCot.id ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -1192,7 +1192,7 @@ export default function BarracaCotizacionesPage() {
 
                 <button
                   onClick={() => openMessageModal(selectedCot)}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-semibold rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -1203,7 +1203,7 @@ export default function BarracaCotizacionesPage() {
                   href={`/api/cotizaciones/${selectedCot.id}/pdf`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 text-sm font-semibold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition flex items-center gap-2"
+                  className="px-4 py-2 text-sm font-semibold rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

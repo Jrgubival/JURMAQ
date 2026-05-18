@@ -48,11 +48,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // headers() may fail in edge — fall through and allow the attempt
           }
 
-          const { data: user, error } = await supabaseAdmin
+          // Filtrar por scope del proceso (`AUTH_SCOPE` env var). Un user
+          // con scope='barraca' NO debe poder loguearse en el proceso de
+          // constructora aunque acierte email+password. `scope='both'`
+          // entra en cualquiera (es el dueño).
+          const authScope = process.env.AUTH_SCOPE;
+          const isScopedApp = authScope === 'barraca' || authScope === 'constructora';
+
+          let query = supabaseAdmin
             .from('users')
             .select('*')
-            .eq('email', email)
-            .single();
+            .eq('email', email);
+          if (isScopedApp) {
+            query = query.in('scope', [authScope, 'both']);
+          }
+
+          const { data: user, error } = await query.maybeSingle();
 
           if (error || !user) return null;
 
@@ -80,6 +91,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: user.name,
             email: user.email,
             role: user.role,
+            // Pasamos scope al callback jwt para que lo persista en el
+            // token. La sesión validará scope vs AUTH_SCOPE en cada
+            // request (doble cinturón).
+            scope: user.scope as 'barraca' | 'constructora' | 'both' | undefined,
           };
         } catch (err) {
           console.error('Error en authorize NextAuth:', err);

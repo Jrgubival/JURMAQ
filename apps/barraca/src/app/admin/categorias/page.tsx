@@ -140,7 +140,7 @@ export default function BarracaCategoriasPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,7 +206,7 @@ export default function BarracaCategoriasPage() {
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => openEdit(cat)}
-                      className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+                      className="px-3 py-1.5 text-xs font-medium rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
                     >
                       Editar
                     </button>
@@ -242,19 +242,19 @@ export default function BarracaCategoriasPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                <input type="text" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="Fierros Estriados" />
+                <input type="text" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="Fierros Estriados" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="fierros-estriados (auto-generado)" />
+                <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="fierros-estriados (auto-generado)" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Descripcion</label>
-                <textarea value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} rows={2} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm resize-none" />
+                <textarea value={form.descripcion} onChange={(e) => setForm({ ...form, descripcion: e.target.value })} rows={2} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">URL Imagen</label>
-                <input type="text" value={form.imagen} onChange={(e) => setForm({ ...form, imagen: e.target.value })} className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="https://..." />
+                <input type="text" value={form.imagen} onChange={(e) => setForm({ ...form, imagen: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm" placeholder="https://..." />
               </div>
               <div>
                 <label htmlFor="cat-orden" className="block text-sm font-medium text-gray-700 mb-1">Orden</label>
@@ -265,7 +265,7 @@ export default function BarracaCategoriasPage() {
                   step={1}
                   value={form.orden}
                   onChange={(e) => setForm({ ...form, orden: Math.max(0, Number(e.target.value) || 0) })}
-                  className="w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm tabular-nums"
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm tabular-nums"
                 />
               </div>
               <label className="flex items-center gap-2 cursor-pointer">
@@ -274,10 +274,10 @@ export default function BarracaCategoriasPage() {
               </label>
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition">
                 Cancelar
               </button>
-              <button onClick={handleSave} disabled={saving || !form.nombre} className="px-4 py-2.5 rounded-lg text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60" style={{ backgroundColor: '#0c1d3a' }}>
+              <button onClick={handleSave} disabled={saving || !form.nombre} className="px-4 py-2.5 rounded-xl text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60" style={{ backgroundColor: '#0c1d3a' }}>
                 {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear'}
               </button>
             </div>

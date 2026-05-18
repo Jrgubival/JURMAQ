@@ -254,7 +254,7 @@ export default function BarracaImportarPage() {
         <button
           onClick={handleExport}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90 disabled:opacity-60"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,7 +375,7 @@ export default function BarracaImportarPage() {
                 <p className="text-gray-600 mb-2">Arrastre su archivo Excel aqui o</p>
                 <button
                   onClick={() => fileRef.current?.click()}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm transition hover:opacity-90"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm transition hover:opacity-90"
                   style={{ backgroundColor: '#0c1d3a' }}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -393,7 +393,7 @@ export default function BarracaImportarPage() {
               <button
                 onClick={handleParse}
                 disabled={loading}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90 disabled:opacity-60"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition hover:opacity-90 disabled:opacity-60"
                 style={{ backgroundColor: '#0c1d3a' }}
               >
                 {loading ? (
@@ -423,7 +423,7 @@ export default function BarracaImportarPage() {
           </div>
 
           {/* Mapping Table */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
@@ -439,7 +439,7 @@ export default function BarracaImportarPage() {
                       <select
                         value={columnMapping[header] ?? '__ignore__'}
                         onChange={(e) => updateMapping(header, e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-yellow-300 focus:border-yellow-400 outline-none"
+                        className="w-full border border-gray-300 rounded-xl px-3 py-1.5 text-sm focus:ring-2 focus:ring-yellow-300 focus:border-yellow-400 outline-none"
                       >
                         {FIELD_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>
@@ -458,7 +458,7 @@ export default function BarracaImportarPage() {
           {parseResult.sampleRows && parseResult.sampleRows.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Vista previa de datos (primeras filas)</h3>
-              <div className="border border-gray-200 rounded-lg overflow-x-auto">
+              <div className="border border-gray-200 rounded-xl overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead className="bg-gray-50">
                     <tr>
@@ -488,13 +488,13 @@ export default function BarracaImportarPage() {
           <div className="flex justify-between">
             <button
               onClick={() => setStep(1)}
-              className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition"
+              className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition"
             >
               Volver
             </button>
             <button
               onClick={() => setStep(3)}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition hover:opacity-90"
               style={{ backgroundColor: '#0c1d3a' }}
             >
               Siguiente
@@ -598,14 +598,14 @@ export default function BarracaImportarPage() {
           <div className="flex justify-between">
             <button
               onClick={() => setStep(2)}
-              className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition"
+              className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition"
             >
               Volver
             </button>
             <button
               onClick={handlePreview}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90 disabled:opacity-60"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition hover:opacity-90 disabled:opacity-60"
               style={{ backgroundColor: '#0c1d3a' }}
             >
               {loading ? (
@@ -667,7 +667,7 @@ export default function BarracaImportarPage() {
             </div>
 
             {/* Preview Table */}
-            <div className="border border-gray-200 rounded-lg overflow-x-auto max-h-[420px] overflow-y-auto">
+            <div className="border border-gray-200 rounded-xl overflow-x-auto max-h-[420px] overflow-y-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
@@ -717,13 +717,13 @@ export default function BarracaImportarPage() {
           <div className="flex justify-between">
             <button
               onClick={() => setStep(3)}
-              className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition"
+              className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition"
             >
               Volver
             </button>
             <button
               onClick={() => setStep(5)}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:bg-orange-700"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition hover:bg-orange-700"
               style={{ backgroundColor: '#ea580c' }}
             >
               Ejecutar Importacion
@@ -775,7 +775,7 @@ export default function BarracaImportarPage() {
 
               {/* Error details */}
               {importResult.errors && importResult.errors.length > 0 && (
-                <details className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <details className="bg-red-50 border border-red-200 rounded-xl p-4">
                   <summary className="text-sm font-medium text-red-800 cursor-pointer">
                     Ver {importResult.errors.length} error(es)
                   </summary>
@@ -793,7 +793,7 @@ export default function BarracaImportarPage() {
               <div className="flex justify-center pt-2">
                 <button
                   onClick={resetAll}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition hover:opacity-90"
                   style={{ backgroundColor: '#0c1d3a' }}
                 >
                   Volver al inicio
@@ -811,7 +811,7 @@ export default function BarracaImportarPage() {
               <p className="text-sm text-gray-500 mb-4">{error}</p>
               <button
                 onClick={resetAll}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition hover:opacity-90"
                 style={{ backgroundColor: '#0c1d3a' }}
               >
                 Volver al inicio

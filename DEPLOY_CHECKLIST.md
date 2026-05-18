@@ -42,6 +42,25 @@ apps/constructora/scripts/migrate-users-documentos.sql
 
 **Tras aplicarla:** entrá a `/admin/usuarios/[id]` → sección Documentos → subir.
 
+### 🔴 NUEVA: Aislamiento de sesión entre apps (users.scope)
+
+Agrega columna `scope` a la tabla `users` para que cada admin declare a qué app(s) pertenece. Sin esto, después de aplicar los cambios de cookies `__Host-{scope}.session-token` los logins existentes seguirán funcionando, pero la query de auth filtra por scope — usuarios sin scope = `'constructora'` (default).
+
+```sql
+-- Pegá íntegro el contenido de:
+apps/constructora/scripts/migrate-users-scope.sql
+```
+
+**Qué hace:**
+- `ALTER TABLE users ADD COLUMN scope text NOT NULL DEFAULT 'constructora'` (default seguro: el personal histórico queda en constructora).
+- `CHECK (scope IN ('barraca', 'constructora', 'both'))`.
+- Auto-eleva `contacto@jurmaq.cl` a `'both'` (es el dueño — accede a ambos).
+- Índice compuesto `(scope, email)` para la query de login.
+
+**Tras aplicarla:** abrí Supabase Dashboard → Authentication → tabla `users` → para cada vendedor/operario de barraca, cambiá su `scope` de `constructora` (default) a `barraca` o `both` según corresponda.
+
+**⚠️ CAMBIO DE COOKIES en este deploy**: las sesiones activas se invalidan porque las cookies pasan a llamarse `__Host-barraca.session-token` y `__Host-constructora.session-token` (antes era `__Secure-next-auth.session-token` con domain compartido). Todos los admins logueados verán "Iniciar sesión" en su próxima visita — comunicarles antes del deploy.
+
 ### 🔴 OBLIGATORIA antes de aceptar nuevas ofertas: SERNAC histórico de precios
 
 Compliance Ley 19.496 art. 28. Sin esto, cualquier oferta nueva (`bulk-price create_offer`) devuelve HTTP 503.
@@ -99,14 +118,32 @@ DATABASE_URL_DIRECT=postgresql://...
 NEXT_PUBLIC_SUPABASE_URL=https://wmoizhbdalvnveclenvf.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...          # solo backend, NUNCA al cliente
-NEXTAUTH_SECRET=<openssl rand -hex 32>
 ADMIN_PASSWORD=<contraseña del seed-admin>
 RESEND_API_KEY=re_...
+```
+
+### 🔴 NUEVAS este deploy (sesión aislada por app)
+```
+# apps/barraca/.env.local + Vercel barraca env:
+AUTH_SCOPE=barraca
+NEXTAUTH_SECRET=<openssl rand -base64 32>      # NUEVO valor, distinto del de constructora
+
+# apps/constructora/.env.local + Vercel constructora env:
+AUTH_SCOPE=constructora
+NEXTAUTH_SECRET=<openssl rand -base64 32>      # NUEVO valor, distinto del de barraca
+```
+
+**Por qué dos secrets distintos**: si la cookie de una app se filtra (XSS o exfiltración), el secret de la otra app no la valida — el JWT firmado con secret-A es inválido con secret-B. Doble cinturón con el cambio de nombre de cookie + `__Host-` prefix.
+
+**Cómo generar**:
+```bash
+openssl rand -base64 32  # correr dos veces, uno para cada app
 ```
 
 ### Solo barraca (e-commerce)
 ```
 NEXT_PUBLIC_BARRACA_URL=https://barraca.jurmaq.cl
+NEXT_PUBLIC_CONSTRUCTORA_URL=https://jurmaq.cl  # para el cross-link en AdminShell
 MERCADOPAGO_ACCESS_TOKEN=APP_USR-...
 MERCADOPAGO_WEBHOOK_SECRET=<secret del webhook MP — sin esto el webhook fail-closes>
 ```
@@ -114,6 +151,7 @@ MERCADOPAGO_WEBHOOK_SECRET=<secret del webhook MP — sin esto el webhook fail-c
 ### Solo constructora
 ```
 NEXT_PUBLIC_SITE_URL=https://jurmaq.cl
+NEXT_PUBLIC_BARRACA_URL=https://barraca.jurmaq.cl  # para el cross-link en AdminShell
 ```
 
 ### Anti-bypass de CSRF en producción
@@ -169,6 +207,26 @@ done
 ```
 
 Las 4 deben dar `401`. Si alguna da 200, la migración RLS Pattern 5 no se aplicó.
+
+---
+
+## 3b) `pnpm audit --prod` (OWASP A06)
+
+Ejecutado pre-deploy. Resultado: **6 vulnerabilidades — todas en deps transitivas, ninguna explotable desde la superficie pública**:
+
+| Severity | Package | Path | ¿Bloquea deploy? |
+|---|---|---|---|
+| 🟠 high | xlsx (SheetJS) — Prototype Pollution + ReDoS | `apps/barraca`, `apps/constructora` import xlsx para export Excel | ❌ No (admin-only, requiere autenticación) |
+| 🟡 moderate (×3) | varias transitivas | next-auth subtree | ❌ No (no expuestas a input no confiable) |
+| 🟢 low | nodemailer SMTP command injection (`envelope.size`) | next-auth → @auth/core → nodemailer | ❌ No (no usamos transporte SMTP custom, NextAuth interno) |
+
+**Action plan post-deploy** (~30 min):
+```bash
+pnpm update xlsx@latest        # cierra los 2 high
+# next-auth ya está en versión current; los moderate/low se cierran cuando next-auth release nueva
+```
+
+Si querés cerrarlos hoy antes del deploy, corré los `pnpm update` y verificá `pnpm typecheck && pnpm build`. El plan original lo marca como bloqueante solo si hay `critical` (no es el caso).
 
 ---
 

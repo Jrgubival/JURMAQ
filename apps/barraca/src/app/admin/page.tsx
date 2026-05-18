@@ -164,7 +164,7 @@ export default function BarracaAdminDashboard() {
           href="https://barraca.jurmaq.cl"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold border border-gray-300 hover:border-orange-400 text-gray-700 hover:text-orange-700 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold border border-gray-300 hover:border-orange-400 text-gray-700 hover:text-orange-700 rounded-xl transition-colors"
         >
           Ver sitio público
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -200,7 +200,7 @@ export default function BarracaAdminDashboard() {
               href={a.href}
               className="group bg-white hover:bg-orange-50 border border-gray-200 hover:border-orange-300 rounded-xl p-4 transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center mb-3 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center mb-3 group-hover:bg-orange-600 group-hover:text-white transition-colors">
                 {a.icon}
               </div>
               <p className="font-semibold text-navy-950 group-hover:text-orange-700">{a.titulo}</p>

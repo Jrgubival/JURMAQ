@@ -160,7 +160,7 @@ export default function UsuariosAdminPage() {
         </div>
         <button
           onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-white font-medium text-sm hover:opacity-90"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium text-sm hover:opacity-90"
           style={{ backgroundColor: '#0c1d3a' }}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,7 +171,7 @@ export default function UsuariosAdminPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-3">
           {error}
         </div>
       )}
@@ -181,7 +181,7 @@ export default function UsuariosAdminPage() {
         <h2 className="text-sm font-semibold text-gray-900 mb-3">¿Qué puede hacer cada rol?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {roles.map((r) => (
-            <div key={r.id} className="border border-gray-200 rounded-lg p-3">
+            <div key={r.id} className="border border-gray-200 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-1">
                 <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${roleBadge[r.id] || 'bg-gray-100 text-gray-700'}`}>
                   {r.label}
@@ -206,7 +206,7 @@ export default function UsuariosAdminPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre o email…"
-            className="w-full max-w-sm px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
+            className="w-full max-w-sm px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent"
           />
         </div>
         <div className="overflow-x-auto">
@@ -311,7 +311,7 @@ export default function UsuariosAdminPage() {
             </div>
             <div className="p-6 space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-3">
                   {error}
                 </div>
               )}
@@ -321,7 +321,7 @@ export default function UsuariosAdminPage() {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full h-12 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-base text-gray-900"
+                  className="w-full h-12 px-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-base text-gray-900"
                   placeholder="Juan Perez"
                   autoComplete="name"
                 />
@@ -334,7 +334,7 @@ export default function UsuariosAdminPage() {
                   autoComplete="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full h-12 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-base text-gray-900"
+                  className="w-full h-12 px-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-base text-gray-900"
                   placeholder="trabajador@jurmaq.cl"
                 />
               </div>
@@ -348,7 +348,7 @@ export default function UsuariosAdminPage() {
                   autoComplete="new-password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full h-12 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-base text-gray-900"
+                  className="w-full h-12 px-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-base text-gray-900"
                   placeholder="Min 8 caracteres, 1 mayuscula, 1 numero"
                 />
               </div>
@@ -357,7 +357,7 @@ export default function UsuariosAdminPage() {
                 <select
                   value={form.role}
                   onChange={(e) => setForm({ ...form, role: e.target.value as RoleId })}
-                  className="w-full h-12 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-base text-gray-900 bg-white"
+                  className="w-full h-12 px-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-base text-gray-900 bg-white"
                 >
                   {roles.map((r) => (
                     <option key={r.id} value={r.id}>{r.label}</option>
@@ -373,14 +373,14 @@ export default function UsuariosAdminPage() {
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3 justify-end">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.name || !form.email || (!editing && !form.password)}
-                className="px-4 py-2.5 rounded-lg text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
                 style={{ backgroundColor: '#0c1d3a' }}
               >
                 {saving ? 'Guardando...' : editing ? 'Actualizar' : 'Crear usuario'}

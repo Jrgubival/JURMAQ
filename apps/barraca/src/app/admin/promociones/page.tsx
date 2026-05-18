@@ -185,13 +185,13 @@ export default function PromocionesAdminPage() {
         <div className="flex gap-2">
           <button
             onClick={handleSeed}
-            className="px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            className="px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
           >
             Sembrar 30 promociones
           </button>
           <button
             onClick={openCreate}
-            className="px-4 py-2 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            className="px-4 py-2 text-sm font-medium bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors"
           >
             + Nueva Promocion
           </button>
@@ -200,7 +200,7 @@ export default function PromocionesAdminPage() {
 
       {/* Setup SQL notice */}
       {setupSql && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
           <h3 className="font-semibold text-yellow-800 mb-2">Tabla no encontrada</h3>
           <p className="text-sm text-yellow-700 mb-3">
             Ejecuta este SQL en el editor SQL del Dashboard de Supabase:
@@ -219,13 +219,13 @@ export default function PromocionesAdminPage() {
 
       {/* Daily preview */}
       {dailyPreview.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <h3 className="font-semibold text-blue-800 mb-2">
             Hoy se muestran estas promociones en el sitio:
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {dailyPreview.map(p => (
-              <div key={p.id} className="bg-white rounded-lg p-3 border border-blue-100">
+              <div key={p.id} className="bg-white rounded-xl p-3 border border-blue-100">
                 <div className="font-medium text-sm text-gray-900">{p.titulo}</div>
                 <div className="text-xs text-gray-500 mt-1">
                   {p.barraca_categorias?.nombre || 'Sin categoria'}
@@ -240,7 +240,7 @@ export default function PromocionesAdminPage() {
       )}
 
       {/* Promotions table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -328,7 +328,7 @@ export default function PromocionesAdminPage() {
                   required
                   value={form.titulo}
                   onChange={e => setForm({ ...form, titulo: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   placeholder="Ej: Fierros de Construccion -15%"
                 />
               </div>
@@ -337,7 +337,7 @@ export default function PromocionesAdminPage() {
                 <textarea
                   value={form.descripcion}
                   onChange={e => setForm({ ...form, descripcion: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   rows={2}
                   placeholder="Descripcion de la promocion"
                 />
@@ -352,7 +352,7 @@ export default function PromocionesAdminPage() {
                     max={90}
                     value={form.descuento_porcentaje}
                     onChange={e => setForm({ ...form, descuento_porcentaje: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   />
                 </div>
                 <div>
@@ -361,7 +361,7 @@ export default function PromocionesAdminPage() {
                     required
                     value={form.categoria_id}
                     onChange={e => setForm({ ...form, categoria_id: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   >
                     <option value={0}>Seleccionar...</option>
                     {categorias.map(cat => (
@@ -384,13 +384,13 @@ export default function PromocionesAdminPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
+                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-xl hover:bg-orange-700"
                 >
                   {editPromo ? 'Guardar' : 'Crear'}
                 </button>

@@ -100,14 +100,14 @@ export default function EmailQueuePage() {
         <button
           onClick={fetchQueue}
           disabled={loading}
-          className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+          className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50"
         >
           {loading ? 'Cargando...' : 'Refrescar'}
         </button>
       </div>
 
       {msg && (
-        <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${msg.kind === 'ok' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+        <div className={`mb-4 px-4 py-3 rounded-xl text-sm ${msg.kind === 'ok' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
           {msg.text}
         </div>
       )}
@@ -117,7 +117,7 @@ export default function EmailQueuePage() {
           <button
             key={t.key}
             onClick={() => setStatusFilter(t.key)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg border transition ${statusFilter === t.key ? t.color : 'text-gray-500 border-gray-200 hover:bg-gray-50'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-xl border transition ${statusFilter === t.key ? t.color : 'text-gray-500 border-gray-200 hover:bg-gray-50'}`}
           >
             {t.label} <span className="ml-1.5 text-xs opacity-70">({counts[t.key as keyof Counts] ?? 0})</span>
           </button>
