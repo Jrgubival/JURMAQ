@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import ProductCard from "@/components/barraca/ProductCard";
 import HeroSlider from "@/components/barraca/HeroSlider";
@@ -538,7 +539,7 @@ export default async function BarracaHomePage() {
               <Link key={cat.id} href={`/categorias/${cat.slug}`} className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
                 <div className="aspect-[3/2] bg-gray-200 relative overflow-hidden">
                   {catImg ? (
-                    <img src={catImg} alt={`${cat.nombre} - JURMAQ Barraca`} loading="lazy" decoding="async" width={400} height={267} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <Image src={catImg} alt={`${cat.nombre} - JURMAQ Barraca`} loading="lazy" width={400} height={267} sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
                       <svg className="w-10 h-10 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -627,7 +628,7 @@ export default async function BarracaHomePage() {
               { name: "CBB Cementos", logo: "/images/marcas/cbb.png" },
             ].map((brand) => (
               <div key={brand.name} className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 flex items-center justify-center aspect-[3/2]">
-                <img src={brand.logo} alt={brand.name} className="max-h-12 sm:max-h-14 max-w-full object-contain" loading="lazy" />
+                <Image src={brand.logo} alt={brand.name} width={120} height={56} className="max-h-12 sm:max-h-14 max-w-full object-contain" loading="lazy" />
               </div>
             ))}
           </div>

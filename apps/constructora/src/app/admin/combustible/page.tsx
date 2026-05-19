@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { tiposCombustibleLabels, estadosLabels, formatCLP, type EstadoFactura, type TipoCombustible } from '@/lib/combustible-utils';
+import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
 
 interface Item {
   id: number;
@@ -57,6 +58,7 @@ const currentMonth = () => {
 const formatLitros = (n: number | null | undefined) => (n || 0).toLocaleString('es-CL', { maximumFractionDigits: 2 }) + ' L';
 
 export default function CombustiblePage() {
+  const { confirm, ConfirmDialogPortal } = useConfirmDialog();
   const [mes, setMes] = useState(currentMonth());
   const [estado, setEstado] = useState('');
   const [buscar, setBuscar] = useState('');
@@ -97,7 +99,13 @@ export default function CombustiblePage() {
   };
 
   const deleteFactura = async (id: number) => {
-    if (!confirm('¿Eliminar esta factura? Esta acción no se puede deshacer.')) return;
+    const ok = await confirm({
+      title: '¿Eliminar esta factura?',
+      message: 'Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      variant: 'danger',
+    });
+    if (!ok) return;
     const res = await fetch(`/api/admin/combustible/facturas/${id}`, { method: 'DELETE' });
     if (res.ok) setFacturas((prev) => prev.filter((f) => f.id !== id));
     else {
@@ -314,6 +322,7 @@ export default function CombustiblePage() {
           </div>
         )}
       </div>
+      <ConfirmDialogPortal />
     </div>
   );
 }

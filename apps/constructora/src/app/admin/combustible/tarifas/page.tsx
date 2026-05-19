@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { formatCLP as sharedFormatCLP } from "@jurmaq/shared/format";
+import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
 
 interface Tarifa {
   id: number;
@@ -38,6 +39,7 @@ function formatDate(s: string | null): string {
 }
 
 export default function TarifasIECPage() {
+  const { confirm, ConfirmDialogPortal } = useConfirmDialog();
   const [items, setItems] = useState<Tarifa[]>([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
@@ -109,7 +111,13 @@ export default function TarifasIECPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Eliminar esta tarifa? Si ya se uso en facturas, dejara huerfanas esas referencias.')) return;
+    const ok = await confirm({
+      title: '¿Eliminar esta tarifa?',
+      message: 'Si ya se uso en facturas, dejara huerfanas esas referencias.',
+      confirmLabel: 'Eliminar',
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/combustible/tarifas-iec?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
@@ -293,6 +301,7 @@ export default function TarifasIECPage() {
           </div>
         ))}
       </div>
+      <ConfirmDialogPortal />
     </div>
   );
 }

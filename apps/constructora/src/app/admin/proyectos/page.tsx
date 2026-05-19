@@ -278,6 +278,8 @@ export default function ProyectosPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Monto (CLP)</label>
                   <input
                     type="number"
+                    min="0"
+                    step="1"
                     value={form.monto}
                     onChange={(e) => setForm({ ...form, monto: Number(e.target.value) })}
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900"

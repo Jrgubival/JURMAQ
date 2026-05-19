@@ -399,6 +399,8 @@ export default function CotizacionesPage() {
                       />
                       <input
                         type="number"
+                        min="1"
+                        step="1"
                         value={item.cantidad}
                         onChange={(e) => updateItem(idx, 'cantidad', Number(e.target.value))}
                         className="w-20 px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"
@@ -406,6 +408,8 @@ export default function CotizacionesPage() {
                       />
                       <input
                         type="number"
+                        min="0"
+                        step="1"
                         value={item.precio_unitario}
                         onChange={(e) => updateItem(idx, 'precio_unitario', Number(e.target.value))}
                         className="w-32 px-3 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#e6b422] focus:border-transparent outline-none text-gray-900 text-sm"

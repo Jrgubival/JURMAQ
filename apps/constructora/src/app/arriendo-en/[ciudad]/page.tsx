@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TIPOS_MAQUINA, HQ } from "@jurmaq/shared/seo";
@@ -292,8 +293,7 @@ export default async function ArriendoEnCiudadPage({
                     className="block bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200"
                   >
                     {m.imagen && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.imagen} alt={`${m.nombre} arriendo en ${c.nombre}`} loading="lazy" className="w-full h-40 object-cover" />
+                      <Image src={m.imagen} alt={`${m.nombre} arriendo en ${c.nombre}`} loading="lazy" width={400} height={160} sizes="(max-width: 768px) 50vw, 33vw" className="w-full h-40 object-cover" />
                     )}
                     <div className="p-4">
                       <h3 className="text-base font-bold text-navy-950 mb-1">{m.nombre}</h3>

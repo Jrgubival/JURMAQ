@@ -256,7 +256,7 @@ export default function MaquinariasPage() {
                     <h3 className="font-semibold text-gray-900">{maq.nombre}</h3>
                     <p className="text-sm text-gray-500">{maq.tipo}</p>
                   </div>
-                  <p className="text-lg font-bold" style={{ color: '#e6b422' }}>
+                  <p className="text-lg font-bold tabular-nums" style={{ color: '#e6b422' }}>
                     {formatCLP(maq.precio_dia)}
                     <span className="text-xs text-gray-400 font-normal">/dia</span>
                   </p>

@@ -704,7 +704,7 @@ export default function BarracaCotizacionesPage() {
             </div>
             <div className="p-6 space-y-6">
               {/* Client Info */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Cliente</p>
                   <p className="font-medium text-gray-900">{selectedCot.nombre}</p>
@@ -828,6 +828,8 @@ export default function BarracaCotizacionesPage() {
                               <td className="px-1 py-1.5">
                                 <input
                                   type="number"
+                                  min="0"
+                                  step="1"
                                   value={item.precio}
                                   onChange={(e) => updateEditItem(idx, 'precio', Number(e.target.value) || 0)}
                                   className="w-full border border-gray-200 rounded px-2 py-1 text-sm text-right focus:ring-1 focus:ring-blue-300 outline-none"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
 
 interface Categoria {
   id: number;
@@ -21,6 +22,7 @@ interface Promocion {
 }
 
 export default function PromocionesAdminPage() {
+  const { confirm, ConfirmDialogPortal } = useConfirmDialog();
   const [promociones, setPromociones] = useState<Promocion[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,7 +162,13 @@ export default function PromocionesAdminPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Eliminar esta promocion?')) return;
+    const ok = await confirm({
+      title: '¿Eliminar esta promoción?',
+      message: 'Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      variant: 'danger',
+    });
+    if (!ok) return;
     await fetch(`/api/promociones?id=${id}`, { method: 'DELETE' });
     loadData();
   }
@@ -399,6 +407,7 @@ export default function PromocionesAdminPage() {
           </div>
         </div>
       )}
+      <ConfirmDialogPortal />
     </div>
   );
 }

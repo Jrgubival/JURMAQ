@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatCLP } from '@jurmaq/shared/format';
+import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
 
 interface Cotizacion {
   id: number;
@@ -49,6 +50,7 @@ const ESTADOS_DISPONIBLES = [
 export default function CotArriendoDetalle({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { confirm, ConfirmDialogPortal } = useConfirmDialog();
   const [cot, setCot] = useState<Cotizacion | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -75,7 +77,12 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
 
   async function convertirAContrato() {
     if (!cot) return;
-    if (!confirm('¿Convertir esta cotización a contrato? Se pre-rellena el wizard de contrato.')) return;
+    const ok = await confirm({
+      title: '¿Convertir esta cotización a contrato?',
+      message: 'Se pre-rellena el wizard de contrato con los datos de esta cotización.',
+      confirmLabel: 'Convertir',
+    });
+    if (!ok) return;
     // Redirige al wizard de contrato con query string que pre-rellena
     router.push(`/admin/contratos/nuevo?fromCotArriendo=${cot.id}`);
   }
@@ -202,6 +209,7 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
           Ver PDF
         </button>
       </div>
+      <ConfirmDialogPortal />
     </div>
   );
 }

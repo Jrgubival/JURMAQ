@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { formatCLP } from "@jurmaq/shared/format";
+import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
 
 interface Categoria {
   id: number;
@@ -17,6 +18,7 @@ interface Producto {
   categoria_id: number | null;
 }
 export default function PreciosPage() {
+  const { confirm, ConfirmDialogPortal } = useConfirmDialog();
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -284,7 +286,13 @@ export default function PreciosPage() {
 
   const promoExecute = async () => {
     if (!promoFile) return;
-    if (!confirm('Aplicar las promociones validadas? Los precios actuales pasaran a precio_original.')) return;
+    const ok = await confirm({
+      title: '¿Aplicar las promociones validadas?',
+      message: 'Los precios actuales pasarán a precio_original. Esta acción no se puede deshacer.',
+      confirmLabel: 'Aplicar',
+      variant: 'danger',
+    });
+    if (!ok) return;
     setPromoApplying(true);
     try {
       const fd = new FormData();
@@ -469,6 +477,9 @@ export default function PreciosPage() {
             <input
               id="pct-value"
               type="number"
+              min="-100"
+              max="1000"
+              step="0.01"
               value={pctValue}
               onChange={(e) => setPctValue(e.target.value)}
               placeholder="Ej: 20 o -10"
@@ -850,6 +861,7 @@ export default function PreciosPage() {
           {cotizarApplying ? 'Aplicando...' : 'Aplicar'}
         </button>
       </div>
+      <ConfirmDialogPortal />
     </div>
   );
 }

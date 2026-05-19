@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { tiposCombustibleLabels, estadosLabels, type EstadoFactura, type TipoCombustible } from '@/lib/combustible-utils';
 import { formatCLP as sharedFormatCLP } from "@jurmaq/shared/format";
+import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
 
 export default function FacturaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -13,6 +14,7 @@ export default function FacturaDetailPage({ params }: { params: Promise<{ id: st
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const { confirm, ConfirmDialogPortal } = useConfirmDialog();
 
   const load = () => {
     setLoading(true);
@@ -42,7 +44,13 @@ export default function FacturaDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const deleteFactura = async () => {
-    if (!confirm('¿Eliminar esta factura?')) return;
+    const ok = await confirm({
+      title: '¿Eliminar esta factura?',
+      message: 'Esto borra la factura del libro de compras IVA. Si ya disparó el trigger F29, queda en el histórico igualmente.',
+      confirmLabel: 'Eliminar',
+      variant: 'danger',
+    });
+    if (!ok) return;
     const res = await fetch(`/api/admin/combustible/facturas/${id}`, { method: 'DELETE' });
     if (res.ok) router.push('/admin/combustible');
     else {
@@ -144,6 +152,7 @@ export default function FacturaDetailPage({ params }: { params: Promise<{ id: st
           <p className="text-sm text-gray-700 whitespace-pre-wrap">{factura.notas}</p>
         </div>
       )}
+      <ConfirmDialogPortal />
     </div>
   );
 }

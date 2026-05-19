@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
 
 interface CartItem {
@@ -153,8 +154,8 @@ export default function CarritoPage() {
               {items.map((item) => (
                 <div key={item.id} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 last:border-0 items-center">
                   <div className="col-span-5 flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
-                      <img src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = '/images/barraca/default.svg'; }} />
+                    <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
+                      <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} fill sizes="64px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-900">{item.nombre}</p>
@@ -190,8 +191,8 @@ export default function CarritoPage() {
               {items.map((item) => (
                 <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-4">
                   <div className="flex gap-3">
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden">
-                      <img src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = '/images/barraca/default.svg'; }} />
+                    <div className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
+                      <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} fill sizes="80px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">

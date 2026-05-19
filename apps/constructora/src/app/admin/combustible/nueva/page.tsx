@@ -271,16 +271,16 @@ export default function NuevaFacturaPage() {
         <h2 className="font-semibold text-gray-900">Montos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <Field label="Monto total *">
-            <input type="number" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)} placeholder="0" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
+            <input type="number" min="0" step="1" value={montoTotal} onChange={(e) => setMontoTotal(e.target.value)} placeholder="0" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
           <Field label="Neto (sin IVA)">
-            <input type="number" value={montoNeto} onChange={(e) => setMontoNeto(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
+            <input type="number" min="0" step="1" value={montoNeto} onChange={(e) => setMontoNeto(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
           <Field label="IVA (19%)">
-            <input type="number" value={montoIva} onChange={(e) => setMontoIva(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
+            <input type="number" min="0" step="1" value={montoIva} onChange={(e) => setMontoIva(e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
           <Field label="IEC recuperable">
-            <input type="number" value={montoIec} onChange={(e) => setMontoIec(e.target.value)} placeholder="Opcional" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
+            <input type="number" min="0" step="1" value={montoIec} onChange={(e) => setMontoIec(e.target.value)} placeholder="Opcional" className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
           </Field>
         </div>
         <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -376,13 +376,13 @@ export default function NuevaFacturaPage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <Field label="Litros *">
-                  <input type="number" step="0.01" value={it.litros} onChange={(e) => updateItem(idx, 'litros', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
+                  <input type="number" min="0" step="0.01" value={it.litros} onChange={(e) => updateItem(idx, 'litros', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
                 </Field>
                 <Field label="Monto CLP">
-                  <input type="number" value={it.monto} onChange={(e) => updateItem(idx, 'monto', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
+                  <input type="number" min="0" step="1" value={it.monto} onChange={(e) => updateItem(idx, 'monto', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
                 </Field>
                 <Field label="Horómetro (opc.)">
-                  <input type="number" step="0.1" value={it.horometro} onChange={(e) => updateItem(idx, 'horometro', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
+                  <input type="number" min="0" step="0.1" value={it.horometro} onChange={(e) => updateItem(idx, 'horometro', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />
                 </Field>
                 <Field label="Observaciones">
                   <input type="text" value={it.observaciones} onChange={(e) => updateItem(idx, 'observaciones', e.target.value)} className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" />

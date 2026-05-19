@@ -6,6 +6,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import type { SignaturePadHandle } from '@/app/contrato/firmar/[token]/SignaturePad';
 import { formatCLP } from "@jurmaq/shared/format";
+import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
 
 // `react-signature-canvas` toca DOM/canvas APIs en mount → SSR off.
 const SignaturePad = dynamic(
@@ -85,6 +86,7 @@ export default function ContratoDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { confirm, ConfirmDialogPortal } = useConfirmDialog();
 
   const [contrato, setContrato] = useState<Contrato | null>(null);
   const [loading, setLoading] = useState(true);
@@ -137,7 +139,13 @@ export default function ContratoDetailPage({
   }
 
   async function borrarFirmaJurmaq() {
-    if (!confirm('¿Borrar la firma JURMAQ? Solo se puede mientras el cliente no haya firmado todavía.')) return;
+    const ok = await confirm({
+      title: '¿Borrar la firma JURMAQ?',
+      message: 'Solo se puede mientras el cliente no haya firmado todavía.',
+      confirmLabel: 'Borrar firma',
+      variant: 'danger',
+    });
+    if (!ok) return;
     setActionError('');
     setActionInfo('');
     setBusy(true);
@@ -701,6 +709,7 @@ export default function ContratoDetailPage({
           </div>
         </div>
       </div>
+      <ConfirmDialogPortal />
     </div>
   );
 }
