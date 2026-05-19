@@ -16,6 +16,7 @@
     "./mail/email": "./src/mail/email.ts",
     "./mail/templates/*": "./src/mail/templates/*.ts",
     "./mail/transport": "./src/mail/transport.ts",
+    "./otp": "./src/otp/index.ts",
     "./seo": "./src/seo/index.ts",
     "./seo/prerender-rules": "./src/seo/prerender-rules.ts",
     "./logging": "./src/logging/index.ts",

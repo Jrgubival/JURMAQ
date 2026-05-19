@@ -1,0 +1,69 @@
+version: '3.8'
+
+# OpenWA — gateway WhatsApp self-hosted para envío de OTP de JURMAQ.
+#
+# Por qué self-host: la app Next.js corre serverless en Vercel y NO puede
+# mantener una conexión persistente con WhatsApp Web. OpenWA necesita un
+# proceso Chrome corriendo todo el tiempo. Por eso este compose vive en una
+# VM separada (Railway / DigitalOcean / VPS propio).
+#
+# Despliegue:
+#   1. Provisionar VM con Docker + docker-compose.
+#   2. Copiar este archivo + `.env` con OPENWA_API_KEY y NUMERO_WHATSAPP.
+#   3. `docker compose up -d` y abrir logs: `docker compose logs -f openwa`.
+#   4. Escanear el QR code que muestra OpenWA con el WhatsApp del NÚMERO
+#      DEDICADO (NO el +56976673577 que usa JURMAQ para soporte — si OpenWA
+#      es baneado por TOS de WhatsApp, no querés perder el canal principal).
+#   5. Setear en Vercel constructora env: OPENWA_BASE_URL=https://openwa.jurmaq.cl
+#      y OPENWA_API_KEY=<mismo valor del .env de OpenWA>.
+#
+# Seguridad:
+#   - Exponer SOLO por HTTPS detrás de reverse proxy (Caddy / Nginx / Traefik).
+#   - NO exponer el puerto 2785 directamente al internet.
+#   - El `x-api-key` header es la única auth — protegerlo como secreto.
+#   - Si la VM se compromete: rotá la API key, regenerá la sesión OpenWA.
+
+services:
+  openwa:
+    image: openwa/wa-automate:latest
+    container_name: openwa
+    restart: unless-stopped
+    ports:
+      # Bind a 127.0.0.1 — el reverse proxy es quien expone públicamente.
+      - "127.0.0.1:2785:2785"
+    volumes:
+      - ./sessions:/usr/src/app/sessions
+      - ./media:/usr/src/app/media
+    environment:
+      - PORT=2785
+      - SESSION_ID=${OPENWA_SESSION:-jurmaq}
+      - API_KEY=${OPENWA_API_KEY}
+      # Bloquear features que no usamos para reducir superficie de ataque.
+      - DISABLE_MEDIA_PROCESSING=false
+      - HEADLESS=true
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:2785/api/sessions/${OPENWA_SESSION:-jurmaq}/me', '-H', 'x-api-key: ${OPENWA_API_KEY}']
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+
+  # Reverse proxy opcional — usar Caddy si no tenés otro proxy en la VM.
+  # Eliminar este servicio si ya tenés Nginx/Traefik manejando HTTPS.
+  caddy:
+    image: caddy:2-alpine
+    container_name: openwa-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - openwa
+
+volumes:
+  caddy_data:
+  caddy_config:

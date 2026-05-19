@@ -1,0 +1,31 @@
+openwa.jurmaq.cl {
+    # HTTPS automático con Let's Encrypt. Caddy lo maneja solo.
+
+    # Rate limit a nivel de proxy — defensa en profundidad además del
+    # rate-limit del endpoint /api/otp/enviar en la app.
+    @api {
+        path /api/sessions/*
+    }
+    handle @api {
+        reverse_proxy openwa:2785 {
+            # OpenWA puede tardar un par de segundos en mensajes grandes.
+            transport http {
+                response_header_timeout 30s
+            }
+        }
+    }
+
+    # Cualquier otro path: 404. No queremos exponer dashboard de OpenWA.
+    handle {
+        respond "Not Found" 404
+    }
+
+    # Logging para auditoría.
+    log {
+        output file /data/openwa-access.log {
+            roll_size 10MB
+            roll_keep 5
+        }
+        format json
+    }
+}

@@ -106,6 +106,9 @@ apps/constructora/scripts/migrate-iva-f29-02-triggers.sql
 apps/constructora/scripts/migrate-disponibilidad-rpc-fix.sql   -- B-1: race condition fix
 apps/constructora/scripts/migrate-contrato-html-snapshot.sql   -- B-2: snapshot HTML al firmar
 apps/constructora/scripts/migrate-cedula-retention.sql         -- L-1: retención 90d cédulas + audit event_types nuevos
+
+-- 7. Sprint 2 (OTP multi-canal) — May 2026
+apps/constructora/scripts/migrate-otp.sql                      -- otp_codigos + otp_eventos (genérico para todos los flujos OTP)
 ```
 
 Todas son idempotentes (`IF NOT EXISTS` / `OR REPLACE`).
@@ -168,7 +171,25 @@ MERCADOPAGO_WEBHOOK_SECRET=<secret del webhook MP — sin esto el webhook fail-c
 NEXT_PUBLIC_SITE_URL=https://jurmaq.cl
 NEXT_PUBLIC_BARRACA_URL=https://barraca.jurmaq.cl  # para el cross-link en AdminShell
 CRON_SECRET=<openssl rand -base64 32>              # protege /api/cron/* contra disparos no autorizados
+
+# OTP WhatsApp via OpenWA (Sprint 2 — opcional, fallback a email si no se setea)
+OPENWA_BASE_URL=https://openwa.jurmaq.cl           # URL del gateway OpenWA self-hosted
+OPENWA_SESSION=jurmaq                              # session id en el contenedor OpenWA
+OPENWA_API_KEY=<openssl rand -base64 48>           # mismo valor que en VM de OpenWA
+
+# OTP WhatsApp via Meta Cloud API (Sprint 2 — plan B si OpenWA es baneado)
+WHATSAPP_CLOUD_PHONE_NUMBER_ID=
+WHATSAPP_CLOUD_ACCESS_TOKEN=
+WHATSAPP_CLOUD_OTP_TEMPLATE=jurmaq_otp
+WHATSAPP_CLOUD_LANG=es_CL
+
+# OTP SMS via Twilio (Sprint 2 — opcional, fallback intermedio)
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_FROM_NUMBER=
 ```
+
+**Estrategia OTP**: si todas las envs WhatsApp/SMS están vacías, el sistema usa solo email (comportamiento legacy intacto). A medida que activás providers, el dispatcher prioriza WhatsApp → SMS → Email. Ver `infra/openwa/README.md` para setup del gateway.
 
 **`CRON_SECRET`**: lo usan los 3 crons de Vercel
 (`/api/cron/email-queue/retry`, `/api/cron/contratos/expirar`,

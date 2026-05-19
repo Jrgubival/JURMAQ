@@ -6,6 +6,7 @@ import { generateOtpCode } from '@/lib/twilio-sms';
 import { sendOtpEmail } from '@jurmaq/shared/mail/email';
 import { logContratoEvent, resolveIpGeolocation } from '@/lib/contratos-audit';
 import { getClientIp } from '@jurmaq/shared/rate-limit';
+import { renderTemplate, normalizarTelefonoCL } from '@jurmaq/shared/otp';
 import bcrypt from 'bcryptjs';
 import { hid } from '@jurmaq/shared/logging';
 
@@ -39,7 +40,7 @@ export async function POST(
 
     const { data: contrato, error } = await supabaseAdmin
       .from('contratos')
-      .select('id, estado, arrendatario_email, arrendatario_nombre, arrendatario_razon_social, cedula_url, rut_verified, firma_token_expira_at')
+      .select('id, numero, estado, arrendatario_email, arrendatario_telefono, arrendatario_nombre, arrendatario_razon_social, cedula_url, rut_verified, firma_token_expira_at')
       .eq('firma_token', token)
       .single();
 
@@ -136,11 +137,48 @@ export async function POST(
 
     const arrendatarioName =
       contrato.arrendatario_nombre || contrato.arrendatario_razon_social || '';
+
+    // Best-effort WhatsApp send FIRST si está configurado OpenWA + hay
+    // teléfono del arrendatario. Si éxito, también mandamos email como
+    // respaldo (el cliente ve ambos canales). Si OpenWA no está configurado
+    // o falla, sólo va por email.
+    //
+    // Cargamos el provider dinámicamente para no acoplar build-time al
+    // paquete shared/otp en este endpoint legacy. El OTP se guarda en
+    // contratos_otp como antes — verify/sign no cambian.
+    let whatsappEnviado = false;
+    let canalUsado: 'whatsapp' | 'email' = 'email';
+    if (contrato.arrendatario_telefono) {
+      try {
+        const { openwaProvider } = await import('@jurmaq/shared/otp');
+        const healthy = await openwaProvider.isHealthy().catch(() => false);
+        if (healthy) {
+          const tel = normalizarTelefonoCL(String(contrato.arrendatario_telefono));
+          const rendered = renderTemplate('whatsapp', 'firma_contrato', {
+            codigo,
+            vars: { nombre: arrendatarioName, numero: contrato.numero ?? '' },
+          });
+          const waRes = await openwaProvider.send(tel, rendered.body);
+          if (waRes.ok) {
+            whatsappEnviado = true;
+            canalUsado = 'whatsapp';
+          }
+        }
+      } catch (waErr) {
+        console.warn(
+          '[contrato-otp-whatsapp-skip]',
+          hid(contrato.id),
+          waErr instanceof Error ? waErr.message : String(waErr),
+        );
+      }
+    }
+
+    // Email — siempre va, sea como primario o respaldo de WhatsApp.
     const result = await sendOtpEmail(contrato.arrendatario_email, codigo, arrendatarioName);
-    if (!result.success) {
+    if (!result.success && !whatsappEnviado) {
       console.error('[contrato-otp-email-fail]', hid(contrato.id), result.error);
       return NextResponse.json(
-        { error: 'No se pudo enviar el código por email. Intenta nuevamente.' },
+        { error: 'No se pudo enviar el código. Intenta nuevamente.' },
         { status: 502 }
       );
     }
@@ -153,15 +191,21 @@ export async function POST(
       request,
       contrato.id,
       'otp_requested',
-      { channel: 'email', expires_at: expiresAt },
+      { channel: canalUsado, also_email: result.success, whatsapp_enviado: whatsappEnviado, expires_at: expiresAt },
       geo
     );
 
+    const msg = whatsappEnviado
+      ? `Codigo enviado por WhatsApp${result.success ? ' y email' : ''}. Valido por 15 minutos.`
+      : `Codigo enviado por email. Valido por 15 minutos.`;
+
     return NextResponse.json({
       success: true,
-      channel: 'email',
+      channel: canalUsado,
+      whatsapp_enviado: whatsappEnviado,
+      email_enviado: result.success,
       to_masked: maskEmail(contrato.arrendatario_email),
-      message: `Codigo enviado por email. Valido por 15 minutos.`,
+      message: msg,
       expires_at: expiresAt,
     });
   } catch (error) {
