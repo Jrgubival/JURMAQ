@@ -44,18 +44,29 @@ async function loadMaquinaria(id: number): Promise<MaquinariaPricing | null> {
   };
 }
 
-async function loadTarifasVigentes(): Promise<TarifasTraslado | null> {
+interface TarifasVigentesConSnapshot {
+  tarifas: TarifasTraslado;
+  vigentes_desde: string | null;
+}
+
+async function loadTarifasVigentes(): Promise<TarifasVigentesConSnapshot | null> {
   const { data } = await supabaseAdmin
     .from('tarifa_traslado_actual')
     .select('*')
     .single();
   if (!data) return null;
   return {
-    costo_km: Number(data.costo_km),
-    costo_hora_operario: Number(data.costo_hora_operario),
-    carga_descarga_horas: Number(data.carga_descarga_horas),
-    reserva_mantencion_pct: Number(data.reserva_mantencion_pct),
-    reserva_utilidad_pct: Number(data.reserva_utilidad_pct),
+    tarifas: {
+      costo_km: Number(data.costo_km),
+      costo_hora_operario: Number(data.costo_hora_operario),
+      carga_descarga_horas: Number(data.carga_descarga_horas),
+      reserva_mantencion_pct: Number(data.reserva_mantencion_pct),
+      reserva_utilidad_pct: Number(data.reserva_utilidad_pct),
+    },
+    // B-5: snapshot timestamp para que el cliente pueda detectar si la tarifa
+    // cambió entre preview y submit. La UI muestra "valores sujetos a
+    // recalculación".
+    vigentes_desde: typeof data.vigente_desde === 'string' ? data.vigente_desde : null,
   };
 }
 
@@ -83,7 +94,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'maquinariaId es requerido' }, { status: 400 });
     }
 
-    const [maquinaria, tarifas] = await Promise.all([
+    const [maquinaria, tarifasResult] = await Promise.all([
       loadMaquinaria(maquinariaId),
       loadTarifasVigentes(),
     ]);
@@ -94,7 +105,7 @@ export async function GET(request: NextRequest) {
         { status: 404 },
       );
     }
-    if (!tarifas) {
+    if (!tarifasResult) {
       return NextResponse.json(
         { error: 'No hay tarifas de traslado vigentes configuradas' },
         { status: 503 },
@@ -103,7 +114,7 @@ export async function GET(request: NextRequest) {
 
     const input: CotizacionInput = {
       maquinaria,
-      tarifas,
+      tarifas: tarifasResult.tarifas,
       unidades_solicitadas: unidades,
       distancia_km: km,
       peajes,
@@ -124,6 +135,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       maquinaria: { id: maquinaria.id, nombre: maquinaria.nombre, unidad: maquinaria.unidad_tarifa, minimo: maquinaria.minimo_unidades },
       desglose: publicDesglose,
+      // B-5: snapshot timestamp para que UI detecte cambios de tarifa.
+      tarifas_vigentes_desde: tarifasResult.vigentes_desde,
     });
   } catch (err) {
     console.error('[cot-preview]', err instanceof Error ? err.message : String(err));
@@ -174,7 +187,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'fecha_servicio y ubicacion_servicio son requeridos' }, { status: 400 });
     }
 
-    const [maquinaria, tarifas] = await Promise.all([
+    // B-4: rechazar fecha_servicio en el pasado. Usa fecha local (es-CL) para evitar
+    // edge case donde UTC ya pasó al día siguiente pero en Chile aún es hoy.
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!isoDateRegex.test(fechaServicio)) {
+      return NextResponse.json({ error: 'fecha_servicio debe tener formato YYYY-MM-DD' }, { status: 400 });
+    }
+    const hoyCL = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Santiago' }); // 'YYYY-MM-DD'
+    if (fechaServicio < hoyCL) {
+      return NextResponse.json({ error: 'fecha_servicio no puede ser en el pasado' }, { status: 400 });
+    }
+
+    const [maquinaria, tarifasResult] = await Promise.all([
       loadMaquinaria(maquinariaId),
       loadTarifasVigentes(),
     ]);
@@ -182,10 +206,14 @@ export async function POST(request: NextRequest) {
     if (!maquinaria) {
       return NextResponse.json({ error: 'Maquinaria no disponible' }, { status: 404 });
     }
-    if (!tarifas) {
+    if (!tarifasResult) {
       return NextResponse.json({ error: 'Sistema de tarifas no configurado' }, { status: 503 });
     }
 
+    // B-5: el cálculo siempre usa la tarifa vigente AL MOMENTO DE SUBMIT,
+    // independientemente de lo que el cliente vio en el preview. Si la tarifa
+    // cambió en el ínterin, el cliente verá un total distinto en la respuesta.
+    const tarifas = tarifasResult.tarifas;
     const input: CotizacionInput = {
       maquinaria,
       tarifas,
@@ -208,6 +236,15 @@ export async function POST(request: NextRequest) {
       fechaServicio,
       fechaServicio,
     );
+    if (disponibilidad.errorVerificando) {
+      // B-1 fail-closed: si el RPC de disponibilidad falla, no creamos la
+      // cotización a ciegas. Devolvemos 503 (Service Unavailable) para que
+      // el cliente reintente en lugar de duplicar reservas.
+      return NextResponse.json(
+        { error: 'No se pudo verificar la disponibilidad. Intenta nuevamente en unos segundos.' },
+        { status: 503 },
+      );
+    }
     if (!disponibilidad.disponible) {
       return NextResponse.json(
         {

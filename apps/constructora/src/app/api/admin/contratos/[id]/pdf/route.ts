@@ -41,51 +41,67 @@ export async function GET(
       return NextResponse.json({ error: 'Contrato no encontrado' }, { status: 404 });
     }
 
-    // Pick template: the one on the contract first, else the active one.
-    let template: { id: number; contenido: string } | null = null;
-    if (contrato.template_id) {
-      const { data } = await supabaseAdmin
-        .from('contratos_templates')
-        .select('id, contenido')
-        .eq('id', contrato.template_id)
-        .maybeSingle();
-      template = data ?? null;
-    }
-    if (!template) {
-      const { data } = await supabaseAdmin
-        .from('contratos_templates')
-        .select('id, contenido')
-        .eq('activo', true)
-        .order('version', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      template = data ?? null;
-    }
-    if (!template) {
-      return NextResponse.json({ error: 'No hay template disponible' }, { status: 500 });
-    }
-
-    const maquinaria = contrato.maquinarias ?? null;
     const { searchParams } = new URL(request.url);
     // When ?unsigned=1 is passed, the admin wants a blank-signature copy to
     // print and sign manually. We null out firma_* so the template renders
     // the manual-signature block (blank lines) instead of the digital firma.
     const isUnsigned = searchParams.get('unsigned') === '1';
     const autoPrint = searchParams.get('print') === '1';
-    const contratoForRender = isUnsigned
-      ? {
-          ...contrato,
-          firma_arrendatario: null,
-          firma_arrendador: null,
-          firma_ip: null,
-          firma_timestamp: null,
-          firma_hash: null,
-          firma_otp_verified: false,
-        }
-      : contrato;
 
-    const vars = buildRenderVars(contratoForRender, maquinaria);
-    const renderedRaw = renderContrato(template.contenido, vars);
+    // B-2: si el contrato tiene un snapshot del HTML al momento de firmar,
+    // úsalo en lugar de re-renderizar desde el template vivo. Esto preserva
+    // la integridad visual aunque el admin haya editado el template después.
+    // Sólo usamos snapshot cuando NO es la versión "unsigned" (impresión
+    // manual): en ese caso necesitamos re-renderizar con firma_*=null.
+    let renderedRaw: string;
+    const snapshot: string | null = !isUnsigned && typeof contrato.contrato_html_snapshot === 'string'
+      ? contrato.contrato_html_snapshot
+      : null;
+
+    if (snapshot) {
+      renderedRaw = snapshot;
+    } else {
+      // Pick template: the one on the contract first, else the active one.
+      let template: { id: number; contenido: string } | null = null;
+      if (contrato.template_id) {
+        const { data } = await supabaseAdmin
+          .from('contratos_templates')
+          .select('id, contenido')
+          .eq('id', contrato.template_id)
+          .maybeSingle();
+        template = data ?? null;
+      }
+      if (!template) {
+        const { data } = await supabaseAdmin
+          .from('contratos_templates')
+          .select('id, contenido')
+          .eq('activo', true)
+          .order('version', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        template = data ?? null;
+      }
+      if (!template) {
+        return NextResponse.json({ error: 'No hay template disponible' }, { status: 500 });
+      }
+
+      const maquinaria = contrato.maquinarias ?? null;
+      const contratoForRender = isUnsigned
+        ? {
+            ...contrato,
+            firma_arrendatario: null,
+            firma_arrendador: null,
+            firma_ip: null,
+            firma_timestamp: null,
+            firma_hash: null,
+            firma_otp_verified: false,
+          }
+        : contrato;
+
+      const vars = buildRenderVars(contratoForRender, maquinaria);
+      renderedRaw = renderContrato(template.contenido, vars);
+    }
+
     // Inyectar las dos firmas si están disponibles. Cuando ?unsigned=1, ambas
     // son null y el template mostrará líneas en blanco (versión imprimible
     // para firma manual de respaldo).

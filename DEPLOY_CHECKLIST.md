@@ -101,9 +101,24 @@ apps/constructora/scripts/migrate-arriendo-v2-03-cotizaciones-arriendo.sql
 -- 5. IVA F29
 apps/constructora/scripts/migrate-iva-f29-01-libros.sql
 apps/constructora/scripts/migrate-iva-f29-02-triggers.sql
+
+-- 6. Sprint 1 (bloqueantes arriendo + cumplimiento legal) — May 2026
+apps/constructora/scripts/migrate-disponibilidad-rpc-fix.sql   -- B-1: race condition fix
+apps/constructora/scripts/migrate-contrato-html-snapshot.sql   -- B-2: snapshot HTML al firmar
+apps/constructora/scripts/migrate-cedula-retention.sql         -- L-1: retención 90d cédulas + audit event_types nuevos
 ```
 
 Todas son idempotentes (`IF NOT EXISTS` / `OR REPLACE`).
+
+### Crons en Vercel (apps/constructora/vercel.json)
+Asegurar que el `vercel.json` con la sección `crons` esté presente al deploy.
+Tras el deploy, verificar en Vercel Dashboard → Settings → Cron Jobs que
+aparezcan los 3 jobs:
+- `/api/cron/email-queue/retry` cada 5 min
+- `/api/cron/contratos/expirar` 3 AM diario
+- `/api/cron/cedulas/purgar` 4 AM diario
+
+Todos requieren env var `CRON_SECRET` (ver sección 2).
 
 ---
 
@@ -152,7 +167,15 @@ MERCADOPAGO_WEBHOOK_SECRET=<secret del webhook MP — sin esto el webhook fail-c
 ```
 NEXT_PUBLIC_SITE_URL=https://jurmaq.cl
 NEXT_PUBLIC_BARRACA_URL=https://barraca.jurmaq.cl  # para el cross-link en AdminShell
+CRON_SECRET=<openssl rand -base64 32>              # protege /api/cron/* contra disparos no autorizados
 ```
+
+**`CRON_SECRET`**: lo usan los 3 crons de Vercel
+(`/api/cron/email-queue/retry`, `/api/cron/contratos/expirar`,
+`/api/cron/cedulas/purgar`). Sin esto, los endpoints están publicly callable y un
+atacante puede agotar cuota de Resend o forzar expiraciones. Generar con
+`openssl rand -base64 32`. En Vercel: setear el mismo valor en env vars y en
+"Cron Jobs → Headers".
 
 ### Anti-bypass de CSRF en producción
 `packages/shared/src/sanitize/index.ts` línea 68 — `ALLOWED_HOSTS` ya incluye `jurmaq.cl`, `www.jurmaq.cl`, `barraca.jurmaq.cl`. No tocar.

@@ -457,17 +457,25 @@ export default function PrivacidadPage() {
                 el siguiente paquete de evidencia:
               </p>
               <ul className="mt-3 space-y-2 text-sm text-gray-700 list-disc pl-6">
-                <li>Codigo OTP de 6 digitos enviado al correo electronico del firmante.</li>
+                <li>Codigo OTP de 6 digitos enviado al correo electronico o WhatsApp del firmante.</li>
                 <li>Direccion IP desde donde se realiza la firma.</li>
                 <li>Marca de tiempo (timestamp) en formato ISO-8601 UTC.</li>
                 <li>User-Agent del navegador.</li>
                 <li>Imagen de la firma manuscrita digital (canvas).</li>
                 <li>Hash SHA-256 del documento firmado y del paquete de evidencia.</li>
+                <li>
+                  Imagen de cedula de identidad (anverso). <strong>Retencion limitada:</strong>{" "}
+                  conforme al principio de minimizacion de la Ley N&deg; 19.628, la imagen de la
+                  cedula se elimina automaticamente de nuestros sistemas a los <strong>90 dias</strong>{" "}
+                  contados desde la firma del contrato. Se mantiene unicamente un hash criptografico
+                  (SHA-256) que NO permite reconstruir la imagen y que forma parte de la cadena de
+                  evidencia que valida la firma electronica.
+                </li>
               </ul>
               <p className="text-gray-700 leading-relaxed mt-3">
-                El paquete de evidencia se conserva mientras dure la
-                relacion contractual y por al menos 6 anos adicionales tras
-                su termino, segun lo exigido por el Codigo Tributario y la
+                El paquete de evidencia (excepto la imagen de cedula segun se indica arriba)
+                se conserva mientras dure la relacion contractual y por al menos 6 anos
+                adicionales tras su termino, segun lo exigido por el Codigo Tributario y la
                 normativa contable aplicable.
               </p>
             </div>

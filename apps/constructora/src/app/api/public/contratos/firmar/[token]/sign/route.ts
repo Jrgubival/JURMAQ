@@ -233,6 +233,11 @@ export async function POST(
         firma_region: geo.region,
         firma_ciudad: geo.ciudad,
         estado: 'firmado',
+        // B-2: snapshot del HTML interpolado en el momento de firmar. Si el
+        // admin edita el template después, las regeneraciones del PDF van a
+        // usar ESTE snapshot (no el template vivo), preservando integridad
+        // visual del contrato firmado para disputas.
+        contrato_html_snapshot: renderedForHash,
       })
       .eq('id', contrato.id)
       .neq('estado', 'firmado')

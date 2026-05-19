@@ -125,13 +125,15 @@ export function validarInput(input: Partial<CotizacionInput>): string | null {
 export interface DisponibilidadResultado {
   disponible: boolean;
   conflictos: Array<{
-    tipo: 'bloqueo' | 'cotizacion';
+    tipo: 'bloqueo' | 'cotizacion' | 'contrato';
     fecha_inicio: string;
     fecha_fin: string;
     motivo?: string;
     numero?: string;
     estado?: string;
   }>;
+  /** Si fue null, la verificación falló y debe tratarse como "no disponible" (fail-closed). */
+  errorVerificando?: boolean;
 }
 
 export async function verificarDisponibilidad(
@@ -147,21 +149,36 @@ export async function verificarDisponibilidad(
     p_fecha_fin: fechaFin,
   });
 
-  if (error || !data || data.length === 0) {
+  // B-1 fail-closed: si el RPC falla, NO asumir disponible. Antes devolvía
+  // `disponible: true` lo que enmascaraba el bug del nombre incorrecto del
+  // RPC. Ahora marca errorVerificando y deja al caller decidir.
+  if (error) {
+    console.error('[verificarDisponibilidad] RPC error', { maquinariaId, error });
+    return { disponible: false, conflictos: [], errorVerificando: true };
+  }
+  if (!data || data.length === 0) {
+    // RPC ejecutó OK y devolvió 0 filas (no hay conflictos). Esto es lo
+    // esperado cuando la máquina está libre.
     return { disponible: true, conflictos: [] };
   }
 
   const row = data[0];
   return {
     disponible: row.disponible,
-    conflictos: (row.conflictos || []).map((c: Record<string, unknown>) => ({
-      tipo: c.tipo as 'bloqueo' | 'cotizacion',
-      fecha_inicio: String(c.fecha_inicio),
-      fecha_fin: String(c.fecha_fin),
-      motivo: c.motivo ? String(c.motivo) : undefined,
-      numero: c.numero ? String(c.numero) : undefined,
-      estado: c.estado ? String(c.estado) : undefined,
-    })),
+    conflictos: (row.conflictos || []).map((c: Record<string, unknown>) => {
+      // Las claves de fecha varían según el tipo. Normalizamos.
+      const fechaInicioRaw =
+        c.fecha_inicio ?? c.fecha_servicio ?? c.fecha_emision ?? null;
+      const fechaFinRaw = c.fecha_fin ?? c.fecha_termino ?? c.fecha_servicio ?? null;
+      return {
+        tipo: c.tipo as 'bloqueo' | 'cotizacion' | 'contrato',
+        fecha_inicio: fechaInicioRaw ? String(fechaInicioRaw) : '',
+        fecha_fin: fechaFinRaw ? String(fechaFinRaw) : '',
+        motivo: c.motivo ? String(c.motivo) : undefined,
+        numero: c.numero ? String(c.numero) : undefined,
+        estado: c.estado ? String(c.estado) : undefined,
+      };
+    }),
   };
 }
 
