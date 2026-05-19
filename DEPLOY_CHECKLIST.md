@@ -109,6 +109,9 @@ apps/constructora/scripts/migrate-cedula-retention.sql         -- L-1: retenció
 
 -- 7. Sprint 2 (OTP multi-canal) — May 2026
 apps/constructora/scripts/migrate-otp.sql                      -- otp_codigos + otp_eventos (genérico para todos los flujos OTP)
+
+-- 8. Sprint 3 (Portal Cliente Arriendo) — May 2026
+apps/constructora/scripts/migrate-clientes-auth.sql            -- password_hash, reset_token, activo, etc en clientes
 ```
 
 Todas son idempotentes (`IF NOT EXISTS` / `OR REPLACE`).
