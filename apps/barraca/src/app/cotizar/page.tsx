@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { showToast } from "@/components/Toast";
 import { formatCLP } from "@jurmaq/shared/format";
+import CodigoMaestroInput from "@/components/barraca/CodigoMaestroInput";
 
 interface CartItem {
   id: number;
@@ -97,6 +98,10 @@ export default function CotizarPage() {
   // Legal: consent to terms and privacy policy (required)
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [aceptaMarketing, setAceptaMarketing] = useState(false);
+
+  // Tier 2 B1: código de maestro referido. Persistido por CodigoMaestroInput
+  // en localStorage; lo recogemos acá vía callback para mandarlo en el POST.
+  const [codigoMaestro, setCodigoMaestro] = useState<string | null>(null);
 
   useEffect(() => {
     const sid = getSessionId();
@@ -220,6 +225,8 @@ export default function CotizarPage() {
             nombre_competencia: nombreCompetencia,
             notas_competencia: notasCompetencia,
           }),
+          // Tier 2 B1: código de maestro (server-side se revalida + resuelve a maestro_id).
+          ...(codigoMaestro && { codigo_maestro: codigoMaestro }),
         }),
       });
       if (res.ok) {
@@ -577,6 +584,13 @@ export default function CotizarPage() {
                 {error}
               </div>
             )}
+
+            {/* Tier 2 B1: código de maestro referido */}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <CodigoMaestroInput
+                onChange={(m) => setCodigoMaestro(m?.codigo ?? null)}
+              />
+            </div>
 
             {/* Legal: terms + optional marketing consent */}
             <div className="space-y-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">

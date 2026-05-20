@@ -192,6 +192,27 @@ export async function POST(request: NextRequest) {
     const nombreCompetencia = sanitizeString(body.nombre_competencia);
     const notasCompetencia = sanitizeString(body.notas_competencia);
 
+    // Tier 2 B1: Código de maestro referido (validación server-side).
+    // El cliente puede ENVIAR el código, pero NUNCA confiamos en el maestro_id
+    // que adjunte — lo resolvemos acá contra la tabla `maestros` y solo
+    // aceptamos si el maestro está activo.
+    let codigoMaestroValido: string | null = null;
+    let maestroIdValido: string | null = null;
+    const codigoMaestroRaw = sanitizeString(body.codigo_maestro)?.toUpperCase().trim() || '';
+    if (codigoMaestroRaw && /^MAE-[0-9]{4}-[0-9]+$/.test(codigoMaestroRaw)) {
+      const { data: m } = await supabaseAdmin
+        .from('maestros')
+        .select('id, codigo, activo')
+        .eq('codigo', codigoMaestroRaw)
+        .maybeSingle();
+      if (m && m.activo) {
+        codigoMaestroValido = m.codigo;
+        maestroIdValido = m.id;
+      }
+      // Si el código no existe o está inactivo: lo ignoramos silenciosamente
+      // (no bloqueamos la cotización entera por un código mal tipeado).
+    }
+
     // Generate cotizacion number atomicamente via sequence Postgres.
     // Antes usabamos COUNT(*)+1 por dia, race-prone: dos POSTs concurrentes
     // generaban el mismo numero -> UNIQUE violation o duplicados (sin UNIQUE).
@@ -234,6 +255,14 @@ export async function POST(request: NextRequest) {
     // Add competitor fields if provided
     if (cotizacionCompetencia) insertData.cotizacion_competencia = cotizacionCompetencia;
     if (nombreCompetencia) insertData.nombre_competencia = nombreCompetencia;
+
+    // Tier 2 B1: si el código de maestro es válido, persistimos en la cotización.
+    // El trigger devengar_comision_barraca() generará la comisión cuando esta
+    // cotización pase a estado 'pagada'.
+    if (codigoMaestroValido && maestroIdValido) {
+      insertData.codigo_maestro = codigoMaestroValido;
+      insertData.maestro_id = maestroIdValido;
+    }
 
     const { data: cotizacion, error } = await supabaseAdmin
       .from('barraca_cotizaciones')

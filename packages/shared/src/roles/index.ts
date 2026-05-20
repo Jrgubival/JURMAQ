@@ -58,7 +58,11 @@ export type BarracaModule =
   | 'barraca_imagenes'
   | 'barraca_precios'
   | 'barraca_importar'
-  | 'barraca_suscriptores';
+  | 'barraca_suscriptores'
+  /** Programa de referidos: maestros registrados con código MAE-YYYY-NNN. */
+  | 'barraca_maestros'
+  /** Comisiones devengadas a maestros por ventas referidas (gestión pagos). */
+  | 'barraca_comisiones';
 
 /**
  * Union de ambos. `Module` queda como type-alias para no romper los ~30
@@ -89,6 +93,8 @@ const ALL_BARRACA_MODULES: Module[] = [
   'barraca_precios',
   'barraca_importar',
   'barraca_suscriptores',
+  'barraca_maestros',
+  'barraca_comisiones',
 ];
 
 const ALL_MODULES: Module[] = [
@@ -136,6 +142,8 @@ export const ROLES: Record<RoleId, RoleDef> = {
       barraca_precios: ALL_ACTIONS,
       barraca_importar: ALL_ACTIONS,
       barraca_suscriptores: ALL_ACTIONS,
+      barraca_maestros: ALL_ACTIONS,
+      barraca_comisiones: ALL_ACTIONS,
     },
     badgeClass: 'bg-purple-100 text-purple-700',
   },
@@ -185,8 +193,8 @@ export const ROLES: Record<RoleId, RoleDef> = {
   },
   contador: {
     label: 'Contador / Finanzas',
-    description: 'Combustible end-to-end (F29 SII). Ve cotizaciones para conciliar pagos.',
-    modules: ['dashboard', 'cotizaciones', 'combustible', 'barraca_cotizaciones'],
+    description: 'Combustible end-to-end (F29 SII). Ve cotizaciones para conciliar pagos. Paga comisiones a maestros.',
+    modules: ['dashboard', 'cotizaciones', 'combustible', 'barraca_cotizaciones', 'barraca_comisiones'],
     permissions: {
       dashboard: ['read'],
       // Solo lectura de cotizaciones — para reconciliar.
@@ -194,6 +202,8 @@ export const ROLES: Record<RoleId, RoleDef> = {
       barraca_cotizaciones: ['read'],
       // Combustible: control completo para tributario.
       combustible: ['read', 'create', 'update', 'delete', 'validate', 'export'],
+      // Comisiones: marca pagadas + exporta. NO crea ni borra (las crea el trigger).
+      barraca_comisiones: ['read', 'update', 'export'],
     },
     badgeClass: 'bg-green-100 text-green-700',
   },
