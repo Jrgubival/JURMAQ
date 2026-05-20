@@ -5,6 +5,8 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
 import { logContratoEvent } from '@/lib/contratos-audit';
 import { klapCancel, klapCapture } from '@/lib/klap-client';
+import { sendGarantiaLiberadaEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-liberada';
+import { sendCargoAplicadoEmail } from '@jurmaq/shared/mail/templates/cliente-cargo-aplicado';
 
 /**
  * POST /api/admin/contratos/[id]/devolucion/inspeccionar
@@ -144,6 +146,22 @@ export async function POST(
     await logContratoEvent(request, contratoId, 'return_inspection_completed', { resultado: 'sin_danos' });
     await logContratoEvent(request, contratoId, 'deposit_released', { motivo: 'sin_danos', hold_id: holdActivo?.id ?? null });
 
+    // Email cliente "garantía liberada" (best-effort).
+    if (holdActivo) {
+      const { data: full } = await supabaseAdmin
+        .from('contratos')
+        .select('numero, arrendatario_email, arrendatario_nombre, arrendatario_razon_social')
+        .eq('id', contratoId)
+        .single();
+      if (full?.arrendatario_email) {
+        void sendGarantiaLiberadaEmail(full.arrendatario_email as string, {
+          arrendatarioNombre: String(full.arrendatario_nombre || full.arrendatario_razon_social || ''),
+          numeroContrato: String(full.numero || contratoId),
+          monto: holdActivo.monto,
+        }).catch((e) => console.warn('[garantia-liberada-mail-fail]', e));
+      }
+    }
+
     return NextResponse.json({ ok: true, estado: 'finalizado', hold_cancelado: !!holdActivo });
   }
 
@@ -239,6 +257,24 @@ export async function POST(
     monto: montoCapturar,
     klap_capture_id: captureRes.data.trx_id,
   });
+
+  // Email cliente "cargo aplicado por daños" (best-effort).
+  {
+    const { data: full } = await supabaseAdmin
+      .from('contratos')
+      .select('numero, arrendatario_email, arrendatario_nombre, arrendatario_razon_social')
+      .eq('id', contratoId)
+      .single();
+    if (full?.arrendatario_email) {
+      void sendCargoAplicadoEmail(full.arrendatario_email as string, {
+        arrendatarioNombre: String(full.arrendatario_nombre || full.arrendatario_razon_social || ''),
+        numeroContrato: String(full.numero || contratoId),
+        monto: holdActivo.monto,
+        cargoMonto: montoCapturar,
+        motivo: desc,
+      }).catch((e) => console.warn('[cargo-aplicado-mail-fail]', e));
+    }
+  }
 
   return NextResponse.json({
     ok: true,

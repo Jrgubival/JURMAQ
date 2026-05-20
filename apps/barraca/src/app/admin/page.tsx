@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { formatCLP, formatDate } from '@jurmaq/shared/format';
+import StockAlertsWidget from '@/components/admin/StockAlertsWidget';
 
 /**
  * Dashboard landing del panel Barraca admin.
@@ -188,6 +189,23 @@ export default function BarracaAdminDashboard() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Stock alerts (widget compacto) */}
+      <StockAlertsWidget umbral={5} />
+
+      {/* Link al dashboard completo de ventas */}
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-4 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h3 className="font-semibold text-gray-900">📊 Dashboard de ventas</h3>
+          <p className="text-xs text-gray-600 mt-0.5">KPIs reales con comparativa vs período anterior, top productos y cupones.</p>
+        </div>
+        <Link
+          href="/admin/dashboard"
+          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-xl"
+        >
+          Ver dashboard →
+        </Link>
       </div>
 
       {/* Atajos */}

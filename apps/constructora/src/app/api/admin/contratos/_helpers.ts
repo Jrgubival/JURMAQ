@@ -140,6 +140,29 @@ export function buildRenderVars(
     garantia_monto: formatCLP(garantiaMonto).replace(/^\$/, ''),
     garantia_monto_letras: numberToSpanishWords(garantiaMonto) + ' pesos chilenos',
 
+    // Cláusula adicional Klap: solo se inyecta si garantia_metodo='klap_hold'.
+    // Sirve como base legal para (a) la pre-autorización en tarjeta, (b) las
+    // renovaciones automáticas del hold y (c) los cargos off-session por
+    // daños descubiertos hasta 90 días post-devolución.
+    garantia_klap_clausula:
+      (contrato as unknown as { garantia_metodo?: string }).garantia_metodo === 'klap_hold'
+        ? `<p>
+      Cuando la garantía se constituya mediante <strong>pre-autorización en tarjeta de crédito</strong> (sistema Klap),
+      el ARRENDATARIO autoriza expresamente al ARRENDADOR a: (a) <em>pre-autorizar (retener sin cobrar)</em> en su
+      tarjeta de crédito el monto antes indicado como garantía por el cumplimiento de este contrato y por
+      eventuales daños o pérdidas en la maquinaria arrendada; (b) <em>renovar</em> dicha pre-autorización
+      automáticamente las veces que sean necesarias durante la vigencia del contrato; (c) <em>capturar</em>
+      parcial o totalmente la pre-autorización en caso de daños comprobados, con respaldo fotográfico y/o informe
+      técnico; y (d) <em>realizar cargos adicionales</em> en su tarjeta de crédito hasta noventa (90) días
+      posteriores a la fecha de devolución por daños descubiertos con posterioridad a la entrega, con
+      notificación previa por correo electrónico al ARRENDATARIO. El ARRENDATARIO declara conocer y aceptar
+      que su tarjeta queda registrada como medio de pago (card-on-file) para los efectos antes señalados,
+      siendo el procesador certificado PCI DSS Klap (Multicaja Pagos S.A.) responsable del resguardo del
+      número de tarjeta. El ARRENDADOR únicamente almacena un token sustituto, que no es utilizable fuera
+      del flujo descrito.
+    </p>`
+        : '',
+
     // Entrega/retiro
     direccion_entrega: s(contrato.direccion_entrega),
     direccion_retiro: s(contrato.direccion_retiro) || s(contrato.direccion_entrega),

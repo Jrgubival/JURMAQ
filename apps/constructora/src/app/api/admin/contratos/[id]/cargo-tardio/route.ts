@@ -5,6 +5,7 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
 import { logContratoEvent } from '@/lib/contratos-audit';
 import { klapOffsessionCharge } from '@/lib/klap-client';
+import { sendCargoTardioEmail } from '@jurmaq/shared/mail/templates/cliente-cargo-tardio';
 
 /**
  * POST /api/admin/contratos/[id]/cargo-tardio
@@ -167,6 +168,26 @@ export async function POST(
     monto,
     klap_charge_id: result.data.trx_id,
   });
+
+  // Email cliente "cargo tardío aplicado" (best-effort).
+  {
+    const { data: full } = await supabaseAdmin
+      .from('contratos')
+      .select('numero, arrendatario_email, arrendatario_nombre, arrendatario_razon_social')
+      .eq('id', contratoId)
+      .single();
+    if (full?.arrendatario_email) {
+      void sendCargoTardioEmail(full.arrendatario_email as string, {
+        arrendatarioNombre: String(full.arrendatario_nombre || full.arrendatario_razon_social || ''),
+        numeroContrato: String(full.numero || contratoId),
+        monto,
+        cargoMonto: monto,
+        cardBrand: card.card_brand as string,
+        cardLast4: card.card_last4 as string,
+        motivo: motivo as string,
+      }).catch((e) => console.warn('[cargo-tardio-mail-fail]', e));
+    }
+  }
 
   return NextResponse.json({
     ok: true,

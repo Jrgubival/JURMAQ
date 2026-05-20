@@ -90,6 +90,106 @@ export default function CarritoPage() {
   const subtotal = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
   const totalItems = items.reduce((s, i) => s + i.cantidad, 0);
 
+  // Cupón state (Sprint 6 wiring)
+  const [cuponInput, setCuponInput] = useState('');
+  const [cuponEmail, setCuponEmail] = useState('');
+  const [cuponState, setCuponState] = useState<
+    | { kind: 'idle' }
+    | { kind: 'loading' }
+    | { kind: 'applied'; codigo: string; descuento: number; descripcion: string | null; cuponId: string }
+    | { kind: 'error'; msg: string }
+  >({ kind: 'idle' });
+
+  async function validarCupon() {
+    if (!cuponInput.trim() || !cuponEmail.trim()) {
+      setCuponState({ kind: 'error', msg: 'Ingresa email + código' });
+      return;
+    }
+    setCuponState({ kind: 'loading' });
+    try {
+      const res = await fetch('/api/public/cupones/validar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: cuponInput.trim(), email: cuponEmail.trim(), monto_compra: subtotal }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setCuponState({ kind: 'error', msg: data.error || 'Cupón inválido' });
+        return;
+      }
+      setCuponState({
+        kind: 'applied',
+        codigo: data.codigo,
+        descuento: data.descuento,
+        descripcion: data.descripcion,
+        cuponId: data.cupon_id,
+      });
+      // Persist en localStorage para que el flow de cotizar lo recupere.
+      try {
+        localStorage.setItem(
+          'barraca_cupon',
+          JSON.stringify({ codigo: data.codigo, descuento: data.descuento, cupon_id: data.cupon_id, email: cuponEmail.trim() }),
+        );
+      } catch {}
+    } catch (err) {
+      setCuponState({ kind: 'error', msg: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
+  function quitarCupon() {
+    setCuponState({ kind: 'idle' });
+    setCuponInput('');
+    try {
+      localStorage.removeItem('barraca_cupon');
+    } catch {}
+  }
+
+  const descuentoCupon = cuponState.kind === 'applied' ? cuponState.descuento : 0;
+  const totalFinal = Math.max(0, subtotal - descuentoCupon);
+
+  // A7: tracking carrito abandonado.
+  // Cuando hay items + tenemos email (del cupón o del usuario logueado), o un
+  // session_id, mandamos snapshot al endpoint /track. Eso habilita los emails
+  // de recovery del cron carrito-recovery. Debounce 5s para no spammear.
+  useEffect(() => {
+    if (items.length === 0) return;
+    if (subtotal <= 0) return;
+
+    let email = '';
+    let sessionId = '';
+    try {
+      const stored = localStorage.getItem('barraca_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        if (u?.email) email = String(u.email);
+      }
+      sessionId = localStorage.getItem('barraca_session_id') || '';
+      if (!email && cuponEmail) email = cuponEmail;
+    } catch {}
+
+    if (!email && !sessionId) return;
+
+    const t = setTimeout(() => {
+      void fetch('/api/public/carrito-abandonado/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          session_id: sessionId,
+          items: items.map((i) => ({
+            producto_id: i.producto_id,
+            nombre: i.nombre,
+            precio: i.precio,
+            cantidad: i.cantidad,
+          })),
+          total: subtotal,
+        }),
+      }).catch(() => undefined);
+    }, 5000);
+
+    return () => clearTimeout(t);
+  }, [items, cuponEmail, subtotal]);
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center">
@@ -231,6 +331,59 @@ export default function CarritoPage() {
                   <span className="text-gray-600">Productos ({totalItems})</span>
                   <span className="font-medium text-gray-900">{formatCLP(subtotal)}</span>
                 </div>
+
+                {/* Cupón input (A6 Sprint Tier 1) */}
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  {cuponState.kind === 'applied' ? (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex items-center justify-between gap-2">
+                      <div className="text-xs">
+                        <span className="font-mono font-semibold text-green-800">{cuponState.codigo}</span>
+                        <span className="text-green-700"> aplicado · −{formatCLP(cuponState.descuento)}</span>
+                      </div>
+                      <button
+                        onClick={quitarCupon}
+                        className="text-xs text-red-600 hover:underline"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  ) : (
+                    <details className="text-sm">
+                      <summary className="text-xs text-orange-600 hover:underline cursor-pointer">
+                        🎟 ¿Tienes un código de descuento?
+                      </summary>
+                      <div className="mt-2 space-y-2">
+                        <input
+                          type="email"
+                          value={cuponEmail}
+                          onChange={(e) => setCuponEmail(e.target.value)}
+                          placeholder="Tu email"
+                          className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
+                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={cuponInput}
+                            onChange={(e) => setCuponInput(e.target.value.toUpperCase())}
+                            placeholder="CÓDIGO"
+                            className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-xs font-mono uppercase"
+                          />
+                          <button
+                            onClick={validarCupon}
+                            disabled={cuponState.kind === 'loading' || !cuponInput || !cuponEmail}
+                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-xs font-semibold rounded"
+                          >
+                            {cuponState.kind === 'loading' ? '…' : 'Aplicar'}
+                          </button>
+                        </div>
+                        {cuponState.kind === 'error' && (
+                          <p className="text-xs text-red-600">{cuponState.msg}</p>
+                        )}
+                      </div>
+                    </details>
+                  )}
+                </div>
+
                 <div className="space-y-2 pt-4 border-t border-gray-200">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal neto</span>
@@ -240,13 +393,19 @@ export default function CarritoPage() {
                     <span className="text-gray-600">IVA (19%)</span>
                     <span>{formatCLP((subtotal - Math.round(subtotal / 1.19)))}</span>
                   </div>
+                  {cuponState.kind === 'applied' && (
+                    <div className="flex justify-between text-sm text-green-700 font-medium">
+                      <span>Descuento ({cuponState.codigo})</span>
+                      <span>−{formatCLP(descuentoCupon)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Despacho</span>
                     <span className="text-gray-500">Por cotizar segun comuna</span>
                   </div>
                   <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
                     <span>Total (IVA incluido)</span>
-                    <span className="text-orange-600">{formatCLP(subtotal)}</span>
+                    <span className="text-orange-600">{formatCLP(totalFinal)}</span>
                   </div>
                 </div>
               </div>

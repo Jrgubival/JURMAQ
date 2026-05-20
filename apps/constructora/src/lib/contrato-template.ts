@@ -371,7 +371,8 @@ export const DEFAULT_CONTRATO_TEMPLATE: string = `<!DOCTYPE html>
       Al momento de la entrega de la maquinaria, el Arrendatario constituirá en favor del Arrendador una
       garantía en dinero por la suma de <strong>$ {{garantia_monto}}</strong>
       (<em>{{garantia_monto_letras}}</em>), la cual podrá rendirse mediante transferencia electrónica a la
-      cuenta que se indique, cheque nominativo o cualquier otro medio que el Arrendador acepte por escrito.
+      cuenta que se indique, cheque nominativo, pagaré, depósito en efectivo, o pre-autorización en tarjeta
+      de crédito según el método acordado entre las partes.
     </p>
     <p>
       Esta garantía tiene por objeto caucionar el cumplimiento de todas y cada una de las obligaciones que
@@ -380,11 +381,15 @@ export const DEFAULT_CONTRATO_TEMPLATE: string = `<!DOCTYPE html>
       por uso normal, el pago de multas por restitución tardía, y los gastos de limpieza, reparación o
       reposición de accesorios y combustible.
     </p>
+    {{garantia_klap_clausula}}
     <p>
       Dentro de los diez (10) días hábiles siguientes a la restitución conforme de la maquinaria y previa
       inspección y firma del acta de devolución, el Arrendador restituirá al Arrendatario el saldo de la
-      garantía, una vez efectuados los descuentos que procedan por los conceptos antes señalados. El
-      Arrendador entregará al Arrendatario un detalle escrito de cualquier deducción, con los respaldos
+      garantía, una vez efectuados los descuentos que procedan por los conceptos antes señalados. En el
+      caso de garantías constituidas mediante pre-autorización de tarjeta de crédito, dicha restitución
+      operará por la cancelación de la retención (hold) o, en su caso, la captura parcial del monto del
+      daño con liberación del saldo, sin requerir nueva intervención del Arrendatario. El Arrendador
+      entregará al Arrendatario un detalle escrito de cualquier deducción, con los respaldos
       correspondientes.
     </p>
 

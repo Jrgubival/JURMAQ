@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { klapCancel, klapPreauth } from '@/lib/klap-client';
 import { logContratoEvent } from '@/lib/contratos-audit';
+import { sendGarantiaRenovadaEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-renovada';
+import { sendGarantiaFalloRenovacionEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-fallo-renovacion';
 
 /**
  * POST /api/cron/klap-renew-holds
@@ -132,6 +134,23 @@ export async function POST(request: NextRequest) {
           raw_response: newRes.raw ?? null,
           origen: 'cron',
         });
+        // Email cliente "actualiza tarjeta" (best-effort).
+        {
+          const { data: full } = await supabaseAdmin
+            .from('contratos')
+            .select('numero, arrendatario_email, arrendatario_nombre, arrendatario_razon_social')
+            .eq('id', cid)
+            .single();
+          if (full?.arrendatario_email) {
+            void sendGarantiaFalloRenovacionEmail(full.arrendatario_email as string, {
+              arrendatarioNombre: String(full.arrendatario_nombre || full.arrendatario_razon_social || ''),
+              numeroContrato: String(full.numero || cid),
+              monto,
+              cardBrand: card.card_brand as string,
+              cardLast4: card.card_last4 as string,
+            }).catch((e) => console.warn('[garantia-fallo-renovacion-mail-fail]', e));
+          }
+        }
         failed++;
         detalles.push({ contrato_id: cid, status: 'failed', error: newRes.error || 'unknown' });
         continue;
@@ -182,6 +201,25 @@ export async function POST(request: NextRequest) {
         nuevo_hold_id: nuevoHold?.id ?? null,
         renovaciones_count: (hold.renovaciones_count as number) + 1,
       });
+
+      // Email cliente "garantía renovada" (best-effort).
+      {
+        const { data: full } = await supabaseAdmin
+          .from('contratos')
+          .select('numero, arrendatario_email, arrendatario_nombre, arrendatario_razon_social')
+          .eq('id', cid)
+          .single();
+        if (full?.arrendatario_email) {
+          void sendGarantiaRenovadaEmail(full.arrendatario_email as string, {
+            arrendatarioNombre: String(full.arrendatario_nombre || full.arrendatario_razon_social || ''),
+            numeroContrato: String(full.numero || cid),
+            monto,
+            cardBrand: card.card_brand as string,
+            cardLast4: card.card_last4 as string,
+            validoHasta: new Date(expiraAt).toLocaleDateString('es-CL'),
+          }).catch((e) => console.warn('[garantia-renovada-mail-fail]', e));
+        }
+      }
 
       renewed++;
       detalles.push({ contrato_id: cid, status: 'renewed' });

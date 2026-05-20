@@ -6,6 +6,7 @@ import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 import { klapPreauth } from '@/lib/klap-client';
 import { mockNetworkToken } from '@/lib/klap-mock';
 import { logContratoEvent } from '@/lib/contratos-audit';
+import { sendGarantiaAutorizadaEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-autorizada';
 
 /**
  * POST /api/public/contratos/entrega/[token]/preauth
@@ -225,6 +226,17 @@ export async function POST(
     klap_card_brand: tokenData.card_brand,
     hold_id: newHold.id,
   });
+
+  // Email de confirmación al cliente (best-effort).
+  if (arrendatarioEmail) {
+    void sendGarantiaAutorizadaEmail(arrendatarioEmail, {
+      arrendatarioNombre: '',
+      numeroContrato: String(contrato.numero || contrato.id),
+      monto,
+      cardBrand: tokenData.card_brand,
+      cardLast4: tokenData.card_last4,
+    }).catch((e) => console.warn('[garantia-autorizada-mail-fail]', e));
+  }
 
   return NextResponse.json({
     ok: true,
