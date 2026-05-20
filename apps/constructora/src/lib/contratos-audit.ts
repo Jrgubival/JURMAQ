@@ -30,7 +30,20 @@ export type ContratoAuditEventType =
   | 'arrendador_signed'
   | 'arrendador_unsigned'
   | 'cedula_purged'
-  | 'auto_expired';
+  | 'auto_expired'
+  | 'delivery_registered'
+  | 'delivery_card_authorized'
+  | 'return_registered'
+  | 'return_inspection_completed'
+  | 'deposit_captured'
+  | 'deposit_released'
+  | 'deposit_hold_renewed'
+  | 'deposit_hold_renewal_failed'
+  | 'late_charge_attempted'
+  | 'late_charge_approved'
+  | 'late_charge_declined'
+  | 'tradicional_garantia_recibida'
+  | 'tradicional_garantia_devuelta';
 
 export interface ContratoAuditMetadata {
   // Free-form JSON for event-specific details. NEVER include the OTP code,

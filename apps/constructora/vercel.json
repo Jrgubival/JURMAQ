@@ -12,6 +12,10 @@
     {
       "path": "/api/cron/cedulas/purgar",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/klap-renew-holds",
+      "schedule": "0 * * * *"
     }
   ]
 }

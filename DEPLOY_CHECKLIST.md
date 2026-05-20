@@ -112,6 +112,9 @@ apps/constructora/scripts/migrate-otp.sql                      -- otp_codigos + 
 
 -- 8. Sprint 3 (Portal Cliente Arriendo) — May 2026
 apps/constructora/scripts/migrate-clientes-auth.sql            -- password_hash, reset_token, activo, etc en clientes
+
+-- 9. Sprint 4 (Klap Garantías Digitales — Fase A mock) — May 2026
+apps/constructora/scripts/migrate-klap-garantias.sql           -- klap_*, garantias_tradicionales, contratos_fotos, garantia_metodo, estados lifecycle
 ```
 
 Todas son idempotentes (`IF NOT EXISTS` / `OR REPLACE`).
@@ -123,6 +126,7 @@ aparezcan los 3 jobs:
 - `/api/cron/email-queue/retry` cada 5 min
 - `/api/cron/contratos/expirar` 3 AM diario
 - `/api/cron/cedulas/purgar` 4 AM diario
+- `/api/cron/klap-renew-holds` cada hora (en mock NO hace nada salvo si hay holds en DB)
 
 Todos requieren env var `CRON_SECRET` (ver sección 2).
 
@@ -190,7 +194,20 @@ WHATSAPP_CLOUD_LANG=es_CL
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_FROM_NUMBER=
+
+# Klap Garantías Digitales (Sprint 4) — Fase A vs B
+# Sin estos valores: sistema funciona en modo MOCK (responses canned, sin tarjeta real).
+# Setear cuando llegue cuenta merchant Klap aprobada:
+KLAP_ENABLED=false                                   # 'true' activa modo producción
+KLAP_BASE_URL=https://api.pasarela.multicaja.cl       # sandbox o prod según Klap
+KLAP_API_KEY=                                         # Api-Key del merchant
+KLAP_WEBHOOK_SECRET=                                  # HMAC del webhook
+NEXT_PUBLIC_KLAP_MODE=sandbox                         # 'sandbox' o 'production' (controla copy del UI)
 ```
+
+**Estrategia rollout Klap**:
+1. **Fase A (ahora)**: Aplicar migración SQL `migrate-klap-garantias.sql`. KLAP_ENABLED=false. Sistema funcional con mocks: admin puede elegir método, registrar entrega genera entrega_token, cliente entra al portal /cuenta/contratos/[N]/entrega y "autoriza" (mock), aparece hold en /cuenta/garantias, admin inspecciona devolución (cancel/capture mock).
+2. **Fase B (cuando llegue cuenta)**: Setear KLAP_API_KEY + KLAP_WEBHOOK_SECRET + KLAP_ENABLED=true + NEXT_PUBLIC_KLAP_MODE=production. Smoke test sandbox Klap. Switch a prod cuando Klap valide.
 
 **Estrategia OTP**: si todas las envs WhatsApp/SMS están vacías, el sistema usa solo email (comportamiento legacy intacto). A medida que activás providers, el dispatcher prioriza WhatsApp → SMS → Email. Ver `infra/openwa/README.md` para setup del gateway.
 

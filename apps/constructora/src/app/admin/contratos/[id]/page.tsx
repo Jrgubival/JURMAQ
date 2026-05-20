@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import type { SignaturePadHandle } from '@/app/contrato/firmar/[token]/SignaturePad';
 import { formatCLP } from "@jurmaq/shared/format";
 import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
+import GarantiaPanel from './GarantiaPanel';
 
 // `react-signature-canvas` toca DOM/canvas APIs en mount → SSR off.
 const SignaturePad = dynamic(
@@ -18,7 +19,11 @@ type Estado =
   | 'borrador'
   | 'pendiente_firma'
   | 'firmado'
+  | 'en_entrega'
   | 'vigente'
+  | 'en_devolucion'
+  | 'finalizado'
+  | 'finalizado_con_cargo'
   | 'vencido'
   | 'anulado';
 
@@ -60,7 +65,11 @@ const estadoConfig: Record<Estado, { bg: string; text: string; label: string }> 
   borrador: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Borrador' },
   pendiente_firma: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pendiente de firma' },
   firmado: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Firmado' },
+  en_entrega: { bg: 'bg-amber-100', text: 'text-amber-800', label: 'En entrega' },
   vigente: { bg: 'bg-green-100', text: 'text-green-700', label: 'Vigente' },
+  en_devolucion: { bg: 'bg-amber-100', text: 'text-amber-800', label: 'En devolución' },
+  finalizado: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Finalizado' },
+  finalizado_con_cargo: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Finalizado con cargo' },
   vencido: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Vencido' },
   anulado: { bg: 'bg-red-100', text: 'text-red-700', label: 'Anulado' },
 };
@@ -284,6 +293,24 @@ export default function ContratoDetailPage({
 
   return (
     <div className="space-y-6">
+      {/* Garantía Klap (lifecycle: entrega → vigente → devolución → cargo tardío) */}
+      {contrato.estado !== 'borrador' && contrato.estado !== 'pendiente_firma' && (
+        <GarantiaPanel
+          contratoId={contrato.id}
+          estado={contrato.estado}
+          garantiaMetodo={(contrato as unknown as { garantia_metodo?: string }).garantia_metodo as
+            | 'klap_hold'
+            | 'cheque'
+            | 'deposito_efectivo'
+            | 'transferencia'
+            | 'pagare'
+            | null}
+          garantiaMonto={contrato.garantia_monto ?? null}
+          arrendatarioTelefono={contrato.arrendatario_telefono ?? null}
+          onChange={() => fetchContrato()}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-start gap-3 flex-wrap">
         <Link

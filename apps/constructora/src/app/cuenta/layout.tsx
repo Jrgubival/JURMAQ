@@ -14,6 +14,8 @@ const navItems = [
   { href: '/cuenta', label: 'Resumen', icon: '🏠' },
   { href: '/cuenta/cotizaciones', label: 'Cotizaciones', icon: '📋' },
   { href: '/cuenta/contratos', label: 'Contratos', icon: '📑' },
+  { href: '/cuenta/garantias', label: 'Garantías', icon: '🔒' },
+  { href: '/cuenta/tarjetas', label: 'Tarjetas', icon: '💳' },
   { href: '/cuenta/perfil', label: 'Mi perfil', icon: '👤' },
 ];
 
