@@ -68,6 +68,9 @@ export default function GarantiaPanel({
     Array<{ id: string; categoria: string; descripcion: string; monto_clp: number }>
   >([]);
   const [selectedDanos, setSelectedDanos] = useState<Set<string>>(new Set());
+  // C3 Tier 3: checkbox "Tanque devuelto vacío" → suma $45.000 automáticamente.
+  const COMBUSTIBLE_NO_REPUESTO_CLP = 45000;
+  const [combustibleNoRepuesto, setCombustibleNoRepuesto] = useState(false);
 
   // Form cargo tardío (cuando finalizado)
   const [cargoTardioForm, setCargoTardioForm] = useState<{ open: boolean; monto: number; motivo: string }>({
@@ -429,6 +432,33 @@ export default function GarantiaPanel({
               )}
               {inspectMode === 'con_danos' && (
                 <div className="space-y-3">
+                  {/* C3: checkbox cargo automático "Tanque devuelto vacío" */}
+                  <label className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl cursor-pointer hover:bg-amber-100 transition">
+                    <input
+                      type="checkbox"
+                      checked={combustibleNoRepuesto}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setCombustibleNoRepuesto(checked);
+                        const linea = `Operativo: Tanque devuelto vacío ($${COMBUSTIBLE_NO_REPUESTO_CLP.toLocaleString('es-CL')})`;
+                        if (checked) {
+                          setMontoDano((m) => m + COMBUSTIBLE_NO_REPUESTO_CLP);
+                          setDescDano((d) => (d ? `${d}\n${linea}` : linea));
+                        } else {
+                          setMontoDano((m) => Math.max(0, m - COMBUSTIBLE_NO_REPUESTO_CLP));
+                          setDescDano((d) => d.split('\n').filter((l) => !l.includes('Tanque devuelto vacío')).join('\n'));
+                        }
+                      }}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm text-gray-700">
+                      ⛽ Tanque devuelto vacío
+                      <span className="ml-2 text-xs text-amber-700 font-semibold">
+                        +${COMBUSTIBLE_NO_REPUESTO_CLP.toLocaleString('es-CL')}
+                      </span>
+                    </span>
+                  </label>
+
                   {/* Catálogo de daños — selección múltiple suma montos */}
                   <CatalogoDanosPicker
                     catalogo={catalogoDanos}
@@ -444,6 +474,11 @@ export default function GarantiaPanel({
                           descripciones.push(`${d.categoria}: ${d.descripcion} ($${d.monto_clp.toLocaleString('es-CL')})`);
                         }
                       });
+                      // Si está el checkbox combustible activo, sumarlo.
+                      if (combustibleNoRepuesto) {
+                        totalMonto += COMBUSTIBLE_NO_REPUESTO_CLP;
+                        descripciones.push(`Operativo: Tanque devuelto vacío ($${COMBUSTIBLE_NO_REPUESTO_CLP.toLocaleString('es-CL')})`);
+                      }
                       if (totalMonto > 0) setMontoDano(totalMonto);
                       if (descripciones.length > 0) setDescDano(descripciones.join('\n'));
                     }}

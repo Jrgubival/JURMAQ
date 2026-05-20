@@ -6,6 +6,7 @@ import AnimatedSection from "@/components/animations/AnimatedSection";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import DisponibilidadCalendario from "@/components/maquinarias/DisponibilidadCalendario";
+import { whatsappCtaMaquinaria } from "@jurmaq/shared/whatsapp";
 
 interface Maquinaria {
   id: number;
@@ -373,6 +374,47 @@ export default async function MaquinariaDetailPage({
                     </div>
                   </div>
 
+                  {/* Tabla comparador 1d / 1s / 1m (C1 Tier 3) — auto-derivada de tarifa_neta */}
+                  {desdePrecio !== null && machine.tarifa_neta && (
+                    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="text-left px-3 py-2 font-semibold text-gray-700 text-xs">Duración</th>
+                            <th className="text-right px-3 py-2 font-semibold text-gray-700 text-xs">Tarifa neta</th>
+                            <th className="text-right px-3 py-2 font-semibold text-gray-700 text-xs">Con IVA</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 text-xs">
+                          {(() => {
+                            const tarifaDia =
+                              machine.unidad_tarifa === 'hora'
+                                ? Number(machine.tarifa_neta) * Math.max(1, Number(machine.minimo_unidades || 6))
+                                : Number(machine.tarifa_neta);
+                            const semanaNeta = tarifaDia * 6;   // 1 semana = día × 6 (descuento ~14% vs 7d)
+                            const mesNeto = tarifaDia * 22;     // 1 mes = día × 22 (descuento ~27% vs 30d)
+                            const rows = [
+                              { label: '1 día', neto: tarifaDia },
+                              { label: '1 semana', neto: semanaNeta },
+                              { label: '1 mes', neto: mesNeto },
+                            ];
+                            return rows.map((r) => (
+                              <tr key={r.label}>
+                                <td className="px-3 py-2 text-gray-700">{r.label}</td>
+                                <td className="px-3 py-2 text-right tabular-nums text-gray-700">
+                                  {formatCLP(Math.round(r.neto)).replace('$', '$')}
+                                </td>
+                                <td className="px-3 py-2 text-right tabular-nums font-semibold text-navy-950">
+                                  {formatCLP(Math.round(r.neto * 1.19))}
+                                </td>
+                              </tr>
+                            ));
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
                   <p className="text-xs text-gray-500 leading-relaxed">
                     IVA incluido · No incluye traslado, peajes ni operario adicional.
                     Para precio final usa el cotizador online — toma 1 minuto.
@@ -399,7 +441,7 @@ export default async function MaquinariaDetailPage({
                   Cotizar este equipo — Sin compromiso
                 </Link>
                 <a
-                  href={`https://wa.me/56976673577?text=${encodeURIComponent(`Hola, me interesa arrendar: ${machine.nombre}`)}`}
+                  href={whatsappCtaMaquinaria(machine.id, machine.nombre)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"

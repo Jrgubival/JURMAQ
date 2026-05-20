@@ -5,6 +5,7 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import { TIPOS_MAQUINA, CIUDADES, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
+import { whatsappCtaTipo } from "@jurmaq/shared/whatsapp";
 
 interface Maquinaria {
   id: number;
@@ -175,7 +176,7 @@ export default async function ArriendoTipoPage({
             </p>
             <div className="flex flex-wrap gap-3">
               <a
-                href={HQ.whatsapp + `?text=Hola%2C%20quiero%20cotizar%20arriendo%20de%20${encodeURIComponent(tipoData.nombre)}`}
+                href={whatsappCtaTipo(tipoData.slug, tipoData.nombre)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -327,7 +328,7 @@ export default async function ArriendoTipoPage({
               Cotiza por WhatsApp y recibe disponibilidad + valor el mismo día.
             </p>
             <a
-              href={HQ.whatsapp + `?text=Hola%2C%20quiero%20cotizar%20arriendo%20de%20${encodeURIComponent(tipoData.nombre)}`}
+              href={whatsappCtaTipo(tipoData.slug, tipoData.nombre)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"

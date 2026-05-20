@@ -29,28 +29,50 @@ interface Desglose {
 
 const STEPS = ['Máquina', 'Servicio', 'Detalles', 'Confirmar'] as const;
 
+export interface WizardPrefill {
+  /** ID máquina pre-seleccionada (también acepta preselectId para back-compat) */
+  maquinariaId?: number | null;
+  ubicacion?: string;
+  unidades?: number;
+  km?: number;
+  peajes?: number;
+  operarios?: number;
+  horasOp?: number;
+  /** Datos del cliente (Fast checkout C4) */
+  cliente?: { nombre?: string; email?: string; telefono?: string; rut?: string; empresa?: string };
+}
+
 export default function WizardClient({
   maquinarias,
   preselectId = null,
+  prefill,
 }: {
   maquinarias: MaquinariaCatalog[];
   preselectId?: number | null;
+  prefill?: WizardPrefill;
 }) {
+  const effectivePreselect = prefill?.maquinariaId ?? preselectId;
   const initialPreselect = useMemo(
-    () => (preselectId ? maquinarias.find((m) => m.id === preselectId) ?? null : null),
-    [preselectId, maquinarias],
+    () => (effectivePreselect ? maquinarias.find((m) => m.id === effectivePreselect) ?? null : null),
+    [effectivePreselect, maquinarias],
   );
   const [step, setStep] = useState<number>(initialPreselect ? 1 : 0);
   const [selectedMaq, setSelectedMaq] = useState<MaquinariaCatalog | null>(initialPreselect);
-  const [unidades, setUnidades] = useState<number>(0);
+  const [unidades, setUnidades] = useState<number>(prefill?.unidades ?? 0);
   const [fechaInicio, setFechaInicio] = useState<string>('');
   const [fechaFin, setFechaFin] = useState<string>('');
-  const [ubicacion, setUbicacion] = useState<string>('');
-  const [km, setKm] = useState<number>(0);
-  const [peajes, setPeajes] = useState<number>(0);
-  const [operarios, setOperarios] = useState<number>(1);
-  const [horasOp, setHorasOp] = useState<number>(0);
-  const [cliente, setCliente] = useState({ nombre: '', email: '', telefono: '', rut: '', empresa: '' });
+  const [ubicacion, setUbicacion] = useState<string>(prefill?.ubicacion ?? '');
+  const [km, setKm] = useState<number>(prefill?.km ?? 0);
+  const [peajes, setPeajes] = useState<number>(prefill?.peajes ?? 0);
+  const [operarios, setOperarios] = useState<number>(prefill?.operarios ?? 1);
+  const [horasOp, setHorasOp] = useState<number>(prefill?.horasOp ?? 0);
+  const [cliente, setCliente] = useState({
+    nombre: prefill?.cliente?.nombre ?? '',
+    email: prefill?.cliente?.email ?? '',
+    telefono: prefill?.cliente?.telefono ?? '',
+    rut: prefill?.cliente?.rut ?? '',
+    empresa: prefill?.cliente?.empresa ?? '',
+  });
   const [notas, setNotas] = useState<string>('');
   const [desglose, setDesglose] = useState<Desglose | null>(null);
   const [loading, setLoading] = useState(false);

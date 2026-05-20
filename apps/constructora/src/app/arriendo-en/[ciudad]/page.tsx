@@ -6,6 +6,7 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TIPOS_MAQUINA, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
+import { whatsappCtaCiudad } from "@jurmaq/shared/whatsapp";
 
 interface Maquinaria {
   id: number;
@@ -192,7 +193,7 @@ export default async function ArriendoEnCiudadPage({
             <p className="text-gray-300 max-w-3xl mb-8">{c.contextoLocal}</p>
             <div className="flex flex-wrap gap-3">
               <a
-                href={HQ.whatsapp + `?text=Hola%2C%20necesito%20cotizar%20maquinaria%20en%20${encodeURIComponent(c.nombre)}`}
+                href={whatsappCtaCiudad(c.slug, c.nombre)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -380,7 +381,7 @@ export default async function ArriendoEnCiudadPage({
               Cotiza por WhatsApp y te confirmamos disponibilidad + traslado en el día.
             </p>
             <a
-              href={HQ.whatsapp + `?text=Hola%2C%20obra%20en%20${encodeURIComponent(c.nombre)}%2C%20necesito%20cotizar%20maquinaria`}
+              href={whatsappCtaCiudad(c.slug, c.nombre)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"

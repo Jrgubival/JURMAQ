@@ -6,6 +6,7 @@ import StaggeredGrid from "@/components/animations/StaggeredGrid";
 import HeroSlideshow from "@/components/animations/HeroSlideshow";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
+import { whatsappCtaHome } from "@jurmaq/shared/whatsapp";
 
 
 export const metadata: Metadata = {
@@ -516,7 +517,7 @@ export default async function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <a
-              href="https://wa.me/56976673577"
+              href={whatsappCtaHome()}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold text-base rounded-xl transition-colors"

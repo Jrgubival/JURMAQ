@@ -51,9 +51,33 @@ export default async function CotizacionDetailPage({
             Creada: {cot.created_at ? new Date(String(cot.created_at)).toLocaleString('es-CL') : '—'}
           </p>
         </div>
-        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-          {cot.estado}
-        </span>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* C4 Fast checkout: re-cotizar 1-click con los mismos datos */}
+          {cot.maquinaria_id && (
+            <Link
+              href={`/cotizar-arriendo?${new URLSearchParams({
+                maquinariaId: String(cot.maquinaria_id),
+                ubicacion: String(cot.ubicacion_servicio || ''),
+                unidades: String(cot.unidades_solicitadas || 1),
+                km: String(cot.distancia_km || 0),
+                peajes: String(cot.peajes || 0),
+                operarios: String(cot.operarios || 1),
+                horasOp: String(cot.horas_operario_estimadas || 0),
+                nombre: cliente.nombre,
+                email: cliente.email,
+                telefono: cliente.telefono ?? '',
+                rut: cliente.rut ?? '',
+                empresa: cliente.empresa ?? '',
+              }).toString()}`}
+              className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-xl whitespace-nowrap"
+            >
+              ↻ Cotizar similar (1-click)
+            </Link>
+          )}
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+            {cot.estado}
+          </span>
+        </div>
       </div>
 
       {/* Datos servicio */}

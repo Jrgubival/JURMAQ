@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ContactForm } from "@/components/public/ContactForm";
+import { whatsappCtaContacto } from "@jurmaq/shared/whatsapp";
 
 export const metadata: Metadata = {
   title:
@@ -216,7 +217,7 @@ export default function ContactoPage() {
 
               {/* WhatsApp Card */}
               <a
-                href="https://wa.me/56976673577"
+                href={whatsappCtaContacto()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block bg-green-600 hover:bg-green-700 rounded-2xl p-6 transition-colors group"

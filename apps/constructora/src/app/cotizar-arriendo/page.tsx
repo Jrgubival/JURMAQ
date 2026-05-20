@@ -24,11 +24,46 @@ interface MaquinariaCatalog {
 export default async function CotizarArriendoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ maquinariaId?: string }>;
+  searchParams: Promise<{
+    maquinariaId?: string;
+    ubicacion?: string;
+    unidades?: string;
+    km?: string;
+    peajes?: string;
+    operarios?: string;
+    horasOp?: string;
+    nombre?: string;
+    email?: string;
+    telefono?: string;
+    rut?: string;
+    empresa?: string;
+  }>;
 }) {
   const sp = await searchParams;
   const preselectId = sp.maquinariaId ? Number.parseInt(sp.maquinariaId, 10) : null;
   const validPreselect = Number.isFinite(preselectId) && preselectId! > 0 ? preselectId! : null;
+
+  // C4 Fast checkout: pre-llenar campos del wizard desde URL params.
+  const num = (v: string | undefined) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+  };
+  const prefill = {
+    maquinariaId: validPreselect,
+    ubicacion: sp.ubicacion || undefined,
+    unidades: num(sp.unidades),
+    km: num(sp.km),
+    peajes: num(sp.peajes),
+    operarios: num(sp.operarios),
+    horasOp: num(sp.horasOp),
+    cliente: {
+      nombre: sp.nombre || undefined,
+      email: sp.email || undefined,
+      telefono: sp.telefono || undefined,
+      rut: sp.rut || undefined,
+      empresa: sp.empresa || undefined,
+    },
+  };
 
   // Solo máquinas con tarifa configurada (lo demás aún no soporta cotización online)
   const { data } = await supabasePublic
@@ -72,7 +107,7 @@ export default async function CotizarArriendoPage({
             </p>
           </div>
         ) : (
-          <WizardClient maquinarias={maquinarias} preselectId={validPreselect} />
+          <WizardClient maquinarias={maquinarias} preselectId={validPreselect} prefill={prefill} />
         )}
 
         {/* Trust signals */}
