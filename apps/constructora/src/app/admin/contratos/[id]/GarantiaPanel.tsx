@@ -63,6 +63,11 @@ export default function GarantiaPanel({
   const [inspectMode, setInspectMode] = useState<'sin_danos' | 'con_danos' | null>(null);
   const [montoDano, setMontoDano] = useState(0);
   const [descDano, setDescDano] = useState('');
+  // Catálogo de daños (pre-llena monto + descripción al seleccionar).
+  const [catalogoDanos, setCatalogoDanos] = useState<
+    Array<{ id: string; categoria: string; descripcion: string; monto_clp: number }>
+  >([]);
+  const [selectedDanos, setSelectedDanos] = useState<Set<string>>(new Set());
 
   // Form cargo tardío (cuando finalizado)
   const [cargoTardioForm, setCargoTardioForm] = useState<{ open: boolean; monto: number; motivo: string }>({
@@ -424,6 +429,34 @@ export default function GarantiaPanel({
               )}
               {inspectMode === 'con_danos' && (
                 <div className="space-y-3">
+                  {/* Catálogo de daños — selección múltiple suma montos */}
+                  <CatalogoDanosPicker
+                    catalogo={catalogoDanos}
+                    selected={selectedDanos}
+                    onChange={(nuevo) => {
+                      setSelectedDanos(nuevo);
+                      // Recalcular monto + descripción.
+                      let totalMonto = 0;
+                      const descripciones: string[] = [];
+                      catalogoDanos.forEach((d) => {
+                        if (nuevo.has(d.id)) {
+                          totalMonto += d.monto_clp;
+                          descripciones.push(`${d.categoria}: ${d.descripcion} ($${d.monto_clp.toLocaleString('es-CL')})`);
+                        }
+                      });
+                      if (totalMonto > 0) setMontoDano(totalMonto);
+                      if (descripciones.length > 0) setDescDano(descripciones.join('\n'));
+                    }}
+                    onCargar={async () => {
+                      if (catalogoDanos.length > 0) return;
+                      const res = await fetch('/api/admin/catalogo-danos');
+                      if (res.ok) {
+                        const data = await res.json();
+                        setCatalogoDanos(data.items || []);
+                      }
+                    }}
+                  />
+
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Monto del daño (CLP)</label>
                     <input
@@ -674,6 +707,96 @@ function TradicionalRecibir({
       >
         Confirmar recepción
       </button>
+    </div>
+  );
+}
+
+function CatalogoDanosPicker({
+  catalogo,
+  selected,
+  onChange,
+  onCargar,
+}: {
+  catalogo: Array<{ id: string; categoria: string; descripcion: string; monto_clp: number }>;
+  selected: Set<string>;
+  onChange: (nueva: Set<string>) => void;
+  onCargar: () => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (open && catalogo.length === 0) void onCargar();
+  }, [open, catalogo.length, onCargar]);
+
+  const toggle = (id: string) => {
+    const nueva = new Set(selected);
+    if (nueva.has(id)) nueva.delete(id);
+    else nueva.add(id);
+    onChange(nueva);
+  };
+
+  // Agrupar por categoría.
+  const porCategoria = catalogo.reduce<Record<string, typeof catalogo>>((acc, d) => {
+    if (!acc[d.categoria]) acc[d.categoria] = [];
+    acc[d.categoria].push(d);
+    return acc;
+  }, {});
+
+  return (
+    <div className="border border-gray-200 rounded-xl bg-gray-50">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl"
+      >
+        <span>
+          📋 Catálogo de daños{' '}
+          {selected.size > 0 && (
+            <span className="text-orange-600 font-semibold">({selected.size} seleccionados)</span>
+          )}
+        </span>
+        <span className="text-gray-400">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-200 p-3 max-h-72 overflow-y-auto space-y-3">
+          {catalogo.length === 0 ? (
+            <div className="text-xs text-gray-500 text-center py-3">Cargando catálogo…</div>
+          ) : (
+            Object.entries(porCategoria).map(([cat, items]) => (
+              <div key={cat}>
+                <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">{cat}</h4>
+                <div className="space-y-1">
+                  {items.map((d) => (
+                    <label
+                      key={d.id}
+                      className={`flex items-center justify-between gap-2 px-2 py-1.5 rounded cursor-pointer text-sm hover:bg-white ${
+                        selected.has(d.id) ? 'bg-orange-50' : ''
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 flex-1 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(d.id)}
+                          onChange={() => toggle(d.id)}
+                          className="rounded border-gray-300"
+                        />
+                        <span className="text-gray-700 truncate">{d.descripcion}</span>
+                      </span>
+                      <span className="text-gray-900 font-medium tabular-nums whitespace-nowrap">
+                        ${d.monto_clp.toLocaleString('es-CL')}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+          <p className="text-[10px] text-gray-500 italic">
+            Los montos son referenciales. Puedes editar el total final manualmente.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

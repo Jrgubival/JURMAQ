@@ -5,6 +5,7 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import AnimatedSection from "@/components/animations/AnimatedSection";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
+import DisponibilidadCalendario from "@/components/maquinarias/DisponibilidadCalendario";
 
 interface Maquinaria {
   id: number;
@@ -385,6 +386,9 @@ export default async function MaquinariaDetailPage({
                   </Link>
                 </div>
               </div>
+
+              {/* Calendario de disponibilidad (próximos 30 días) */}
+              <DisponibilidadCalendario maquinariaId={machine.id} />
 
               {/* CTA Buttons */}
               <div className="space-y-3">

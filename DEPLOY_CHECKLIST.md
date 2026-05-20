@@ -115,9 +115,21 @@ apps/constructora/scripts/migrate-clientes-auth.sql            -- password_hash,
 
 -- 9. Sprint 4 (Klap Garantías Digitales — Fase A mock) — May 2026
 apps/constructora/scripts/migrate-klap-garantias.sql           -- klap_*, garantias_tradicionales, contratos_fotos, garantia_metodo, estados lifecycle
+
+-- 10. Sprint 5 (Mejoras post-comparativa rent a car) — May 2026
+apps/constructora/scripts/migrate-catalogo-danos.sql           -- catalogo_danos con 24 ítems seed para pre-llenar montos en inspección
+
+-- 11. Sprint 6 (Barraca e-commerce: cupones + carrito abandonado) — May 2026
+apps/barraca/scripts/migrate-cupones.sql                       -- barraca_cupones + barraca_cupones_usos + columnas en barraca_cotizaciones
+apps/barraca/scripts/migrate-carrito-abandonado.sql            -- barraca_carrito_abandonado para recovery emails
 ```
 
 Todas son idempotentes (`IF NOT EXISTS` / `OR REPLACE`).
+
+**Crons NUEVOS en barraca/vercel.json**:
+- `/api/cron/carrito-recovery` cada 30 min — envía 3-step recovery (1h, 24h, 72h con cupón 10%)
+
+Requiere `CRON_SECRET` en env de **barraca** (puede ser el mismo valor que en constructora).
 
 ### Crons en Vercel (apps/constructora/vercel.json)
 Asegurar que el `vercel.json` con la sección `crons` esté presente al deploy.

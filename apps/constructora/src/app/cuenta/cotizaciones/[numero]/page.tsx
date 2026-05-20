@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
+import CancelarCotizacionButton from './CancelarCotizacionButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +88,12 @@ export default async function CotizacionDetailPage({
           <p className="text-sm text-gray-700 whitespace-pre-wrap">{cot.notas_cliente}</p>
         </div>
       )}
+
+      <CancelarCotizacionButton
+        cotizacionId={cot.id}
+        estado={String(cot.estado)}
+        fechaServicio={cot.fecha_servicio ? String(cot.fecha_servicio) : null}
+      />
     </div>
   );
 }
