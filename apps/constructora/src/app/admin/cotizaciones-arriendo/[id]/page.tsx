@@ -208,6 +208,28 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
         >
           Ver PDF
         </button>
+        {/* F1 Tier 6: duplicar para re-cotizar mismo cliente/máquina */}
+        <button
+          type="button"
+          onClick={async () => {
+            const ok = await confirm({
+              title: '¿Duplicar esta cotización?',
+              message: 'Se creará una nueva en estado "borrador" con los mismos datos (cliente + máquina + traslado). La fecha de servicio queda vacía para que elijas la nueva.',
+              confirmLabel: 'Duplicar',
+            });
+            if (!ok) return;
+            const res = await fetch(`/api/admin/cotizaciones-arriendo/${id}/duplicar`, { method: 'POST' });
+            const data = await res.json();
+            if (res.ok && data.id) {
+              window.location.href = `/admin/cotizaciones-arriendo/${data.id}`;
+            } else {
+              alert(data.error || 'No se pudo duplicar');
+            }
+          }}
+          className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded font-semibold"
+        >
+          ↻ Duplicar
+        </button>
       </div>
       <ConfirmDialogPortal />
     </div>

@@ -16,6 +16,10 @@
     {
       "path": "/api/cron/klap-renew-holds",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/iec-notif",
+      "schedule": "0 8 1 * *"
     }
   ]
 }
