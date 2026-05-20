@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import ProductCard from "@/components/barraca/ProductCard";
 import AddToCartClient from "./AddToCartClient";
 import ShareButtons from "./ShareButtons";
+import ReviewsList from "@/components/barraca/ReviewsList";
 import ProductDetailImage from "@/components/barraca/ProductDetailImage";
 import ViewItemTracker from "@/components/analytics/ViewItemTracker";
 import { getActiveCategoryDiscountMap, getDailyPromotions } from "@/lib/promotions";
@@ -441,6 +442,9 @@ export default async function ProductoPage({
             </div>
           </div>
         </div>
+
+        {/* Reviews / opiniones de clientes */}
+        <ReviewsList productoId={producto.id} />
 
         {/* Related Products */}
         {(relacionados || []).length > 0 && (

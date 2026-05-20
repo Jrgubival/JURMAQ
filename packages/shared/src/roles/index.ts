@@ -62,7 +62,9 @@ export type BarracaModule =
   /** Programa de referidos: maestros registrados con código MAE-YYYY-NNN. */
   | 'barraca_maestros'
   /** Comisiones devengadas a maestros por ventas referidas (gestión pagos). */
-  | 'barraca_comisiones';
+  | 'barraca_comisiones'
+  /** Reviews/ratings de productos (moderación: aprobar/rechazar). */
+  | 'barraca_reviews';
 
 /**
  * Union de ambos. `Module` queda como type-alias para no romper los ~30
@@ -95,6 +97,7 @@ const ALL_BARRACA_MODULES: Module[] = [
   'barraca_suscriptores',
   'barraca_maestros',
   'barraca_comisiones',
+  'barraca_reviews',
 ];
 
 const ALL_MODULES: Module[] = [
@@ -144,6 +147,7 @@ export const ROLES: Record<RoleId, RoleDef> = {
       barraca_suscriptores: ALL_ACTIONS,
       barraca_maestros: ALL_ACTIONS,
       barraca_comisiones: ALL_ACTIONS,
+      barraca_reviews: ALL_ACTIONS,
     },
     badgeClass: 'bg-purple-100 text-purple-700',
   },
@@ -158,6 +162,7 @@ export const ROLES: Record<RoleId, RoleDef> = {
       'clientes',
       'contratos',
       'barraca_cotizaciones',
+      'barraca_reviews',
     ],
     permissions: {
       dashboard: ['read'],
@@ -172,6 +177,8 @@ export const ROLES: Record<RoleId, RoleDef> = {
       contratos: ['read', 'create', 'update', 'update_estado', 'anular', 'delete'],
       // Cotizaciones de la barraca también las atiende (mensajes, contraofertas).
       barraca_cotizaciones: ['read', 'create', 'update'],
+      // Reviews: lee + modera (aprueba/rechaza) — son contacto directo cliente.
+      barraca_reviews: ['read', 'update'],
     },
     badgeClass: 'bg-blue-100 text-blue-700',
   },

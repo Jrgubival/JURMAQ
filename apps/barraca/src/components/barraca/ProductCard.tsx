@@ -6,6 +6,7 @@ import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
 import { formatCLP } from "@jurmaq/shared/format";
 import WishlistHeart from "./WishlistHeart";
+import StarRating from "./StarRating";
 
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
@@ -55,6 +56,9 @@ interface ProductCardProps {
   precio_original?: number | null;
   en_oferta?: boolean;
   solo_cotizar?: boolean;
+  /** Tier 4 D2: rating agregado de reviews aprobadas. Opcional. */
+  rating?: number | null;
+  rating_count?: number;
 }
 
 function getSessionId(): string {
@@ -81,6 +85,8 @@ export default function ProductCard({
   precio_original,
   en_oferta,
   solo_cotizar,
+  rating,
+  rating_count,
 }: ProductCardProps) {
   const resolvedImage = getProductImage(imagen, categoriaSlug);
   const [adding, setAdding] = useState(false);
@@ -228,6 +234,12 @@ export default function ProductCard({
           </h3>
           {medida && (
             <p className="text-xs text-gray-400 mb-1">{medida}</p>
+          )}
+          {/* Tier 4 D2: rating si hay reviews aprobadas */}
+          {rating && rating > 0 && (
+            <div className="mb-1">
+              <StarRating value={rating} size="sm" count={rating_count} />
+            </div>
           )}
         </Link>
 
