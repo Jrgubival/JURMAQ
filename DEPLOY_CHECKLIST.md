@@ -122,6 +122,10 @@ apps/constructora/scripts/migrate-catalogo-danos.sql           -- catalogo_danos
 -- 11. Sprint 6 (Barraca e-commerce: cupones + carrito abandonado) — May 2026
 apps/barraca/scripts/migrate-cupones.sql                       -- barraca_cupones + barraca_cupones_usos + columnas en barraca_cotizaciones
 apps/barraca/scripts/migrate-carrito-abandonado.sql            -- barraca_carrito_abandonado para recovery emails
+
+-- 12. Tier 5+6 (operacional + admin polish) — May 2026
+apps/constructora/scripts/migrate-tipos-maquinaria.sql         -- E1: tabla tipos_maquinaria + FK con backfill por nombre
+apps/barraca/scripts/migrate-wishlist.sql                      -- D3: barraca_wishlist para clientes logueados
 ```
 
 Todas son idempotentes (`IF NOT EXISTS` / `OR REPLACE`).
