@@ -7,6 +7,7 @@ import { signOut, useSession } from 'next-auth/react';
 import type { Module } from '@jurmaq/shared/roles';
 import { visibleModules } from '@jurmaq/shared/roles';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
+import GlobalSearch from './GlobalSearch';
 
 /**
  * Admin panel se separa por dominio funcional:
@@ -359,16 +360,20 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             </svg>
           </button>
 
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3 flex-1">
             <span
               className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded"
               style={{ backgroundColor: '#fef3c7', color: '#92400e' }}
             >
               Constructora
             </span>
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-lg font-semibold text-gray-800 whitespace-nowrap">
               {navItems.find((item) => isActive(item.href))?.label || 'Admin'}
             </h2>
+            {/* F2-UI: búsqueda global cross-modulo. Cmd+K abre desde cualquier lado. */}
+            <div className="ml-6 flex-1 max-w-md">
+              <GlobalSearch />
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
