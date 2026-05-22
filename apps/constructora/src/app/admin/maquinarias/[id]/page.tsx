@@ -15,6 +15,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
 import { redirect } from 'next/navigation';
 import DocumentosClient from './DocumentosClient';
+import MantencionesClient from './MantencionesClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,6 +104,11 @@ export default async function MaquinariaDetailPage({
 
       {/* Documentos */}
       <DocumentosClient maquinariaId={m.id} maquinariaNombre={m.nombre} />
+
+      {/* Tier 5 E2: Historial mantenciones */}
+      <div className="mt-6">
+        <MantencionesClient maquinariaId={m.id} />
+      </div>
     </div>
   );
 }
