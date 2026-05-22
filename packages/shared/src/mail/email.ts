@@ -30,3 +30,15 @@ export { sendWelcomeEmail } from "./templates/welcome";
 export { sendPurchaseThankYouEmail } from "./templates/purchase-thank-you";
 export { sendReviewRequestEmail } from "./templates/review-request";
 export { sendReplenishmentEmail } from "./templates/replenishment";
+// Templates de email manual desde admin arriendo (follow-up, info pendiente, etc.)
+export {
+  sendAdminManualEmail,
+  previewAdminManualEmail,
+  ADMIN_MANUAL_EMAIL_KINDS,
+} from "./templates/admin-manual-arriendo";
+export type {
+  AdminManualEmailKind,
+  AdminManualEmailVars,
+  SendAdminManualEmailArgs,
+  KindMeta as AdminManualEmailKindMeta,
+} from "./templates/admin-manual-arriendo";

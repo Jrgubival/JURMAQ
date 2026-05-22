@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { formatCLP } from '@jurmaq/shared/format';
 import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
+import SendManualEmailModal from "@/components/admin/SendManualEmailModal";
 
 interface Cotizacion {
   id: number;
@@ -55,6 +56,8 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showInternal, setShowInternal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailToast, setEmailToast] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/admin/cotizaciones-arriendo/${id}`)
@@ -190,8 +193,14 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
         )}
       </section>
 
+      {emailToast && (
+        <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 text-green-800 text-sm rounded-xl">
+          ✓ Email enviado: <strong>{emailToast}</strong>
+        </div>
+      )}
+
       {/* Acciones */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
         {cot.estado === 'aceptada' && (
           <button
             type="button"
@@ -207,6 +216,13 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
           className="bg-navy-950 text-white px-4 py-2 rounded font-semibold hover:bg-navy-800"
         >
           Ver PDF
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowEmailModal(true)}
+          className="bg-white border border-blue-300 text-blue-700 hover:bg-blue-50 px-4 py-2 rounded font-semibold"
+        >
+          📧 Enviar email al cliente
         </button>
         {/* F1 Tier 6: duplicar para re-cotizar mismo cliente/máquina */}
         <button
@@ -232,6 +248,24 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
         </button>
       </div>
       <ConfirmDialogPortal />
+
+      <SendManualEmailModal
+        open={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        defaultTo={cot.cliente_email}
+        defaultVars={{
+          nombre: cot.cliente_nombre,
+          numero_cotizacion: cot.numero,
+          maquinaria: cot.maquinarias?.nombre,
+          fecha: new Date(cot.fecha_servicio).toLocaleDateString('es-CL'),
+          ubicacion: cot.ubicacion_servicio,
+        }}
+        cotizacionArriendoId={cot.id}
+        onSent={(asunto) => {
+          setEmailToast(asunto);
+          setTimeout(() => setEmailToast(null), 6000);
+        }}
+      />
     </div>
   );
 }
