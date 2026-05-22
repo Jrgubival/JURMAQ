@@ -26,3 +26,7 @@ export { sendCotizacionAdminEmail } from "./templates/cotizacion-admin";
 export { sendPaymentLinkEmail } from "./templates/payment-link";
 export { sendContraofertaEmail } from "./templates/contraoferta";
 export { sendWelcomeEmail } from "./templates/welcome";
+// Tier 4 D6: Post-purchase email automation (barraca).
+export { sendPurchaseThankYouEmail } from "./templates/purchase-thank-you";
+export { sendReviewRequestEmail } from "./templates/review-request";
+export { sendReplenishmentEmail } from "./templates/replenishment";

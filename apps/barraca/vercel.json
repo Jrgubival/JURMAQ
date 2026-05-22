@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/carrito-recovery",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/post-purchase",
+      "schedule": "0 9 * * *"
     }
   ]
 }

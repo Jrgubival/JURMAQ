@@ -3,6 +3,7 @@ import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { sendPurchaseThankYouEmail } from '@jurmaq/shared/mail/templates/purchase-thank-you';
 
 export async function GET(
   request: NextRequest,
@@ -86,7 +87,7 @@ export async function PUT(
 
     const { data: existing } = await supabaseAdmin
       .from('barraca_cotizaciones')
-      .select('id')
+      .select('id, estado, email, nombre, numero, total, purchase_thanks_sent_at')
       .eq('id', id)
       .single();
 
@@ -95,12 +96,18 @@ export async function PUT(
     }
 
     const updateData: Record<string, unknown> = {};
+    let transicionAPagada = false;
     if (body.estado !== undefined) {
       const ALLOWED_ESTADO = new Set(['pendiente', 'enviada', 'aprobada', 'rechazada', 'contraoferta', 'pagada']);
       if (!ALLOWED_ESTADO.has(body.estado)) {
         return NextResponse.json({ error: 'Estado invalido' }, { status: 400 });
       }
       updateData.estado = body.estado;
+      // Tier 4 D6: registrar timestamp + flag para enviar thank-you email.
+      if (body.estado === 'pagada' && existing.estado !== 'pagada') {
+        updateData.pagada_at = new Date().toISOString();
+        transicionAPagada = true;
+      }
     }
     if (body.notas !== undefined) updateData.notas = body.notas;
     if (body.contraoferta_items !== undefined) updateData.contraoferta_items = typeof body.contraoferta_items === 'string' ? body.contraoferta_items : JSON.stringify(body.contraoferta_items);
@@ -140,6 +147,24 @@ export async function PUT(
       .single();
 
     if (error) throw error;
+
+    // Tier 4 D6: enviar email de gracias inmediatamente al pasar a 'pagada'.
+    // Idempotente: si purchase_thanks_sent_at ya está set, no reenvía.
+    if (transicionAPagada && !existing.purchase_thanks_sent_at && existing.email) {
+      void sendPurchaseThankYouEmail({
+        to: String(existing.email),
+        nombre: String(existing.nombre || 'Cliente'),
+        numero: String(existing.numero || `#${id}`),
+        total: Number(existing.total || 0),
+      })
+        .then(() =>
+          supabaseAdmin
+            .from('barraca_cotizaciones')
+            .update({ purchase_thanks_sent_at: new Date().toISOString() })
+            .eq('id', id),
+        )
+        .catch((err) => console.error('[thank-you-email-fail]', err));
+    }
 
     return NextResponse.json(updated);
   } catch (error) {
