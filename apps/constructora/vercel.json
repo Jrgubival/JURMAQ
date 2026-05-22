@@ -20,6 +20,10 @@
     {
       "path": "/api/cron/iec-notif",
       "schedule": "0 8 1 * *"
+    },
+    {
+      "path": "/api/cron/mantenciones-alerta",
+      "schedule": "0 8 * * *"
     }
   ]
 }

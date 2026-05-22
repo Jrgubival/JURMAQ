@@ -13,6 +13,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
+import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
 import { isValidOrigin, sanitizeString, isValidEmail } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { maskEmail, hid } from '@jurmaq/shared/logging';
@@ -332,6 +333,17 @@ export async function POST(request: NextRequest) {
       desglose: publicDesglose,
     }).catch((e) => {
       console.error('[cot-arriendo-email-async-fail]', e instanceof Error ? e.message : String(e));
+    });
+
+    // Tier 6 F4: notificar admins de cotización arriendo nueva.
+    void createAdminNotification({
+      kind: 'cotizacion_arriendo_nueva',
+      title: `Cotización arriendo nueva ${inserted.numero}`,
+      body: `${cliente_nombre} · ${maquinaria.nombre} · ${unidades} ${maquinaria.unidad_tarifa}${unidades !== 1 ? 's' : ''} · ${ubicacion}`,
+      link: `/admin/cotizaciones-arriendo/${inserted.id}`,
+      severity: 'info',
+      ref_type: 'cotizacion_arriendo',
+      ref_id: String(inserted.id),
     });
 
     return NextResponse.json({

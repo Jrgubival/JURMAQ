@@ -8,6 +8,7 @@ import type { Module } from '@jurmaq/shared/roles';
 import { visibleModules } from '@jurmaq/shared/roles';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
 import GlobalSearch from './GlobalSearch';
+import NotificationsBell from './NotificationsBell';
 
 /**
  * Admin panel se separa por dominio funcional:
@@ -388,6 +389,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="flex items-center gap-3">
+            <NotificationsBell />
             <div className="text-right">
               <p className="text-sm font-medium text-gray-700">
                 {session?.user?.name || 'Administrador'}

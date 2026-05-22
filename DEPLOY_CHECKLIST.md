@@ -1,10 +1,93 @@
-# Deploy Checklist — JURMAQ.CL (actualizado 2026-05-18)
+# Deploy Checklist — JURMAQ.CL (actualizado 2026-05-20)
 
 Branch: `main` · Último commit listo para deploy: ver `git log --oneline -1`
 
 ---
 
-## 1) Migraciones SQL pendientes en Supabase production
+## 0) Sprint mayo 2026 — RESUMEN EJECUTIVO
+
+Este sprint cierra ~13 features grandes del roadmap. Aplica las migraciones de
+abajo, setea las env vars y deployea. Los crons nuevos se activan solos vía
+`vercel.json`.
+
+### Migraciones a aplicar AHORA (orden libre dentro de cada app)
+
+**Barraca** (proyecto Supabase `barraca`):
+```
+apps/barraca/scripts/migrate-maestros-referidos.sql       # B1: programa referidos
+apps/barraca/scripts/migrate-reviews.sql                  # D2: reviews + ratings
+apps/barraca/scripts/migrate-post-purchase.sql            # D6: emails automation
+apps/barraca/scripts/migrate-admin-notifications.sql      # F4: notif in-app
+apps/barraca/scripts/migrate-carrito-abandonado-sms.sql   # D7: SMS recovery
+```
+
+**Constructora** (proyecto Supabase `constructora`):
+```
+apps/constructora/scripts/migrate-admin-emails-log.sql            # email manual admin
+apps/constructora/scripts/migrate-maquinarias-mantenciones.sql    # E2: historial mantenciones
+apps/constructora/scripts/migrate-admin-notifications.sql         # F4: notif in-app
+```
+
+Todas son idempotentes (`IF NOT EXISTS`).
+
+### Env vars nuevas a setear en Vercel
+
+```bash
+# Barraca:
+NEXT_PUBLIC_BARRACA_URL=https://barraca.jurmaq.cl
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXX   # tracking GA4 ya wireado
+
+# Constructora:
+NEXT_PUBLIC_CONSTRUCTORA_URL=https://jurmaq.cl
+
+# Opcional pero recomendado (SMS recovery + OTP fallback):
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_FROM_NUMBER=+...
+```
+
+`CRON_SECRET` ya debería estar de sprints anteriores; si no, generá uno con
+`openssl rand -base64 32` y agregalo a ambas apps.
+
+### Crons nuevos (auto-activados al deploy)
+
+**Barraca** (`apps/barraca/vercel.json`):
+- `*/5 * * * *` — `/api/cron/sms-recovery` (D7 SMS @ 15 min)
+- `0 9 * * *` — `/api/cron/post-purchase` (D6 review request + replenishment)
+
+**Constructora** (`apps/constructora/vercel.json`):
+- `0 8 * * *` — `/api/cron/mantenciones-alerta` (F4 alerta mantenciones próximas)
+
+### Features deployadas en este sprint
+
+| Tier | Feature | UI accesible en |
+|---|---|---|
+| 2 B1 | Programa referidos maestros (barraca) | `/admin/maestros`, `/admin/comisiones`, `/maestros/[codigo]` |
+| 4 D2 | Reviews + ratings con moderación | `/admin/reviews`, integrado en producto detail |
+| 4 D4 | Customer 360 admin barraca | `/admin/clientes/[id]` |
+| 4 D6 | Post-purchase email automation | thank-you / review-request / replenishment |
+| 4 D7 | SMS recovery carrito @ 15 min | Twilio integration |
+| 5 E2 | Historial mantenciones por máquina | `/admin/maquinarias/[id]` sección nueva |
+| 5 E4 | Reporte rentabilidad arriendo | `/admin/reportes/rentabilidad` |
+| 6 F3 | Preview en vivo templates contrato | `/admin/contratos/templates` refactor |
+| 6 F4 | Notif in-app (ambas apps) | bell + dropdown + `/admin/notificaciones` |
+| 6 F5 | Bulk actions productos barraca | `/admin/productos` con checkboxes |
+| 7 G1 | Cross landings ciudad × tipo | `/arriendo-en/[ciudad]/[tipo]` (~90 páginas) |
+| 7 G2+G3 | GA4 funnel arriendo + sitemap dinámico | tracking + lastModified real |
+| ad-hoc | Templates email manual admin arriendo | Modal en `/admin/cotizaciones-arriendo/[id]` |
+
+### Bloqueados sin cambio (no se hicieron)
+
+| Item | Bloqueador | Esfuerzo |
+|---|---|---|
+| B2 Cotizador distancia | D-1: dirección REAL HQ | ~10h |
+| B3 Klap Fase B | Cuenta merchant Klap | ~3 días |
+| D1 Variantes producto | D-3: ¿necesitan variantes? | ~10h |
+| D5 Express checkout | Merchant Apple/Google Pay | ~4h |
+
+---
+
+## 1) Migraciones SQL pendientes en Supabase production (sprints anteriores)
 
 **Aplicar en Supabase Dashboard → SQL Editor, EN ESTE ORDEN.**
 

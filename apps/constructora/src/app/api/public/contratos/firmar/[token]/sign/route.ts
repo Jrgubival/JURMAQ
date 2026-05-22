@@ -8,6 +8,7 @@ import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logContratoEvent, resolveIpGeolocation } from '@/lib/contratos-audit';
 import crypto from 'crypto';
 import { hid } from '@jurmaq/shared/logging';
+import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
 
 /**
  * Use the Node runtime (not Edge) — puppeteer-core + @sparticuz/chromium-min
@@ -323,6 +324,17 @@ export async function POST(
         }
       }
     }
+
+    // Tier 6 F4: notificar admin que el contrato fue firmado.
+    void createAdminNotification({
+      kind: 'contrato_firmado',
+      title: `Contrato firmado: ${contrato.numero}`,
+      body: `${contrato.arrendatario_nombre || contrato.arrendatario_razon_social || 'Cliente'} firmó el contrato. Email con PDF ${emailSent ? 'enviado' : 'no enviado'}.`,
+      link: `/admin/contratos/${contrato.id}`,
+      severity: 'success',
+      ref_type: 'contrato',
+      ref_id: String(contrato.id),
+    });
 
     return NextResponse.json({
       success: true,
