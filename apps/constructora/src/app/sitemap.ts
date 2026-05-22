@@ -27,6 +27,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
+  // Tier 7 G1: cross landings ciudad × tipo (N×M).
+  const ciudadTipoLandings: MetadataRoute.Sitemap = CIUDADES.flatMap((c) =>
+    TIPOS_MAQUINA.map((t) => ({
+      url: `${baseUrl}/arriendo-en/${c.slug}/${t.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8, // alta intención (long-tail), pero por debajo de las landings padre
+    })),
+  );
+
   // --- Main site pages ---
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -80,6 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages,
     ...tipoLandings,
     ...ciudadArriendoLandings,
+    ...ciudadTipoLandings,
     ...machineUrls,
   ];
 }

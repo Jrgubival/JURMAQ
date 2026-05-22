@@ -70,6 +70,24 @@ export function whatsappCtaTipo(tipoSlug: string, tipoNombre: string): string {
   });
 }
 
+/**
+ * Tier 7 G1: cross landing ciudad × tipo. Mensaje específico para que el
+ * equipo sepa de inmediato qué ciudad + qué máquina cotizar al recibir
+ * el WhatsApp.
+ */
+export function whatsappCtaCiudadTipo(
+  ciudadSlug: string,
+  ciudadNombre: string,
+  tipoSlug: string,
+  tipoNombre: string,
+): string {
+  return buildWhatsappUrl({
+    text: `Hola, necesito ${tipoNombre.toLowerCase()} en arriendo para ${ciudadNombre}`,
+    utm_content: `ciudad_${ciudadSlug}_tipo_${tipoSlug}`,
+    utm_campaign: 'arriendo_cross_landing',
+  });
+}
+
 /** Variante "homepage hero": genérica. */
 export function whatsappCtaHome(): string {
   return buildWhatsappUrl({
