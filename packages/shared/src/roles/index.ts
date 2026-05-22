@@ -64,7 +64,9 @@ export type BarracaModule =
   /** Comisiones devengadas a maestros por ventas referidas (gestión pagos). */
   | 'barraca_comisiones'
   /** Reviews/ratings de productos (moderación: aprobar/rechazar). */
-  | 'barraca_reviews';
+  | 'barraca_reviews'
+  /** Customer 360 — clientes barraca registrados con historial agregado. */
+  | 'barraca_clientes';
 
 /**
  * Union de ambos. `Module` queda como type-alias para no romper los ~30
@@ -98,6 +100,7 @@ const ALL_BARRACA_MODULES: Module[] = [
   'barraca_maestros',
   'barraca_comisiones',
   'barraca_reviews',
+  'barraca_clientes',
 ];
 
 const ALL_MODULES: Module[] = [
@@ -148,6 +151,7 @@ export const ROLES: Record<RoleId, RoleDef> = {
       barraca_maestros: ALL_ACTIONS,
       barraca_comisiones: ALL_ACTIONS,
       barraca_reviews: ALL_ACTIONS,
+      barraca_clientes: ALL_ACTIONS,
     },
     badgeClass: 'bg-purple-100 text-purple-700',
   },
@@ -163,6 +167,7 @@ export const ROLES: Record<RoleId, RoleDef> = {
       'contratos',
       'barraca_cotizaciones',
       'barraca_reviews',
+      'barraca_clientes',
     ],
     permissions: {
       dashboard: ['read'],
@@ -179,6 +184,8 @@ export const ROLES: Record<RoleId, RoleDef> = {
       barraca_cotizaciones: ['read', 'create', 'update'],
       // Reviews: lee + modera (aprueba/rechaza) — son contacto directo cliente.
       barraca_reviews: ['read', 'update'],
+      // Clientes 360: lee para atención, no edita (los clientes manejan sus datos).
+      barraca_clientes: ['read'],
     },
     badgeClass: 'bg-blue-100 text-blue-700',
   },
