@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
+import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
 
 /**
  * GET    /api/cuenta/reviews                — lista MIS reviews
@@ -145,6 +146,21 @@ export async function POST(request: NextRequest) {
     }
     console.error('[review-create-fail]', error);
     return NextResponse.json({ error: 'Error creando review' }, { status: 500 });
+  }
+
+  // Tier 6 F4: notificar admins si la review no es de compra verificada
+  // (queda 'pendiente' y necesita moderación). NO bloquear el flujo si
+  // falla.
+  if (!compraVerificada && data?.id) {
+    void createAdminNotification({
+      kind: 'review_pendiente',
+      title: 'Nueva review esperando moderación',
+      body: `${producto ? `Producto #${productoId}` : 'Producto desconocido'} — ${rating}★ — sin compra verificada`,
+      link: '/admin/reviews?estado=pendiente',
+      severity: 'warning',
+      ref_type: 'review',
+      ref_id: String(data.id),
+    });
   }
 
   return NextResponse.json({ ok: true, review: data });

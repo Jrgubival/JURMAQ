@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeString, isValidEmail, escapeLikePattern, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
+import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -319,6 +320,20 @@ export async function POST(request: NextRequest) {
       const msg = adminResult.reason instanceof Error ? adminResult.reason.message : String(adminResult.reason);
       logSafeError('email-admin-fail', { numero, msg });
     }
+
+    // Tier 6 F4: notificar admins de cotización nueva (con código maestro
+    // destacado si aplica).
+    void createAdminNotification({
+      kind: 'cotizacion_nueva',
+      title: codigoMaestroValido
+        ? `Cotización nueva ${numero} (referida por ${codigoMaestroValido})`
+        : `Cotización nueva ${numero}`,
+      body: `${nombre} · ${total > 0 ? `$${total.toLocaleString('es-CL')}` : 'sin total'}`,
+      link: `/admin/cotizaciones/${cotizacion.id}`,
+      severity: codigoMaestroValido ? 'success' : 'info',
+      ref_type: 'cotizacion',
+      ref_id: String(cotizacion.id),
+    });
 
     return NextResponse.json(cotizacion, { status: 201 });
   } catch (error) {

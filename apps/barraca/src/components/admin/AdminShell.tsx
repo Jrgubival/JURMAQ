@@ -7,6 +7,7 @@ import { signOut, useSession } from 'next-auth/react';
 import type { Module } from '@jurmaq/shared/roles';
 import { visibleModules } from '@jurmaq/shared/roles';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
+import NotificationsBell from './NotificationsBell';
 
 /**
  * AdminShell — panel admin de Barraca (e-commerce de fierros y materiales).
@@ -367,6 +368,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="flex items-center gap-3">
+            <NotificationsBell />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-gray-700">
                 {session?.user?.name || 'Administrador'}

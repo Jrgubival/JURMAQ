@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { sendPurchaseThankYouEmail } from '@jurmaq/shared/mail/templates/purchase-thank-you';
+import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
 
 export async function GET(
   request: NextRequest,
@@ -87,7 +88,7 @@ export async function PUT(
 
     const { data: existing } = await supabaseAdmin
       .from('barraca_cotizaciones')
-      .select('id, estado, email, nombre, numero, total, purchase_thanks_sent_at')
+      .select('id, estado, email, nombre, numero, total, purchase_thanks_sent_at, codigo_maestro, maestro_id')
       .eq('id', id)
       .single();
 
@@ -164,6 +165,20 @@ export async function PUT(
             .eq('id', id),
         )
         .catch((err) => console.error('[thank-you-email-fail]', err));
+    }
+
+    // Tier 6 F4: notif admin si transición a pagada generó comisión a maestro
+    // (el trigger devengar_comision_barraca ya creó la comisión en DB).
+    if (transicionAPagada && existing.codigo_maestro) {
+      void createAdminNotification({
+        kind: 'comision_devengada',
+        title: `Comisión devengada (${existing.codigo_maestro})`,
+        body: `Cotización ${existing.numero || `#${id}`} pagada · ${existing.nombre || 'Cliente'}. La comisión del maestro está pendiente de pago.`,
+        link: '/admin/comisiones?estado=devengada',
+        severity: 'success',
+        ref_type: 'cotizacion',
+        ref_id: String(id),
+      });
     }
 
     return NextResponse.json(updated);
