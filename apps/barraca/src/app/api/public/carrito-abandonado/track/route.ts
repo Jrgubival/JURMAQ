@@ -27,6 +27,8 @@ interface Item {
 
 interface Body {
   email?: string;
+  /** Tier 4 D7: teléfono para SMS recovery @ 15 min. */
+  telefono?: string;
   session_id?: string;
   usuario_id?: number;
   items?: Item[];
@@ -46,6 +48,7 @@ export async function POST(request: NextRequest) {
 
   const body = (await request.json().catch(() => ({}))) as Body;
   const email = sanitizeString(body.email)?.toLowerCase();
+  const telefono = sanitizeString(body.telefono)?.trim();
   const sessionId = sanitizeString(body.session_id);
   const items = Array.isArray(body.items) ? body.items : [];
   const total = Number(body.total) || 0;
@@ -95,12 +98,14 @@ export async function POST(request: NextRequest) {
         total,
         last_activity: new Date().toISOString(),
         email: email || undefined,
+        telefono: telefono || undefined,
         session_id: sessionId || undefined,
       })
       .eq('id', existing.id);
   } else {
     await supabaseAdmin.from('barraca_carrito_abandonado').insert({
       email: email || '',
+      telefono: telefono || null,
       session_id: sessionId,
       usuario_id: body.usuario_id ?? null,
       items,

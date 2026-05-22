@@ -157,12 +157,16 @@ export default function CarritoPage() {
     if (subtotal <= 0) return;
 
     let email = '';
+    let telefono = '';
     let sessionId = '';
     try {
       const stored = localStorage.getItem('barraca_user');
       if (stored) {
         const u = JSON.parse(stored);
         if (u?.email) email = String(u.email);
+        // Tier 4 D7: SMS recovery requiere telefono — solo lo enviamos si el
+        // cliente está logueado (consent implícito en registro).
+        if (u?.telefono) telefono = String(u.telefono);
       }
       sessionId = localStorage.getItem('barraca_session_id') || '';
       if (!email && cuponEmail) email = cuponEmail;
@@ -176,6 +180,7 @@ export default function CarritoPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
+          telefono: telefono || undefined,
           session_id: sessionId,
           items: items.map((i) => ({
             producto_id: i.producto_id,

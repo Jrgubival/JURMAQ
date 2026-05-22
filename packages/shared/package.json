@@ -19,6 +19,7 @@
     "./otp": "./src/otp/index.ts",
     "./whatsapp": "./src/whatsapp/index.ts",
     "./notifications/admin": "./src/notifications/admin.ts",
+    "./sms": "./src/sms/index.ts",
     "./seo": "./src/seo/index.ts",
     "./seo/prerender-rules": "./src/seo/prerender-rules.ts",
     "./logging": "./src/logging/index.ts",

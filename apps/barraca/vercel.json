@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/post-purchase",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/sms-recovery",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
