@@ -62,16 +62,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // --- Machinery detail pages ---
+  // updated_at real si existe — Google premia páginas con contenido fresco.
   const { data: machines } = await supabasePublic
     .from('maquinarias')
-    .select('id');
+    .select('id, updated_at');
 
-  const machineUrls: MetadataRoute.Sitemap = (machines || []).map((m: { id: number | string }) => ({
-    url: `${baseUrl}/maquinarias/${m.id}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
+  const machineUrls: MetadataRoute.Sitemap = (machines || []).map(
+    (m: { id: number | string; updated_at?: string | null }) => ({
+      url: `${baseUrl}/maquinarias/${m.id}`,
+      lastModified: m.updated_at ? new Date(m.updated_at) : new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }),
+  );
 
   return [
     ...staticPages,

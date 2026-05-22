@@ -189,4 +189,68 @@ export const trackEvents = {
   whatsappClick(source: string) {
     trackCustom('whatsapp_click', { source });
   },
+
+  /**
+   * Funnel del wizard de arriendo. Trackear cada step permite calcular
+   * conversion rate en GA4 (Funnel exploration: arriendo_wizard_step_0 →
+   * step_1 → step_2 → step_3 → cotizacion_arriendo_submitted).
+   *
+   * Tier 7 G2: arriendo_wizard analytics.
+   */
+  arriendoWizardStart(maquinariaId?: number | null, source?: 'preselect' | 'catalogo' | 'fast_checkout') {
+    trackCustom('arriendo_wizard_start', {
+      maquinaria_id: maquinariaId ?? null,
+      source: source || 'catalogo',
+    });
+  },
+  /**
+   * Cliente avanza al siguiente paso. step_name describe el paso QUE COMPLETÓ,
+   * no el siguiente (mejor para análisis funnel).
+   */
+  arriendoWizardStepCompleted(stepIndex: number, stepName: string, maquinariaId?: number | null) {
+    trackCustom('arriendo_wizard_step_completed', {
+      step_index: stepIndex,
+      step_name: stepName,
+      maquinaria_id: maquinariaId ?? null,
+    });
+  },
+  /**
+   * Cotización arriendo enviada con éxito. Disparo final del funnel +
+   * generate_lead (para Google Ads conversiones).
+   *
+   * Idempotente vía sessionStorage como en `purchase`.
+   */
+  arriendoCotizacionSubmitted(args: {
+    numero: string;
+    total: number;
+    maquinariaId: number;
+    maquinariaNombre?: string;
+    ubicacion?: string;
+    duracionUnidades?: number;
+    fechaInicio?: string;
+  }) {
+    if (typeof window === 'undefined') return;
+    const key = `ga4_arriendo_${args.numero}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+
+    // generate_lead estandarizado (Google Ads recoge automáticamente).
+    track('generate_lead', {
+      currency: CURRENCY,
+      value: args.total,
+      form_type: 'cotizacion_arriendo',
+      transaction_id: args.numero,
+    });
+    // Evento custom con dimensions específicas del rubro arriendo.
+    trackCustom('arriendo_cotizacion_submitted', {
+      transaction_id: args.numero,
+      currency: CURRENCY,
+      value: args.total,
+      maquinaria_id: args.maquinariaId,
+      maquinaria_nombre: args.maquinariaNombre,
+      ubicacion: args.ubicacion,
+      duracion_unidades: args.duracionUnidades,
+      fecha_inicio: args.fechaInicio,
+    });
+  },
 };

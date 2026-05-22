@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { formatCLP } from '@jurmaq/shared/format';
+import { trackEvents } from '@/lib/analytics';
 
 interface MaquinariaCatalog {
   id: number;
@@ -116,6 +117,21 @@ export default function WizardClient({
   // visual cue well enough; if we want polished motion again add gsap to
   // apps/constructora/package.json.
 
+  // Tier 7 G2: wizard_start tracking (1 vez por mount, no por re-render).
+  const startTrackedRef = useRef(false);
+  useEffect(() => {
+    if (startTrackedRef.current) return;
+    startTrackedRef.current = true;
+    trackEvents.arriendoWizardStart(
+      effectivePreselect ?? null,
+      prefill?.cliente?.email
+        ? 'fast_checkout'
+        : effectivePreselect
+        ? 'preselect'
+        : 'catalogo',
+    );
+  }, [effectivePreselect, prefill?.cliente?.email]);
+
   const canAdvance = useMemo(() => {
     if (step === 0) return !!selectedMaq;
     if (step === 1) return !!fechaInicio && !!ubicacion && unidades > 0;
@@ -154,6 +170,16 @@ export default function WizardClient({
         setError(data.error || 'Error al crear cotización');
       } else {
         setSuccess({ numero: data.numero, total: data.desglose.total });
+        // Tier 7 G2: conversion event + generate_lead para Google Ads.
+        trackEvents.arriendoCotizacionSubmitted({
+          numero: data.numero,
+          total: data.desglose.total,
+          maquinariaId: selectedMaq.id,
+          maquinariaNombre: selectedMaq.nombre,
+          ubicacion,
+          duracionUnidades: unidades,
+          fechaInicio,
+        });
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error de red');
@@ -479,7 +505,15 @@ export default function WizardClient({
           {step < 3 ? (
             <button
               type="button"
-              onClick={() => setStep(step + 1)}
+              onClick={() => {
+                // Tier 7 G2: track conversion funnel.
+                trackEvents.arriendoWizardStepCompleted(
+                  step,
+                  STEPS[step],
+                  selectedMaq?.id ?? null,
+                );
+                setStep(step + 1);
+              }}
               disabled={!canAdvance}
               className="px-5 py-2 bg-orange-500 text-white rounded font-semibold hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >

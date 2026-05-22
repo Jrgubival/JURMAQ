@@ -113,18 +113,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // All active products via la vista publica (sin costo).
+  // All active products via la vista publica (sin costo). Usamos updated_at
+  // real si existe para señalar a Google qué páginas tienen contenido fresco
+  // (cambio de precio, stock, descripción) y mejorar crawl prioritization.
   const { data: products } = await supabasePublic
     .from('barraca_productos_public')
-    .select('slug')
+    .select('slug, updated_at')
     .eq('activo', true);
 
-  const productUrls: MetadataRoute.Sitemap = (products || []).map((p: { slug: string }) => ({
+  const productUrls: MetadataRoute.Sitemap = (products || []).map((p: { slug: string; updated_at?: string | null }) => ({
     url: `${baseUrl}/producto/${p.slug}`,
-    lastModified: new Date(),
+    lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
 
-  return [...staticPages, ...alternativaUrls, ...guiasUrls, ...categoryUrls, ...productUrls];
+  // Tier 2 B1: páginas públicas de maestros referidos (link share que
+  // arman maestros para sus clientes). Solo maestros activos.
+  const { data: maestros } = await supabasePublic
+    .from('maestros')
+    .select('codigo')
+    .eq('activo', true);
+
+  const maestroUrls: MetadataRoute.Sitemap = (maestros || []).map((m: { codigo: string }) => ({
+    url: `${baseUrl}/maestros/${m.codigo}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
+
+  return [
+    ...staticPages,
+    ...alternativaUrls,
+    ...guiasUrls,
+    ...categoryUrls,
+    ...productUrls,
+    ...maestroUrls,
+  ];
 }
