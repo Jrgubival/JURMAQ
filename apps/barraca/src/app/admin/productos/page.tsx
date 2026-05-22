@@ -58,6 +58,13 @@ export default function BarracaProductosPage() {
   const [saving, setSaving] = useState(false);
   const perPage = 15;
 
+  // Tier 6 F5: bulk selection state.
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkAction, setBulkAction] = useState<string>('');
+  const [bulkPayload, setBulkPayload] = useState<{ categoria_id?: string; percent?: string }>({});
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkMsg, setBulkMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+
   const fetchData = async () => {
     try {
       const [prodRes, catRes] = await Promise.all([
@@ -181,6 +188,86 @@ export default function BarracaProductosPage() {
     return cat ? cat.nombre : '-';
   };
 
+  // Tier 6 F5: bulk action handlers.
+  function toggleSelect(id: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function toggleSelectAllVisible() {
+    const allSelected = paginated.every((p) => selectedIds.has(p.id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) paginated.forEach((p) => next.delete(p.id));
+      else paginated.forEach((p) => next.add(p.id));
+      return next;
+    });
+  }
+  function clearSelection() {
+    setSelectedIds(new Set());
+    setBulkAction('');
+    setBulkPayload({});
+  }
+
+  async function runBulkAction() {
+    if (selectedIds.size === 0 || !bulkAction) return;
+    // Confirmar acciones destructivas.
+    if (bulkAction === 'deactivate' || bulkAction === 'apply_discount' || bulkAction === 'remove_discount') {
+      const ok = window.confirm(
+        `Vas a aplicar "${bulkAction}" a ${selectedIds.size} productos. ¿Confirmás?`,
+      );
+      if (!ok) return;
+    }
+
+    const payload: Record<string, unknown> = {};
+    if (bulkAction === 'change_category') {
+      if (!bulkPayload.categoria_id) {
+        setBulkMsg({ kind: 'err', text: 'Elegí una categoría' });
+        return;
+      }
+      payload.categoria_id = Number(bulkPayload.categoria_id);
+    }
+    if (bulkAction === 'apply_discount') {
+      const pct = Number(bulkPayload.percent);
+      if (!Number.isFinite(pct) || pct <= 0 || pct >= 100) {
+        setBulkMsg({ kind: 'err', text: '% debe estar entre 1 y 99' });
+        return;
+      }
+      payload.percent = pct;
+    }
+
+    setBulkRunning(true);
+    setBulkMsg(null);
+    try {
+      const res = await fetch('/api/admin/productos/bulk-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ids: Array.from(selectedIds),
+          action: bulkAction,
+          payload,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBulkMsg({ kind: 'err', text: data.error || 'Error al aplicar acción' });
+        return;
+      }
+      setBulkMsg({
+        kind: 'ok',
+        text: `Acción aplicada a ${data.affected} producto(s)${data.failed ? `. ${data.failed} fallaron.` : '.'}`,
+      });
+      clearSelection();
+      await fetchData();
+    } finally {
+      setBulkRunning(false);
+      setTimeout(() => setBulkMsg(null), 5000);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -232,12 +319,108 @@ export default function BarracaProductosPage() {
         </select>
       </div>
 
+      {/* Bulk action bar (Tier 6 F5) — solo visible si hay selección */}
+      {selectedIds.size > 0 && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 flex flex-col md:flex-row items-start md:items-center gap-3 sticky top-2 z-10 shadow-sm">
+          <p className="text-sm font-semibold text-orange-900">
+            {selectedIds.size} producto{selectedIds.size !== 1 ? 's' : ''} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+          </p>
+          <div className="flex-1 flex flex-wrap items-center gap-2">
+            <select
+              value={bulkAction}
+              onChange={(e) => {
+                setBulkAction(e.target.value);
+                setBulkPayload({});
+              }}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+            >
+              <option value="">— Elegí acción —</option>
+              <optgroup label="Estado">
+                <option value="activate">Activar</option>
+                <option value="deactivate">Desactivar</option>
+              </optgroup>
+              <optgroup label="Destacado">
+                <option value="feature">Marcar como destacado</option>
+                <option value="unfeature">Quitar destacado</option>
+              </optgroup>
+              <optgroup label="Catálogo">
+                <option value="change_category">Cambiar categoría…</option>
+              </optgroup>
+              <optgroup label="Precios">
+                <option value="apply_discount">Aplicar descuento %…</option>
+                <option value="remove_discount">Quitar descuento</option>
+              </optgroup>
+            </select>
+
+            {bulkAction === 'change_category' && (
+              <select
+                value={bulkPayload.categoria_id || ''}
+                onChange={(e) => setBulkPayload({ categoria_id: e.target.value })}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+              >
+                <option value="">— Categoría —</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={String(c.id)}>{c.nombre}</option>
+                ))}
+              </select>
+            )}
+
+            {bulkAction === 'apply_discount' && (
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={bulkPayload.percent || ''}
+                onChange={(e) => setBulkPayload({ percent: e.target.value })}
+                placeholder="% (1-99)"
+                className="w-20 px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+              />
+            )}
+
+            <button
+              onClick={runBulkAction}
+              disabled={bulkRunning || !bulkAction}
+              className="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg"
+            >
+              {bulkRunning ? 'Aplicando…' : 'Aplicar a seleccionados'}
+            </button>
+            <button
+              onClick={clearSelection}
+              className="px-3 py-1.5 text-sm text-gray-600 hover:bg-orange-100 rounded-lg"
+            >
+              Limpiar selección
+            </button>
+          </div>
+        </div>
+      )}
+
+      {bulkMsg && (
+        <div
+          className={`px-4 py-3 rounded-xl text-sm ${
+            bulkMsg.kind === 'ok'
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}
+        >
+          {bulkMsg.text}
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-3 py-3 w-8">
+                  <input
+                    type="checkbox"
+                    checked={paginated.length > 0 && paginated.every((p) => selectedIds.has(p.id))}
+                    onChange={toggleSelectAllVisible}
+                    className="cursor-pointer"
+                    aria-label="Seleccionar todos"
+                  />
+                </th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Imagen</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Codigo</th>
                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Nombre</th>
@@ -251,7 +434,21 @@ export default function BarracaProductosPage() {
             </thead>
             <tbody>
               {paginated.map((p) => (
-                <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <tr
+                  key={p.id}
+                  className={`border-b border-gray-100 transition-colors ${
+                    selectedIds.has(p.id) ? 'bg-orange-50' : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <td className="px-3 py-3 w-8">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(p.id)}
+                      onChange={() => toggleSelect(p.id)}
+                      className="cursor-pointer"
+                      aria-label={`Seleccionar ${p.nombre}`}
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
                       {p.imagen ? (
@@ -301,7 +498,7 @@ export default function BarracaProductosPage() {
               ))}
               {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
                     No se encontraron productos
                   </td>
                 </tr>
