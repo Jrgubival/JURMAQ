@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import BarracaShell from "./BarracaShell";
+import Analytics from "@/components/Analytics";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -40,6 +41,9 @@ export default function BarracaLayout({
   return (
     <html lang="es-CL">
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
+        {/* P0 audit-analytics fix: Analytics no estaba en el árbol, todo trackEvents.*
+            quedaba no-op (0 datos GA4). Esta línea repara el bug. */}
+        <Analytics />
         <BarracaShell>{children}</BarracaShell>
       </body>
     </html>
