@@ -7,6 +7,8 @@ import HeroSlideshow from "@/components/animations/HeroSlideshow";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaHome } from "@jurmaq/shared/whatsapp";
+import HeroSearch from "@/components/public/HeroSearch";
+import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
 
 
 export const metadata: Metadata = {
@@ -135,6 +137,16 @@ export default async function HomePage() {
     .select('*')
     .limit(3);
 
+  // Conteos por tipo para CategoriasShowcase
+  const { data: allMachines } = await supabasePublic
+    .from('maquinarias')
+    .select('tipo');
+  const categoryCounts: Partial<Record<TipoCategoria, number>> = {};
+  for (const m of allMachines || []) {
+    const t = (m as any).tipo as TipoCategoria;
+    categoryCounts[t] = (categoryCounts[t] || 0) + 1;
+  }
+
   return (
     <>
       <main id="main-content">
@@ -160,38 +172,33 @@ export default async function HomePage() {
               Construcción industrial, arriendo de maquinaria, maestranza y fierros. 25 años resolviendo proyectos en la Región del Maule.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/contacto"
-                  data-magnetic
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold text-base rounded-xl transition-colors"
-                >
-                  Pedir presupuesto gratis
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </Link>
-                <Link
-                  href="/maquinarias"
-                  data-magnetic
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-gray-600 hover:border-gold-500 text-white hover:text-gold-500 font-semibold text-base rounded-xl transition-colors"
-                >
-                  Ver equipos disponibles
-                </Link>
-              </div>
-              <p className="text-sm text-gray-400 mt-3">
-                Sin compromiso — Respondemos en menos de 2 horas
-              </p>
+            {/* Hero Search Bar — estilo Rendalomaq */}
+            <div className="mb-4">
+              <HeroSearch />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <Link
+                href="/como-funciona"
+                className="inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-gold-400 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Cómo funciona el arriendo
+              </Link>
+              <a
+                href={whatsappCtaHome()}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-gold-400 transition-colors"
+              >
+                💬 Cotizar por WhatsApp
+              </a>
+            </div>
+            <p className="text-sm text-gray-400 mt-4">
+              ⚡ Respuesta en menos de 2 horas · Mejoramos cotizaciones de la competencia
+            </p>
             </div>
 
           {/* Stats Bar */}
@@ -308,6 +315,14 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ===== CATEGORIAS DE MAQUINARIA ===== */}
+      <CategoriasShowcase
+        counts={categoryCounts}
+        variant="light"
+        title="Encuentra la máquina ideal para tu faena"
+        subtitle="Catálogo organizado por categoría — desde retros hasta brazos articulados, todo con mantención al día."
+      />
+
       {/* ===== FEATURED MACHINERY ===== */}
         {(featuredMachines || []).length > 0 && (
           <section className="py-16 lg:py-24 bg-gray-50 content-auto">
@@ -318,7 +333,7 @@ export default async function HomePage() {
                   Maquinaria Disponible
                 </span>
                 <h2 className="text-3xl lg:text-4xl font-extrabold text-navy-950">
-                  Arriendo de Equipos
+                  Equipos destacados
                 </h2>
               </div>
               <Link

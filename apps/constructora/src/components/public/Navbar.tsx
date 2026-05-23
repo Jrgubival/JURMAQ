@@ -10,8 +10,8 @@ import { whatsappCtaHome } from '@jurmaq/shared/whatsapp';
  * Sticky top, transparente sobre hero navy + sólido cuando scrolleas.
  */
 const NAV_LINKS = [
-  { href: '/', label: 'Inicio' },
   { href: '/maquinarias', label: 'Maquinarias' },
+  { href: '/como-funciona', label: 'Cómo Funciona' },
   { href: '/arriendo-en/curico', label: 'Arriendo Maule' },
   { href: 'https://barraca.jurmaq.cl', label: 'Barraca', external: true },
   { href: '/contacto', label: 'Contacto' },

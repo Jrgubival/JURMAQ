@@ -4,6 +4,8 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import { MaquinariaFilters } from "@/components/public/MaquinariaFilters";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
+import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
+import MaquinariaSort from "@/components/public/MaquinariaSort";
 
 
 export const metadata: Metadata = {
@@ -98,17 +100,56 @@ function getTipoLabel(tipo: string): string {
 export default async function MaquinariasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tipo?: string }>;
+  searchParams: Promise<{ tipo?: string; q?: string; sort?: string }>;
 }) {
   const params = await searchParams;
   const { data: allMachines } = await supabasePublic.from('maquinarias').select('*');
   const machines = allMachines || [];
 
-  const filteredMachines = params.tipo
+  // 1. Filtrar por tipo
+  let filteredMachines = params.tipo
     ? machines.filter((m: any) => m.tipo === params.tipo)
     : machines;
 
+  // 2. Filtrar por texto de búsqueda
+  if (params.q && params.q.trim()) {
+    const q = params.q.trim().toLowerCase();
+    filteredMachines = filteredMachines.filter(
+      (m: any) =>
+        (m.nombre || '').toLowerCase().includes(q) ||
+        (m.descripcion || '').toLowerCase().includes(q) ||
+        getTipoLabel(m.tipo).toLowerCase().includes(q),
+    );
+  }
+
+  // 3. Ordenar
+  const sortKey = params.sort || 'destacado';
+  filteredMachines = [...filteredMachines].sort((a: any, b: any) => {
+    if (sortKey === 'precio_asc' || sortKey === 'precio_desc') {
+      const pa = precioPublicoDesde(a) ?? Number.MAX_SAFE_INTEGER;
+      const pb = precioPublicoDesde(b) ?? Number.MAX_SAFE_INTEGER;
+      return sortKey === 'precio_asc' ? pa - pb : pb - pa;
+    }
+    if (sortKey === 'nombre') {
+      return (a.nombre || '').localeCompare(b.nombre || '');
+    }
+    if (sortKey === 'recientes') {
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+    }
+    // destacado: disponibles primero, luego por nombre
+    if (a.estado === 'disponible' && b.estado !== 'disponible') return -1;
+    if (a.estado !== 'disponible' && b.estado === 'disponible') return 1;
+    return (a.nombre || '').localeCompare(b.nombre || '');
+  });
+
   const types = [...new Set(machines.map((m: any) => m.tipo))];
+
+  // Conteos por tipo para CategoriasShowcase
+  const counts: Partial<Record<TipoCategoria, number>> = {};
+  for (const m of machines) {
+    const t = m.tipo as TipoCategoria;
+    counts[t] = (counts[t] || 0) + 1;
+  }
 
   // JSON-LD ItemList for machinery catalog
   const itemListJsonLd = {
@@ -230,14 +271,22 @@ export default async function MaquinariasPage({
               Arriendo de <span className="text-gold-500">Maquinaria</span>
             </h1>
             <p className="text-lg text-gray-300 max-w-2xl">
-              Equipos disponibles para arriendo, con o sin operador.
+              {machines.length}+ equipos para arriendo con o sin operador en Curicó, Molina, Teno, Talca y toda la Región del Maule.
             </p>
           </div>
         </div>
       </section>
 
+      {/* Categorías visuales */}
+      <CategoriasShowcase
+        counts={counts}
+        variant="light"
+        title="Explora por categoría"
+        subtitle="Selecciona el tipo de equipo que necesitas o explora el catálogo completo."
+      />
+
       {/* Catalog */}
-      <section className="py-10 lg:py-16 bg-gray-50">
+      <section className="pt-2 pb-12 lg:pb-20 bg-gray-50" id="catalogo">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filters */}
           <MaquinariaFilters
@@ -245,12 +294,14 @@ export default async function MaquinariasPage({
             currentType={params.tipo || ""}
           />
 
-          {/* Results count */}
-          <div className="flex items-center justify-between mb-6">
+          {/* Results count + Sort */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <p className="text-sm text-gray-600">
-              {filteredMachines.length}{" "}
+              <span className="font-semibold text-navy-950">{filteredMachines.length}</span>{" "}
               {filteredMachines.length === 1 ? "equipo encontrado" : "equipos encontrados"}
+              {params.q ? <> para "<span className="text-navy-950 font-medium">{params.q}</span>"</> : null}
             </p>
+            <MaquinariaSort current={sortKey} />
           </div>
 
           {/* Machine Grid */}

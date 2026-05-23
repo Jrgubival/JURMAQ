@@ -7,6 +7,8 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import DisponibilidadCalendario from "@/components/maquinarias/DisponibilidadCalendario";
 import { whatsappCtaMaquinaria } from "@jurmaq/shared/whatsapp";
+import PricingTiers from "@/components/public/PricingTiers";
+import RelatedMachines from "@/components/public/RelatedMachines";
 
 interface Maquinaria {
   id: number;
@@ -148,14 +150,6 @@ export default async function MaquinariaDetailPage({
   if (!machine) {
     notFound();
   }
-
-  // Related machines (same type, excluding current)
-  const { data: related } = await supabasePublic
-    .from('maquinarias')
-    .select('*')
-    .eq('tipo', machine.tipo)
-    .neq('id', machine.id)
-    .limit(3);
 
   // Parse specifications
   let specs: Record<string, string> = {};
@@ -339,202 +333,81 @@ export default async function MaquinariaDetailPage({
 
             {/* Right: Pricing + CTA */}
             <div className="space-y-6">
-              {/* Price Cards */}
-              <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-navy-950 mb-4">
-                  Tarifa de Arriendo
-                </h3>
-                <div className="space-y-3">
-                  {/* Desde X/día — derivado de tarifa_neta (fuente del cotizador) */}
-                  <div className="p-4 bg-gold-500/10 border border-gold-500/20 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wider">
-                          Desde
-                        </p>
-                        <p className="text-2xl font-extrabold text-navy-950 tabular-nums">
-                          {desdePrecio !== null ? `${formatPrice(desdePrecio)}/día` : "Consultar"}
-                        </p>
-                      </div>
-                      <div className="w-10 h-10 bg-gold-500 rounded-lg flex items-center justify-center">
-                        <svg
-                          className="w-5 h-5 text-navy-950"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Tabla comparador 1d / 1s / 1m (C1 Tier 3) — auto-derivada de tarifa_neta */}
-                  {desdePrecio !== null && machine.tarifa_neta && (
-                    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-                      <table className="w-full text-sm">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="text-left px-3 py-2 font-semibold text-gray-700 text-xs">Duración</th>
-                            <th className="text-right px-3 py-2 font-semibold text-gray-700 text-xs">Tarifa neta</th>
-                            <th className="text-right px-3 py-2 font-semibold text-gray-700 text-xs">Con IVA</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100 text-xs">
-                          {(() => {
-                            const tarifaDia =
-                              machine.unidad_tarifa === 'hora'
-                                ? Number(machine.tarifa_neta) * Math.max(1, Number(machine.minimo_unidades || 6))
-                                : Number(machine.tarifa_neta);
-                            const semanaNeta = tarifaDia * 6;   // 1 semana = día × 6 (descuento ~14% vs 7d)
-                            const mesNeto = tarifaDia * 22;     // 1 mes = día × 22 (descuento ~27% vs 30d)
-                            const rows = [
-                              { label: '1 día', neto: tarifaDia },
-                              { label: '1 semana', neto: semanaNeta },
-                              { label: '1 mes', neto: mesNeto },
-                            ];
-                            return rows.map((r) => (
-                              <tr key={r.label}>
-                                <td className="px-3 py-2 text-gray-700">{r.label}</td>
-                                <td className="px-3 py-2 text-right tabular-nums text-gray-700">
-                                  {formatCLP(Math.round(r.neto)).replace('$', '$')}
-                                </td>
-                                <td className="px-3 py-2 text-right tabular-nums font-semibold text-navy-950">
-                                  {formatCLP(Math.round(r.neto * 1.19))}
-                                </td>
-                              </tr>
-                            ));
-                          })()}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    IVA incluido · No incluye traslado, peajes ni operario adicional.
-                    Para precio final usa el cotizador online — toma 1 minuto.
+              {/* Pricing Tiers — tabs día/semana/mes con desglose IVA + CTAs */}
+              {desdePrecio !== null && machine.tarifa_neta ? (
+                <PricingTiers
+                  maquinariaId={machine.id}
+                  maquinariaNombre={machine.nombre}
+                  tarifaNeta={Number(machine.tarifa_neta)}
+                  unidadTarifa={machine.unidad_tarifa || 'dia'}
+                  minimoUnidades={Number(machine.minimo_unidades) || 1}
+                />
+              ) : (
+                /* Fallback cuando no hay tarifa configurada */
+                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <h3 className="text-lg font-bold text-navy-950 mb-2">Consultar precio</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Este equipo requiere cotización personalizada. Te respondemos en menos de 2 horas.
                   </p>
-
-                  <Link
-                    href={`/cotizar-arriendo?maquinariaId=${machine.id}`}
-                    className="block w-full text-center px-4 py-3 bg-navy-950 hover:bg-navy-800 text-white font-semibold rounded-xl transition-colors text-sm"
-                  >
-                    Cotizar precio final →
-                  </Link>
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href={`/cotizar-arriendo?maquinariaId=${machine.id}`}
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold text-sm rounded-xl transition-colors"
+                    >
+                      Cotizar precio final →
+                    </Link>
+                    <a
+                      href={whatsappCtaMaquinaria(machine.id, machine.nombre)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-navy-950 hover:bg-navy-950 hover:text-white text-navy-950 font-bold text-sm rounded-xl transition-colors"
+                    >
+                      💬 Consultar por WhatsApp
+                    </a>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Calendario de disponibilidad (próximos 30 días) */}
               <DisponibilidadCalendario maquinariaId={machine.id} />
 
-              {/* CTA Buttons */}
-              <div className="space-y-3">
-                <Link
-                  href={`/contacto?servicio=arriendo&maquinaria=${encodeURIComponent(machine.nombre)}`}
-                  className="block w-full text-center px-6 py-4 bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold rounded-xl transition-colors"
-                >
-                  Cotizar este equipo — Sin compromiso
-                </Link>
-                <a
-                  href={whatsappCtaMaquinaria(machine.id, machine.nombre)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
+              {/* Trust badges */}
+              <div className="bg-navy-950 rounded-2xl p-6">
+                <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
+                  Incluye sin costo
+                </h4>
+                <ul className="space-y-3">
+                  {[
+                    'Mantención al día garantizada',
+                    'Asesoría técnica por WhatsApp',
+                    'Coordinación de traslado',
+                    'Contrato digital firmado por OTP',
+                  ].map((it) => (
+                    <li key={it} className="flex items-start gap-3 text-sm text-gray-300">
+                      <svg className="w-5 h-5 text-gold-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>{it}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-5 pt-5 border-t border-navy-800 text-center">
+                  <p className="text-xs text-gray-400 mb-1">Consultas directas</p>
+                  <a
+                    href="tel:+56976673577"
+                    className="text-gold-500 text-base font-bold hover:text-gold-400 transition-colors"
                   >
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
-                  WhatsApp
-                </a>
-              </div>
-
-              {/* Contact Info */}
-              <div className="bg-navy-950 rounded-2xl p-6 text-center">
-                <p className="text-gray-400 text-sm mb-2">
-                  Consultas directas
-                </p>
-                <a
-                  href="tel:+56976673577"
-                  className="text-gold-500 text-lg font-bold hover:text-gold-400 transition-colors"
-                >
-                  +56 9 7667 3577
-                </a>
+                    +56 9 7667 3577
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Related Machines */}
-      {(related || []).length > 0 && (
-        <section className="py-12 lg:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-navy-950 mb-8">
-              Maquinaria Relacionada
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {(related || []).map((m: any) => (
-                <Link
-                  key={m.id}
-                  href={`/maquinarias/${m.id}`}
-                  className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow group"
-                >
-                  <div className="h-44 bg-gradient-to-br from-navy-900 to-navy-800 flex items-center justify-center overflow-hidden">
-                    {m.imagen ? (
-                      <img
-                        src={m.imagen}
-                        alt={m.nombre}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <svg
-                        className="w-16 h-16 text-navy-700"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1}
-                          d="M13 10V3L4 14h7v7l9-11h-7z"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-bold text-navy-950 group-hover:text-gold-600 transition-colors">
-                      {m.nombre}
-                    </h3>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-sm text-gray-500">
-                        {getTipoLabel(m.tipo)}
-                      </span>
-                      {(() => {
-                        const d = precioPublicoDesde(m);
-                        return d !== null && (
-                          <span className="text-sm font-bold text-gold-600">
-                            desde {formatPrice(d)}/día
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Related Machines — server component con fallback inteligente */}
+      <RelatedMachines currentId={machine.id} tipo={machine.tipo} />
 
       {/* CTA Banner */}
       <section className="bg-navy-950 py-12">
