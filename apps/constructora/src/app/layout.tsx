@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
+import Navbar from "@/components/public/Navbar";
 import { buildPrerenderRules, CONSTRUCTORA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
 
 const inter = Inter({
@@ -286,6 +287,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-[var(--font-inter)]">
         {/* GA4 — solo carga si NEXT_PUBLIC_GA_MEASUREMENT_ID está en env */}
         <Analytics />
+        <Navbar />
         {children}
       </body>
     </html>
