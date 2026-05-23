@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { whatsappCtaHome } from '@jurmaq/shared/whatsapp';
+import WhatsappLink from '@/components/public/WhatsappLink';
 
 /**
  * Navbar global de constructora.
@@ -74,14 +75,13 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <a
+            <WhatsappLink
               href={whatsappCtaHome()}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
+              source="navbar_desktop"
               className="ml-2 inline-flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-400 text-navy-950 text-sm font-bold rounded-lg transition-colors"
             >
               💬 WhatsApp
-            </a>
+            </WhatsappLink>
           </nav>
 
           {/* Mobile hamburger */}
@@ -115,14 +115,13 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <a
+            <WhatsappLink
               href={whatsappCtaHome()}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
+              source="navbar_mobile"
               className="block mt-3 text-center bg-gold-500 hover:bg-gold-400 text-navy-950 px-4 py-2.5 rounded-lg font-bold text-sm"
             >
               💬 WhatsApp
-            </a>
+            </WhatsappLink>
           </nav>
         )}
       </div>
