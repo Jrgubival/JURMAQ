@@ -471,57 +471,8 @@ export default async function MaquinariasPage({
         </div>
       </section>
 
-      {/* JSON-LD Structured Data for Machines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            name: "Maquinaria Pesada en Arriendo - JURMAQ",
-            description:
-              "Catálogo de maquinaria pesada disponible para arriendo en Curicó, Teno, Molina, Romeral, Sagrada Familia y toda la Provincia de Curicó, Región del Maule.",
-            url: "https://jurmaq.cl/maquinarias",
-            numberOfItems: machines.length,
-            itemListElement: machines.map((machine: any, index: number) => ({
-              "@type": "ListItem",
-              position: index + 1,
-              item: {
-                "@type": "Product",
-                name: machine.nombre,
-                description:
-                  machine.descripcion ||
-                  `${machine.nombre} disponible para arriendo en Curicó y Provincia de Curicó.`,
-                category: getTipoLabel(machine.tipo),
-                brand: {
-                  "@type": "Brand",
-                  name: "JURMAQ",
-                },
-                offers: (() => {
-                  const desde = precioPublicoDesde(machine);
-                  return {
-                    "@type": "Offer",
-                    priceCurrency: "CLP",
-                    price: desde ?? undefined,
-                    availability:
-                      machine.estado === "disponible"
-                        ? "https://schema.org/InStock"
-                        : "https://schema.org/OutOfStock",
-                    seller: {
-                      "@type": "Organization",
-                      name: "Constructora Jorge Ubilla Rivera E.I.R.L.",
-                    },
-                    areaServed: {
-                      "@type": "Place",
-                      name: "Provincia de Curicó, Región del Maule, Chile",
-                    },
-                  };
-                })(),
-              },
-            })),
-          }),
-        }}
-      />
+      {/* P0 SEO fix: ItemList JSON-LD ya emitido al inicio del componente (itemListJsonLd).
+          El bloque duplicado que estaba acá fue removido para evitar doble emisión. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
