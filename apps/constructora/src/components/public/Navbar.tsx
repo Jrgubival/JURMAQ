@@ -28,6 +28,11 @@ export default function Navbar() {
     return null;
   }
 
+  // Páginas con hero navy oscuro al inicio (transparent navbar OK).
+  // Resto de páginas: fondo claro → necesita navbar sólido desde el inicio.
+  const HAS_DARK_HERO = pathname === '/' || pathname?.startsWith('/maquinarias');
+  const isSolid = scrolled || !HAS_DARK_HERO;
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
@@ -36,9 +41,12 @@ export default function Navbar() {
   }, []);
 
   return (
+    <>
+    {/* Spacer para que el contenido de páginas sin hero oscuro no quede oculto bajo el navbar fixed. */}
+    {!HAS_DARK_HERO && <div aria-hidden="true" className="h-16 lg:h-18" />}
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all ${
-        scrolled
+        isSolid
           ? 'bg-navy-950/95 backdrop-blur border-b border-navy-800/50 shadow-lg'
           : 'bg-transparent'
       }`}
@@ -119,5 +127,6 @@ export default function Navbar() {
         )}
       </div>
     </header>
+    </>
   );
 }
