@@ -110,24 +110,23 @@ export default async function CotizarArriendoPage({
           <WizardClient maquinarias={maquinarias} preselectId={validPreselect} prefill={prefill} />
         )}
 
-        {/* Trust signals */}
-        <section className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div className="bg-white rounded p-4 shadow-sm">
-            <p className="text-2xl mb-1">📋</p>
-            <p className="text-sm font-semibold">Cotización al instante</p>
-          </div>
-          <div className="bg-white rounded p-4 shadow-sm">
-            <p className="text-2xl mb-1">🚛</p>
-            <p className="text-sm font-semibold">Traslado incluido</p>
-          </div>
-          <div className="bg-white rounded p-4 shadow-sm">
-            <p className="text-2xl mb-1">📄</p>
-            <p className="text-sm font-semibold">Factura con IVA</p>
-          </div>
-          <div className="bg-white rounded p-4 shadow-sm">
-            <p className="text-2xl mb-1">⚡</p>
-            <p className="text-sm font-semibold">Confirmación en email</p>
-          </div>
+        {/* Trust signals — editorial list (skills: design-taste banned 3-col grids,
+            impeccable banned 4-col equal cards, all banned emojis as icons).
+            Reemplazado por lista hairline con SVG inline. */}
+        <section className="mt-14 border-y border-[#EAEAEA] divide-y divide-[#EAEAEA] sm:divide-y-0 sm:divide-x sm:grid sm:grid-cols-4">
+          {[
+            { title: 'Cotización al instante', d: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2' },
+            { title: 'Traslado incluido', d: 'M3 17V7a2 2 0 0 1 2-2h11v12M16 7h3l3 4v6h-6M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0M15 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0' },
+            { title: 'Factura con IVA', d: 'M9 12h6M9 16h6M9 8h6M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-3-2-2 2-2-2-2 2-2-2-3 2z' },
+            { title: 'Confirmación por email', d: 'M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2c2.474 0 4.732.896 6.477 2.382M22 4 12 14l-3-3' },
+          ].map((it) => (
+            <div key={it.title} className="bg-white px-5 py-6 flex items-center gap-3">
+              <svg className="w-5 h-5 text-[#956400] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d={it.d} />
+              </svg>
+              <p className="text-sm font-medium text-[#111111] tracking-tight">{it.title}</p>
+            </div>
+          ))}
         </section>
       </div>
     </div>

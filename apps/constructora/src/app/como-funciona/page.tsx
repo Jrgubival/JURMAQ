@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { whatsappCtaHome } from "@jurmaq/shared/whatsapp";
+import { IconWhatsapp } from "@jurmaq/shared/icons";
 
 export const metadata: Metadata = {
   title: "Cómo Funciona el Arriendo de Maquinaria · JURMAQ",
@@ -240,7 +241,8 @@ export default function ComoFuncionaPage() {
               rel="noopener noreferrer nofollow"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-navy-950 font-bold text-base rounded-xl transition-colors"
             >
-              💬 Cotizar por WhatsApp
+              <IconWhatsapp className="w-4 h-4" />
+              Cotizar por WhatsApp
             </a>
           </div>
         </div>

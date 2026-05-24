@@ -190,8 +190,14 @@ export default function WizardClient({
 
   if (success) {
     return (
-      <div className="bg-white rounded-lg shadow p-8 text-center">
-        <div className="text-6xl mb-4">✅</div>
+      <div className="bg-white rounded-[16px] hairline p-10 text-center">
+        {/* Emoji ✅ reemplazado por CheckCircle SVG — emoji banned por design skills */}
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#EDF3EC] text-[#346538] mb-5">
+          <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+        </div>
         <h2 className="text-2xl font-bold text-navy-950 mb-2">¡Cotización enviada!</h2>
         <p className="text-gray-600 mb-4">
           Tu número de cotización: <strong className="text-navy-950">{success.numero}</strong>

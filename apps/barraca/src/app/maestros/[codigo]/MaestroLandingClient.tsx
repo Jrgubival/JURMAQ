@@ -33,11 +33,17 @@ export default function MaestroLandingClient({
   }, [codigo, nombre]);
 
   return (
-    <div className="inline-block bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-4">
-      <p className="text-sm text-green-800">
+    <div className="inline-flex items-center gap-2 bg-[#EDF3EC] border border-[#346538]/20 rounded-xl px-4 py-3 mb-4">
+      {saved && (
+        <svg className="w-4 h-4 text-[#346538] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      )}
+      <p className="text-sm text-[#346538]">
         {saved ? (
           <>
-            ✅ <strong>Código guardado.</strong> Se aplicará automáticamente en tu próxima compra.
+            <strong>Código guardado.</strong> Se aplicará automáticamente en tu próxima compra.
           </>
         ) : (
           <>

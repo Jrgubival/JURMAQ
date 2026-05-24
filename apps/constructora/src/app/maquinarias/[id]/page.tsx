@@ -363,7 +363,7 @@ export default async function MaquinariaDetailPage({
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-navy-950 hover:bg-navy-950 hover:text-white text-navy-950 font-bold text-sm rounded-xl transition-colors"
                     >
-                      💬 Consultar por WhatsApp
+                      Consultar por WhatsApp
                     </a>
                   </div>
                 </div>
