@@ -46,7 +46,9 @@ export const metadata: Metadata = {
   title: {
     default:
       "JURMAQ · Arriendo Maquinaria, Constructora y Barraca de Fierros en Curicó",
-    template: "%s | JURMAQ",
+    // Las páginas internas ya incluyen "JURMAQ" en su title individual; el
+    // template "%s | JURMAQ" causaba duplicación (ej. "...JURMAQ | JURMAQ").
+    template: "%s",
   },
   description:
     "Arriendo retroexcavadora, miniexcavadora, minicargador y maquinaria pesada en Curicó, Teno, Molina, Talca y toda la Región del Maule. Constructora, maestranza y barraca de fierros JURMAQ. +25 años. Súbenos tu cotización: en menos de 2 horas te mejoramos el precio.",
