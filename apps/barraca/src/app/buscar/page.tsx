@@ -22,6 +22,10 @@ export async function generateMetadata({
     alternates: {
       canonical: "https://barraca.jurmaq.cl/buscar",
     },
+    // SEO (audit fase 4.10): /buscar?q=* crea infinitas URLs basura indexables.
+    // Noindex + follow → no se indexa pero los outlinks a productos / categorías
+    // siguen siendo crawleables.
+    robots: { index: false, follow: true },
   };
 }
 

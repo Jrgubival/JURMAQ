@@ -10,6 +10,7 @@ import { whatsappCtaMaquinaria } from "@jurmaq/shared/whatsapp";
 import PricingTiers from "@/components/public/PricingTiers";
 import ObraCompletaCTA from "@/components/public/ObraCompletaCTA";
 import RelatedMachines from "@/components/public/RelatedMachines";
+import ViewItemTracker from "@/components/analytics/ViewItemTracker";
 
 interface Maquinaria {
   id: number;
@@ -203,6 +204,13 @@ export default async function MaquinariaDetailPage({
 
   return (
     <>
+      {/* GA4 view_item — server passes data, client mounts and fires */}
+      <ViewItemTracker
+        id={machine.id}
+        nombre={machine.nombre}
+        precio={machine.tarifa_neta ?? 0}
+        categoria={machine.tipo}
+      />
       {/* Breadcrumb + Hero */}
       <section className="bg-navy-950 py-10 lg:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -25,7 +25,12 @@
     "./seo": "./src/seo/index.ts",
     "./seo/prerender-rules": "./src/seo/prerender-rules.ts",
     "./logging": "./src/logging/index.ts",
+    "./a11y": "./src/a11y/index.ts",
     "./a11y/reduced-motion": "./src/a11y/use-prefers-reduced-motion.ts",
+    "./a11y/SkipLink": "./src/a11y/SkipLink.tsx",
+    "./a11y/Modal": "./src/a11y/Modal.tsx",
+    "./a11y/useFocusTrap": "./src/a11y/useFocusTrap.ts",
+    "./a11y/useEscapeKey": "./src/a11y/useEscapeKey.ts",
     "./ui/CommandPalette": "./src/ui/CommandPalette.tsx"
   },
   "scripts": {

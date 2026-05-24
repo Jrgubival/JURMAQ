@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
+import CookieBanner from "@/components/CookieBanner";
 import Navbar from "@/components/public/Navbar";
 import { buildPrerenderRules, CONSTRUCTORA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
 
@@ -308,6 +309,7 @@ export default function RootLayout({
         <Analytics />
         <Navbar />
         {children}
+        <CookieBanner />
       </body>
     </html>
   );

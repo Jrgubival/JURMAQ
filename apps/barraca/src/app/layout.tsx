@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import BarracaShell from "./BarracaShell";
 import Analytics from "@/components/Analytics";
+import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
 
 // Skill-driven typography swap (Inter banned by frontend-design, design-taste,
@@ -38,7 +39,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://barraca.jurmaq.cl"),
   title: {
     default: "Barraca JURMAQ · Fierros y Materiales en Curicó y Molina",
-    template: "%s | Barraca JURMAQ",
+    // Sin template — las páginas ya incluyen la marca en sus title individuales.
+    // El template duplicaba "Barraca JURMAQ" en muchas URLs (audit fase 4.8).
+    template: "%s",
   },
   description:
     "Fierros, perfiles, planchas, tubos, mallas, pinturas y materiales de construcción con despacho en Curicó, Molina y toda la Región del Maule.",
@@ -68,6 +71,7 @@ export default function BarracaLayout({
             quedaba no-op (0 datos GA4). Esta línea repara el bug. */}
         <Analytics />
         <BarracaShell>{children}</BarracaShell>
+        <CookieBanner />
       </body>
     </html>
   );

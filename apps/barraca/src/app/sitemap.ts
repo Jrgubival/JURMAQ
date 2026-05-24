@@ -6,6 +6,7 @@ import { MetadataRoute } from "next";
 // excluye `costo` (creada en harden-rls.js) ya que la tabla principal
 // tiene REVOKE de anon.
 import { supabasePublic } from "@jurmaq/shared/supabase";
+import { CIUDADES, TOP_PRODUCTOS_BARRACA } from "@jurmaq/shared/seo";
 import { GUIAS } from "@/lib/guias-seo-data";
 import { COMPETIDORES_DATA } from "@/lib/competidores-data";
 
@@ -82,7 +83,48 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.85,
     },
+    // Killer feature pages (audit fase 4.7)
+    {
+      url: `${baseUrl}/maestros`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/sucursales`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/roadmap`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.4,
+    },
   ];
+
+  // pSEO landings por ciudad — `/en/<ciudad-slug>` (audit fase 4.7)
+  const ciudadUrls: MetadataRoute.Sitemap = CIUDADES.map((c) => ({
+    url: `${baseUrl}/en/${c.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  }));
+
+  // pSEO material × ciudad — `/material/<material-slug>-en-<ciudad-slug>`
+  // (audit fase 4.7) — 8 materiales × 12 ciudades = 96 URLs
+  const materialUrls: MetadataRoute.Sitemap = [];
+  for (const m of TOP_PRODUCTOS_BARRACA) {
+    for (const c of CIUDADES) {
+      materialUrls.push({
+        url: `${baseUrl}/material/${m.slug}-en-${c.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.6,
+      });
+    }
+  }
 
   // Comparison landings programáticas
   const alternativaUrls: MetadataRoute.Sitemap = COMPETIDORES_DATA.map((c) => ({
@@ -144,6 +186,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages,
+    ...ciudadUrls,
+    ...materialUrls,
     ...alternativaUrls,
     ...guiasUrls,
     ...categoryUrls,
