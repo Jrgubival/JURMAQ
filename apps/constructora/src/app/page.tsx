@@ -151,26 +151,34 @@ export default async function HomePage() {
   return (
     <>
       <main id="main-content">
-        {/* ===== HERO SECTION ===== */}
-        <section className="relative bg-navy-950 overflow-hidden min-h-[90vh] flex items-center">
+        {/* ===== HERO SECTION =====
+            Retrofit Editorial Luxury (skills: design-taste anti-center bias,
+            web-typography editorial serif, impeccable no hero-metric template,
+            responsive-design 100dvh, minimalist-ui eyebrow + Newsreader italic). */}
+        <section className="relative bg-navy-950 overflow-hidden min-h-[100dvh] flex items-center">
         {/* Slideshow Background */}
         <HeroSlideshow />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-36">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-36 reveal-on-load">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-navy-800/60 border border-navy-700/50 rounded-full mb-6">
-              <span className="w-2 h-2 bg-gold-500 rounded-full" />
-              <span className="text-sm text-gray-300">
-                Más de 25 años de experiencia
-              </span>
-            </div>
+            <p className="eyebrow text-gold-400 mb-6">
+              Curicó · Maule · desde 1998
+            </p>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6" data-text-reveal>
-              Tu obra avanza sin parar con JURMAQ en Curicó
+            <h1
+              className="editorial-h1 text-white mb-6"
+              style={{ fontSize: 'clamp(2.75rem, 5vw + 1rem, 5.25rem)' }}
+              data-text-reveal
+            >
+              Tu obra avanza sin parar con{' '}
+              <span className="font-[var(--font-serif)] italic text-gold-500" style={{ fontWeight: 500 }}>
+                JURMAQ
+              </span>
             </h1>
 
-            <p className="text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl">
-              Construcción industrial, arriendo de maquinaria, maestranza y fierros. 25 años resolviendo proyectos en la Región del Maule.
+            <p className="text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed max-w-[60ch]">
+              Construcción industrial, arriendo de maquinaria, maestranza y barraca de fierros.
+              27 años resolviendo proyectos en la Región del Maule.
             </p>
 
             {/* Hero Search Bar — estilo Rendalomaq */}
@@ -204,21 +212,27 @@ export default async function HomePage() {
             </p>
             </div>
 
-          {/* Stats Bar */}
-          <div className="flex flex-wrap items-end gap-8 lg:gap-12 mt-16 lg:mt-20 pt-10 border-t border-navy-800">
-              <div>
-                <div className="text-5xl lg:text-6xl font-extrabold text-gold-500 mb-1">25+</div>
-                <div className="text-sm text-gray-500">años en la zona</div>
-              </div>
-              <div>
-                <div className="text-2xl lg:text-3xl font-bold text-white mb-1">120+</div>
-                <div className="text-sm text-gray-500">obras ejecutadas</div>
-              </div>
-              <div>
-                <div className="text-2xl lg:text-3xl font-bold text-white mb-1">UF 117K+</div>
-                <div className="text-sm text-gray-500">en proyectos</div>
-              </div>
-            </div>
+          {/* Prose-form facts (reemplaza hero-metric template banned por impeccable).
+              Números inline en Newsreader italic gold, no como big-number-small-label.
+              Datos orgánicos verificables, no round-numbers sintéticos. */}
+          <div className="mt-14 lg:mt-20 pt-8 border-t border-navy-800 max-w-[58ch] space-y-5 text-base lg:text-lg text-gray-200 leading-relaxed">
+            <p>
+              Llevamos{' '}
+              <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
+                27
+              </span>{' '}
+              años en la Región del Maule, construyendo obras industriales para Nestlé,
+              Miguel Torres, Iansagro, Surfrut y Cementos Biobío.
+            </p>
+            <p>
+              Hemos ejecutado más de{' '}
+              <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
+                UF 139K
+              </span>{' '}
+              en proyectos documentados. Cada obra tiene maestro responsable,
+              video drone y lista de materiales abierta.
+            </p>
+          </div>
         </div>
       </section>
 
