@@ -120,7 +120,7 @@ const clients = [
 ];
 
 function formatPrice(price: number): string {
-  return `${formatCLP(price)}/día`;
+  return formatCLP(price);
 }
 
 function getStatusLabel(estado: string): string {
@@ -177,8 +177,8 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed max-w-[60ch]">
-              Construcción industrial, arriendo de maquinaria, maestranza y barraca de fierros.
-              27 años resolviendo proyectos en la Región del Maule.
+              Obras civiles, arriendo de maquinaria, maestranza y barraca de fierros.
+              27 años resolviendo proyectos industriales en la Región del Maule.
             </p>
 
             {/* Hero Search Bar — estilo Rendalomaq */}
@@ -229,8 +229,8 @@ export default async function HomePage() {
               <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
                 UF 139K
               </span>{' '}
-              en proyectos documentados. Cada obra tiene maestro responsable,
-              video drone y lista de materiales abierta.
+              en proyectos documentados — desde plantas industriales hasta
+              ampliaciones, con presupuesto cerrado y plazos cumplidos.
             </p>
           </div>
         </div>
@@ -342,8 +342,8 @@ export default async function HomePage() {
       <CategoriasShowcase
         counts={categoryCounts}
         variant="light"
-        title="Encuentra la máquina ideal para tu faena"
-        subtitle="Catálogo organizado por categoría — desde retros hasta brazos articulados, todo con mantención al día."
+        title="Nuestras máquinas"
+        subtitle="Flota propia con mantención al día — retros, miniexcavadoras, brazos articulados, plataformas elevadoras y minicargadores."
       />
 
       {/* ===== FEATURED MACHINERY ===== */}

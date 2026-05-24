@@ -4,6 +4,7 @@ import "./globals.css";
 import Analytics from "@/components/Analytics";
 import CookieBanner from "@/components/CookieBanner";
 import Navbar from "@/components/public/Navbar";
+import Footer from "@/components/public/Footer";
 import { buildPrerenderRules, CONSTRUCTORA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
 
 // Skill-driven typography (frontend-design + design-taste + minimalist-ui + web-typography):
@@ -309,6 +310,7 @@ export default function RootLayout({
         <Analytics />
         <Navbar />
         {children}
+        <Footer />
         <CookieBanner />
       </body>
     </html>

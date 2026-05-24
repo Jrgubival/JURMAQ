@@ -15,8 +15,9 @@ import Link from "next/link";
  * Cuando GEMINI_API_KEY no está configurada, retorna respuesta canned con
  * link a WhatsApp.
  *
- * Posicionamiento (fix Z-AXIS contra WhatsApp FAB): bottom-24 right-6
- * (la WhatsApp FAB en BarracaShell vive en bottom-6 right-6, gap de 72px).
+ * Posicionamiento: bottom-6 right-6 (esquina opuesta a la WhatsApp FAB que
+ * ahora vive en bottom-6 left-6). ADIA es el CTA primario de JURMAQ (navy),
+ * WhatsApp es secundario y más pequeño.
  *
  * Privacy (Ley 21.719): mensajes no se persisten más de la sesión del browser.
  * Solo logs server-side enmascarados.
@@ -146,7 +147,7 @@ export default function AsistenteWidget() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Cerrar ADIA" : "Abrir ADIA — asistente JURMAQ"}
-        className={`fixed bottom-24 right-6 z-50 w-13 h-13 rounded-full shadow-lg flex items-center justify-center transition-transform duration-200 ${
+        className={`fixed bottom-6 right-6 z-50 w-13 h-13 rounded-full shadow-lg flex items-center justify-center transition-transform duration-200 ${
           open ? "bg-navy-800 rotate-45 scale-95" : "bg-navy-950 hover:bg-navy-900 hover:scale-[1.03]"
         } text-white ring-1 ring-white/10`}
         style={{ width: '52px', height: '52px' }}
@@ -164,7 +165,7 @@ export default function AsistenteWidget() {
 
       {/* Panel */}
       {open && (
-        <div className="fixed bottom-40 right-6 z-50 w-[90vw] max-w-md h-[70vh] max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[#EAEAEA]">
+        <div className="fixed bottom-24 right-6 z-50 w-[90vw] max-w-md h-[70vh] max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[#EAEAEA]">
           <header className="bg-navy-950 text-white px-5 py-4 flex items-center justify-between">
             <div>
               <p className="font-[var(--font-serif)] italic text-lg leading-none" style={{ fontWeight: 500, letterSpacing: '0.01em' }}>ADIA</p>

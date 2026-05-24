@@ -244,36 +244,36 @@ export default async function MaquinariasPage({
           __html: JSON.stringify(machineryBusinessJsonLd),
         }}
       />
-      {/* Hero Header */}
-      <section className="bg-navy-950 py-12 lg:py-16">
+      {/* Hero Header — editorial */}
+      <section className="bg-navy-950 py-20 lg:py-28 border-b border-navy-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-              <Link href="/" className="hover:text-gold-500 transition-colors">
-                Inicio
-              </Link>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-              <span className="text-gray-300">Maquinarias</span>
-            </div>
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-white mb-3">
-              Arriendo de <span className="text-gold-500">Maquinaria</span>
-            </h1>
-            <p className="text-lg text-gray-300 max-w-2xl">
-              {machines.length}+ equipos para arriendo con o sin operador en Curicó, Molina, Teno, Talca y toda la Región del Maule.
-            </p>
-          </div>
+          <nav className="flex items-center gap-2 text-sm text-white/55 mb-6 flex-wrap">
+            <Link href="/" className="hover:text-gold-400 transition-colors">
+              Inicio
+            </Link>
+            <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+            <span className="text-white/85 font-medium">Maquinarias</span>
+          </nav>
+          <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
+            Flota propia JURMAQ · Curicó · Molina · Maule
+          </p>
+          <h1
+            className="text-white leading-[1.05] mb-6 max-w-4xl"
+            style={{ fontSize: 'clamp(2.25rem, 5vw, 4rem)', fontWeight: 500, letterSpacing: '-0.015em' }}
+          >
+            Arriendo de{' '}
+            <span className="font-[var(--font-serif)] italic text-gold-400" style={{ fontWeight: 400 }}>
+              maquinaria
+            </span>
+            <br />
+            con o sin operador.
+          </h1>
+          <p className="text-base lg:text-lg text-white/75 max-w-2xl leading-relaxed">
+            {machines.length}+ equipos en flota propia para obras de Curicó, Molina, Teno, Talca y toda la Región del Maule.
+            Cotización por escrito en menos de 2 horas hábiles.
+          </p>
         </div>
       </section>
 
@@ -281,8 +281,8 @@ export default async function MaquinariasPage({
       <CategoriasShowcase
         counts={counts}
         variant="light"
-        title="Explora por categoría"
-        subtitle="Selecciona el tipo de equipo que necesitas o explora el catálogo completo."
+        title="Por categoría"
+        subtitle="Cinco tipos de equipo · flota propia con mantención al día."
       />
 
       {/* Catalog */}
@@ -371,26 +371,40 @@ export default async function MaquinariasPage({
                       {machine.descripcion || "Consulta por especificaciones técnicas."}
                     </p>
 
-                    {/* Pricing — derivado de tarifa_neta (fuente de verdad del cotizador) */}
+                    {/* Pricing — neto (sin IVA) + flete aproximado */}
                     {(() => {
                       const desde = precioPublicoDesde(machine);
+                      // Flete estimado: $30k Curicó-Molina, ~$60k Teno/Romeral, ~$100k Talca.
+                      // Mostramos el rango más común (Curicó/Molina) como referencia editorial.
+                      const fleteAprox = 30000;
                       return (
-                        <div className="space-y-2 mb-5 p-4 bg-gray-50 rounded-xl">
+                        <div className="mb-5 border-t border-b border-[#EAEAEA] py-4">
                           {desde !== null ? (
                             <>
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-500">Desde</span>
-                                <span className="font-bold text-navy-950">
-                                  {formatPrice(desde)}/día
+                              <div className="flex items-baseline justify-between mb-1">
+                                <span className="text-[10px] uppercase tracking-[0.18em] text-[#787774] font-semibold">Desde</span>
+                                <span
+                                  className="text-navy-950 tabular-nums"
+                                  style={{ fontSize: 'clamp(1.25rem, 1.6vw, 1.625rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+                                >
+                                  {formatPrice(desde)}
+                                  <span className="text-sm text-[#787774] font-normal ml-1">/ día</span>
                                 </span>
                               </div>
-                              <p className="text-[11px] text-gray-500 leading-tight">
-                                IVA incluido · No incluye traslado. Cotiza online para precio final.
+                              <p className="text-[11px] text-[#787774] leading-tight">
+                                Valor neto · sin IVA · {machine.unidad_tarifa === 'hora' ? '8 hrs mín.' : 'jornada base'}
+                              </p>
+                              <p className="text-[11px] text-[#787774] leading-tight mt-1">
+                                Flete aprox.{' '}
+                                <span className="text-navy-950 font-medium tabular-nums">
+                                  {formatCLP(fleteAprox)}
+                                </span>{' '}
+                                desde Curicó/Molina · ida y vuelta
                               </p>
                             </>
                           ) : (
-                            <p className="text-sm text-gray-500 text-center">
-                              Cotiza online
+                            <p className="text-sm text-[#787774] text-center py-2">
+                              <span className="font-[var(--font-serif)] italic text-navy-950" style={{ fontWeight: 400 }}>Cotizar</span> precio
                             </p>
                           )}
                         </div>
@@ -400,9 +414,9 @@ export default async function MaquinariasPage({
                     {/* CTA */}
                     <Link
                       href={`/contacto?servicio=arriendo&maquinaria=${encodeURIComponent(machine.nombre)}`}
-                      className="block w-full text-center px-5 py-3 bg-navy-950 hover:bg-navy-800 text-white font-semibold rounded-xl transition-colors"
+                      className="block w-full text-center px-5 py-3 bg-navy-950 hover:bg-[#111111] text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors"
                     >
-                      Pedir presupuesto
+                      Pedir cotización
                     </Link>
                   </div>
                 </div>

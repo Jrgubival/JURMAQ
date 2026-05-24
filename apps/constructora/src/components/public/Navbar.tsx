@@ -60,7 +60,7 @@ export default function Navbar() {
               JURMAQ
             </span>
             <span className="text-[10px] uppercase tracking-widest text-gold-400 font-semibold">
-              Arriendo
+              Obras · Arriendo · Maestranza
             </span>
           </Link>
 
@@ -76,6 +76,16 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/cuenta"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-gold-400 transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Mi cuenta
+            </Link>
             <WhatsappLink
               href={whatsappCtaHome()}
               source="navbar_desktop"
@@ -117,6 +127,17 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/cuenta"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-white/90 hover:text-gold-400 text-base font-medium inline-flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Mi cuenta
+            </Link>
             <WhatsappLink
               href={whatsappCtaHome()}
               source="navbar_mobile"
