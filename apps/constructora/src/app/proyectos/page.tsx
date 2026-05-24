@@ -172,24 +172,31 @@ export default function ProyectosPage() {
           <h1 className="text-3xl lg:text-5xl font-extrabold text-white mb-4">
             Obras <span className="text-gold-500">reales</span> que hablan por nosotros
           </h1>
-          <p className="text-lg lg:text-xl text-gray-300 max-w-3xl mb-8">
-            +25 años construyendo para las principales empresas agroindustriales del Maule.
+          <p className="text-lg lg:text-xl text-gray-300 max-w-[60ch] mb-10 leading-relaxed">
+            27 años construyendo para las principales empresas agroindustriales del Maule.
             Cada obra incluye qué máquinas usamos y qué materiales entregamos.
           </p>
 
-          <div className="flex flex-wrap gap-8 lg:gap-12 pt-6 border-t border-navy-800">
-            <div>
-              <div className="text-4xl lg:text-5xl font-extrabold text-gold-500 tabular-nums">{totalObras}</div>
-              <div className="text-sm text-gray-500">obras destacadas</div>
-            </div>
-            <div>
-              <div className="text-4xl lg:text-5xl font-extrabold text-gold-500 tabular-nums">UF {(totalUF / 1000).toFixed(0)}K+</div>
-              <div className="text-sm text-gray-500">monto total agregado</div>
-            </div>
-            <div>
-              <div className="text-4xl lg:text-5xl font-extrabold text-gold-500 tabular-nums">{clientes}</div>
-              <div className="text-sm text-gray-500">empresas confían en nosotros</div>
-            </div>
+          {/* Prose-form facts (reemplaza hero-metric template banned por impeccable).
+              Números inline en Newsreader italic gold. */}
+          <div className="pt-8 border-t border-navy-800 max-w-[58ch] space-y-4 text-base lg:text-lg text-gray-200 leading-relaxed">
+            <p>
+              <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
+                {totalObras}
+              </span>{' '}
+              obras destacadas, ejecutadas para{' '}
+              <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
+                {clientes}
+              </span>{' '}
+              empresas distintas en la Región del Maule.
+            </p>
+            <p>
+              Monto agregado documentado:{' '}
+              <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
+                UF {(totalUF / 1000).toFixed(0)}K
+              </span>
+              . Suma neta sin descuentos, verificable en cada caso de obra abajo.
+            </p>
           </div>
         </div>
       </section>

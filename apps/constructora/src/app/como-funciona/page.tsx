@@ -165,23 +165,38 @@ export default function ComoFuncionaPage() {
         </div>
       </section>
 
-      {/* Diferenciadores */}
-      <section className="py-16 lg:py-20 bg-navy-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-white text-center mb-12">
-            ¿Por qué arrendar con <span className="text-gold-500">JURMAQ</span>?
+      {/* Diferenciadores — reemplaza hero-metric template (impeccable banned)
+          por editorial divisible list con números inline en Newsreader italic. */}
+      <section className="py-24 lg:py-32 bg-navy-950">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="eyebrow text-gold-400 mb-4">Cuatro razones · medibles</p>
+          <h2 className="editorial-h1 text-white mb-12 max-w-3xl" style={{ fontSize: 'clamp(2rem, 3vw + 1rem, 3.25rem)' }}>
+            ¿Por qué arrendar con{' '}
+            <span className="font-[var(--font-serif)] italic text-gold-500" style={{ fontWeight: 500 }}>JURMAQ</span>?
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+
+          <div className="border-t border-navy-800 divide-y divide-navy-800">
             {[
-              { v: "+25", l: "años en la zona", s: "Conocemos cada obra del Maule." },
-              { v: "<2h", l: "respuesta promedio", s: "Te confirmamos el mismo día." },
-              { v: "100%", l: "flota propia", s: "Nada de subarriendos." },
-              { v: "0", l: "sorpresas en factura", s: "Lo cotizado es lo que pagas." },
+              { n: '27', unit: 'años', l: 'en la Región del Maule', s: 'Conocemos cada obra de la zona, no llegamos a probar.' },
+              { n: '<2h', unit: '', l: 'respuesta promedio en horario hábil', s: 'Te confirma un ejecutivo humano, no un bot.' },
+              { n: '100%', unit: '', l: 'flota propia y operativa', s: 'Nada de subarriendos a terceros ni excusas de disponibilidad.' },
+              { n: '0', unit: '', l: 'sorpresas en factura', s: 'Lo cotizado es lo que pagas. Si cambia el alcance, lo conversamos antes.' },
             ].map((it) => (
-              <div key={it.l} className="text-center">
-                <div className="text-5xl lg:text-6xl font-extrabold text-gold-500 mb-2">{it.v}</div>
-                <div className="text-base lg:text-lg font-semibold text-white mb-1">{it.l}</div>
-                <div className="text-sm text-gray-500">{it.s}</div>
+              <div key={it.l} className="grid grid-cols-12 gap-4 lg:gap-8 py-7 lg:py-9 items-baseline">
+                <div className="col-span-12 lg:col-span-3 flex items-baseline gap-1.5">
+                  <span className="font-[var(--font-serif)] italic text-gold-500 tabular-nums" style={{ fontSize: 'clamp(2.5rem, 3vw + 1rem, 3.5rem)', fontWeight: 500, lineHeight: 1, letterSpacing: '-0.02em' }}>
+                    {it.n}
+                  </span>
+                  {it.unit && (
+                    <span className="text-base text-gray-400 lg:text-lg" style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic' }}>
+                      {it.unit}
+                    </span>
+                  )}
+                </div>
+                <div className="col-span-12 lg:col-span-9">
+                  <p className="text-lg lg:text-xl text-white font-medium mb-1.5 tracking-tight">{it.l}</p>
+                  <p className="text-sm lg:text-base text-gray-400 max-w-[55ch] leading-relaxed">{it.s}</p>
+                </div>
               </div>
             ))}
           </div>
