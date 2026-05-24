@@ -12,12 +12,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const sp = await searchParams;
   const q = sp.q || "";
+  // Audit fix S2 #21: truncar query a 30 chars para evitar titles > 60 chars
+  // que Google trunca en SERPs. La URL real conserva la query completa.
+  const qShort = q.slice(0, 30).trim();
   return {
-    title: q
-      ? `Resultados para "${q}" | Barraca JURMAQ`
-      : "Buscar Productos | Barraca JURMAQ",
+    title: qShort
+      ? `Resultados para "${qShort}" · Barraca JURMAQ`
+      : "Buscar productos · Barraca JURMAQ",
     description: q
-      ? `Resultados de búsqueda para "${q}" en Barraca JURMAQ. Materiales de construcción con precios competitivos y despacho en Curicó y Región del Maule.`
+      ? `Resultados de búsqueda para "${qShort}" en Barraca JURMAQ. Materiales de construcción con precios competitivos y despacho en Curicó y Región del Maule.`
       : "Busca entre mas de 1.600 productos de construccion en Barraca JURMAQ. Fierros, perfiles, planchas, herramientas y mas.",
     alternates: {
       canonical: "https://barraca.jurmaq.cl/buscar",

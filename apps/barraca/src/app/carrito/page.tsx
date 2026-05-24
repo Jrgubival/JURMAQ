@@ -55,9 +55,13 @@ export default function CarritoPage() {
 
   async function updateQuantity(itemId: number, newQty: number) {
     if (newQty < 1) return;
+    // Audit fix S0 #2: PUT requería X-Session-Id que faltaba — endpoint rechazaba
+    // mutaciones de usuarios que entraban directo a /carrito desde email (cookie
+    // de sesión no se había seteado).
+    const sid = getSessionId();
     await fetch("/api/carrito", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Session-Id": sid },
       body: JSON.stringify({ itemId, cantidad: newQty }),
     });
     setItems(
@@ -67,9 +71,10 @@ export default function CarritoPage() {
   }
 
   async function removeItem(itemId: number) {
+    const sid = getSessionId();
     await fetch("/api/carrito", {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Session-Id": sid },
       body: JSON.stringify({ itemId }),
     });
     setItems(items.filter((i) => i.id !== itemId));
@@ -77,13 +82,17 @@ export default function CarritoPage() {
   }
 
   async function clearCart() {
-    for (const item of items) {
-      await fetch("/api/carrito", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId: item.id }),
-      });
-    }
+    // Audit fix S2 #16: paralelizar DELETE (antes era N+1 secuencial).
+    const sid = getSessionId();
+    await Promise.all(
+      items.map((item) =>
+        fetch("/api/carrito", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json", "X-Session-Id": sid },
+          body: JSON.stringify({ itemId: item.id }),
+        }),
+      ),
+    );
     setItems([]);
     window.dispatchEvent(new Event("cart-updated"));
   }
