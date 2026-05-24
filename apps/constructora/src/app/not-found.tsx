@@ -2,40 +2,47 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#FBFBFA] px-4">
       <div className="text-center max-w-lg">
-        <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-8 bg-navy-950">
-          <span className="text-4xl font-black text-gold-500">
-            J
-          </span>
-        </div>
-        <h1 className="text-7xl font-extrabold text-gray-900 mb-4">404</h1>
-        <h2 className="text-xl font-semibold text-gray-700 mb-3">
-          Pagina no encontrada
-        </h2>
-        <p className="text-gray-500 mb-8 leading-relaxed">
-          La pagina que buscas no existe o fue movida. Vuelve al inicio para
-          encontrar lo que necesitas.
+        <p
+          className="font-[var(--font-serif)] italic text-[#956400] tabular-nums mb-2"
+          style={{ fontSize: 'clamp(5rem, 12vw, 9rem)', fontWeight: 400, lineHeight: 1, letterSpacing: '-0.04em' }}
+        >
+          404
+        </p>
+        <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+          Página no encontrada
+        </p>
+        <h1
+          className="text-[#111111] mb-4 leading-[1.1]"
+          style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 500, letterSpacing: '-0.005em' }}
+        >
+          Esto no está donde{' '}
+          <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>esperábamos</span>.
+        </h1>
+        <p className="text-base text-[#5A5A57] mb-10 leading-relaxed">
+          La página que buscás no existe o cambió de dirección. Volvé al inicio
+          o ve directo a lo que necesitabas.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-navy-950 hover:bg-navy-800 text-white font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-navy-950 hover:bg-[#111111] text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
+            Volver al inicio
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
-            Volver al Inicio
           </Link>
           <Link
             href="https://barraca.jurmaq.cl"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-700 hover:border-gray-400 font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-[#EAEAEA] text-[#111111] text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-white transition-colors"
           >
-            Ir a la Barraca
+            Ir a la barraca
           </Link>
           <Link
             href="/contacto"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-gray-300 text-gray-700 hover:border-gray-400 font-semibold rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-[#EAEAEA] text-[#111111] text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-white transition-colors"
           >
             Contactar
           </Link>

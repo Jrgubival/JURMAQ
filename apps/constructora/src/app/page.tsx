@@ -228,7 +228,7 @@ export default async function HomePage() {
               <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
                 UF 139K
               </span>{' '}
-              en proyectos documentados — desde plantas industriales hasta
+              en proyectos documentados. Desde plantas industriales hasta
               ampliaciones, con presupuesto cerrado y plazos cumplidos.
             </p>
           </div>
@@ -260,7 +260,7 @@ export default async function HomePage() {
               const content = (
                 <div className="group relative bg-navy-950 rounded-2xl p-8 lg:p-10">
                   <div className="flex flex-col lg:flex-row lg:items-start gap-6">
-                    <span className="text-5xl lg:text-6xl font-black text-gold-500/20 leading-none shrink-0 select-none">
+                    <span className="font-[var(--font-serif)] italic text-gold-500/60 leading-none shrink-0 select-none" style={{ fontSize: 'clamp(2rem, 3vw, 2.75rem)', fontWeight: 400 }}>
                       {division.number}
                     </span>
                     <div>
@@ -342,20 +342,24 @@ export default async function HomePage() {
         counts={categoryCounts}
         variant="light"
         title="Nuestras máquinas"
-        subtitle="Flota propia con mantención al día — retros, miniexcavadoras, brazos articulados, plataformas elevadoras y minicargadores."
+        subtitle="Flota propia con mantención al día: retros, miniexcavadoras, brazos articulados, plataformas elevadoras y minicargadores."
       />
 
       {/* ===== FEATURED MACHINERY ===== */}
         {(featuredMachines || []).length > 0 && (
           <section className="py-16 lg:py-24 bg-gray-50 content-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-14 lg:mb-16">
               <div>
-                <span className="inline-block text-sm font-semibold text-gold-600 uppercase tracking-wider mb-3">
-                  Maquinaria Disponible
-                </span>
-                <h2 className="text-3xl lg:text-4xl font-extrabold text-navy-950">
-                  Equipos destacados
+                <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-4">
+                  Maquinaria disponible
+                </p>
+                <h2
+                  className="text-[#111111] leading-[1.1]"
+                  style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+                >
+                  Equipos{' '}
+                  <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>destacados</span>.
                 </h2>
               </div>
               <Link

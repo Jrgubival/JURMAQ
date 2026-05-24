@@ -488,7 +488,7 @@ export default function WizardClient({
 
             <div className="bg-blue-50 border border-blue-200 p-3 rounded text-sm mb-4">
               Al confirmar te enviamos la cotización a <strong>{cliente.email}</strong>.
-              No te cobramos nada todavía — solo cuando aceptes y firmemos el contrato.
+              No te cobramos nada todavía. Solo cuando aceptes y firmemos el contrato.
             </div>
           </div>
         )}

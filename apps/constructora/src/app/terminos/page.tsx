@@ -22,32 +22,29 @@ export const metadata: Metadata = {
 export default function TerminosPage() {
   return (
     <>
-      {/* Hero Header */}
-      <section className="bg-navy-950 py-12 lg:py-16">
+      {/* Hero — editorial */}
+      <section className="bg-navy-950 py-20 lg:py-24 border-b border-navy-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-            <Link href="/" className="hover:text-gold-500 transition-colors">
-              Inicio
-            </Link>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+          <nav className="flex items-center gap-2 text-sm text-white/55 mb-6 flex-wrap">
+            <Link href="/" className="hover:text-gold-400 transition-colors">Inicio</Link>
+            <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 5l7 7-7 7" />
             </svg>
-            <span className="text-gray-300">Terminos y Condiciones</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">
-            Terminos y Condiciones
+            <span className="text-white/85 font-medium">Términos y condiciones</span>
+          </nav>
+          <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-4">
+            Última actualización · abril 2026
+          </p>
+          <h1
+            className="text-white leading-[1.05]"
+            style={{ fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 500, letterSpacing: '-0.015em' }}
+          >
+            Términos y{' '}
+            <span className="font-[var(--font-serif)] italic text-gold-400" style={{ fontWeight: 400 }}>
+              condiciones
+            </span>.
           </h1>
-          <p className="text-gray-500 mt-2 text-sm">
+          <p className="text-gray-400 mt-3 text-sm hidden">
             Ultima actualizacion: Abril 2026
           </p>
         </div>

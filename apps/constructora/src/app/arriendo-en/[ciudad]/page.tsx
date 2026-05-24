@@ -177,21 +177,31 @@ export default async function ArriendoEnCiudadPage({
       />
 
       <article className="bg-white">
-        <header className="bg-navy-950 text-white py-16">
+        <header className="bg-navy-950 text-white py-20 lg:py-28 border-b border-navy-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
-              <Link href="/" className="hover:text-white">Inicio</Link>
-              <span className="mx-2">›</span>
-              <span className="text-white">Arriendo en {c.nombre}</span>
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/55 mb-6 flex-wrap">
+              <Link href="/" className="hover:text-gold-400 transition-colors">Inicio</Link>
+              <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="text-white/85 font-medium">Arriendo en {c.nombre}</span>
             </nav>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
-              Arriendo de Maquinaria en {c.nombre}
-            </h1>
-            <p className="text-lg text-gray-200 max-w-3xl mb-2">
-              Despacho desde Molina en <strong>{c.tiempoDespacho}</strong> · {c.distanciaKm} km de
-              distancia · Servicio para {c.rubroLocal.join(", ")}.
+            <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
+              {c.nombre} · {c.distanciaKm} km de Molina · {c.tiempoDespacho}
             </p>
-            <p className="text-gray-300 max-w-3xl mb-8">{c.contextoLocal}</p>
+            <h1
+              className="text-white leading-[1.05] mb-6 max-w-3xl"
+              style={{ fontSize: 'clamp(2.25rem, 5vw, 4rem)', fontWeight: 500, letterSpacing: '-0.015em' }}
+            >
+              Arriendo de maquinaria en{' '}
+              <span className="font-[var(--font-serif)] italic text-gold-400" style={{ fontWeight: 400 }}>
+                {c.nombre}
+              </span>.
+            </h1>
+            <p className="text-base lg:text-lg text-white/75 max-w-3xl mb-3 leading-relaxed">
+              Servicio para {c.rubroLocal.join(", ")}.
+            </p>
+            <p className="text-sm lg:text-base text-white/65 max-w-3xl mb-10 leading-relaxed">{c.contextoLocal}</p>
             <div className="flex flex-wrap gap-3">
               <a
                 href={whatsappCtaCiudad(c.slug, c.nombre)}

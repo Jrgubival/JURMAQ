@@ -286,20 +286,36 @@ export default async function MaquinariaDetailPage({
               <span className="text-gray-300">{machine.nombre}</span>
             </nav>
 
-            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-              <h1 className="text-3xl lg:text-4xl font-extrabold text-white">
-                {machine.nombre}
+            <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-4">
+              {getTipoLabel(machine.tipo)} · Flota propia
+            </p>
+            <div className="flex flex-col lg:flex-row lg:items-end gap-4">
+              <h1
+                className="text-white leading-[1.05]"
+                style={{ fontSize: 'clamp(2rem, 4vw, 3.25rem)', fontWeight: 500, letterSpacing: '-0.015em' }}
+              >
+                {(() => {
+                  // Split nombre to italicize the model number/brand portion
+                  // e.g. "Minicargador Bobcat S650" → "Minicargador" + italic "Bobcat S650"
+                  const parts = machine.nombre.split(' ');
+                  if (parts.length < 2) return machine.nombre;
+                  const head = parts[0];
+                  const tail = parts.slice(1).join(' ');
+                  return (
+                    <>
+                      {head}{' '}
+                      <span className="font-[var(--font-serif)] italic text-gold-400" style={{ fontWeight: 400 }}>
+                        {tail}
+                      </span>
+                    </>
+                  );
+                })()}
               </h1>
-              <div className="flex items-center gap-3">
-                <span
-                  className={`px-3 py-1 text-xs font-bold rounded-full ${getStatusColor(machine.estado)}`}
-                >
-                  {getStatusLabel(machine.estado)}
-                </span>
-                <span className="px-2.5 py-1 text-xs font-medium text-white bg-navy-800 rounded-lg">
-                  {getTipoLabel(machine.tipo)}
-                </span>
-              </div>
+              <span
+                className={`inline-flex items-center px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] rounded-full whitespace-nowrap ${getStatusColor(machine.estado)}`}
+              >
+                {getStatusLabel(machine.estado)}
+              </span>
             </div>
           </AnimatedSection>
         </div>

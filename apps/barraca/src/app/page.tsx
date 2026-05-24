@@ -436,7 +436,7 @@ export default async function BarracaHomePage() {
         <section className="py-10 lg:py-14 bg-gray-50 border-t border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Promo banner bar */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 border-l-4 border-orange-500 bg-white rounded-r-lg px-5 py-4 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 border border-[#EAEAEA] bg-white rounded-xl px-5 py-4">
               <div className="flex items-center gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">

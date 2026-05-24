@@ -521,8 +521,8 @@ export default function CotizarPage() {
               </div>
 
               {tieneCompetencia && (
-                <div className="space-y-4 pl-1 border-l-2 border-orange-200 ml-2 pb-1">
-                  <div className="pl-4">
+                <div className="space-y-4 mt-3 pb-1 border-t border-[#EAEAEA] pt-4">
+                  <div>
                     <label htmlFor="cot-competencia-origen" className="block text-sm font-medium text-gray-700 mb-1.5">¿De dónde es la cotización? *</label>
                     <select
                       id="cot-competencia-origen"

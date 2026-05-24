@@ -158,20 +158,33 @@ export default async function ArriendoTipoPage({
       />
 
       <article className="bg-white">
-        {/* Hero */}
-        <header className="bg-navy-950 text-white py-16">
+        {/* Hero — editorial */}
+        <header className="bg-navy-950 text-white py-20 lg:py-28 border-b border-navy-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
-              <Link href="/" className="hover:text-white">Inicio</Link>
-              <span className="mx-2">›</span>
-              <Link href="/maquinarias" className="hover:text-white">Maquinaria</Link>
-              <span className="mx-2">›</span>
-              <span className="text-white">{tipoData.nombrePlural}</span>
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/55 mb-6 flex-wrap">
+              <Link href="/" className="hover:text-gold-400 transition-colors">Inicio</Link>
+              <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+              <Link href="/maquinarias" className="hover:text-gold-400 transition-colors">Maquinaria</Link>
+              <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="text-white/85 font-medium">{tipoData.nombrePlural}</span>
             </nav>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
-              Arriendo de {tipoData.nombrePlural} en Curicó y Región del Maule
+            <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
+              Curicó · Molina · Región del Maule
+            </p>
+            <h1
+              className="text-white leading-[1.05] mb-6 max-w-3xl"
+              style={{ fontSize: 'clamp(2.25rem, 5vw, 4rem)', fontWeight: 500, letterSpacing: '-0.015em' }}
+            >
+              Arriendo de{' '}
+              <span className="font-[var(--font-serif)] italic text-gold-400" style={{ fontWeight: 400 }}>
+                {tipoData.nombrePlural.toLowerCase()}
+              </span>.
             </h1>
-            <p className="text-lg text-gray-200 max-w-3xl mb-8">
+            <p className="text-base lg:text-lg text-white/75 max-w-3xl mb-10 leading-relaxed">
               {tipoData.descripcionLarga}
             </p>
             <div className="flex flex-wrap gap-3">

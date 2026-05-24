@@ -161,20 +161,32 @@ export default function ProyectosPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Hero */}
-      <section className="bg-navy-950 py-12 lg:py-16">
+      {/* Hero — editorial */}
+      <section className="bg-navy-950 py-20 lg:py-28 border-b border-navy-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-            <Link href="/" className="hover:text-gold-500 transition-colors">Inicio</Link>
-            <span>›</span>
-            <span className="text-gray-300">Proyectos</span>
-          </div>
-          <h1 className="text-3xl lg:text-5xl font-extrabold text-white mb-4">
-            Obras <span className="text-gold-500">reales</span> que hablan por nosotros
+          <nav className="flex items-center gap-2 text-sm text-white/55 mb-6 flex-wrap">
+            <Link href="/" className="hover:text-gold-400 transition-colors">Inicio</Link>
+            <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+            <span className="text-white/85 font-medium">Proyectos</span>
+          </nav>
+          <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
+            27 años · plantas industriales · Maule
+          </p>
+          <h1
+            className="text-white leading-[1.05] mb-6 max-w-4xl"
+            style={{ fontSize: 'clamp(2.25rem, 5vw, 4rem)', fontWeight: 500, letterSpacing: '-0.015em' }}
+          >
+            Obras{' '}
+            <span className="font-[var(--font-serif)] italic text-gold-400" style={{ fontWeight: 400 }}>
+              reales
+            </span>{' '}
+            que hablan por nosotros.
           </h1>
-          <p className="text-lg lg:text-xl text-gray-300 max-w-[60ch] mb-10 leading-relaxed">
-            27 años construyendo para las principales empresas agroindustriales del Maule.
-            Cada obra incluye qué máquinas usamos y qué materiales entregamos.
+          <p className="text-base lg:text-lg text-white/75 max-w-2xl mb-10 leading-relaxed">
+            Construyendo para las principales empresas agroindustriales del Maule. Cada obra
+            con máquinas, materiales y plazos documentados.
           </p>
 
           {/* Prose-form facts (reemplaza hero-metric template banned por impeccable).
@@ -237,22 +249,30 @@ export default function ProyectosPage() {
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 text-white text-xs font-bold uppercase tracking-wider rounded-full">
-                          ✓ Completado
+                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="m5 12 5 5L20 7" />
+                          </svg>
+                          Completado
                         </span>
                       )}
                     </div>
                     {/* Año + cliente */}
                     <div className="absolute bottom-6 left-6 right-6 text-white">
-                      <p className="text-xs uppercase tracking-widest text-gold-400 font-semibold mb-1">
+                      <p className="text-[10px] uppercase tracking-[0.22em] text-gold-400 font-semibold mb-2">
                         {p.cliente}
                       </p>
-                      <p className="text-2xl lg:text-3xl font-extrabold">{p.ano}</p>
+                      <p className="font-[var(--font-serif)] italic tabular-nums" style={{ fontSize: 'clamp(1.75rem, 2.5vw, 2.25rem)', fontWeight: 400, letterSpacing: '-0.01em' }}>
+                        {p.ano}
+                      </p>
                     </div>
                   </div>
 
                   {/* Content */}
                   <div className="lg:col-span-2 p-6 lg:p-8">
-                    <h2 className="text-xl lg:text-2xl font-extrabold text-navy-950 mb-2 group-hover:text-gold-600 transition-colors">
+                    <h2
+                      className="text-[#111111] mb-3 group-hover:text-gold-600 transition-colors leading-tight tracking-[-0.005em]"
+                      style={{ fontSize: 'clamp(1.25rem, 1.8vw, 1.625rem)', fontWeight: 500 }}
+                    >
                       {p.titulo}
                     </h2>
                     <p className="text-sm text-gray-500 mb-4 flex items-center gap-1.5">
@@ -264,24 +284,28 @@ export default function ProyectosPage() {
                     </p>
                     <p className="text-gray-700 leading-relaxed mb-6">{p.descripcion_corta}</p>
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-4 pb-5 mb-5 border-b border-gray-100">
+                    {/* Stats — serif italic numbers (no más mini hero-metric) */}
+                    <div className="grid grid-cols-2 gap-4 pb-5 mb-5 border-b border-[#EAEAEA]">
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Monto</div>
-                        <div className="text-lg lg:text-xl font-extrabold text-navy-950 tabular-nums">UF {p.monto_uf.toLocaleString('es-CL')}</div>
+                        <p className="text-[10px] uppercase tracking-[0.22em] text-[#787774] font-semibold mb-1">Monto</p>
+                        <p className="font-[var(--font-serif)] italic text-[#111111] tabular-nums" style={{ fontSize: 'clamp(1.125rem, 1.5vw, 1.375rem)', fontWeight: 400, letterSpacing: '-0.005em' }}>
+                          UF {p.monto_uf.toLocaleString('es-CL')}
+                        </p>
                       </div>
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Duración</div>
-                        <div className="text-lg lg:text-xl font-extrabold text-navy-950 tabular-nums">{p.duracion_meses} meses</div>
+                        <p className="text-[10px] uppercase tracking-[0.22em] text-[#787774] font-semibold mb-1">Duración</p>
+                        <p className="font-[var(--font-serif)] italic text-[#111111] tabular-nums" style={{ fontSize: 'clamp(1.125rem, 1.5vw, 1.375rem)', fontWeight: 400, letterSpacing: '-0.005em' }}>
+                          {p.duracion_meses} meses
+                        </p>
                       </div>
                     </div>
 
                     {/* Maquinarias + Materiales */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">
-                          🚜 Maquinarias usadas
-                        </div>
+                        <p className="text-[10px] uppercase tracking-[0.22em] text-[#787774] font-semibold mb-2">
+                          Maquinarias usadas
+                        </p>
                         <ul className="space-y-1">
                           {p.maquinarias_usadas.map((m) => (
                             <li key={m} className="text-sm text-gray-700 flex items-start gap-2">
@@ -292,9 +316,9 @@ export default function ProyectosPage() {
                         </ul>
                       </div>
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">
-                          🧱 Materiales principales
-                        </div>
+                        <p className="text-[10px] uppercase tracking-[0.22em] text-[#787774] font-semibold mb-2">
+                          Materiales principales
+                        </p>
                         <ul className="space-y-1">
                           {p.materiales_principales.map((mat) => (
                             <li key={mat} className="text-sm text-gray-700 flex items-start gap-2">
@@ -313,29 +337,36 @@ export default function ProyectosPage() {
         </div>
       </section>
 
-      {/* CTA final */}
-      <section className="py-16 lg:py-20 bg-gold-500">
+      {/* CTA final — navy editorial */}
+      <section className="py-20 lg:py-28 bg-navy-950 text-white border-t border-white/10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-navy-950 mb-4">
-            ¿Tu obra es la próxima?
-          </h2>
-          <p className="text-base lg:text-lg text-navy-900 mb-8 max-w-2xl mx-auto">
-            Construimos, arrendamos y abastecemos en una sola marca. Cotiza el proyecto completo y
-            ahorra tiempo + dinero coordinando con un solo proveedor.
+          <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
+            Cotización en 2 horas
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <h2
+            className="text-white leading-[1.1] mb-6"
+            style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+          >
+            ¿Tu obra es la{' '}
+            <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>próxima</span>?
+          </h2>
+          <p className="text-base lg:text-lg text-white/75 mb-10 max-w-2xl mx-auto leading-relaxed">
+            Construimos, arrendamos y abastecemos en una sola marca. Cotiza el proyecto completo
+            y coordiná con un solo proveedor.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/contacto?servicio=constructora"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-navy-950 hover:bg-navy-900 text-white font-bold rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#111111] text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-white/90 transition-colors"
             >
               Cotizar mi obra
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
             </Link>
             <Link
               href="/maquinarias"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white hover:bg-gray-50 text-navy-950 font-bold rounded-xl transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-white/25 text-white text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-white/10 transition-colors"
             >
               Ver flota de máquinas
             </Link>

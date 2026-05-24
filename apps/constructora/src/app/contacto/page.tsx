@@ -38,38 +38,33 @@ export const metadata: Metadata = {
 export default function ContactoPage() {
   return (
     <>
-      {/* Hero Header */}
-      <section className="bg-navy-950 py-12 lg:py-16">
+      {/* Hero — editorial */}
+      <section className="bg-navy-950 py-20 lg:py-28 border-b border-navy-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-              <Link href="/" className="hover:text-gold-500 transition-colors">
-                Inicio
-              </Link>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-              <span className="text-gray-300">Contacto</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3">
-              <span className="text-gold-500">Recibe tu presupuesto hoy mismo</span>
-            </h1>
-            <p className="text-lg text-gray-300 max-w-2xl">
-              Llena el formulario o llámanos directo al{" "}
-              <a href="tel:+56976673577" className="text-gold-400 hover:text-gold-300">+56 9 7667 3577</a>
-              <span className="block text-sm text-gray-500 mt-1">Respondemos en menos de 2 horas en horario laboral</span>
-            </p>
-          </div>
+          <nav className="flex items-center gap-2 text-sm text-white/55 mb-6 flex-wrap">
+            <Link href="/" className="hover:text-gold-400 transition-colors">Inicio</Link>
+            <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+            <span className="text-white/85 font-medium">Contacto</span>
+          </nav>
+          <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
+            Respuesta en 2 horas hábiles
+          </p>
+          <h1
+            className="text-white leading-[1.05] mb-6 max-w-3xl"
+            style={{ fontSize: 'clamp(2.25rem, 5vw, 4rem)', fontWeight: 500, letterSpacing: '-0.015em' }}
+          >
+            Recibe tu presupuesto{' '}
+            <span className="font-[var(--font-serif)] italic text-gold-400" style={{ fontWeight: 400 }}>
+              hoy mismo
+            </span>.
+          </h1>
+          <p className="text-base lg:text-lg text-white/75 max-w-2xl leading-relaxed">
+            Llena el formulario o llámanos al{' '}
+            <a href="tel:+56976673577" className="text-gold-400 hover:text-gold-300 underline-offset-4">+56 9 7667 3577</a>.
+            En horario laboral respondemos en menos de 2 horas.
+          </p>
         </div>
       </section>
 
