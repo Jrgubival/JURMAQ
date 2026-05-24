@@ -41,7 +41,7 @@ const STEPS = [
     n: "04",
     title: "Devuelves cuando termines",
     desc: "Coordinamos el retiro al finalizar. Si extendiste el plazo, te ajustamos la factura sin sorpresas.",
-    detail: ["Factura electrónica al instante", "Sin penalizaciones ocultas", "Garantía Klap próximamente"],
+    detail: ["Factura electrónica al instante", "Sin penalizaciones ocultas", "Garantía Klap en tarjeta (hold + liberación automática)"],
   },
 ];
 
