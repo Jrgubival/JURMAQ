@@ -1,35 +1,43 @@
 import Link from "next/link";
 
 /**
- * Compact hero banner for the barraca homepage on mobile.
- * Replaces the desktop HeroSlider on screens < lg.
+ * MobileHero — Editorial Luxury retrofit.
  *
- * Design:
- *  - Single dark card with cement-bag image on the right (no slider)
- *  - Big value-prop text on left: "+1.900 productos · con precios en línea · cotiza al instante"
- *  - Tap anywhere → /categorias
- *  - Sized so it fills ~30% of the viewport without pushing content below the fold
+ * Replaces el HeroSlider en mobile (< lg). Card dark con imagen a la derecha.
+ *
+ * Cambios skill-driven (impeccable, design-taste-frontend, web-typography):
+ * - Sin "+1.900 PRODUCTOS" hero-metric template (impeccable ban).
+ * - Sin font-extrabold shouted (uppercase + heavy weight = ruido visual).
+ * - Eyebrow tracking 0.22em + serif italic accent (consistente con desktop).
+ * - Hairline divider y CTA arrow refinada (stroke 1.5).
  */
 export default function MobileHero() {
   return (
     <Link
       href="/categorias"
       aria-label="Ver catálogo completo"
-      className="lg:hidden block mx-4 mt-3 mb-4 rounded-2xl overflow-hidden bg-navy-950 relative shadow-md active:scale-[0.99] transition-transform"
+      className="lg:hidden block mx-4 mt-3 mb-4 rounded-2xl overflow-hidden bg-navy-950 relative active:scale-[0.99] transition-transform"
     >
-      <div className="relative grid grid-cols-[1.4fr_1fr] min-h-[160px]">
+      <div className="relative grid grid-cols-[1.5fr_1fr] min-h-[160px]">
         {/* Text side */}
         <div className="relative z-10 px-5 py-5 flex flex-col justify-center">
-          <p className="text-orange-500 font-extrabold text-lg leading-tight">
-            +1.900 PRODUCTOS
+          <p className="text-[10px] font-semibold text-white/55 uppercase tracking-[0.22em] mb-2">
+            Barraca · Maule
           </p>
-          <p className="text-white font-extrabold text-2xl leading-tight mt-1">
-            CON PRECIOS<br />EN LÍNEA
+          <p
+            className="text-white leading-[1.1]"
+            style={{ fontSize: 'clamp(1.5rem, 6vw, 1.875rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+          >
+            Fierros y materiales
+            <br />
+            <span className="font-[var(--font-serif)] italic text-white/90" style={{ fontWeight: 400 }}>
+              a precio justo
+            </span>
           </p>
-          <p className="text-white/90 font-semibold text-sm mt-2 inline-flex items-center gap-1">
-            COTIZA AL INSTANTE
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+          <p className="text-xs text-white/65 mt-3 inline-flex items-center gap-1.5">
+            Ver catálogo
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </p>
         </div>
@@ -49,7 +57,7 @@ export default function MobileHero() {
             className="absolute inset-0 w-full h-full object-cover"
           />
           {/* Soft dark gradient on the left edge so text stays readable */}
-          <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/55 to-transparent" />
         </div>
       </div>
     </Link>

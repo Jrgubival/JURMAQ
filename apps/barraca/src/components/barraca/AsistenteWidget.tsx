@@ -181,20 +181,39 @@ export default function AsistenteWidget() {
           </header>
 
           {!consentGiven ? (
-            <div className="flex-1 p-6 overflow-y-auto">
-              <h3 className="font-bold mb-2 text-navy-950">Antes de empezar</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Este asistente usa IA para ayudarte. Tus mensajes <strong>no se guardan</strong>{" "}
+            <div className="flex-1 p-6 overflow-y-auto bg-[#FBFBFA]">
+              <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.18em] mb-3">
+                Antes de empezar
+              </p>
+              <h3 className="font-[var(--font-serif)] text-2xl leading-tight text-[#111111] mb-4" style={{ fontWeight: 500 }}>
+                Conversemos con <em className="italic">cuidado</em>.
+              </h3>
+              <p className="text-sm text-[#5A5A57] mb-4 leading-relaxed">
+                ADIA usa IA para ayudarte. Tus mensajes <strong className="text-[#111111] font-semibold">no se guardan</strong>{" "}
                 más allá de esta sesión, y nunca compartimos información personal.
               </p>
-              <p className="text-sm text-gray-600 mb-4">
-                ⚠️ Para <strong>precios y stock reales</strong>, las respuestas de la IA pueden
-                no ser exactas. Confirmá siempre por WhatsApp antes de tomar decisiones.
-              </p>
+              <div className="flex gap-3 mb-6 p-3 bg-white border border-[#EAEAEA] rounded-lg">
+                <svg
+                  className="w-4 h-4 shrink-0 text-[#956400] mt-0.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                </svg>
+                <p className="text-xs text-[#5A5A57] leading-relaxed">
+                  Para <strong className="text-[#111111] font-semibold">precios y stock reales</strong>, las respuestas de la IA pueden
+                  no ser exactas. Confirmá siempre por WhatsApp antes de tomar decisiones.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={acceptConsent}
-                className="w-full bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600"
+                className="w-full bg-navy-950 text-white py-3 rounded-lg text-sm font-medium tracking-[0.02em] hover:bg-[#111111] transition-colors"
               >
                 Entiendo, empezar
               </button>
