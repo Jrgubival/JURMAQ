@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
-import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, sanitizeString, escapeOrFilter } from '@jurmaq/shared/sanitize';
 import {
   ALLOWED_ESTADOS,
   ALLOWED_TIPOS_COMBUSTIBLE,
@@ -36,9 +36,11 @@ export async function GET(request: NextRequest) {
   if (desde) query = query.gte('fecha', desde);
   if (hasta) query = query.lte('fecha', hasta);
   if (buscar) {
-    // Defend against PostgREST filter injection (commas / parentheses).
-    const q = buscar.trim().replace(/[%_\\,()]/g, '');
-    query = query.or(`folio.ilike.%${q}%,proveedor_nombre.ilike.%${q}%,proveedor_rut.ilike.%${q}%`);
+    // SECURITY (audit fase 2C.1): estandarizado a escapeOrFilter de shared.
+    const safe = escapeOrFilter(buscar.trim().slice(0, 80));
+    if (safe) {
+      query = query.or(`folio.ilike.%${safe}%,proveedor_nombre.ilike.%${safe}%,proveedor_rut.ilike.%${safe}%`);
+    }
   }
 
   const { data, error } = await query;

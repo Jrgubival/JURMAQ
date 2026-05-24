@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
-import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, sanitizeString, escapeOrFilter } from '@jurmaq/shared/sanitize';
 
 /**
  * GET  /api/admin/maestros — lista paginada con búsqueda
@@ -37,8 +37,13 @@ export async function GET(request: NextRequest) {
   else if (activo === 'false') query = query.eq('activo', false);
 
   if (q.length >= 2) {
-    const like = `%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`;
-    query = query.or(`nombre.ilike.${like},codigo.ilike.${like},rut.ilike.${like},email.ilike.${like}`);
+    // SECURITY (audit fase 2C.1): escapeOrFilter strip de coma/paréntesis +
+    // escape LIKE wildcards. Previene PostgREST filter injection en .or().
+    const safe = escapeOrFilter(q.slice(0, 80));
+    if (safe) {
+      const like = `%${safe}%`;
+      query = query.or(`nombre.ilike.${like},codigo.ilike.${like},rut.ilike.${like},email.ilike.${like}`);
+    }
   }
 
   const { data, error } = await query;

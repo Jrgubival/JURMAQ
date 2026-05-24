@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
+import { escapeOrFilter } from '@jurmaq/shared/sanitize';
 
 /**
  * GET /api/admin/clientes?q=&segmento=
@@ -55,10 +56,15 @@ export async function GET(request: NextRequest) {
     .limit(500);
 
   if (q.length >= 2) {
-    const like = `%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`;
-    usuariosQuery = usuariosQuery.or(
-      `nombre.ilike.${like},email.ilike.${like},rut.ilike.${like},empresa.ilike.${like}`,
-    );
+    // SECURITY (audit fase 2C.1): escapeOrFilter previene .or() injection
+    // (coma/paréntesis pueden inyectar filtros adicionales en PostgREST).
+    const safe = escapeOrFilter(q.slice(0, 80));
+    if (safe) {
+      const like = `%${safe}%`;
+      usuariosQuery = usuariosQuery.or(
+        `nombre.ilike.${like},email.ilike.${like},rut.ilike.${like},empresa.ilike.${like}`,
+      );
+    }
   }
 
   const { data: usuariosRaw, error: usuariosErr } = await usuariosQuery;

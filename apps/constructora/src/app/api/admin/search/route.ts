@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
+import { escapeOrFilter } from '@jurmaq/shared/sanitize';
 
 /**
  * GET /api/admin/search?q=...
@@ -37,7 +38,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ hits: [], q });
   }
 
-  const like = `%${q.replace(/%/g, '\\%').replace(/_/g, '\\_')}%`;
+  // SECURITY (audit fase 2C.1): escapeOrFilter previene .or() injection
+  // (coma/paréntesis pueden inyectar filtros adicionales en PostgREST).
+  const safe = escapeOrFilter(q.slice(0, 80));
+  if (!safe) {
+    return NextResponse.json({ hits: [], q });
+  }
+  const like = `%${safe}%`;
 
   const [maquinarias, clientes, cotizaciones, contratos, facturas] = await Promise.all([
     supabaseAdmin

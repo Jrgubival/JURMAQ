@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
+import { escapeOrFilter } from '@jurmaq/shared/sanitize';
 
 /**
  * GET /api/cuenta/cotizaciones
@@ -46,7 +47,11 @@ export async function GET(request: NextRequest) {
   if (desde) query = query.gte('fecha_servicio', desde);
   if (hasta) query = query.lte('fecha_servicio', hasta);
   if (q) {
-    query = query.or(`numero.ilike.%${q}%,ubicacion_servicio.ilike.%${q}%`);
+    // SECURITY (audit fase 2C.1): escapeOrFilter previene .or() injection.
+    const safe = escapeOrFilter(q.slice(0, 80));
+    if (safe) {
+      query = query.or(`numero.ilike.%${safe}%,ubicacion_servicio.ilike.%${safe}%`);
+    }
   }
 
   const { data, error } = await query.limit(100);

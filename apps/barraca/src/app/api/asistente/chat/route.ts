@@ -18,7 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
-import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, sanitizeString, escapeOrFilter } from '@jurmaq/shared/sanitize';
 
 const SYSTEM_PROMPT = `Eres ADIA, asistente digital de JURMAQ Barraca — barraca de fierros y materiales de construcción en Curicó y Molina, Región del Maule, Chile.
 
@@ -107,12 +107,30 @@ interface ChatMessage {
 // ---------------------------------------------------------------------------
 
 async function tool_buscar_producto(query: string): Promise<string> {
-  const { data } = await supabaseAdmin
+  // SECURITY (audit fase 2C.2): escapamos la query del LLM antes de meterla
+  // en .or() para evitar PostgREST filter injection. Pre-fix un atacante via
+  // prompt injection podía hacer `Gemini → tool_buscar_producto("foo),id.eq.1,(")`
+  // y extraer columnas arbitrarias. escapeOrFilter quita coma/paréntesis y
+  // escapa los wildcards LIKE.
+  const safeQuery = escapeOrFilter(
+    typeof query === 'string' ? query.slice(0, 80) : ''
+  );
+  if (!safeQuery) {
+    return JSON.stringify({ error: 'Necesito una palabra clave para buscar.' });
+  }
+
+  const { data, error } = await supabaseAdmin
     .from('barraca_productos_public')
     .select('nombre, precio, precio_original, en_oferta, unidad, medida')
-    .or(`nombre.ilike.%${query}%,descripcion.ilike.%${query}%`)
+    .or(`nombre.ilike.%${safeQuery}%,descripcion.ilike.%${safeQuery}%`)
     .eq('activo', true)
     .limit(3);
+
+  if (error) {
+    // No exponer detalles del error al LLM (pueden leak schema)
+    console.error('[asistente.tool_buscar_producto] DB error', error);
+    return JSON.stringify({ error: 'No pude consultar el catálogo en este momento.' });
+  }
 
   if (!data || data.length === 0) {
     return JSON.stringify({ error: 'No encontré productos que coincidan con esa búsqueda.' });
