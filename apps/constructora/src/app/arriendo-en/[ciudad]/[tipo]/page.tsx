@@ -6,6 +6,7 @@ import { CIUDADES, TIPOS_MAQUINA, HQ } from '@jurmaq/shared/seo';
 import { formatCLP } from '@jurmaq/shared/format';
 import { precioPublicoDesde } from '@/lib/pricing-arriendo';
 import { whatsappCtaCiudadTipo } from '@jurmaq/shared/whatsapp';
+import { maquinariaHref } from '@/lib/maquinaria-slug';
 
 /**
  * Tier 7 G1: Cross landings programáticas [ciudad] × [tipo].
@@ -314,7 +315,7 @@ export default async function CiudadTipoLanding({
                   return (
                     <Link
                       key={m.id}
-                      href={`/maquinarias/${m.id}`}
+                      href={maquinariaHref(m)}
                       className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md hover:border-orange-300 transition"
                     >
                       <p className="font-bold text-navy-950 group-hover:text-orange-600">

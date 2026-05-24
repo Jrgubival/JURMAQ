@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { maquinariaHref } from "@/lib/maquinaria-slug";
 // Cliente publico (anon) — solo lecturas de maquinarias permitidas a anon.
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TIPOS_MAQUINA } from "@jurmaq/shared/seo";
@@ -73,13 +74,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // --- Machinery detail pages ---
   // updated_at real si existe — Google premia páginas con contenido fresco.
+  // URLs SEO-friendly: /maquinarias/<slug-nombre>-<id> (audit fase 4.7 + feedback).
   const { data: machines } = await supabasePublic
     .from('maquinarias')
-    .select('id, updated_at');
+    .select('id, nombre, updated_at');
 
   const machineUrls: MetadataRoute.Sitemap = (machines || []).map(
-    (m: { id: number | string; updated_at?: string | null }) => ({
-      url: `${baseUrl}/maquinarias/${m.id}`,
+    (m: { id: number | string; nombre: string; updated_at?: string | null }) => ({
+      url: `${baseUrl}${maquinariaHref(m)}`,
       lastModified: m.updated_at ? new Date(m.updated_at) : new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.8,

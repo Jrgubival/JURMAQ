@@ -53,19 +53,59 @@ function getTipoLabel(tipo: string): string {
     retroexcavadora: "Retroexcavadora",
     miniexcavadora: "Miniexcavadora",
     brazo_articulado: "Brazo Articulado",
-    grua: "Grua",
-    camion: "Camion",
-    rodillo: "Rodillo",
+    alzahombre: "Plataforma elevadora",
+    minicargador: "Minicargador",
+    camion: "Camión tolva",
     otro: "Otro",
   };
   return labels[tipo] || tipo;
 }
 
+/**
+ * Slugify nombre → URL slug.
+ * "Minicargador CAT 246C" → "minicargador-cat-246c"
+ */
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Lookup maquinaria por slug O por id numérico legacy.
+ * Acepta:
+ *   - "9" → buscar por id=9 (backward compat)
+ *   - "minicargador-cat-246c-9" → buscar por id=9 (tail-id pattern, SEO-friendly)
+ *   - "minicargador-cat-246c" → fallback slug match (más lento)
+ */
+async function findMaquinariaBySlug(slug: string): Promise<Maquinaria | null> {
+  // Caso 1: solo dígitos → buscar por id directo
+  if (/^\d+$/.test(slug)) {
+    const { data } = await supabasePublic.from('maquinarias').select('*').eq('id', Number(slug)).maybeSingle();
+    return (data as Maquinaria) ?? null;
+  }
+  // Caso 2: termina con -<id> → extraer id final
+  const tailMatch = slug.match(/-(\d+)$/);
+  if (tailMatch) {
+    const id = Number(tailMatch[1]);
+    const { data } = await supabasePublic.from('maquinarias').select('*').eq('id', id).maybeSingle();
+    if (data) return data as Maquinaria;
+  }
+  // Caso 3: slug puro → matchear contra nombre (último recurso)
+  const { data: all } = await supabasePublic.from('maquinarias').select('*');
+  const found = (all as Maquinaria[] | null)?.find((m) => slugify(m.nombre) === slug);
+  return found ?? null;
+}
+
 export async function generateStaticParams() {
   const { data: machines } = await supabasePublic
     .from('maquinarias')
-    .select('id');
-  return (machines || []).map((m: any) => ({ id: String(m.id) }));
+    .select('id, nombre');
+  return (machines || []).map((m: any) => ({
+    id: `${slugify(m.nombre)}-${m.id}`,
+  }));
 }
 
 export async function generateMetadata({
@@ -74,11 +114,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const { data: machine } = await supabasePublic
-    .from('maquinarias')
-    .select('*')
-    .eq('id', Number(id))
-    .single();
+  const machine = await findMaquinariaBySlug(id);
 
   if (!machine) {
     return { title: "Maquinaria no encontrada | JURMAQ" };
@@ -118,7 +154,7 @@ export async function generateMetadata({
     openGraph: {
       title: `Arriendo ${machine.nombre} en Curicó y Maule · ${priceText} · JURMAQ`,
       description: `${machine.nombre} (${tipoLbl}) disponible para arriendo con o sin operador en Curicó, Molina, Teno, Talca y Región del Maule. ${priceText}.`,
-      url: `https://jurmaq.cl/maquinarias/${machine.id}`,
+      url: `https://jurmaq.cl/maquinarias/${slugify(machine.nombre)}-${machine.id}`,
       siteName: "JURMAQ",
       locale: "es_CL",
       type: "website",
@@ -132,7 +168,7 @@ export async function generateMetadata({
       description: `${tipoLbl} en arriendo · ${priceText} · Despacho a toda la Región del Maule.`,
     },
     alternates: {
-      canonical: `https://jurmaq.cl/maquinarias/${machine.id}`,
+      canonical: `https://jurmaq.cl/maquinarias/${slugify(machine.nombre)}-${machine.id}`,
     },
   };
 }
@@ -143,11 +179,7 @@ export default async function MaquinariaDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { data: machine } = await supabasePublic
-    .from('maquinarias')
-    .select('*')
-    .eq('id', Number(id))
-    .single();
+  const machine = await findMaquinariaBySlug(id);
 
   if (!machine) {
     notFound();

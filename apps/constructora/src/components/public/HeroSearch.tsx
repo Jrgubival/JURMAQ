@@ -14,9 +14,9 @@ const TIPOS = [
   { value: 'retroexcavadora', label: 'Retroexcavadora' },
   { value: 'miniexcavadora', label: 'Miniexcavadora' },
   { value: 'brazo_articulado', label: 'Brazo articulado' },
-  { value: 'grua', label: 'Grúa' },
+  { value: 'alzahombre', label: 'Plataforma elevadora' },
+  { value: 'minicargador', label: 'Minicargador' },
   { value: 'camion', label: 'Camión tolva' },
-  { value: 'rodillo', label: 'Rodillo' },
 ];
 
 export default function HeroSearch() {

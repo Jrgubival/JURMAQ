@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { supabasePublic } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
 import { precioPublicoDesde } from '@/lib/pricing-arriendo';
+import { maquinariaHref } from '@/lib/maquinaria-slug';
 
 interface Props {
   currentId: number;
@@ -75,7 +76,7 @@ export default async function RelatedMachines({ currentId, tipo }: Props) {
             return (
               <Link
                 key={m.id}
-                href={`/maquinarias/${m.id}`}
+                href={maquinariaHref(m)}
                 className="group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-gold-500/60 hover:shadow-md transition-all"
               >
                 <div className="relative h-44 bg-gradient-to-br from-navy-900 to-navy-800 flex items-center justify-center overflow-hidden">

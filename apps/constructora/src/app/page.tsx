@@ -176,9 +176,8 @@ export default async function HomePage() {
               </span>
             </h1>
 
-            <p className="text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed max-w-[60ch]">
-              Obras civiles, arriendo de maquinaria, maestranza y barraca de fierros.
-              27 años resolviendo proyectos industriales en la Región del Maule.
+            <p className="text-lg lg:text-xl text-gray-300 mb-8 leading-relaxed max-w-[55ch]">
+              Obras, arriendo, maestranza y barraca de fierros. 27 años en el Maule.
             </p>
 
             {/* Hero Search Bar — estilo Rendalomaq */}
@@ -194,7 +193,7 @@ export default async function HomePage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Cómo funciona el arriendo
+                Cómo funciona
               </Link>
               <a
                 href={whatsappCtaHome()}

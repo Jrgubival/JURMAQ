@@ -53,10 +53,13 @@ const TIERS_DIA: Tier[] = [
   { key: 'mes', label: '1 mes', unidades: 13, detalle: '13 días', badge: 'mejor precio mes' },
 ];
 
-// Tiers para máquinas tarifadas POR HORA — SIN día
+// Tiers para máquinas tarifadas POR HORA — incluye HORA + SEMANA + MES.
+// Math: tarifa × 1 = hora, × 40 = semana, × 150 = mes.
+// El key 'dia' se reutiliza para 'hora' (mismo unidades=1) por compat de tipo.
 const TIERS_HORA: Tier[] = [
-  { key: 'semana', label: '1 semana', unidades: 40, detalle: '40 horas', badge: 'mejor precio' },
-  { key: 'mes', label: '1 mes', unidades: 150, detalle: '150 horas', badge: 'mejor precio mes' },
+  { key: 'dia', label: '1 hora', unidades: 1, detalle: 'tarifa base' },
+  { key: 'semana', label: '1 semana', unidades: 40, detalle: '× 40 horas', badge: 'mejor precio' },
+  { key: 'mes', label: '1 mes', unidades: 150, detalle: '× 150 horas', badge: 'mejor precio mes' },
 ];
 
 function formatPriceMoney(value: number): string {
@@ -71,8 +74,8 @@ export default function PricingTiers({
   minimoUnidades,
 }: Props) {
   const tiers = unidadTarifa === 'hora' ? TIERS_HORA : TIERS_DIA;
-  const defaultPeriodo: Periodo = unidadTarifa === 'hora' ? 'semana' : 'dia';
-  const [activo, setActivo] = useState<Periodo>(defaultPeriodo);
+  // Default: 'dia' siempre (= "1 hora" para tarifa hora, = "1 día" para tarifa día)
+  const [activo, setActivo] = useState<Periodo>('dia');
 
   const calcular = (tier: Tier) => {
     // unidades del tier × tarifa_neta unitaria

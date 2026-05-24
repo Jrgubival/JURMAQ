@@ -8,11 +8,14 @@ import Link from 'next/link';
  *   <CategoriasShowcase counts={{ retroexcavadora: 4, ... }} variant="dark" />
  */
 
+// IMPORTANTE: estos valores deben coincidir EXACTO con el campo `tipo` en
+// la tabla `maquinarias`. Si los renombramos acá sin migrar DB, los enlaces
+// de categoría devuelven 404 (no hay maquinarias con ese `tipo`).
 export type TipoCategoria =
   | 'retroexcavadora'
   | 'miniexcavadora'
   | 'brazo_articulado'
-  | 'plataforma_elevadora'
+  | 'alzahombre' // Display label = "Plataforma elevadora"
   | 'minicargador'
   | 'camion'
   | 'otro';
@@ -66,9 +69,9 @@ const CATEGORIAS: Categoria[] = [
     ),
   },
   {
-    tipo: 'plataforma_elevadora',
+    tipo: 'alzahombre',
     label: 'Plataformas elevadoras',
-    subtitle: 'Trabajo en altura · faenas',
+    subtitle: 'Trabajo en altura',
     icon: (
       <svg className="w-10 h-10" viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M14 52h36v-6H14v6z" />

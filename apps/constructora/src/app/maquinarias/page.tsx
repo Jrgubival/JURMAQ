@@ -6,6 +6,7 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
 import MaquinariaSort from "@/components/public/MaquinariaSort";
+import { maquinariaHref } from "@/lib/maquinaria-slug";
 
 
 export const metadata: Metadata = {
@@ -314,7 +315,7 @@ export default async function MaquinariasPage({
                 >
                   {/* Image (clickable → detalle) */}
                   <Link
-                    href={`/maquinarias/${machine.id}`}
+                    href={maquinariaHref(machine)}
                     aria-label={`Ver detalle de ${machine.nombre}`}
                     className="relative h-52 bg-gradient-to-br from-navy-900 to-navy-800 flex items-center justify-center overflow-hidden block"
                   >
@@ -361,7 +362,7 @@ export default async function MaquinariasPage({
                   <div className="p-6">
                     <h3 className="text-lg font-bold text-navy-950 mb-2">
                       <Link
-                        href={`/maquinarias/${machine.id}`}
+                        href={maquinariaHref(machine)}
                         className="hover:text-gold-600 transition-colors"
                       >
                         {machine.nombre}

@@ -7,6 +7,7 @@ import { CIUDADES, TIPOS_MAQUINA, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaCiudad } from "@jurmaq/shared/whatsapp";
+import { maquinariaHref } from "@/lib/maquinaria-slug";
 
 interface Maquinaria {
   id: number;
@@ -290,7 +291,7 @@ export default async function ArriendoEnCiudadPage({
                 {machines.map((m) => (
                   <Link
                     key={m.id}
-                    href={`/maquinarias/${m.id}`}
+                    href={maquinariaHref(m)}
                     className="block bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden border border-gray-200"
                   >
                     {m.imagen && (
