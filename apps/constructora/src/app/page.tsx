@@ -453,11 +453,17 @@ export default async function HomePage() {
         )}
 
       {/* ===== CLIENTS SECTION ===== */}
-        <section className="py-16 lg:py-20 bg-white border-y border-gray-100 content-auto">
+        <section className="py-20 lg:py-24 bg-white border-y border-[#EAEAEA] content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl lg:text-3xl font-extrabold text-navy-950">
-              Empresas que confían en JURMAQ
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+              Clientes
+            </p>
+            <h2
+              className="text-[#111111] leading-[1.1]"
+              style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+            >
+              Empresas que <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>confían</span> en JURMAQ.
             </h2>
           </div>
 
@@ -484,14 +490,20 @@ export default async function HomePage() {
       </section>
 
       {/* ===== PROJECTS PREVIEW ===== */}
-        <section id="proyectos" className="py-16 lg:py-24 bg-gray-50 content-auto">
+        <section id="proyectos" className="py-24 lg:py-32 bg-[#FBFBFA] content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 lg:mb-16">
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-navy-950 mb-4">
-              Proyectos que hablan por nosotros
+          <div className="mb-14 lg:mb-16 max-w-3xl">
+            <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-4">
+              Proyectos · 27 años
+            </p>
+            <h2
+              className="text-[#111111] leading-[1.1] mb-4"
+              style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+            >
+              Obras que <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>hablan</span> por nosotros.
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl">
-              Obras reales para las principales empresas agroindustriales de la zona central.
+            <p className="text-base lg:text-lg text-[#5A5A57] max-w-[55ch] leading-relaxed">
+              Construyendo para las principales empresas agroindustriales de la zona central.
             </p>
           </div>
 
@@ -548,13 +560,19 @@ export default async function HomePage() {
       </section>
 
       {/* ===== CTA SECTION ===== */}
-        <section className="bg-navy-950 py-16 lg:py-20">
+        <section className="bg-navy-950 py-20 lg:py-28 border-t border-navy-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4">
-            Cotiza ahora y recibe respuesta hoy
+          <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
+            Respuesta en 2 horas hábiles
+          </p>
+          <h2
+            className="text-white leading-[1.1] mb-6"
+            style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+          >
+            Cotiza ahora y recibe <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>respuesta hoy</span>.
           </h2>
-          <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
-            Escríbenos por WhatsApp o llena el formulario. Respondemos en menos de 2 horas.
+          <p className="text-base lg:text-lg text-white/75 mb-10 max-w-2xl mx-auto leading-relaxed">
+            Escríbenos por WhatsApp o llena el formulario. Respondemos en menos de 2 horas hábiles.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <a
