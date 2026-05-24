@@ -209,7 +209,8 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Inter banned (audit P0): usa var(--font-sans) = Geist desde next/font/google */
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
   /* No top padding here — the navbar absorbs safe-area-inset-top itself

@@ -8,6 +8,7 @@ import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import DisponibilidadCalendario from "@/components/maquinarias/DisponibilidadCalendario";
 import { whatsappCtaMaquinaria } from "@jurmaq/shared/whatsapp";
 import PricingTiers from "@/components/public/PricingTiers";
+import ObraCompletaCTA from "@/components/public/ObraCompletaCTA";
 import RelatedMachines from "@/components/public/RelatedMachines";
 
 interface Maquinaria {
@@ -367,6 +368,9 @@ export default async function MaquinariaDetailPage({
                   </div>
                 </div>
               )}
+
+              {/* Mejora-precio para obras completas + multi-arriendo (diferenciador único) */}
+              <ObraCompletaCTA source={`maquinaria_${machine.id}_${machine.tipo}`} />
 
               {/* Calendario de disponibilidad (próximos 30 días) */}
               <DisponibilidadCalendario maquinariaId={machine.id} />

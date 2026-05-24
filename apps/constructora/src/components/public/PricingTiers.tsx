@@ -5,6 +5,24 @@ import Link from 'next/link';
 import { formatCLP } from '@jurmaq/shared/format';
 import { whatsappCtaMaquinaria } from '@jurmaq/shared/whatsapp';
 
+/**
+ * PricingTiers — Tabla de tarifas según unidad de la máquina.
+ *
+ * Reglas de pricing (actualizadas 2026-05-23):
+ *
+ *   Si tarifa POR DÍA (unidad_tarifa = 'dia'):
+ *     - 1 día   = tarifa_neta
+ *     - 1 sem   = tarifa_neta × 4   (no × 5 ni × 7)
+ *     - 1 mes   = tarifa_neta × 13  (no × 22)
+ *
+ *   Si tarifa POR HORA (unidad_tarifa = 'hora'):
+ *     - NO se muestra tab "día" (no aplica)
+ *     - 1 sem   = tarifa_neta × 40 horas
+ *     - 1 mes   = tarifa_neta × 150 horas
+ *
+ * Todos los totales con IVA incluido (19%).
+ */
+
 interface Props {
   maquinariaId: number;
   maquinariaNombre: string;
@@ -21,17 +39,29 @@ type Periodo = 'dia' | 'semana' | 'mes';
 interface Tier {
   key: Periodo;
   label: string;
-  dias: number;
-  /** Multiplicador sobre tarifa diaria. 1 = sin descuento. */
-  multiplicador: number;
+  /** Unidades aplicadas (días si unidad=día, horas si unidad=hora) */
+  unidades: number;
+  /** Etiqueta humana del cálculo, ej "4 días" o "40 horas" */
+  detalle: string;
   badge?: string;
 }
 
-const TIERS: Tier[] = [
-  { key: 'dia', label: '1 día', dias: 1, multiplicador: 1.0 },
-  { key: 'semana', label: '1 semana (5 días)', dias: 5, multiplicador: 0.92, badge: '8% off' },
-  { key: 'mes', label: '1 mes (22 días)', dias: 22, multiplicador: 0.82, badge: '18% off' },
+// Tiers para máquinas tarifadas POR DÍA
+const TIERS_DIA: Tier[] = [
+  { key: 'dia', label: '1 día', unidades: 1, detalle: '1 día' },
+  { key: 'semana', label: '1 semana', unidades: 4, detalle: '4 días', badge: 'mejor precio' },
+  { key: 'mes', label: '1 mes', unidades: 13, detalle: '13 días', badge: 'mejor precio mes' },
 ];
+
+// Tiers para máquinas tarifadas POR HORA — SIN día
+const TIERS_HORA: Tier[] = [
+  { key: 'semana', label: '1 semana', unidades: 40, detalle: '40 horas', badge: 'mejor precio' },
+  { key: 'mes', label: '1 mes', unidades: 150, detalle: '150 horas', badge: 'mejor precio mes' },
+];
+
+function formatPriceMoney(value: number): string {
+  return formatCLP(value);
+}
 
 export default function PricingTiers({
   maquinariaId,
@@ -40,109 +70,114 @@ export default function PricingTiers({
   unidadTarifa,
   minimoUnidades,
 }: Props) {
-  const [activo, setActivo] = useState<Periodo>('dia');
-
-  // Base diaria neta. Si la tarifa es por hora, asumimos 8h/día.
-  const tarifaDiariaNeta =
-    unidadTarifa === 'hora' ? tarifaNeta * 8 : tarifaNeta * Math.max(minimoUnidades, 1);
+  const tiers = unidadTarifa === 'hora' ? TIERS_HORA : TIERS_DIA;
+  const defaultPeriodo: Periodo = unidadTarifa === 'hora' ? 'semana' : 'dia';
+  const [activo, setActivo] = useState<Periodo>(defaultPeriodo);
 
   const calcular = (tier: Tier) => {
-    const subtotal = Math.round(tarifaDiariaNeta * tier.dias * tier.multiplicador);
+    // unidades del tier × tarifa_neta unitaria
+    const subtotal = Math.round(tarifaNeta * tier.unidades);
     const iva = Math.round(subtotal * IVA);
     const total = subtotal + iva;
-    const porDia = Math.round(total / tier.dias);
-    return { subtotal, iva, total, porDia };
+    return { subtotal, iva, total };
   };
 
-  const tierActivo = TIERS.find((t) => t.key === activo)!;
+  const tierActivo = tiers.find((t) => t.key === activo) ?? tiers[0];
   const calc = calcular(tierActivo);
 
+  const unidadSingular = unidadTarifa === 'hora' ? 'hora' : 'día';
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-100 bg-gray-50">
-        <h3 className="text-lg font-bold text-navy-950">
-          Tarifas por período
+    <div className="bg-white hairline rounded-[16px] overflow-hidden">
+      <div className="px-7 py-6 border-b border-[#EAEAEA]">
+        <p className="eyebrow mb-2">Tarifas por período</p>
+        <h3 className="font-[var(--font-serif)] text-2xl text-[#111111] tracking-tight">
+          Mientras más largo, mejor precio
         </h3>
-        <p className="text-sm text-gray-600 mt-1">
-          Mientras más largo el arriendo, mejor precio por día. IVA incluido.
+        <p className="text-sm text-[#787774] mt-2 max-w-[55ch] leading-relaxed">
+          {unidadTarifa === 'hora'
+            ? `Esta máquina se cotiza por hora. La semana es 40 h, el mes 150 h. Todo con IVA incluido.`
+            : `Por día, por 4 días (semana) o por 13 días (mes). Todos los precios con IVA incluido.`}
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-gray-100">
-        {TIERS.map((tier) => (
-          <button
-            key={tier.key}
-            type="button"
-            onClick={() => setActivo(tier.key)}
-            className={`flex-1 px-4 py-4 text-sm font-semibold transition-colors relative ${
-              activo === tier.key
-                ? 'text-navy-950 bg-white'
-                : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
-            }`}
-          >
-            <span>{tier.label}</span>
-            {tier.badge && (
-              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold rounded bg-green-100 text-green-700">
-                {tier.badge}
-              </span>
-            )}
-            {activo === tier.key && (
-              <span className="absolute bottom-0 left-0 right-0 h-1 bg-gold-500" />
-            )}
-          </button>
-        ))}
+      <div role="tablist" aria-label="Período de arriendo" className="flex border-b border-[#EAEAEA]">
+        {tiers.map((tier) => {
+          const isActive = activo === tier.key;
+          return (
+            <button
+              key={tier.key}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActivo(tier.key)}
+              className={`flex-1 px-3 py-4 text-sm font-medium transition-spring relative tactile ${
+                isActive ? 'text-[#111111] bg-white' : 'text-[#787774] bg-[#F7F6F3] hover:bg-[#F0EFEB]'
+              }`}
+            >
+              <span className="block">{tier.label}</span>
+              <span className="block text-[10px] text-[#787774] mt-0.5 tabular-nums">{tier.detalle}</span>
+              {isActive && (
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#956400]" aria-hidden="true" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Desglose */}
-      <div className="p-6">
+      <div className="p-7">
         <div className="flex items-baseline justify-between mb-1">
-          <span className="text-sm text-gray-600">Total {tierActivo.label.toLowerCase()}</span>
-          <span className="text-3xl font-extrabold text-navy-950">
-            {formatCLP(calc.total)}
+          <span className="text-sm text-[#787774]">Total {tierActivo.label.toLowerCase()}</span>
+          <span className="font-[var(--font-serif)] text-3xl text-[#111111] tracking-tight tabular-nums">
+            {formatPriceMoney(calc.total)}
           </span>
         </div>
-        <div className="flex items-baseline justify-between mb-5">
-          <span className="text-xs text-gray-500">Equivale a</span>
-          <span className="text-sm font-semibold text-gold-600">
-            {formatCLP(calc.porDia)}/día
+        <div className="flex items-baseline justify-between mb-6">
+          <span className="text-xs text-[#787774]">{tierActivo.detalle} a tarifa neta + IVA</span>
+          <span className="text-sm text-[#956400] tabular-nums">
+            {formatPriceMoney(Math.round(calc.total / tierActivo.unidades))} / {unidadSingular}
           </span>
         </div>
 
-        <div className="space-y-2 text-sm text-gray-600 pb-5 border-b border-gray-100 mb-5">
+        <div className="space-y-2 text-sm text-[#787774] pb-5 border-b border-[#EAEAEA] mb-6">
           <div className="flex justify-between">
-            <span>Subtotal neto</span>
-            <span className="font-medium text-navy-950">{formatCLP(calc.subtotal)}</span>
+            <span>
+              {tierActivo.detalle} × {formatPriceMoney(tarifaNeta)} neto
+            </span>
+            <span className="font-medium text-[#111111] tabular-nums">{formatPriceMoney(calc.subtotal)}</span>
           </div>
           <div className="flex justify-between">
             <span>IVA (19%)</span>
-            <span className="font-medium text-navy-950">{formatCLP(calc.iva)}</span>
+            <span className="font-medium text-[#111111] tabular-nums">{formatPriceMoney(calc.iva)}</span>
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
           <Link
-            href={`/cotizar-arriendo?maquinaria=${maquinariaId}&dias=${tierActivo.dias}`}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold text-sm rounded-xl transition-colors"
+            href={`/cotizar-arriendo?maquinariaId=${maquinariaId}&periodo=${tierActivo.key}`}
+            className="group inline-flex items-center justify-center gap-3 px-5 py-3 bg-[#111111] hover:bg-[#2F3437] text-white text-sm font-semibold rounded-[10px] transition-spring tactile"
           >
             Cotizar {tierActivo.label.toLowerCase()}
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-spring" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </Link>
           <a
             href={whatsappCtaMaquinaria(maquinariaId, maquinariaNombre)}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-navy-950 hover:bg-navy-950 hover:text-white text-navy-950 font-bold text-sm rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white hairline hover:bg-[#F7F6F3] text-[#111111] text-sm font-semibold rounded-[10px] transition-spring tactile"
           >
-            💬 Consultar por WhatsApp
+            Consultar por WhatsApp
           </a>
         </div>
 
-        <p className="text-[11px] text-gray-500 mt-4 leading-relaxed">
-          * Precios referenciales con descuentos por volumen estándar. El traslado se cotiza según
-          dirección de obra. Para arriendos &gt; 1 mes ofrecemos descuentos adicionales.
+        <p className="text-[11px] text-[#787774] mt-4 leading-relaxed">
+          Precios indicativos por uso. El traslado se cotiza por aparte según dirección de
+          obra. Para arriendos &gt; 1 mes o más de una máquina, pedí precio personalizado
+          (ver opción de obra completa abajo).
         </p>
       </div>
     </div>
