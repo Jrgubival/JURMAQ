@@ -393,37 +393,39 @@ export default async function BarracaHomePage() {
       {/* Spec-sheet: KPIs estilo planilla técnica de obra. Números grandes
           en tabular-nums (estables como ficha técnica), labels uppercase
           tracking-wider. Mobile-first: 2x2 grid en mobile, 1x4 en lg+. */}
+      {/* Trust strip — reemplaza hero-metric template (impeccable banned)
+          por editorial inline prose donde los números van resaltados con
+          font-serif italic. Mantiene la info, elimina el "big number small label". */}
       <section className="bg-navy-950 border-b border-navy-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-5">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-4 lg:gap-y-0 lg:divide-x lg:divide-navy-800">
-            <div className="px-2 lg:px-4 text-center border-r border-navy-800 lg:border-r-0">
-              <div className="text-xl lg:text-2xl font-extrabold text-white tabular-nums leading-none">+1.600</div>
-              <div className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-orange-400">Productos en stock</div>
-            </div>
-            <div className="px-2 lg:px-4 text-center">
-              <div className="text-xl lg:text-2xl font-extrabold text-white tabular-nums leading-none">2 h</div>
-              <div className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-orange-400">Mejora tu cotización</div>
-            </div>
-            <div className="px-2 lg:px-4 text-center border-r border-navy-800 lg:border-r-0">
-              <div className="text-xl lg:text-2xl font-extrabold text-white tabular-nums leading-none">12</div>
-              <div className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-orange-400">Comunas con despacho</div>
-            </div>
-            <div className="px-2 lg:px-4 text-center">
-              <div className="text-xl lg:text-2xl font-extrabold text-white leading-none">Real</div>
-              <div className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-orange-400">Stock & precio en línea</div>
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 lg:py-6">
+          <p className="text-center text-sm lg:text-base text-gray-200 leading-relaxed max-w-3xl mx-auto">
+            Más de{' '}
+            <span className="font-[var(--font-serif)] italic text-orange-300 tabular-nums" style={{ fontSize: '1.25em', fontWeight: 500 }}>
+              1.600
+            </span>{' '}
+            productos en stock. Te mejoramos cualquier cotización en{' '}
+            <span className="font-[var(--font-serif)] italic text-orange-300" style={{ fontSize: '1.25em', fontWeight: 500 }}>
+              2 horas
+            </span>
+            . Despacho propio a{' '}
+            <span className="font-[var(--font-serif)] italic text-orange-300 tabular-nums" style={{ fontSize: '1.25em', fontWeight: 500 }}>
+              12
+            </span>{' '}
+            comunas del Maule, con stock y precio en línea.
+          </p>
         </div>
       </section>
 
-      <section className="hidden lg:block bg-orange-600">
+      {/* Banner despacho — desaturado (orange-600 → orange-700 muted, design-taste
+          rule 2 max 80% saturación). Em dash reemplazado por dos puntos (impeccable). */}
+      <section className="hidden lg:block bg-orange-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-center gap-3 text-white">
-            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <p className="text-sm sm:text-base font-semibold text-center">
-              Despacho a toda la Región del Maule — Curicó, Teno, Molina, Talca, Romeral y más
+            <p className="text-sm lg:text-[15px] font-medium text-center tracking-tight">
+              Despacho a toda la Región del Maule: Curicó, Teno, Molina, Talca, Romeral y más.
             </p>
           </div>
         </div>
