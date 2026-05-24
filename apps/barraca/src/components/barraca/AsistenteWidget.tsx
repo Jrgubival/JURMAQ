@@ -4,7 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 /**
- * AsistenteWidget v2 — híbrido rule-based + Gemini Flash.
+ * ADIA — Asistente de JURMAQ Barraca (rule-based + Gemini Flash backend).
+ *
+ * ADIA = Asistente Digital de Información y Asesoría.
  *
  * Quick actions arriba (rule-based, latencia 0, sin costo): buscar, calculadora,
  * cotizar, WhatsApp. Eso resuelve 80% de las consultas.
@@ -13,22 +15,58 @@ import Link from "next/link";
  * Cuando GEMINI_API_KEY no está configurada, retorna respuesta canned con
  * link a WhatsApp.
  *
+ * Posicionamiento (fix Z-AXIS contra WhatsApp FAB): bottom-24 right-6
+ * (la WhatsApp FAB en BarracaShell vive en bottom-6 right-6, gap de 72px).
+ *
  * Privacy (Ley 21.719): mensajes no se persisten más de la sesión del browser.
  * Solo logs server-side enmascarados.
  */
 
 interface QuickAction {
   label: string;
-  emoji: string;
+  // Mantenemos el campo `emoji` por compatibilidad pero ahora es un nodo SVG.
+  icon: React.ReactNode;
   href: string;
 }
 
+// SVG primitives (skill design-taste: emojis baneados en UI estructural)
+const ic = "w-4 h-4 shrink-0";
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: "Buscar productos", emoji: "🔍", href: "/buscar" },
-  { label: "Calculadora hormigón", emoji: "🧱", href: "/calculadora-hormigon" },
-  { label: "Calculadora fierro", emoji: "🔩", href: "/calculadora-fierro" },
-  { label: "Pedir cotización", emoji: "📋", href: "/cotizar" },
-  { label: "Hablar con humano", emoji: "💬", href: "https://wa.me/56912345678" },
+  {
+    label: "Buscar productos",
+    icon: (
+      <svg className={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+    ),
+    href: "/buscar",
+  },
+  {
+    label: "Calculadora hormigón",
+    icon: (
+      <svg className={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M8 8h.01M12 8h.01M16 8h.01M8 12h8M8 16h5" /></svg>
+    ),
+    href: "/calculadora-hormigon",
+  },
+  {
+    label: "Calculadora fierro",
+    icon: (
+      <svg className={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h16M8 6v12M16 6v12" /></svg>
+    ),
+    href: "/calculadora-fierro",
+  },
+  {
+    label: "Pedir cotización",
+    icon: (
+      <svg className={ic} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" /></svg>
+    ),
+    href: "/cotizar",
+  },
+  {
+    label: "Hablar por WhatsApp",
+    icon: (
+      <svg className={ic} viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884" /></svg>
+    ),
+    href: "https://wa.me/56976673577",
+  },
 ];
 
 interface ChatMessage {
@@ -107,10 +145,11 @@ export default function AsistenteWidget() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Cerrar asistente" : "Abrir asistente"}
-        className={`fixed bottom-20 right-4 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform ${
-          open ? "bg-gray-700 rotate-45" : "bg-orange-500 hover:bg-orange-600"
-        } text-white`}
+        aria-label={open ? "Cerrar ADIA" : "Abrir ADIA — asistente JURMAQ"}
+        className={`fixed bottom-24 right-6 z-50 w-13 h-13 rounded-full shadow-lg flex items-center justify-center transition-transform duration-200 ${
+          open ? "bg-navy-800 rotate-45 scale-95" : "bg-navy-950 hover:bg-navy-900 hover:scale-[1.03]"
+        } text-white ring-1 ring-white/10`}
+        style={{ width: '52px', height: '52px' }}
       >
         {open ? (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,11 +164,11 @@ export default function AsistenteWidget() {
 
       {/* Panel */}
       {open && (
-        <div className="fixed bottom-36 right-4 z-50 w-[90vw] max-w-md h-[70vh] max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
-          <header className="bg-navy-950 text-white px-4 py-3 flex items-center justify-between">
+        <div className="fixed bottom-40 right-6 z-50 w-[90vw] max-w-md h-[70vh] max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-[#EAEAEA]">
+          <header className="bg-navy-950 text-white px-5 py-4 flex items-center justify-between">
             <div>
-              <p className="font-bold">Asistente JURMAQ</p>
-              <p className="text-xs text-gray-300">Te ayudo a calcular y encontrar materiales</p>
+              <p className="font-[var(--font-serif)] italic text-lg leading-none" style={{ fontWeight: 500, letterSpacing: '0.01em' }}>ADIA</p>
+              <p className="text-[11px] text-gray-300 mt-1 uppercase tracking-[0.18em]">Asistente JURMAQ</p>
             </div>
             <button
               type="button"
@@ -164,22 +203,26 @@ export default function AsistenteWidget() {
             <>
               {/* Quick actions */}
               {messages.length === 0 && (
-                <div className="px-4 py-3 bg-gray-50 border-b">
-                  <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Acciones rápidas</p>
+                <div className="px-4 py-4 bg-[#F7F6F3] border-b border-[#EAEAEA]">
+                  <p className="text-[10px] font-semibold text-[#787774] mb-3 uppercase tracking-[0.18em]">
+                    Acciones rápidas
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
                     {QUICK_ACTIONS.map((a) => (
                       <Link
                         key={a.href}
                         href={a.href}
-                        className="bg-white border border-gray-200 rounded p-2 text-xs font-semibold text-navy-950 hover:border-orange-500 flex items-center gap-1.5"
+                        target={a.href.startsWith("http") ? "_blank" : undefined}
+                        rel={a.href.startsWith("http") ? "noopener noreferrer nofollow" : undefined}
+                        className="bg-white border border-[#EAEAEA] rounded-lg p-2.5 text-xs font-medium text-[#111111] hover:border-navy-950 hover:bg-white transition-colors flex items-center gap-2 active:scale-[0.98]"
                       >
-                        <span>{a.emoji}</span>
-                        <span>{a.label}</span>
+                        <span className="text-[#956400]">{a.icon}</span>
+                        <span className="truncate">{a.label}</span>
                       </Link>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-3 text-center">
-                    o escribí tu consulta abajo
+                  <p className="text-xs text-[#787774] mt-3 text-center font-[var(--font-serif)] italic">
+                    o escribí tu consulta a ADIA abajo
                   </p>
                 </div>
               )}
