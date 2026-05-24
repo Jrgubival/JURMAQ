@@ -1,14 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
 import Navbar from "@/components/public/Navbar";
 import { buildPrerenderRules, CONSTRUCTORA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
 
-const inter = Inter({
-  variable: "--font-inter",
+// Skill-driven typography (frontend-design + design-taste + minimalist-ui + web-typography):
+// - Inter banned across all design skills → replaced with Geist (sans body/UI)
+// - Editorial hero serif → Newsreader (recommended by minimalist-ui)
+// - Tabular numbers / code → Geist Mono
+// Variable fonts only, font-display: swap, latin subset only for payload.
+const geist = Geist({
+  variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const newsreader = Newsreader({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
 });
 
 export const viewport: Viewport = {
@@ -169,7 +188,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} h-full antialiased`}>
+    <html lang="es" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -284,7 +303,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col font-[var(--font-inter)]">
+      <body className="min-h-full flex flex-col font-[var(--font-sans)] bg-[#FBFBFA] text-[#111111]">
         {/* GA4 — solo carga si NEXT_PUBLIC_GA_MEASUREMENT_ID está en env */}
         <Analytics />
         <Navbar />

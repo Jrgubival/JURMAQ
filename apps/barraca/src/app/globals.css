@@ -1,6 +1,37 @@
 @import "tailwindcss";
 
+/* Editorial Luxury design tokens (consenso de 9 skills cargadas).
+   Inter banned, off-black ink, 1px hairlines, ultra-diffuse shadows. */
+
 @theme inline {
+  /* Editorial Luxury surface palette */
+  --color-canvas: #FBFBFA;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F7F6F3;
+  --color-ink: #111111;
+  --color-ink-soft: #2F3437;
+  --color-ink-muted: #787774;
+  --color-hairline: #EAEAEA;
+  --color-hairline-soft: rgba(0,0,0,0.06);
+
+  /* Muted pastels (minimalist-ui spec) */
+  --color-pale-red-bg: #FDEBEC;
+  --color-pale-red-fg: #9F2F2D;
+  --color-pale-blue-bg: #E1F3FE;
+  --color-pale-blue-fg: #1F6C9F;
+  --color-pale-green-bg: #EDF3EC;
+  --color-pale-green-fg: #346538;
+  --color-pale-yellow-bg: #FBF3DB;
+  --color-pale-yellow-fg: #956400;
+
+  /* Motion tokens */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 200ms;
+  --dur-base: 300ms;
+  --dur-slow: 600ms;
+
+  /* Legacy navy/gold preserved for retrofit */
   --color-navy-50: #e8edf5;
   --color-navy-100: #c5d0e5;
   --color-navy-200: #9eb2d3;
@@ -435,4 +466,66 @@ a:not([class*="underline"]):not(.link) {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ========== SKILL-DRIVEN UTILITIES ==========
+   Same set applied a constructora globals.css. Mantiene paridad de design
+   system entre apps. */
+
+.editorial-h1 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted, #787774);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal-on-load {
+  animation: reveal-up 800ms var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.reveal-stagger > * {
+  animation: reveal-up 700ms var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation-delay: calc(var(--stagger-index, 0) * 80ms);
+}
+
+.hairline {
+  border: 1px solid var(--color-hairline, #EAEAEA);
+}
+
+.shadow-diffuse {
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.02),
+    0 4px 16px -4px rgba(0, 0, 0, 0.04),
+    0 16px 40px -16px rgba(0, 0, 0, 0.05);
+}
+
+.transition-spring {
+  transition: transform 300ms var(--ease-spring), opacity 300ms var(--ease-spring);
+}
+
+.tactile:active {
+  transform: scale(0.98) translateY(1px);
+}
+
+/* a11y skill P0: scroll-margin para foco no oculto bajo navbar */
+*:focus-visible {
+  scroll-margin-top: 100px;
 }

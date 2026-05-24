@@ -1,8 +1,31 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import BarracaShell from "./BarracaShell";
 import Analytics from "@/components/Analytics";
 import "./globals.css";
+
+// Skill-driven typography swap (Inter banned by frontend-design, design-taste,
+// minimalist-ui, web-typography, redesign-existing-projects, high-end-visual-design).
+const geist = Geist({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const newsreader = Newsreader({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -39,8 +62,8 @@ export default function BarracaLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="es-CL">
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
+    <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable}`}>
+      <body className="min-h-screen bg-[#FBFBFA] text-[#111111] antialiased font-[var(--font-sans)]">
         {/* P0 audit-analytics fix: Analytics no estaba en el árbol, todo trackEvents.*
             quedaba no-op (0 datos GA4). Esta línea repara el bug. */}
         <Analytics />
