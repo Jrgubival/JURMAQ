@@ -7,6 +7,7 @@ import HeroSlideshow from "@/components/animations/HeroSlideshow";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaHome } from "@jurmaq/shared/whatsapp";
+import { IconWhatsapp, IconBolt } from "@jurmaq/shared/icons";
 import HeroSearch from "@/components/public/HeroSearch";
 import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
 
@@ -193,11 +194,13 @@ export default async function HomePage() {
                 rel="noopener noreferrer nofollow"
                 className="inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-gold-400 transition-colors"
               >
-                💬 Cotizar por WhatsApp
+                <IconWhatsapp className="w-4 h-4" />
+                Cotizar por WhatsApp
               </a>
             </div>
-            <p className="text-sm text-gray-400 mt-4">
-              ⚡ Respuesta en menos de 2 horas · Mejoramos cotizaciones de la competencia
+            <p className="inline-flex items-center gap-2 text-sm text-gray-500 mt-4">
+              <IconBolt className="w-3.5 h-3.5 text-gold-500" />
+              Respuesta en menos de 2 horas · Mejoramos cotizaciones de la competencia
             </p>
             </div>
 
@@ -205,15 +208,15 @@ export default async function HomePage() {
           <div className="flex flex-wrap items-end gap-8 lg:gap-12 mt-16 lg:mt-20 pt-10 border-t border-navy-800">
               <div>
                 <div className="text-5xl lg:text-6xl font-extrabold text-gold-500 mb-1">25+</div>
-                <div className="text-sm text-gray-400">años en la zona</div>
+                <div className="text-sm text-gray-500">años en la zona</div>
               </div>
               <div>
                 <div className="text-2xl lg:text-3xl font-bold text-white mb-1">120+</div>
-                <div className="text-sm text-gray-400">obras ejecutadas</div>
+                <div className="text-sm text-gray-500">obras ejecutadas</div>
               </div>
               <div>
                 <div className="text-2xl lg:text-3xl font-bold text-white mb-1">UF 117K+</div>
-                <div className="text-sm text-gray-400">en proyectos</div>
+                <div className="text-sm text-gray-500">en proyectos</div>
               </div>
             </div>
         </div>
@@ -245,7 +248,7 @@ export default async function HomePage() {
                       <h3 className="text-xl lg:text-2xl font-bold text-white mb-3">
                         {division.title}
                       </h3>
-                      <p className="text-gray-400 leading-relaxed max-w-2xl">
+                      <p className="text-gray-500 leading-relaxed max-w-2xl">
                         {division.description}
                       </p>
                       {division.href && (
@@ -478,7 +481,7 @@ export default async function HomePage() {
               <h3 className="text-lg font-bold text-white mt-2 mb-2">
                 Fundaciones Silos - Nestlé Teno
               </h3>
-              <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+              <p className="text-sm text-gray-500 mb-4 leading-relaxed">
                 Fundaciones silos de granos, expansión batcheo y molienda, montaje equipos, pavimentos, movimiento de tierras.
               </p>
               <div className="pt-3 border-t border-navy-800">
@@ -544,7 +547,7 @@ export default async function HomePage() {
             </a>
             <Link
               href="/contacto"
-              className="text-gray-400 hover:text-white font-medium transition-colors"
+              className="text-gray-500 hover:text-white font-medium transition-colors"
             >
               o pide presupuesto por formulario
             </Link>

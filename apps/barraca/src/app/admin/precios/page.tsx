@@ -520,7 +520,7 @@ export default function PreciosPage() {
           <div>
             <label htmlFor="weight-cat" className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
             <CategorySelect id="weight-cat" value={weightCat} onChange={setWeightCat} />
-            <p className="text-xs text-gray-400 mt-1">Vacio = categoria &quot;FIERROS CONSTRUCCION&quot; automatica</p>
+            <p className="text-xs text-gray-500 mt-1">Vacio = categoria &quot;FIERROS CONSTRUCCION&quot; automatica</p>
           </div>
           <div>
             <label htmlFor="valor-kg" className="block text-sm font-medium text-gray-700 mb-1">Valor del KG fierro ($)</label>
@@ -705,7 +705,7 @@ export default function PreciosPage() {
                           <span className="inline-flex px-2 py-0.5 text-xs font-bold bg-green-100 text-green-700 rounded-full">-{r.descuento}%</span>
                         ) : '—'}
                       </td>
-                      <td className="px-3 py-2 text-center text-xs text-gray-600">{r.fecha_fin || <span className="text-gray-400">sin fin</span>}</td>
+                      <td className="px-3 py-2 text-center text-xs text-gray-600">{r.fecha_fin || <span className="text-gray-500">sin fin</span>}</td>
                       <td className="px-3 py-2">
                         {r.status === 'ok' ? (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700">✓ ok</span>
@@ -809,7 +809,7 @@ export default function PreciosPage() {
                     <tr key={p.id} className="border-b border-gray-100">
                       <td className="px-3 py-2 text-xs font-mono text-gray-500">{p.codigo}</td>
                       <td className="px-3 py-2 text-gray-900 truncate max-w-[200px]">{p.nombre}</td>
-                      <td className="px-3 py-2 text-right"><span className="line-through text-gray-400">{formatCLP(p.precioInflado)}</span></td>
+                      <td className="px-3 py-2 text-right"><span className="line-through text-gray-500">{formatCLP(p.precioInflado)}</span></td>
                       <td className="px-3 py-2 text-right font-medium text-green-700">{formatCLP(p.precioReal)}</td>
                       <td className="px-3 py-2 text-center"><span className="inline-flex px-2 py-0.5 text-xs font-bold bg-red-100 text-red-700 rounded-full">-{p.descuentoVisible}%</span></td>
                     </tr>

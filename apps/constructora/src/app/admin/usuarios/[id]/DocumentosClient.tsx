@@ -385,7 +385,7 @@ export default function DocumentosClient({
       ) : totalCount === 0 ? (
         <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl">
           <p className="text-gray-500 text-sm">Aún no hay documentos para {userName}.</p>
-          <p className="text-gray-400 text-xs mt-1">Sube licencia, cédula, contrato, capacitación…</p>
+          <p className="text-gray-500 text-xs mt-1">Sube licencia, cédula, contrato, capacitación…</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -394,7 +394,7 @@ export default function DocumentosClient({
               <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 flex items-center gap-2">
                 <span aria-hidden="true">{TIPO_ICONS[tipo]}</span>
                 {TIPO_LABELS[tipo]}
-                <span className="text-gray-400 font-normal">({grouped[tipo].length})</span>
+                <span className="text-gray-500 font-normal">({grouped[tipo].length})</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {grouped[tipo].map((doc) => (

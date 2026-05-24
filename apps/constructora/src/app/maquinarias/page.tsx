@@ -248,7 +248,7 @@ export default async function MaquinariasPage({
       <section className="bg-navy-950 py-12 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div>
-            <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
               <Link href="/" className="hover:text-gold-500 transition-colors">
                 Inicio
               </Link>

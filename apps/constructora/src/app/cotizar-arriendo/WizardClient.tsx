@@ -253,7 +253,7 @@ export default function WizardClient({
                   </div>
                   <p className="text-sm text-gray-600">
                     Desde <strong>{formatCLP(m.tarifa_neta)}</strong> /{m.unidad_tarifa}
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-500">
                       {' '}
                       (mínimo {m.minimo_unidades} {m.unidad_tarifa}
                       {m.minimo_unidades !== 1 ? 's' : ''})
@@ -532,7 +532,7 @@ export default function WizardClient({
         </div>
 
         {loading && step >= 2 && (
-          <p className="text-xs text-gray-400 mt-2 text-center">Calculando…</p>
+          <p className="text-xs text-gray-500 mt-2 text-center">Calculando…</p>
         )}
       </div>
     </div>

@@ -136,7 +136,7 @@ export default function CategoriasShowcase({
             >
               {title}
             </h2>
-            <p className={`text-lg max-w-2xl ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className={`text-lg max-w-2xl ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
               {subtitle}
             </p>
           </div>
@@ -173,7 +173,7 @@ export default function CategoriasShowcase({
                 </h3>
                 <p
                   className={`text-xs leading-relaxed ${
-                    isDark ? 'text-gray-400' : 'text-gray-500'
+                    isDark ? 'text-gray-500' : 'text-gray-500'
                   }`}
                 >
                   {cat.subtitle}

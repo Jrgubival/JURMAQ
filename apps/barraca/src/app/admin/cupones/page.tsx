@@ -208,9 +208,9 @@ export default function CuponesAdminPage() {
       {/* Lista */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-sm text-gray-400">Cargando…</div>
+          <div className="p-8 text-center text-sm text-gray-500">Cargando…</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">Sin cupones creados.</div>
+          <div className="p-8 text-center text-sm text-gray-500">Sin cupones creados.</div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50">

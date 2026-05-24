@@ -88,7 +88,7 @@ export default function WishlistPage() {
         </Link>
       </div>
 
-      {loading && <div className="text-sm text-gray-400">Cargando lista de deseos…</div>}
+      {loading && <div className="text-sm text-gray-500">Cargando lista de deseos…</div>}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-sm">

@@ -302,7 +302,7 @@ export default function CombustiblePage() {
                             <tbody>
                               {f.items.map((it) => (
                                 <tr key={it.id} className="border-t border-gray-100">
-                                  <td className="px-2 py-1">{it.maquinarias?.nombre || <span className="text-gray-400">(sin asignar)</span>}</td>
+                                  <td className="px-2 py-1">{it.maquinarias?.nombre || <span className="text-gray-500">(sin asignar)</span>}</td>
                                   <td className="px-2 py-1">{it.contratos?.numero || '-'}</td>
                                   <td className="px-2 py-1">{tiposCombustibleLabels[it.tipo_combustible as TipoCombustible] || it.tipo_combustible}</td>
                                   <td className="px-2 py-1 text-right">{formatLitros(Number(it.litros))}</td>

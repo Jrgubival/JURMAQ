@@ -61,7 +61,7 @@ export default async function GarantiasPage() {
       </div>
 
       {holds.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center text-sm text-gray-400">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center text-sm text-gray-500">
           No tienes garantías activas. Cuando arriendes una máquina y autorices el hold,
           aparecerá acá.
         </div>

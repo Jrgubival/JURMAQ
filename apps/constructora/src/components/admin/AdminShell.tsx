@@ -244,12 +244,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             </div>
             <div>
               <h1 className="text-white font-bold text-lg leading-tight">JURMAQ</h1>
-              <p className="text-gray-400 text-xs">Panel Constructora</p>
+              <p className="text-gray-500 text-xs">Panel Constructora</p>
             </div>
             {/* Close button mobile */}
             <button
               onClick={() => setSidebarOpen(false)}
-              className="ml-auto lg:hidden text-gray-400 hover:text-white"
+              className="ml-auto lg:hidden text-gray-500 hover:text-white"
               aria-label="Cerrar menú"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,7 +303,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                               active
                                 ? 'text-white'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                : 'text-gray-500 hover:text-white hover:bg-white/5'
                             }`}
                             style={active ? { backgroundColor: accentBg, color: accentFg } : {}}
                           >
@@ -335,7 +335,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   href={`${barracaUrl}/admin`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
                 >
                   <span aria-hidden="true">→</span>
                   Panel Barraca
@@ -348,7 +348,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <div className="px-3 py-4 border-t border-white/10">
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors w-full"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 transition-colors w-full"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -394,7 +394,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               <p className="text-sm font-medium text-gray-700">
                 {session?.user?.name || 'Administrador'}
               </p>
-              <p className="text-xs text-gray-400">{session?.user?.email || ''}</p>
+              <p className="text-xs text-gray-500">{session?.user?.email || ''}</p>
             </div>
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold"

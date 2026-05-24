@@ -47,7 +47,7 @@ export default async function CotizacionesPage() {
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         {cotizaciones.length === 0 ? (
-          <div className="px-5 py-12 text-center text-sm text-gray-400">
+          <div className="px-5 py-12 text-center text-sm text-gray-500">
             No tienes cotizaciones aún.
           </div>
         ) : (

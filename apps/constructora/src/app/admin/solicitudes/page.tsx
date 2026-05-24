@@ -133,7 +133,7 @@ export default function SolicitudesPage() {
             <tbody className="divide-y divide-gray-100">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-400 text-sm">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500 text-sm">
                     No hay solicitudes {activeTab !== 'todas' ? `con estado "${activeTab}"` : ''}
                   </td>
                 </tr>

@@ -498,7 +498,7 @@ export default function BarracaProductosPage() {
               ))}
               {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={10} className="px-4 py-12 text-center text-gray-500">
                     No se encontraron productos
                   </td>
                 </tr>
@@ -558,7 +558,7 @@ export default function BarracaProductosPage() {
               <h3 className="text-lg font-semibold text-gray-900">
                 {editing ? 'Editar Producto' : 'Nuevo Producto'}
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

@@ -143,9 +143,9 @@ export default function NotificationsBell() {
 
           <div className="max-h-[60vh] overflow-y-auto">
             {loading && items.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-gray-400">Cargando…</div>
+              <div className="px-4 py-8 text-center text-sm text-gray-500">Cargando…</div>
             ) : items.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-gray-400">
+              <div className="px-4 py-8 text-center text-sm text-gray-500">
                 Sin notificaciones nuevas
               </div>
             ) : (
@@ -177,7 +177,7 @@ export default function NotificationsBell() {
                         {n.body && (
                           <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.body}</p>
                         )}
-                        <p className="text-[10px] text-gray-400 mt-1">{timeAgo(n.created_at)}</p>
+                        <p className="text-[10px] text-gray-500 mt-1">{timeAgo(n.created_at)}</p>
                       </div>
                       {isUnread && (
                         <span

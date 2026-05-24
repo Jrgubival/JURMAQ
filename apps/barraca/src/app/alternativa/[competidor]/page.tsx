@@ -101,7 +101,7 @@ export default async function AlternativaPage({
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="text-sm text-gray-400 mb-4">
+            <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
               <Link href="/" className="hover:text-white">Barraca JURMAQ</Link>
               <span className="mx-2">›</span>
               <span className="text-white">Alternativa a {data.nombre}</span>
@@ -195,7 +195,7 @@ export default async function AlternativaPage({
                   <span className="font-medium text-navy-950 group-hover:text-orange-700">
                     {cat.nombre}
                   </span>
-                  <svg className="w-4 h-4 text-gray-400 group-hover:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-gray-500 group-hover:text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>

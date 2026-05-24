@@ -231,7 +231,7 @@ export default function UsuariosAdminPage() {
                 if (filtered.length === 0) {
                   return (
                     <tr>
-                      <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
+                      <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
                         {q ? `Sin resultados para "${search}"` : 'No hay usuarios registrados'}
                       </td>
                     </tr>
@@ -303,7 +303,7 @@ export default function UsuariosAdminPage() {
               <h3 className="text-lg font-semibold text-gray-900">
                 {editing ? 'Editar usuario' : 'Nuevo usuario'}
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

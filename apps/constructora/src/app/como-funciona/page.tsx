@@ -113,7 +113,7 @@ export default function ComoFuncionaPage() {
       {/* Hero */}
       <section className="bg-navy-950 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
             <Link href="/" className="hover:text-gold-500 transition-colors">Inicio</Link>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -180,7 +180,7 @@ export default function ComoFuncionaPage() {
               <div key={it.l} className="text-center">
                 <div className="text-5xl lg:text-6xl font-extrabold text-gold-500 mb-2">{it.v}</div>
                 <div className="text-base lg:text-lg font-semibold text-white mb-1">{it.l}</div>
-                <div className="text-sm text-gray-400">{it.s}</div>
+                <div className="text-sm text-gray-500">{it.s}</div>
               </div>
             ))}
           </div>

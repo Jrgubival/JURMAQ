@@ -100,7 +100,7 @@ export default function SearchBar({
           className={`w-full ${sizeClasses[size]} pl-12 pr-24 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-base text-gray-900 placeholder-gray-400 shadow-sm`}
         />
         <svg
-          className={`absolute left-4 top-1/2 -translate-y-1/2 ${iconSize[size]} text-gray-400`}
+          className={`absolute left-4 top-1/2 -translate-y-1/2 ${iconSize[size]} text-gray-500`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

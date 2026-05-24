@@ -102,7 +102,7 @@ export default function NewsletterPopup() {
         <button
           onClick={handleClose}
           aria-label="Cerrar popup de suscripción"
-          className="absolute top-3 right-3 p-1 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute top-3 right-3 p-1 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-gray-600 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

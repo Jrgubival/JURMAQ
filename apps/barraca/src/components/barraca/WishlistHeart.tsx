@@ -100,7 +100,7 @@ export default function WishlistHeart({
       className={`${sizeCls} flex items-center justify-center rounded-full transition-all ${
         inWishlist
           ? 'bg-red-500 text-white shadow-md hover:bg-red-600'
-          : 'bg-white/90 hover:bg-white text-gray-400 hover:text-red-500 border border-gray-200 shadow-sm'
+          : 'bg-white/90 hover:bg-white text-gray-500 hover:text-red-500 border border-gray-200 shadow-sm'
       } ${className} ${loading ? 'opacity-70' : ''}`}
     >
       <svg className={iconCls} fill={inWishlist ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">

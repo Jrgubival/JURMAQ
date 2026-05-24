@@ -178,7 +178,7 @@ export default function AsistenteWidget() {
                       </Link>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-400 mt-3 text-center">
+                  <p className="text-xs text-gray-500 mt-3 text-center">
                     o escribí tu consulta abajo
                   </p>
                 </div>

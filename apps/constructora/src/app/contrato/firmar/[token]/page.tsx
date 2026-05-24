@@ -858,7 +858,7 @@ export default function FirmarContratoPage({
                   type="button"
                   onClick={handleRequestOtp}
                   disabled={sendingOtp}
-                  className="text-sm text-navy-700 hover:text-navy-900 font-medium disabled:text-gray-400"
+                  className="text-sm text-navy-700 hover:text-navy-900 font-medium disabled:text-gray-500"
                 >
                   {sendingOtp ? 'Reenviando...' : 'Reenviar codigo'}
                 </button>
@@ -938,7 +938,7 @@ export default function FirmarContratoPage({
               type="button"
               onClick={handleClearSignature}
               disabled={!phoneVerified || signing}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-300 hover:border-gray-400 disabled:border-gray-200 disabled:text-gray-400 text-gray-700 font-medium rounded-lg transition-colors min-h-[44px]"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-300 hover:border-gray-400 disabled:border-gray-200 disabled:text-gray-500 text-gray-700 font-medium rounded-lg transition-colors min-h-[44px]"
             >
               <svg
                 className="w-4 h-4"

@@ -164,7 +164,7 @@ export default function ProyectosPage() {
       {/* Hero */}
       <section className="bg-navy-950 py-12 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
             <Link href="/" className="hover:text-gold-500 transition-colors">Inicio</Link>
             <span>›</span>
             <span className="text-gray-300">Proyectos</span>
@@ -180,15 +180,15 @@ export default function ProyectosPage() {
           <div className="flex flex-wrap gap-8 lg:gap-12 pt-6 border-t border-navy-800">
             <div>
               <div className="text-4xl lg:text-5xl font-extrabold text-gold-500 tabular-nums">{totalObras}</div>
-              <div className="text-sm text-gray-400">obras destacadas</div>
+              <div className="text-sm text-gray-500">obras destacadas</div>
             </div>
             <div>
               <div className="text-4xl lg:text-5xl font-extrabold text-gold-500 tabular-nums">UF {(totalUF / 1000).toFixed(0)}K+</div>
-              <div className="text-sm text-gray-400">monto total agregado</div>
+              <div className="text-sm text-gray-500">monto total agregado</div>
             </div>
             <div>
               <div className="text-4xl lg:text-5xl font-extrabold text-gold-500 tabular-nums">{clientes}</div>
-              <div className="text-sm text-gray-400">empresas confían en nosotros</div>
+              <div className="text-sm text-gray-500">empresas confían en nosotros</div>
             </div>
           </div>
         </div>

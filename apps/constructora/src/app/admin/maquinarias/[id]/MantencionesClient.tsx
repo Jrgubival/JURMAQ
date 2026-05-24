@@ -350,9 +350,9 @@ export default function MantencionesClient({ maquinariaId }: { maquinariaId: num
 
       {/* Timeline */}
       {loading ? (
-        <div className="text-center py-6 text-sm text-gray-400">Cargando…</div>
+        <div className="text-center py-6 text-sm text-gray-500">Cargando…</div>
       ) : items.length === 0 ? (
-        <div className="text-center py-8 text-sm text-gray-400 border border-dashed border-gray-300 rounded-lg">
+        <div className="text-center py-8 text-sm text-gray-500 border border-dashed border-gray-300 rounded-lg">
           Sin mantenciones registradas todavía.
         </div>
       ) : (

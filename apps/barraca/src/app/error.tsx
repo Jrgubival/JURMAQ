@@ -24,7 +24,7 @@ export default function BarracaError({
           Ocurrio un error inesperado. Por favor intenta nuevamente o vuelve al inicio de la barraca.
         </p>
         {error?.digest && (
-          <p className="text-xs text-gray-400 mb-6 font-mono">
+          <p className="text-xs text-gray-500 mb-6 font-mono">
             Codigo: {error.digest}
           </p>
         )}

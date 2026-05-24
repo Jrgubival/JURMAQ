@@ -24,7 +24,7 @@ export default function Error({
           Algo no funciono como esperabamos. Por favor intenta nuevamente o vuelve al inicio.
         </p>
         {error?.digest && (
-          <p className="text-xs text-gray-400 mb-8 font-mono">
+          <p className="text-xs text-gray-500 mb-8 font-mono">
             Codigo: {error.digest}
           </p>
         )}

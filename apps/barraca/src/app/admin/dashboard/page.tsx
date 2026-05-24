@@ -142,7 +142,7 @@ export default function DashboardBarracaPage() {
               <h2 className="font-semibold text-gray-900">Top 5 productos por revenue</h2>
             </div>
             {data.top_productos.length === 0 ? (
-              <div className="px-6 py-8 text-center text-sm text-gray-400">
+              <div className="px-6 py-8 text-center text-sm text-gray-500">
                 Sin ventas en este período.
               </div>
             ) : (
@@ -158,7 +158,7 @@ export default function DashboardBarracaPage() {
                   {data.top_productos.map((p, i) => (
                     <tr key={`${p.nombre}-${i}`}>
                       <td className="px-4 py-3 text-gray-900">
-                        <span className="text-xs text-gray-400 mr-2">#{i + 1}</span>
+                        <span className="text-xs text-gray-500 mr-2">#{i + 1}</span>
                         {p.nombre}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">{p.cantidad}</td>
@@ -184,7 +184,7 @@ export default function DashboardBarracaPage() {
               </Link>
             </div>
             {data.top_cupones.length === 0 ? (
-              <div className="px-6 py-8 text-center text-sm text-gray-400">
+              <div className="px-6 py-8 text-center text-sm text-gray-500">
                 Sin cupones usados en este período.
               </div>
             ) : (
@@ -207,7 +207,7 @@ export default function DashboardBarracaPage() {
             )}
           </section>
 
-          <p className="text-xs text-gray-400 text-right">
+          <p className="text-xs text-gray-500 text-right">
             Período: {new Date(data.ventana.desde).toLocaleDateString('es-CL')} →{' '}
             {new Date(data.ventana.hasta).toLocaleDateString('es-CL')} · Generado:{' '}
             {new Date(data.generated_at).toLocaleString('es-CL')}
@@ -237,7 +237,7 @@ function KpiCard({
       {showDelta && delta !== null && (
         <div
           className={`mt-1 text-xs font-medium ${
-            delta > 0 ? 'text-green-600' : delta < 0 ? 'text-red-600' : 'text-gray-400'
+            delta > 0 ? 'text-green-600' : delta < 0 ? 'text-red-600' : 'text-gray-500'
           }`}
         >
           {delta > 0 ? '↗' : delta < 0 ? '↘' : '→'} {delta}% vs período anterior

@@ -203,7 +203,7 @@ export default function RentabilidadPage() {
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <p className="text-xs text-gray-500">Ingresos netos totales</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">{formatCLP(resumen.ingresos_neto)}</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               {formatCLP(resumen.ingresos_brutos)} con IVA
             </p>
           </div>
@@ -253,9 +253,9 @@ export default function RentabilidadPage() {
       {/* Tabla por máquina */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
         {loading ? (
-          <div className="p-8 text-center text-sm text-gray-400">Cargando…</div>
+          <div className="p-8 text-center text-sm text-gray-500">Cargando…</div>
         ) : maquinas.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">
+          <div className="p-8 text-center text-sm text-gray-500">
             Sin máquinas registradas.
           </div>
         ) : (
@@ -287,17 +287,17 @@ export default function RentabilidadPage() {
                   <td className="px-3 py-2 text-right tabular-nums">
                     {formatCLP(m.ingresos_neto)}
                     {m.ingresos_brutos !== m.ingresos_neto && (
-                      <div className="text-[10px] text-gray-400">
+                      <div className="text-[10px] text-gray-500">
                         {formatCLP(m.ingresos_brutos)} c/IVA
                       </div>
                     )}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">
-                    <span className={m.costo_mantenciones > 0 ? 'text-red-600' : 'text-gray-400'}>
+                    <span className={m.costo_mantenciones > 0 ? 'text-red-600' : 'text-gray-500'}>
                       {formatCLP(m.costo_mantenciones)}
                     </span>
                     {m.total_mantenciones > 0 && (
-                      <div className="text-[10px] text-gray-400">
+                      <div className="text-[10px] text-gray-500">
                         {m.total_mantenciones} servicio{m.total_mantenciones !== 1 ? 's' : ''}
                       </div>
                     )}
@@ -318,14 +318,14 @@ export default function RentabilidadPage() {
                   </td>
                   <td className="px-3 py-2 text-center text-xs text-gray-700">
                     {m.conversion_porcentaje}%
-                    <div className="text-[10px] text-gray-400">
+                    <div className="text-[10px] text-gray-500">
                       {m.cotizaciones_aceptadas}/{m.total_cotizaciones}
                     </div>
                   </td>
                   <td className="px-3 py-2 text-right text-xs text-gray-700">
                     {m.unidades_arrendadas}
                     {m.unidad_tarifa && (
-                      <span className="text-gray-400 ml-1">{m.unidad_tarifa}s</span>
+                      <span className="text-gray-500 ml-1">{m.unidad_tarifa}s</span>
                     )}
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -343,7 +343,7 @@ export default function RentabilidadPage() {
         )}
       </div>
 
-      <p className="text-xs text-gray-400 mt-4">
+      <p className="text-xs text-gray-500 mt-4">
         💡 <strong>Notas:</strong> los ingresos consideran cotizaciones en estado
         <em> aceptada, contrato_creado, finalizada, pagada</em>. La utilidad neta se calcula como
         ingresos netos (sin IVA) menos costo de mantenciones en el período. La &ldquo;utilidad real

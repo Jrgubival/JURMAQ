@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
 import ToastContainer from "@/components/Toast";
+import { IconCoin, IconArrowRight } from "@jurmaq/shared/icons";
 
 const CartDrawer = dynamic(
   () => import("@/components/barraca/CartDrawer"),
@@ -46,9 +47,10 @@ function TopBar() {
           <div className="hidden sm:flex items-center gap-4">
             <Link
               href="/te-mejoramos-el-precio"
-              className="flex items-center gap-1.5 font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+              className="inline-flex items-center gap-1.5 font-semibold text-orange-400 hover:text-orange-300 transition-colors"
             >
-              💰 Te mejoramos el precio en 2h
+              <IconCoin className="w-3.5 h-3.5" />
+              Te mejoramos el precio en 2h
             </Link>
             <span className="text-navy-700">|</span>
             <span className="flex items-center gap-1.5">
@@ -443,7 +445,7 @@ function Navbar() {
                   key={cat.id}
                   href={`/categorias/${cat.slug}`}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center px-8 min-h-[44px] py-2.5 text-sm text-gray-400 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                  className="flex items-center px-8 min-h-[44px] py-2.5 text-sm text-gray-500 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
                 >
                   {cat.nombre}
                 </Link>
@@ -571,7 +573,7 @@ function Footer() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-gray-500">
                   Av. Poniente 2157<br />Molina, Maule
                 </span>
               </li>
@@ -579,12 +581,12 @@ function Footer() {
                 <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <a href="tel:+56976673577" className="text-sm text-gray-400 hover:text-orange-500 transition-colors">
+                <a href="tel:+56976673577" className="text-sm text-gray-500 hover:text-orange-500 transition-colors">
                   +56 9 7667 3577
                 </a>
               </li>
             </ul>
-            <div className="text-xs text-gray-400 mt-4 space-y-1">
+            <div className="text-xs text-gray-500 mt-4 space-y-1">
               <p>Lun - Vie: 8:30 - 18:30</p>
               <p>Sábado: 9:00 - 14:00</p>
             </div>
@@ -599,7 +601,7 @@ function Footer() {
               <span className="px-3 py-1.5 bg-navy-800 rounded text-xs font-medium text-gray-300">MercadoPago</span>
               <span className="px-3 py-1.5 bg-navy-800 rounded text-xs font-medium text-gray-300">Transferencia</span>
             </div>
-            <ul className="space-y-2 text-xs text-gray-400">
+            <ul className="space-y-2 text-xs text-gray-500">
               <li className="flex items-center gap-2">
                 <svg className="w-3.5 h-3.5 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -677,7 +679,9 @@ function Footer() {
               href="/te-mejoramos-el-precio"
               className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg text-sm font-bold text-white transition-colors"
             >
-              💰 Te mejoramos el precio en 2h →
+              <IconCoin className="w-4 h-4" />
+              Te mejoramos el precio en 2h
+              <IconArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
@@ -687,11 +691,11 @@ function Footer() {
       <div className="border-t border-navy-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               &copy; {new Date().getFullYear()} Constructora Jorge Ubilla Rivera E.I.R.L. | RUT: {RUT} | Av. Poniente 2157, Molina, Maule.
               Todos los derechos reservados.
             </p>
-            <div className="flex items-center gap-3 text-xs text-gray-400">
+            <div className="flex items-center gap-3 text-xs text-gray-500">
               <a href="https://jurmaq.cl/terminos" className="hover:text-orange-500 transition-colors">Terminos y Condiciones</a>
               <span className="text-navy-700">|</span>
               <a href="https://jurmaq.cl/privacidad" className="hover:text-orange-500 transition-colors">Politica de Privacidad</a>

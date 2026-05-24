@@ -138,7 +138,7 @@ export default function HeroSlideshow() {
 
       {/* Current label */}
       <div className="absolute bottom-8 right-8 z-10 hidden lg:block">
-        <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">
+        <span className="text-xs text-gray-500 uppercase tracking-widest font-semibold">
           {slides[currentIndex]?.title}
         </span>
       </div>

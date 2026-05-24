@@ -150,9 +150,9 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
       {/* Lista reviews */}
       <div className="space-y-3">
         {loading ? (
-          <div className="text-sm text-gray-400 text-center py-8">Cargando reviews…</div>
+          <div className="text-sm text-gray-500 text-center py-8">Cargando reviews…</div>
         ) : items.length === 0 ? (
-          <div className="text-sm text-gray-400 text-center py-8">Aún sin reviews aprobadas.</div>
+          <div className="text-sm text-gray-500 text-center py-8">Aún sin reviews aprobadas.</div>
         ) : (
           items.map((r) => (
             <article key={r.id} className="bg-white border border-gray-200 rounded-xl p-4">
@@ -170,7 +170,7 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
                     {r.titulo || (r.comentario ? '' : 'Sin título')}
                   </p>
                 </div>
-                <span className="text-xs text-gray-400 whitespace-nowrap">
+                <span className="text-xs text-gray-500 whitespace-nowrap">
                   {new Date(r.created_at).toLocaleDateString('es-CL')}
                 </span>
               </header>

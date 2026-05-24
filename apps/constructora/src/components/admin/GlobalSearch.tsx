@@ -114,7 +114,7 @@ export default function GlobalSearch() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <span className="flex-1 text-left">Buscar…</span>
-        <kbd className="text-[10px] font-mono text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">⌘K</kbd>
+        <kbd className="text-[10px] font-mono text-gray-500 border border-gray-200 rounded px-1.5 py-0.5">⌘K</kbd>
       </button>
     );
   }
@@ -129,7 +129,7 @@ export default function GlobalSearch() {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -139,20 +139,20 @@ export default function GlobalSearch() {
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={onInputKey}
             placeholder="Buscar máquinas, clientes, cotizaciones, contratos, facturas…"
-            className="flex-1 text-sm outline-none placeholder:text-gray-400"
+            className="flex-1 text-sm outline-none placeholder:text-gray-500"
           />
-          <kbd className="text-[10px] font-mono text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">Esc</kbd>
+          <kbd className="text-[10px] font-mono text-gray-500 border border-gray-200 rounded px-1.5 py-0.5">Esc</kbd>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto">
           {q.trim().length < 2 ? (
-            <div className="px-4 py-12 text-center text-sm text-gray-400">
+            <div className="px-4 py-12 text-center text-sm text-gray-500">
               Empieza a tipear para buscar (min 2 caracteres)
             </div>
           ) : loading ? (
-            <div className="px-4 py-12 text-center text-sm text-gray-400">Buscando…</div>
+            <div className="px-4 py-12 text-center text-sm text-gray-500">Buscando…</div>
           ) : hits.length === 0 ? (
-            <div className="px-4 py-12 text-center text-sm text-gray-400">Sin resultados para "{q}"</div>
+            <div className="px-4 py-12 text-center text-sm text-gray-500">Sin resultados para "{q}"</div>
           ) : (
             <ul className="py-2">
               {hits.map((hit, idx) => (
@@ -186,7 +186,7 @@ export default function GlobalSearch() {
           )}
         </div>
 
-        <div className="px-4 py-2 border-t border-gray-100 text-[11px] text-gray-400 flex items-center gap-4">
+        <div className="px-4 py-2 border-t border-gray-100 text-[11px] text-gray-500 flex items-center gap-4">
           <span>↑↓ Navegar</span>
           <span>↵ Ir</span>
           <span>Esc Cerrar</span>

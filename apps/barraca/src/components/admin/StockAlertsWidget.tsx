@@ -52,7 +52,7 @@ export default function StockAlertsWidget({ umbral = 5 }: { umbral?: number }) {
 
   if (loading) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-400">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 text-sm text-gray-500">
         Cargando alertas de stock…
       </div>
     );
@@ -91,7 +91,7 @@ export default function StockAlertsWidget({ umbral = 5 }: { umbral?: number }) {
             {data.total} producto{data.total !== 1 ? 's' : ''} requieren atención
           </span>
         </div>
-        <span className="text-gray-400">{expanded ? '▲' : '▼'}</span>
+        <span className="text-gray-500">{expanded ? '▲' : '▼'}</span>
       </button>
 
       {expanded && (

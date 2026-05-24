@@ -258,7 +258,7 @@ export default function ImagenesMasivasPage() {
                       }}
                     />
                   ) : (
-                    <span className="text-gray-400 text-xs">Sin imagen</span>
+                    <span className="text-gray-500 text-xs">Sin imagen</span>
                   )}
                 </div>
 
@@ -284,7 +284,7 @@ export default function ImagenesMasivasPage() {
                   className={`mt-auto w-full py-2 px-3 rounded-xl text-xs font-medium transition-colors ${
                     cat.imagen
                       ? 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                   }`}
                 >
                   {applyingCat === cat.id
@@ -394,7 +394,7 @@ export default function ImagenesMasivasPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-800 truncate">{p.nombre}</p>
-                        <p className="text-xs text-gray-400 truncate">
+                        <p className="text-xs text-gray-500 truncate">
                           {p.imagen
                             ? p.imagen.startsWith('/images/barraca/')
                               ? 'imagen local'
@@ -478,7 +478,7 @@ export default function ImagenesMasivasPage() {
         )}
 
         {searchResults.length === 0 && !searching && searchTerm && (
-          <p className="text-sm text-gray-400 py-4 text-center">
+          <p className="text-sm text-gray-500 py-4 text-center">
             No se encontraron productos. Intenta con otro termino.
           </p>
         )}

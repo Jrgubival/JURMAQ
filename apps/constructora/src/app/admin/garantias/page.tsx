@@ -107,7 +107,7 @@ export default function GarantiasPanelPage() {
             <Stat
               label="Renovaciones fallidas"
               value={String(data.renovaciones_fallidas.length)}
-              accent={data.renovaciones_fallidas.length > 0 ? 'text-red-600' : 'text-gray-400'}
+              accent={data.renovaciones_fallidas.length > 0 ? 'text-red-600' : 'text-gray-500'}
             />
             <Stat
               label="Capturas recientes"
@@ -269,7 +269,7 @@ export default function GarantiasPanelPage() {
             )}
           </Section>
 
-          <p className="text-xs text-gray-400 text-right">
+          <p className="text-xs text-gray-500 text-right">
             Generado: {new Date(data.generated_at).toLocaleString('es-CL')}
           </p>
         </div>
@@ -326,5 +326,5 @@ function Table({ headers, children }: { headers: string[]; children: React.React
 }
 
 function Empty({ msg }: { msg: string }) {
-  return <div className="px-6 py-8 text-center text-sm text-gray-400">{msg}</div>;
+  return <div className="px-6 py-8 text-center text-sm text-gray-500">{msg}</div>;
 }

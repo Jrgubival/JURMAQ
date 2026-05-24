@@ -59,7 +59,7 @@ export default function TrustSignals({
   const border = isLight ? "border-y border-gray-200" : "border-y border-navy-800";
   const text = isLight ? "text-navy-950" : "text-white";
   const labelText = isLight ? "text-gray-700" : "text-gray-200";
-  const sublabelText = isLight ? "text-gray-500" : "text-gray-400";
+  const sublabelText = isLight ? "text-gray-500" : "text-gray-500";
   const accent = "text-orange-500";
 
   return (

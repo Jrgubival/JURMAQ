@@ -8,6 +8,7 @@
     "./auth/config": "./src/auth/config.ts",
     "./auth/guard": "./src/auth/guard.ts",
     "./auth/session-token": "./src/auth/session-token.ts",
+    "./icons": "./src/icons/index.tsx",
     "./supabase": "./src/supabase/index.ts",
     "./sanitize": "./src/sanitize/index.ts",
     "./rate-limit": "./src/rate-limit/index.ts",

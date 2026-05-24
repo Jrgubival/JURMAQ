@@ -152,7 +152,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
               {cliente.empresa} {cliente.rut && `· ${cliente.rut}`}
             </p>
           )}
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             Cliente desde {new Date(cliente.created_at).toLocaleDateString('es-CL')}
             {!cliente.activo && (
               <span className="ml-2 inline-block px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-semibold rounded-full">
@@ -168,7 +168,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-500">LTV</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{fmt(stats.ltv)}</p>
-          <p className="text-xs text-gray-400 mt-1">AOV: {fmt(stats.aov)}</p>
+          <p className="text-xs text-gray-500 mt-1">AOV: {fmt(stats.aov)}</p>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <p className="text-xs text-blue-700">Compras pagadas</p>
@@ -237,7 +237,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
             <h2 className="font-semibold text-gray-900">Historial ({cotizaciones.length})</h2>
           </div>
           {cotizaciones.length === 0 ? (
-            <div className="p-6 text-center text-sm text-gray-400">Sin cotizaciones.</div>
+            <div className="p-6 text-center text-sm text-gray-500">Sin cotizaciones.</div>
           ) : (
             <div className="max-h-96 overflow-y-auto">
               <table className="w-full text-sm">
@@ -284,7 +284,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
             <h2 className="font-semibold text-gray-900">Productos favoritos (top 5)</h2>
           </div>
           {top_productos.length === 0 ? (
-            <div className="p-6 text-center text-sm text-gray-400">Sin compras aún.</div>
+            <div className="p-6 text-center text-sm text-gray-500">Sin compras aún.</div>
           ) : (
             <ul className="divide-y divide-gray-100">
               {top_productos.map((p) => (
@@ -318,7 +318,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
             <h2 className="font-semibold text-gray-900">Reviews ({reviews.length})</h2>
           </div>
           {reviews.length === 0 ? (
-            <div className="p-6 text-center text-sm text-gray-400">Sin reviews aún.</div>
+            <div className="p-6 text-center text-sm text-gray-500">Sin reviews aún.</div>
           ) : (
             <ul className="divide-y divide-gray-100">
               {reviews.map((r) => (
@@ -358,7 +358,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
             <h2 className="font-semibold text-gray-900">Wishlist ({wishlist.length})</h2>
           </div>
           {wishlist.length === 0 ? (
-            <div className="p-6 text-center text-sm text-gray-400">Wishlist vacía.</div>
+            <div className="p-6 text-center text-sm text-gray-500">Wishlist vacía.</div>
           ) : (
             <ul className="divide-y divide-gray-100">
               {wishlist.map((w) => (

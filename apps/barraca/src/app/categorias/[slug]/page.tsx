@@ -354,7 +354,7 @@ export default async function CategoriaPage({
         <Link href="/" className="font-medium hover:text-orange-600 transition-colors">
           Inicio
         </Link>
-        <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 shrink-0 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
         <Link href="/categorias" className="font-medium hover:text-orange-600 transition-colors">
@@ -391,7 +391,7 @@ export default async function CategoriaPage({
                 </svg>
                 Filtros
               </span>
-              <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
@@ -465,7 +465,7 @@ export default async function CategoriaPage({
               <form className="space-y-3">
                 <div className="flex gap-2 items-center">
                   <div className="relative w-full">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">$</span>
                     <input
                       type="number"
                       name="min"
@@ -477,7 +477,7 @@ export default async function CategoriaPage({
                   </div>
                   <span className="text-gray-300 shrink-0">-</span>
                   <div className="relative w-full">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">$</span>
                     <input
                       type="number"
                       name="max"
@@ -622,7 +622,7 @@ export default async function CategoriaPage({
                     .map((p, idx, arr) => (
                       <span key={p} className="inline-flex items-center">
                         {idx > 0 && arr[idx - 1] !== p - 1 && (
-                          <span className="px-1.5 text-gray-400 select-none">...</span>
+                          <span className="px-1.5 text-gray-500 select-none">...</span>
                         )}
                         <Link
                           href={`/categorias/${slug}?page=${p}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}

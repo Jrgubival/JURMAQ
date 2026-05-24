@@ -179,7 +179,7 @@ export default async function CategoriasPage() {
 
               {subcats.length > 0 && (
                 <div className="p-4 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                     Subcategorias
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -190,7 +190,7 @@ export default async function CategoriasPage() {
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-gray-100 text-gray-700 rounded-full hover:bg-orange-100 hover:text-orange-700 transition-colors"
                       >
                         {sub.nombre}
-                        <span className="text-gray-400">({sub.product_count})</span>
+                        <span className="text-gray-500">({sub.product_count})</span>
                       </Link>
                     ))}
                   </div>

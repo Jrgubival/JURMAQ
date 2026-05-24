@@ -452,7 +452,7 @@ export default async function BarracaHomePage() {
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0">
-                <span className="text-xs text-gray-400">Termina en</span>
+                <span className="text-xs text-gray-500">Termina en</span>
                 <CountdownTimer />
               </div>
             </div>

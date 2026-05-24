@@ -91,7 +91,7 @@ export default function RoadmapPage() {
     <>
       <section className="bg-navy-950 py-12 lg:py-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
             <Link href="/" className="hover:text-orange-400 transition-colors">Inicio</Link>
             <span>›</span>
             <span className="text-gray-300">Roadmap</span>

@@ -196,12 +196,12 @@ export default function PromotedProductCard({
                 {formatCLP(precioDescuento)}
               </p>
               {unidad && (
-                <span className="text-xs text-gray-400 font-medium">
+                <span className="text-xs text-gray-500 font-medium">
                   /{unidad}
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-400 line-through">
+            <p className="text-xs text-gray-500 line-through">
               {formatCLP(precioOriginal)}
             </p>
           </div>
@@ -212,7 +212,7 @@ export default function PromotedProductCard({
               added
                 ? "bg-green-500 text-white"
                 : stock <= 0
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                 : "bg-orange-600 text-white hover:bg-orange-700 active:scale-95"
             }`}
           >

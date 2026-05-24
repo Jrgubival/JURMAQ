@@ -207,7 +207,7 @@ export default async function MaquinariaDetailPage({
       <section className="bg-navy-950 py-10 lg:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection animation="fadeUp">
-            <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+            <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
               <Link href="/" className="hover:text-gold-500 transition-colors">
                 Inicio
               </Link>
@@ -396,7 +396,7 @@ export default async function MaquinariaDetailPage({
                   ))}
                 </ul>
                 <div className="mt-5 pt-5 border-t border-navy-800 text-center">
-                  <p className="text-xs text-gray-400 mb-1">Consultas directas</p>
+                  <p className="text-xs text-gray-500 mb-1">Consultas directas</p>
                   <a
                     href="tel:+56976673577"
                     className="text-gold-500 text-base font-bold hover:text-gold-400 transition-colors"

@@ -294,7 +294,7 @@ export default function BarracaImportarPage() {
                   </div>
                   <span
                     className={`text-sm font-medium hidden sm:inline ${
-                      isActive ? 'text-gray-900' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                      isActive ? 'text-gray-900' : isCompleted ? 'text-green-600' : 'text-gray-500'
                     }`}
                   >
                     {label}
@@ -383,7 +383,7 @@ export default function BarracaImportarPage() {
                   </svg>
                   Seleccionar Archivo
                 </button>
-                <p className="text-xs text-gray-400 mt-3">Solo archivos .xlsx o .xls</p>
+                <p className="text-xs text-gray-500 mt-3">Solo archivos .xlsx o .xls</p>
               </div>
             )}
           </div>
@@ -681,7 +681,7 @@ export default function BarracaImportarPage() {
                 <tbody className="divide-y divide-gray-100">
                   {getFilteredRows().length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                         No hay registros para este filtro.
                       </td>
                     </tr>
@@ -741,7 +741,7 @@ export default function BarracaImportarPage() {
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-orange-500 mb-4" />
               <p className="text-lg font-semibold text-gray-700">Importando productos...</p>
-              <p className="text-sm text-gray-400 mt-1">Esto puede tomar unos segundos</p>
+              <p className="text-sm text-gray-500 mt-1">Esto puede tomar unos segundos</p>
             </div>
           )}
 

@@ -154,7 +154,7 @@ export default function ContratosListPage() {
               style={active ? { backgroundColor: '#0c1d3a' } : {}}
             >
               {chip.label}
-              <span className={`ml-1.5 text-[10px] ${active ? 'opacity-75' : 'text-gray-400'}`}>
+              <span className={`ml-1.5 text-[10px] ${active ? 'opacity-75' : 'text-gray-500'}`}>
                 {count}
               </span>
             </button>
@@ -166,7 +166,7 @@ export default function ContratosListPage() {
       <div className="flex gap-2">
         <div className="relative flex-1 max-w-md">
           <svg
-            className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+            className="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -262,7 +262,7 @@ export default function ContratosListPage() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center text-gray-400">
+                  <td colSpan={7} className="px-4 py-16 text-center text-gray-500">
                     {contratos.length === 0
                       ? 'No hay contratos todavia — crea el primero'
                       : 'No se encontraron contratos con esos filtros'}
@@ -277,7 +277,7 @@ export default function ContratosListPage() {
       {/* Mobile cards */}
       <div className="md:hidden space-y-3">
         {filtered.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500">
             {contratos.length === 0
               ? 'No hay contratos todavia — crea el primero'
               : 'No se encontraron contratos'}

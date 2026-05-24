@@ -67,7 +67,7 @@ export default async function UsuarioDetailPage({
               </span>
             </div>
             <p className="text-sm text-gray-600">{u.email}</p>
-            <p className="text-xs text-gray-400 mt-1">ID #{u.id}</p>
+            <p className="text-xs text-gray-500 mt-1">ID #{u.id}</p>
           </div>
         </div>
       </header>

@@ -477,7 +477,7 @@ export default function NuevoContratoPage() {
               />
             </div>
           ) : filteredMaq.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500">
               No hay maquinarias disponibles
             </div>
           ) : (
@@ -525,7 +525,7 @@ export default function NuevoContratoPage() {
                       </div>
                       <div className="mt-2 text-sm font-bold" style={{ color: '#e6b422' }}>
                         {m.precio_dia ? formatCLP(m.precio_dia) : '—'}
-                        <span className="text-xs text-gray-400 font-normal">/dia</span>
+                        <span className="text-xs text-gray-500 font-normal">/dia</span>
                       </div>
                     </div>
                   </button>
@@ -1011,7 +1011,7 @@ export default function NuevoContratoPage() {
                   style={{ height: '70vh', border: 0 }}
                 />
               ) : (
-                <div className="p-8 text-center text-gray-400">
+                <div className="p-8 text-center text-gray-500">
                   No se pudo cargar la vista previa.
                 </div>
               )}

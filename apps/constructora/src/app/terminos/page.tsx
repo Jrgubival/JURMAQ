@@ -25,7 +25,7 @@ export default function TerminosPage() {
       {/* Hero Header */}
       <section className="bg-navy-950 py-12 lg:py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
             <Link href="/" className="hover:text-gold-500 transition-colors">
               Inicio
             </Link>
@@ -47,7 +47,7 @@ export default function TerminosPage() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">
             Terminos y Condiciones
           </h1>
-          <p className="text-gray-400 mt-2 text-sm">
+          <p className="text-gray-500 mt-2 text-sm">
             Ultima actualizacion: Abril 2026
           </p>
         </div>

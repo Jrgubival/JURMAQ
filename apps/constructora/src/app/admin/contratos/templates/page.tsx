@@ -351,7 +351,7 @@ export default function TemplatesPage() {
               ))}
               {templates.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
                     No hay plantillas todavia — crea la primera
                   </td>
                 </tr>
@@ -392,7 +392,7 @@ export default function TemplatesPage() {
                   Activa
                 </label>
               </div>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
+              <button onClick={closeModal} className="text-gray-500 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -406,7 +406,7 @@ export default function TemplatesPage() {
                 <h4 className="text-xs font-semibold uppercase text-gray-600 mb-2 tracking-wide">
                   Placeholders
                 </h4>
-                <p className="text-[10px] text-gray-400 mb-3">
+                <p className="text-[10px] text-gray-500 mb-3">
                   Click para insertar en el cursor
                 </p>
                 {PLACEHOLDER_GROUPS.map((g) => (

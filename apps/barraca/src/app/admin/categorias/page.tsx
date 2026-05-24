@@ -174,7 +174,7 @@ export default function BarracaCategoriasPage() {
                     <div className="flex items-center justify-center gap-1">
                       <button
                         onClick={() => moveOrder(cat, 'up')}
-                        className="p-1 text-gray-400 hover:text-gray-700 transition"
+                        className="p-1 text-gray-500 hover:text-gray-700 transition"
                         title="Subir"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,7 +184,7 @@ export default function BarracaCategoriasPage() {
                       <span className="text-gray-500 text-xs w-6 text-center">{cat.orden}</span>
                       <button
                         onClick={() => moveOrder(cat, 'down')}
-                        className="p-1 text-gray-400 hover:text-gray-700 transition"
+                        className="p-1 text-gray-500 hover:text-gray-700 transition"
                         title="Bajar"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,7 +215,7 @@ export default function BarracaCategoriasPage() {
               ))}
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-gray-400">
+                  <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
                     No hay categorias registradas
                   </td>
                 </tr>
@@ -233,7 +233,7 @@ export default function BarracaCategoriasPage() {
               <h3 className="text-lg font-semibold text-gray-900">
                 {editing ? 'Editar Categoria' : 'Nueva Categoria'}
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>

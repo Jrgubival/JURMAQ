@@ -12,7 +12,7 @@ import GarantiaPanel from './GarantiaPanel';
 // `react-signature-canvas` toca DOM/canvas APIs en mount → SSR off.
 const SignaturePad = dynamic(
   () => import('@/app/contrato/firmar/[token]/SignaturePad'),
-  { ssr: false, loading: () => <div className="h-40 bg-gray-50 border border-dashed border-gray-300 rounded flex items-center justify-center text-sm text-gray-400">Cargando area de firma…</div> }
+  { ssr: false, loading: () => <div className="h-40 bg-gray-50 border border-dashed border-gray-300 rounded flex items-center justify-center text-sm text-gray-500">Cargando area de firma…</div> }
 );
 
 type Estado =

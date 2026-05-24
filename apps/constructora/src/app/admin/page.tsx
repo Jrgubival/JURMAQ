@@ -183,7 +183,7 @@ export default function DashboardPage() {
               <tbody className="divide-y divide-gray-100">
                 {solicitudes.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-gray-400 text-sm">
+                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500 text-sm">
                       No hay solicitudes recientes
                     </td>
                   </tr>
@@ -227,7 +227,7 @@ export default function DashboardPage() {
               <tbody className="divide-y divide-gray-100">
                 {proyectos.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-gray-400 text-sm">
+                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500 text-sm">
                       No hay proyectos recientes
                     </td>
                   </tr>

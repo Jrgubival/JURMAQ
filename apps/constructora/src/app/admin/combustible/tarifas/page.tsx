@@ -257,7 +257,7 @@ export default function TarifasIECPage() {
               <span className="text-xs text-gray-500">{g.tarifas.length} tarifa(s)</span>
             </div>
             {g.tarifas.length === 0 ? (
-              <div className="px-6 py-8 text-center text-sm text-gray-400">
+              <div className="px-6 py-8 text-center text-sm text-gray-500">
                 Sin tarifas configuradas. El admin debera ingresar IEC manual hasta que agregues una.
               </div>
             ) : (

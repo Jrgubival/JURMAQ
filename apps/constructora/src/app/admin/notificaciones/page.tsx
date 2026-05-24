@@ -129,9 +129,9 @@ export default function NotificacionesPage() {
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         {loading ? (
-          <div className="px-4 py-8 text-center text-sm text-gray-400">Cargando…</div>
+          <div className="px-4 py-8 text-center text-sm text-gray-500">Cargando…</div>
         ) : items.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-gray-400">
+          <div className="px-4 py-12 text-center text-sm text-gray-500">
             {filter === 'no_leidas' ? 'Sin notificaciones no leídas.' : 'Sin notificaciones.'}
           </div>
         ) : (
@@ -150,7 +150,7 @@ export default function NotificacionesPage() {
                         >
                           {KIND_LABEL[n.kind] ?? n.kind}
                         </span>
-                        <span className="text-xs text-gray-400">{timeAgo(n.created_at)}</span>
+                        <span className="text-xs text-gray-500">{timeAgo(n.created_at)}</span>
                         {isUnread && (
                           <span className="text-xs font-semibold" style={{ color: '#a16207' }}>
                             ● nuevo

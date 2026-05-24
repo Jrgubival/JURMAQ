@@ -214,7 +214,7 @@ export default async function MaterialEnCiudadPage({
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="text-sm text-gray-400 mb-4">
+            <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
               <Link href="/" className="hover:text-white">Barraca JURMAQ</Link>
               <span className="mx-2">›</span>
               <Link href={`/categorias/${material.categoriaSlug}`} className="hover:text-white">{material.nombrePlural}</Link>
@@ -305,7 +305,7 @@ export default async function MaterialEnCiudadPage({
                         <p className="text-base font-bold text-indigo-700">Consultar precio</p>
                       ) : showOffer ? (
                         <div>
-                          <p className="text-xs text-gray-400 line-through">{formatPrice(p.precio)}</p>
+                          <p className="text-xs text-gray-500 line-through">{formatPrice(p.precio)}</p>
                           <p className="text-xl font-extrabold text-orange-600">{formatPrice(finalPrice)}<span className="text-xs text-gray-500 font-medium ml-1">/{p.unidad || "un"}</span></p>
                         </div>
                       ) : (

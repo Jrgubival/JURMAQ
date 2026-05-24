@@ -119,9 +119,9 @@ export default function ReviewsAdminPage() {
       {/* Lista */}
       <div className="space-y-3">
         {loading ? (
-          <div className="text-center py-8 text-sm text-gray-400">Cargando…</div>
+          <div className="text-center py-8 text-sm text-gray-500">Cargando…</div>
         ) : items.length === 0 ? (
-          <div className="text-center py-8 text-sm text-gray-400">
+          <div className="text-center py-8 text-sm text-gray-500">
             Sin reviews en estado &ldquo;{estado}&rdquo;.
           </div>
         ) : (
@@ -152,7 +152,7 @@ export default function ReviewsAdminPage() {
                     Producto: {r.barraca_productos?.nombre ?? `#${r.producto_id}`} ↗
                   </Link>
                 </div>
-                <span className="text-xs text-gray-400 whitespace-nowrap">
+                <span className="text-xs text-gray-500 whitespace-nowrap">
                   {new Date(r.created_at).toLocaleString('es-CL')}
                 </span>
               </header>

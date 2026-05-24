@@ -233,7 +233,7 @@ export default function ProductCard({
             {titleCase(nombre)}
           </h3>
           {medida && (
-            <p className="text-xs text-gray-400 mb-1">{medida}</p>
+            <p className="text-xs text-gray-500 mb-1">{medida}</p>
           )}
           {/* Tier 4 D2: rating si hay reviews aprobadas */}
           {rating && rating > 0 && (
@@ -268,7 +268,7 @@ export default function ProductCard({
               </p>
             ) : en_oferta && precio_original && precio_original > 0 ? (
               <div>
-                <p className="text-xs text-gray-400 line-through leading-none tabular-nums">
+                <p className="text-xs text-gray-500 line-through leading-none tabular-nums">
                   {formatCLP(precio)}{unitLabel}
                 </p>
                 <p className="text-xl font-extrabold text-red-600 leading-tight tabular-nums">

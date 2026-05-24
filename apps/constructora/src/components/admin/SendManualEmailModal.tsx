@@ -392,7 +392,7 @@ export default function SendManualEmailModal({
                     maxLength={2000}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   />
-                  <p className="text-[10px] text-gray-400 mt-1">{customMessage.length} / 2000</p>
+                  <p className="text-[10px] text-gray-500 mt-1">{customMessage.length} / 2000</p>
                 </div>
 
                 {error && (
@@ -421,7 +421,7 @@ export default function SendManualEmailModal({
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400 text-center py-12">
+                  <p className="text-xs text-gray-500 text-center py-12">
                     El preview aparecerá acá cuando completes los datos.
                   </p>
                 )}

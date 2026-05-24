@@ -335,7 +335,7 @@ export default function ImagenesBarracaPage() {
                 {productos.length}
               </span>
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-500 mt-0.5">
               {totalAsignados} asignados en esta sesion
             </p>
           </div>
@@ -351,7 +351,7 @@ export default function ImagenesBarracaPage() {
             }}
           />
         </div>
-        <p className="text-xs text-gray-400 mt-1 text-right">
+        <p className="text-xs text-gray-500 mt-1 text-right">
           {progressPercent}% completado
         </p>
       </div>
@@ -409,7 +409,7 @@ export default function ImagenesBarracaPage() {
             </div>
             <button
               onClick={skip}
-              className="ml-4 text-sm text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1"
+              className="ml-4 text-sm text-gray-500 hover:text-gray-600 transition-colors flex items-center gap-1"
               title="Saltar producto (flecha izquierda)"
             >
               Saltar
@@ -456,7 +456,7 @@ export default function ImagenesBarracaPage() {
 
         {/* Image candidates grid */}
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">
             Imagenes sugeridas{' '}
             <span className="text-gray-300 font-normal">
               (presiona 1-6 para seleccionar)
@@ -473,7 +473,7 @@ export default function ImagenesBarracaPage() {
               ))}
             </div>
           ) : images.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12 text-gray-500">
               <p>No se encontraron imagenes.</p>
               <p className="text-sm mt-1">
                 Intenta buscar con otros terminos.
@@ -547,7 +547,7 @@ export default function ImagenesBarracaPage() {
               className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-lg font-bold transition-all duration-200 ${
                 selectedImage !== null
                   ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30 cursor-pointer'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-100 text-gray-500 cursor-not-allowed'
               }`}
               title="Usar esta imagen (flecha derecha)"
             >
@@ -612,7 +612,7 @@ export default function ImagenesBarracaPage() {
               ))}
             </div>
           ) : similarProducts.length === 0 ? (
-            <p className="text-gray-400 text-sm py-4">
+            <p className="text-gray-500 text-sm py-4">
               No se encontraron productos similares.
             </p>
           ) : (
@@ -636,7 +636,7 @@ export default function ImagenesBarracaPage() {
                     <p className="text-sm font-medium text-gray-700 truncate">
                       {sp.nombre}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       {sp.codigo || 'Sin codigo'}
                       {sp.needsImage && (
                         <span className="ml-2 text-orange-500">
@@ -695,7 +695,7 @@ export default function ImagenesBarracaPage() {
             </button>
             <button
               onClick={() => setShowSimilar(false)}
-              className="px-4 py-4 rounded-xl text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              className="px-4 py-4 rounded-xl text-sm text-gray-500 hover:text-gray-600 transition-colors"
             >
               Volver
             </button>
@@ -704,7 +704,7 @@ export default function ImagenesBarracaPage() {
       )}
 
       {/* Keyboard shortcuts legend */}
-      <div className="flex flex-wrap gap-4 justify-center text-xs text-gray-400 pb-8">
+      <div className="flex flex-wrap gap-4 justify-center text-xs text-gray-500 pb-8">
         <span>
           <kbd className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 font-mono">
             1-6

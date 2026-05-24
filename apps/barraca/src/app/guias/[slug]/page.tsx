@@ -101,7 +101,7 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-12">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="text-sm text-gray-400 mb-4">
+            <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
               <Link href="/" className="hover:text-white">Barraca JURMAQ</Link>
               <span className="mx-2">›</span>
               <Link href="/guias" className="hover:text-white">Guías</Link>

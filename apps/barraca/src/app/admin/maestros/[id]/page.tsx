@@ -320,7 +320,7 @@ export default function MaestroDetallePage({ params }: { params: Promise<{ id: s
           </Link>
         </div>
         {comisiones.length === 0 ? (
-          <div className="p-6 text-center text-sm text-gray-400">Sin referidos aún.</div>
+          <div className="p-6 text-center text-sm text-gray-500">Sin referidos aún.</div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50">

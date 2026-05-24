@@ -119,7 +119,7 @@ export default function ReviewForm({
           placeholder="Contales a otros qué te pareció el producto…"
           className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm"
         />
-        <p className="text-xs text-gray-400 mt-1">{comentario.length} / 2000</p>
+        <p className="text-xs text-gray-500 mt-1">{comentario.length} / 2000</p>
       </div>
 
       {msg && (

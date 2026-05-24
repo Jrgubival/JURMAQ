@@ -116,9 +116,9 @@ export default function ClientesAdminPage() {
       {/* Tabla */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
         {loading ? (
-          <div className="p-8 text-center text-sm text-gray-400">Cargando…</div>
+          <div className="p-8 text-center text-sm text-gray-500">Cargando…</div>
         ) : items.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">Sin clientes en este segmento.</div>
+          <div className="p-8 text-center text-sm text-gray-500">Sin clientes en este segmento.</div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
@@ -146,7 +146,7 @@ export default function ClientesAdminPage() {
                   <td className="px-4 py-3 text-right tabular-nums font-semibold">{fmt(c.ltv)}</td>
                   <td className="px-4 py-3 text-right tabular-nums">
                     <span className="text-green-700">{c.total_pagadas}</span>
-                    <span className="text-gray-400"> / {c.total_cotizaciones}</span>
+                    <span className="text-gray-500"> / {c.total_cotizaciones}</span>
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-600">
                     {c.ultima_compra_at

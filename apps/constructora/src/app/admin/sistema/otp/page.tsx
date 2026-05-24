@@ -126,7 +126,7 @@ export default function OtpDiagnosticoPage() {
                           OK
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-gray-400">
+                        <span className="inline-flex items-center gap-1 text-gray-500">
                           <span className="w-2 h-2 rounded-full bg-gray-400" />
                           No configurado / no responde
                         </span>
@@ -144,7 +144,7 @@ export default function OtpDiagnosticoPage() {
               <h2 className="font-semibold text-gray-900">Envíos en las últimas 24 horas</h2>
             </div>
             {data.stats_24h.length === 0 ? (
-              <div className="px-6 py-6 text-sm text-gray-400 text-center">
+              <div className="px-6 py-6 text-sm text-gray-500 text-center">
                 Sin actividad reciente.
               </div>
             ) : (
@@ -181,7 +181,7 @@ export default function OtpDiagnosticoPage() {
             )}
           </section>
 
-          <p className="text-xs text-gray-400 text-right">
+          <p className="text-xs text-gray-500 text-right">
             Generado: {new Date(data.generated_at).toLocaleString('es-CL')}
           </p>
         </div>

@@ -317,7 +317,7 @@ export default function GarantiaPanel({
 
       {/* Acción según estado */}
       {loading ? (
-        <div className="text-sm text-gray-400">Cargando estado de garantía…</div>
+        <div className="text-sm text-gray-500">Cargando estado de garantía…</div>
       ) : (
         <div className="space-y-3">
           {/* FIRMADO → INICIAR ENTREGA */}
@@ -630,7 +630,7 @@ export default function GarantiaPanel({
       )}
 
       {arrendatarioTelefono && (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-500">
           Email + WhatsApp del cliente: {arrendatarioTelefono}
         </p>
       )}
@@ -790,7 +790,7 @@ function CatalogoDanosPicker({
             <span className="text-orange-600 font-semibold">({selected.size} seleccionados)</span>
           )}
         </span>
-        <span className="text-gray-400">{open ? '▲' : '▼'}</span>
+        <span className="text-gray-500">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (

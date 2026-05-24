@@ -294,7 +294,7 @@ export default async function ProductoPage({
             <div className="aspect-square bg-gray-50 relative product-image-zoom flex items-center justify-center">
               <ProductDetailImage imagen={producto.imagen} nombre={producto.nombre} categoriaSlug={categoria?.slug} />
             </div>
-            <p className="text-xs text-gray-400 mt-2 text-center pb-3">
+            <p className="text-xs text-gray-500 mt-2 text-center pb-3">
               * Imagen referencial de la categoria. El producto puede variar.
             </p>
           </div>
@@ -320,7 +320,7 @@ export default async function ProductoPage({
                 {dailyPromoTitle && (
                   <p className="text-sm text-orange-600 font-medium mb-1">{dailyPromoTitle}</p>
                 )}
-                <p className="text-lg text-gray-400 line-through">
+                <p className="text-lg text-gray-500 line-through">
                   {formatCLP(precioResuelto.precioTachado!)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
@@ -348,7 +348,7 @@ export default async function ProductoPage({
                     </span>
                   )}
                 </div>
-                <p className="text-lg text-gray-400 line-through">
+                <p className="text-lg text-gray-500 line-through">
                   {formatCLP(precioResuelto.precioTachado!)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
