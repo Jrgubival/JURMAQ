@@ -276,131 +276,150 @@ export default async function ProductoPage({
       {/* Extra bottom padding on mobile for sticky add-to-cart bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 pb-56 lg:pb-12">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8 flex-wrap">
-          <Link href="/" className="hover:text-orange-600 transition-colors">Inicio</Link>
+        <nav className="flex items-center gap-2 text-sm text-[#787774] mb-10 flex-wrap">
+          <Link href="/" className="hover:text-[#111111] transition-colors">Inicio</Link>
           {categoria && (
             <>
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              <Link href={`/categorias/${categoria.slug}`} className="hover:text-orange-600 transition-colors">{categoria.nombre}</Link>
+              <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
+              <Link href={`/categorias/${categoria.slug}`} className="hover:text-[#111111] transition-colors">{categoria.nombre}</Link>
             </>
           )}
-          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          <span className="text-navy-950 font-medium">{producto.nombre}</span>
+          <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
+          <span className="text-[#111111] font-medium">{producto.nombre}</span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Image with zoom on hover - larger and centered */}
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            <div className="aspect-square bg-gray-50 relative product-image-zoom flex items-center justify-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+          {/* Image — hairline frame, no shadow heavy */}
+          <div className="bg-white border border-[#EAEAEA] rounded-xl overflow-hidden">
+            <div className="aspect-square bg-[#FBFBFA] relative product-image-zoom flex items-center justify-center">
               <ProductDetailImage imagen={producto.imagen} nombre={producto.nombre} categoriaSlug={categoria?.slug} />
             </div>
-            <p className="text-xs text-gray-500 mt-2 text-center pb-3">
-              * Imagen referencial de la categoria. El producto puede variar.
+            <p className="text-[11px] text-[#787774] mt-2 text-center pb-3">
+              * Imagen referencial de la categoría. El producto puede variar.
             </p>
           </div>
 
-          {/* Info */}
+          {/* Info — Editorial Luxury hierarchy */}
           <div className="flex flex-col">
-            <h1 className="text-2xl lg:text-3xl font-bold text-navy-950 mb-2">{producto.nombre}</h1>
-            {producto.medida && <p className="text-gray-500 mb-4">{producto.medida}</p>}
+            <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+              {categoria?.nombre ?? 'Producto'}
+            </p>
+            <h1
+              className="text-[#111111] mb-2 leading-[1.15]"
+              style={{ fontSize: 'clamp(1.625rem, 2.5vw, 2.25rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+            >
+              {producto.nombre}
+            </h1>
+            {producto.medida && <p className="text-base text-[#5A5A57] mb-6">{producto.medida}</p>}
 
             {/* Daily promotion discount (virtual, calculated on-the-fly) */}
             {precioResuelto.tipo === 'promo_dia' ? (
-              <>
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="inline-flex px-2.5 py-0.5 text-xs font-bold bg-orange-500 text-white rounded-full">
-                    {precioResuelto.label || 'OFERTA DEL DIA'}
+              <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] border border-[#956400] text-[#956400] rounded-full">
+                    {precioResuelto.label || 'Oferta del día'}
                   </span>
                   {precioResuelto.porcentajeDescuento && (
-                    <span className="inline-flex px-2 py-0.5 text-xs font-bold bg-red-100 text-red-700 rounded-full">
+                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9C2B1F] rounded-full border border-[#9C2B1F]/40">
                       -{precioResuelto.porcentajeDescuento}%
                     </span>
                   )}
                 </div>
                 {dailyPromoTitle && (
-                  <p className="text-sm text-orange-600 font-medium mb-1">{dailyPromoTitle}</p>
+                  <p className="text-sm text-[#956400] font-medium mb-2">{dailyPromoTitle}</p>
                 )}
-                <p className="text-lg text-gray-500 line-through">
+                <p className="text-base text-[#787774] line-through mb-1">
                   {formatCLP(precioResuelto.precioTachado!)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <p className="text-3xl lg:text-4xl font-extrabold text-orange-600">
+                  <p
+                    className="text-[#111111]"
+                    style={{ fontSize: 'clamp(2rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
+                  >
                     {formatCLP(precioResuelto.precioFinal)}
                   </p>
                   {producto.unidad && (
-                    <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>
+                    <span className="text-sm text-[#787774] font-medium">/{producto.unidad}</span>
                   )}
                 </div>
-                <p className="text-[10px] text-gray-500">IVA incluido</p>
-                <p className="text-[10px] text-gray-500 mt-1">
-                  Precio tachado: valor de venta vigente en los ultimos 30 dias.
-                </p>
-              </>
+                <p className="text-[11px] text-[#787774] mt-2">IVA incluido · valor de venta vigente últimos 30 días.</p>
+              </div>
             ) : precioResuelto.tipo === 'oferta_real' ? (
-              <>
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="inline-flex px-2.5 py-0.5 text-xs font-bold bg-red-600 text-white rounded-full">
-                    {precioResuelto.label || 'OFERTA'}
+              <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] border border-[#9C2B1F] text-[#9C2B1F] rounded-full">
+                    {precioResuelto.label || 'Oferta'}
                   </span>
                   {precioResuelto.porcentajeDescuento && (
-                    <span className="inline-flex px-2 py-0.5 text-xs font-bold bg-red-100 text-red-700 rounded-full">
+                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9C2B1F] rounded-full border border-[#9C2B1F]/40">
                       -{precioResuelto.porcentajeDescuento}%
                     </span>
                   )}
                 </div>
-                <p className="text-lg text-gray-500 line-through">
+                <p className="text-base text-[#787774] line-through mb-1">
                   {formatCLP(precioResuelto.precioTachado!)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
-                  <p className="text-3xl lg:text-4xl font-extrabold text-red-600">
+                  <p
+                    className="text-[#111111]"
+                    style={{ fontSize: 'clamp(2rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
+                  >
                     {formatCLP(precioResuelto.precioFinal)}
                   </p>
                   {producto.unidad && (
-                    <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>
+                    <span className="text-sm text-[#787774] font-medium">/{producto.unidad}</span>
                   )}
                 </div>
-                <p className="text-[10px] text-gray-500">IVA incluido</p>
-                <p className="text-[10px] text-gray-500 mt-1">
-                  Precio tachado: valor de venta vigente en los ultimos 30 dias.
-                </p>
-              </>
+                <p className="text-[11px] text-[#787774] mt-2">IVA incluido · valor de venta vigente últimos 30 días.</p>
+              </div>
             ) : precioResuelto.tipo === 'cotizar' ? (
-              <div className="flex items-baseline gap-2 mb-2">
-                <p className="text-2xl lg:text-3xl font-bold text-indigo-700">
+              <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
+                <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-2">
+                  A pedido
+                </p>
+                <p
+                  className="text-[#111111] font-[var(--font-serif)] italic leading-none"
+                  style={{ fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 400, letterSpacing: '-0.01em' }}
+                >
                   Consultar precio
                 </p>
+                <p className="text-[11px] text-[#787774] mt-3">Cotización por WhatsApp o correo en menos de 2 horas hábiles.</p>
               </div>
             ) : (
-              <>
+              <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
                 <div className="flex items-baseline gap-2 mb-1">
-                  <p className="text-3xl lg:text-4xl font-extrabold text-navy-950">
+                  <p
+                    className="text-[#111111]"
+                    style={{ fontSize: 'clamp(2rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
+                  >
                     {formatCLP(precioResuelto.precioFinal)}
                   </p>
                   {producto.unidad && (
-                    <span className="text-base text-gray-500 font-medium">/{producto.unidad}</span>
+                    <span className="text-sm text-[#787774] font-medium">/{producto.unidad}</span>
                   )}
                 </div>
                 {precioResuelto.precioFinal > 0 && (
-                  <p className="text-[10px] text-gray-500">IVA incluido</p>
+                  <p className="text-[11px] text-[#787774] mt-2">IVA incluido.</p>
                 )}
-              </>
+              </div>
             )}
             {producto.unidad && precioResuelto.tipo !== 'cotizar' && (
-              <p className="text-sm text-gray-500 mb-4 mt-1">Precio por {producto.unidad}</p>
+              <p className="text-xs text-[#787774] mb-6 mt-2">Precio por {producto.unidad}</p>
             )}
 
-            {/* Stock */}
-            <div className="mb-6">
+            {/* Stock — editorial inline indicator */}
+            <div className="mb-8 flex items-center gap-2 text-sm">
               {producto.stock > 0 ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium bg-green-100 text-green-700 rounded-full">
-                  <span className="w-2 h-2 bg-green-500 rounded-full" />
-                  En stock ({producto.stock} disponibles)
-                </span>
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#2F7F4E]" aria-hidden="true" />
+                  <span className="text-[#2F7F4E] font-medium">En stock</span>
+                  <span className="text-[#787774]">· {producto.stock} disponibles</span>
+                </>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium bg-red-100 text-red-700 rounded-full">
-                  <span className="w-2 h-2 bg-red-500 rounded-full" />
-                  Sin stock
-                </span>
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#9C2B1F]" aria-hidden="true" />
+                  <span className="text-[#9C2B1F] font-medium">Sin stock</span>
+                </>
               )}
             </div>
 
@@ -412,30 +431,30 @@ export default async function ProductoPage({
             {/* Share buttons */}
             <ShareButtons nombre={producto.nombre} slug={producto.slug} />
 
-            {/* Specifications */}
-            <div className="mt-8 bg-gray-50 rounded-xl p-5">
-              <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider mb-3">Especificaciones</h3>
-              <dl className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <dt className="text-gray-500">Codigo</dt>
-                  <dd className="font-medium text-gray-900">{producto.codigo}</dd>
+            {/* Specifications — editorial definition list */}
+            <div className="mt-10 pt-8 border-t border-[#EAEAEA]">
+              <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-4">Especificaciones</p>
+              <dl className="divide-y divide-[#EAEAEA]">
+                <div className="grid grid-cols-[120px_1fr] gap-4 py-3 text-sm">
+                  <dt className="text-[#787774]">Código</dt>
+                  <dd className="text-[#111111] font-medium">{producto.codigo}</dd>
                 </div>
                 {producto.unidad && (
-                  <div className="flex justify-between text-sm">
-                    <dt className="text-gray-500">Unidad</dt>
-                    <dd className="font-medium text-gray-900">{producto.unidad}</dd>
+                  <div className="grid grid-cols-[120px_1fr] gap-4 py-3 text-sm">
+                    <dt className="text-[#787774]">Unidad</dt>
+                    <dd className="text-[#111111] font-medium">{producto.unidad}</dd>
                   </div>
                 )}
                 {producto.medida && (
-                  <div className="flex justify-between text-sm">
-                    <dt className="text-gray-500">Medida</dt>
-                    <dd className="font-medium text-gray-900">{producto.medida}</dd>
+                  <div className="grid grid-cols-[120px_1fr] gap-4 py-3 text-sm">
+                    <dt className="text-[#787774]">Medida</dt>
+                    <dd className="text-[#111111] font-medium">{producto.medida}</dd>
                   </div>
                 )}
                 {categoria && (
-                  <div className="flex justify-between text-sm">
-                    <dt className="text-gray-500">Categoria</dt>
-                    <dd className="font-medium text-gray-900">{categoria.nombre}</dd>
+                  <div className="grid grid-cols-[120px_1fr] gap-4 py-3 text-sm">
+                    <dt className="text-[#787774]">Categoría</dt>
+                    <dd className="text-[#111111] font-medium">{categoria.nombre}</dd>
                   </div>
                 )}
               </dl>
@@ -446,10 +465,18 @@ export default async function ProductoPage({
         {/* Reviews / opiniones de clientes */}
         <ReviewsList productoId={producto.id} />
 
-        {/* Related Products */}
+        {/* Related Products — editorial section */}
         {(relacionados || []).length > 0 && (
-          <section className="mt-16">
-            <h2 className="text-2xl font-bold text-navy-950 mb-6">Tambien te puede interesar</h2>
+          <section className="mt-24 lg:mt-32 pt-12 border-t border-[#EAEAEA]">
+            <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+              Productos relacionados
+            </p>
+            <h2
+              className="text-[#111111] mb-10 leading-[1.15]"
+              style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+            >
+              También te puede <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>interesar</span>.
+            </h2>
             <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
               {(relacionados || []).map((p: any) => (
                 <ProductCard key={p.id} id={p.id} nombre={p.nombre} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={categoria?.slug || ''} />
