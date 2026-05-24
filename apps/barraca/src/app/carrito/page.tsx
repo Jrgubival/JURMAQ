@@ -207,18 +207,26 @@ export default function CarritoPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       {/* Breadcrumb */}
-      <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-sm text-gray-500 mb-8">
-        <Link href="/" className="hover:text-orange-600 transition-colors">Inicio</Link>
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-sm text-[#787774] mb-10">
+        <Link href="/" className="hover:text-[#111111] transition-colors">Inicio</Link>
+        <svg className="w-3.5 h-3.5 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
         </svg>
-        <span className="text-navy-950 font-medium">Carrito</span>
+        <span className="text-[#111111] font-medium">Carrito</span>
       </nav>
 
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl lg:text-3xl font-bold text-navy-950">
-          Mi carrito
-        </h1>
+      <div className="flex items-end justify-between mb-10 pb-6 border-b border-[#EAEAEA]">
+        <div>
+          <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+            Tu pedido
+          </p>
+          <h1
+            className="text-[#111111] leading-[1.1]"
+            style={{ fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+          >
+            Mi <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>carrito</span>
+          </h1>
+        </div>
         {items.length > 0 && (
           <button
             onClick={clearCart}
@@ -233,14 +241,27 @@ export default function CarritoPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-          <svg className="w-20 h-20 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white border border-[#EAEAEA] rounded-2xl p-16 text-center">
+          <svg className="w-16 h-16 mx-auto text-[#C9C9C5] mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
           </svg>
-          <h2 className="text-xl font-bold text-navy-950 mb-2">Tu carrito está vacío</h2>
-          <p className="text-gray-500 mb-6">Agrega productos para solicitar una cotización</p>
-          <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors">
+          <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+            Carrito vacío
+          </p>
+          <h2
+            className="text-[#111111] mb-3 leading-[1.15]"
+            style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 500, letterSpacing: '-0.005em' }}
+          >
+            Aún no hay <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>productos</span>.
+          </h2>
+          <p className="text-base text-[#5A5A57] mb-8 max-w-md mx-auto">
+            Agregá productos al carrito para pedir una cotización.
+          </p>
+          <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 bg-navy-950 hover:bg-[#111111] text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors">
             Explorar categorías
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
       ) : (
@@ -330,8 +351,16 @@ export default function CarritoPage() {
 
           {/* Cart Summary */}
           <div className="w-full lg:w-80 shrink-0">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-24">
-              <h2 className="text-lg font-bold text-navy-950 mb-4">Resumen del pedido</h2>
+            <div className="bg-white border border-[#EAEAEA] rounded-2xl p-6 sticky top-24">
+              <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-2">
+                Total
+              </p>
+              <h2
+                className="text-[#111111] mb-5 leading-[1.1]"
+                style={{ fontSize: 'clamp(1.125rem, 1.6vw, 1.375rem)', fontWeight: 500, letterSpacing: '-0.005em' }}
+              >
+                Resumen del <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>pedido</span>
+              </h2>
               <div className="mb-6">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-600">Productos ({totalItems})</span>
@@ -355,8 +384,12 @@ export default function CarritoPage() {
                     </div>
                   ) : (
                     <details className="text-sm">
-                      <summary className="text-xs text-orange-600 hover:underline cursor-pointer">
-                        🎟 ¿Tienes un código de descuento?
+                      <summary className="text-xs text-[#956400] hover:text-[#111111] cursor-pointer inline-flex items-center gap-1.5 font-medium">
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                          <path d="M13 5v2M13 17v2M13 11v2" />
+                        </svg>
+                        ¿Tienes un código de descuento?
                       </summary>
                       <div className="mt-2 space-y-2">
                         <input
@@ -377,7 +410,7 @@ export default function CarritoPage() {
                           <button
                             onClick={validarCupon}
                             disabled={cuponState.kind === 'loading' || !cuponInput || !cuponEmail}
-                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-xs font-semibold rounded"
+                            className="px-3 py-1.5 bg-navy-950 hover:bg-[#111111] disabled:opacity-50 text-white text-xs font-medium tracking-[0.02em] rounded"
                           >
                             {cuponState.kind === 'loading' ? '…' : 'Aplicar'}
                           </button>

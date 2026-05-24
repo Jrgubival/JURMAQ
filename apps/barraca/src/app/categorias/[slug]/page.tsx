@@ -349,34 +349,34 @@ export default async function CategoriaPage({
         />
       )}
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-gray-600 mb-8 flex-wrap bg-white border border-gray-200 rounded-lg px-4 py-3">
-        <Link href="/" className="font-medium hover:text-orange-600 transition-colors">
+      {/* Breadcrumb — editorial hairline */}
+      <nav className="flex items-center gap-2 text-sm text-[#787774] mb-10 flex-wrap">
+        <Link href="/" className="hover:text-[#111111] transition-colors">
           Inicio
         </Link>
-        <svg className="w-4 h-4 shrink-0 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
         </svg>
-        <Link href="/categorias" className="font-medium hover:text-orange-600 transition-colors">
-          Categorias
+        <Link href="/categorias" className="hover:text-[#111111] transition-colors">
+          Categorías
         </Link>
         {parentCat && (
           <>
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
             </svg>
             <Link
               href={`/categorias/${parentCat.slug}`}
-              className="hover:text-orange-600 transition-colors"
+              className="hover:text-[#111111] transition-colors"
             >
               {parentCat.nombre}
             </Link>
           </>
         )}
-        <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
         </svg>
-        <span className="text-navy-950 font-medium">{categoria.nombre}</span>
+        <span className="text-[#111111] font-medium">{categoria.nombre}</span>
       </nav>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -492,14 +492,14 @@ export default async function CategoriaPage({
                 {sp.stock && <input type="hidden" name="stock" value={sp.stock} />}
                 <button
                   type="submit"
-                  className="w-full h-11 min-h-[44px] bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white text-sm font-semibold rounded-lg transition-colors touch-manipulation"
+                  className="w-full h-11 min-h-[44px] bg-navy-950 hover:bg-[#111111] text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors touch-manipulation"
                 >
                   Aplicar filtro
                 </button>
                 {(sp.min || sp.max) && (
                   <Link
                     href={`/categorias/${slug}${sp.sort ? `?sort=${sp.sort}` : ''}${sp.stock ? `${sp.sort ? '&' : '?'}stock=${sp.stock}` : ''}`}
-                    className="block text-center text-xs text-orange-600 hover:text-orange-700 font-medium"
+                    className="block text-center text-xs text-[#787774] hover:text-[#111111] font-medium underline-offset-4"
                   >
                     Limpiar filtro de precio
                   </Link>
@@ -512,15 +512,22 @@ export default async function CategoriaPage({
 
         {/* Product Grid */}
         <div className="flex-1">
-          {/* Header with count and sort - like Sodimac */}
-          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          {/* Header — editorial hairline + clamp H1 */}
+          <div className="border-b border-[#EAEAEA] pb-6 mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-navy-950">
+                <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+                  Categoría
+                </p>
+                <h1
+                  className="text-[#111111] leading-[1.1] mb-2"
+                  style={{ fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+                >
                   {categoria.nombre}
                 </h1>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {total} producto{total !== 1 ? "s" : ""} en esta categoria
+                <p className="text-sm text-[#787774]">
+                  <span className="font-[var(--font-serif)] italic text-[#111111] mr-1" style={{ fontWeight: 400 }}>{total}</span>
+                  producto{total !== 1 ? "s" : ""} en stock
                 </p>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
