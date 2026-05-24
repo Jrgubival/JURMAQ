@@ -236,15 +236,21 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ===== DIVISIONS SECTION ===== */}
-        <section id="divisiones" className="py-16 lg:py-24 bg-white content-auto">
+      {/* ===== DIVISIONS SECTION =====
+          high-end-visual-design: section padding py-24 lg:py-32.
+          design-taste: eyebrow + editorial H2 con Newsreader italic accent.
+          minimalist-ui: bg warm-bone variant for breathing. */}
+        <section id="divisiones" className="py-24 lg:py-32 bg-white content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 lg:mb-16">
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-navy-950 mb-3">
-              Todo lo que necesitas para tu obra, en un solo lugar
+          <div className="mb-14 lg:mb-20 max-w-3xl">
+            <p className="eyebrow mb-4">Cuatro áreas, un equipo</p>
+            <h2 className="editorial-h1 text-navy-950 mb-4" style={{ fontSize: 'clamp(2rem, 3vw + 1rem, 3.5rem)' }}>
+              Todo lo que necesitas para tu obra,{' '}
+              <span className="font-[var(--font-serif)] italic text-gold-600" style={{ fontWeight: 500 }}>en un solo lugar</span>.
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl">
-              Cuatro áreas de trabajo, un equipo que responde rápido.
+            <p className="text-lg text-gray-700 max-w-[55ch] leading-relaxed">
+              Constructora, arriendo de maquinaria, maestranza y barraca de fierros.
+              Un solo proveedor responde por todo el ciclo de tu obra.
             </p>
           </div>
 
