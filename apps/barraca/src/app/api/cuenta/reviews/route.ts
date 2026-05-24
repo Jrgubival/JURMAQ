@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
+import { parseBarracaUserToken, extractBearerToken } from '@/lib/barraca-auth';
 
 /**
  * GET    /api/cuenta/reviews                — lista MIS reviews
@@ -17,25 +18,11 @@ import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
 
 export const runtime = 'nodejs';
 
-function parseTokenUserId(token: string): number | null {
-  try {
-    const decoded = Buffer.from(token, 'base64').toString('utf8');
-    const colonIdx = decoded.indexOf(':');
-    if (colonIdx === -1) return null;
-    const idStr = decoded.substring(0, colonIdx);
-    const random = decoded.substring(colonIdx + 1);
-    if (random.length < 32) return null;
-    const id = parseInt(idStr, 10);
-    return Number.isNaN(id) ? null : id;
-  } catch {
-    return null;
-  }
-}
-
 async function requireUsuario(request: NextRequest): Promise<{ id: number; nombre: string } | null> {
-  const auth = request.headers.get('Authorization');
-  if (!auth?.startsWith('Bearer ')) return null;
-  const userId = parseTokenUserId(auth.slice(7));
+  // Token parsing dual-mode (audit fase 2A.1): JWT firmado o base64 legacy.
+  const token = extractBearerToken(request);
+  if (!token) return null;
+  const userId = await parseBarracaUserToken(token);
   if (userId === null) return null;
   const { data } = await supabaseAdmin
     .from('barraca_usuarios')

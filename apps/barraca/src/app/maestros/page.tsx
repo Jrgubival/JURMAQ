@@ -48,8 +48,11 @@ interface MaestroRow {
 
 async function getTopMaestros(limit = 20): Promise<MaestroRow[]> {
   try {
+    // Security (audit fase 2B.1): leemos de la vista maestros_public que
+    // expone solo nombre + código + comisión + created_at + activo. RUT
+    // enmascarado, sin email/banco. anon no puede leer la tabla base.
     const { data, error } = await supabasePublic
-      .from('maestros')
+      .from('maestros_public')
       .select('id, codigo, nombre, porcentaje_comision, created_at')
       .eq('activo', true)
       .order('created_at', { ascending: false })

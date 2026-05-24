@@ -47,7 +47,7 @@ COMMENT ON COLUMN public.clientes.reset_token_hash IS
 --    (los usuarios deberán pedir uno nuevo — comunicar antes de aplicar).
 UPDATE public.clientes
   SET reset_token = NULL,
-      reset_token_expires_at = NULL  -- ajustar nombre real de la columna de expiración si distinto
+      reset_token_expira_at = NULL  -- nombre real de la columna en clientes (confirmado en codebase)
   WHERE reset_token IS NOT NULL;
 
 COMMIT;

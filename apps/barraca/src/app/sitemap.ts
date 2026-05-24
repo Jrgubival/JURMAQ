@@ -172,8 +172,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Tier 2 B1: páginas públicas de maestros referidos (link share que
   // arman maestros para sus clientes). Solo maestros activos.
+  // Security (audit fase 2B.1): leemos de maestros_public (RUT enmascarado,
+  // sin email/banco) — anon NO debe ver la tabla base.
   const { data: maestros } = await supabasePublic
-    .from('maestros')
+    .from('maestros_public')
     .select('codigo')
     .eq('activo', true);
 

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafeError } from '@jurmaq/shared/logging';
+import { parseBarracaUserToken, extractBearerToken } from '@/lib/barraca-auth';
 
 /**
  * POST /api/barraca/cuenta/exportar
@@ -16,26 +17,8 @@ import { logSafeError } from '@jurmaq/shared/logging';
  * Rate-limited por IP (el archivo puede ser pesado y el zip es CPU-bound).
  */
 
-function parseToken(token: string): number | null {
-  try {
-    const decoded = Buffer.from(token, 'base64').toString('utf8');
-    const colonIdx = decoded.indexOf(':');
-    if (colonIdx === -1) return null;
-    const idStr = decoded.substring(0, colonIdx);
-    const random = decoded.substring(colonIdx + 1);
-    if (random.length < 32) return null;
-    const id = parseInt(idStr, 10);
-    return isNaN(id) ? null : id;
-  } catch {
-    return null;
-  }
-}
-
-function extractToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('Authorization');
-  if (authHeader?.startsWith('Bearer ')) return authHeader.slice(7);
-  return null;
-}
+// Auth: usa parseBarracaUserToken compartido (audit fase 2A.1) — acepta tanto
+// JWT firmado nuevo como base64 legacy durante la transición.
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,11 +35,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = extractToken(request);
+    const token = extractBearerToken(request);
     if (!token) {
       return NextResponse.json({ error: 'Token requerido' }, { status: 401 });
     }
-    const userId = parseToken(token);
+    const userId = await parseBarracaUserToken(token);
     if (!userId) {
       return NextResponse.json({ error: 'Token invalido' }, { status: 401 });
     }

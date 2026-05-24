@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafe, logSafeError, hid } from '@jurmaq/shared/logging';
+import { parseBarracaUserToken, extractBearerToken } from '@/lib/barraca-auth';
 
 /**
  * POST /api/barraca/cuenta/eliminar
@@ -41,27 +42,8 @@ import { logSafe, logSafeError, hid } from '@jurmaq/shared/logging';
  * batch of accounts.
  */
 
-// Token parsing — same shape as the rest of the barraca auth flow.
-function parseToken(token: string): number | null {
-  try {
-    const decoded = Buffer.from(token, 'base64').toString('utf8');
-    const colonIdx = decoded.indexOf(':');
-    if (colonIdx === -1) return null;
-    const idStr = decoded.substring(0, colonIdx);
-    const random = decoded.substring(colonIdx + 1);
-    if (random.length < 32) return null;
-    const id = parseInt(idStr, 10);
-    return isNaN(id) ? null : id;
-  } catch {
-    return null;
-  }
-}
-
-function extractToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('Authorization');
-  if (authHeader?.startsWith('Bearer ')) return authHeader.slice(7);
-  return null;
-}
+// Token parsing migrado a parseBarracaUserToken (shared helper, audit fase 2A.1).
+// Acepta JWT firmado nuevo + base64 legacy durante la transición.
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,12 +62,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = extractToken(request);
+    const token = extractBearerToken(request);
     if (!token) {
       return NextResponse.json({ error: 'Token requerido' }, { status: 401 });
     }
 
-    const userId = parseToken(token);
+    const userId = await parseBarracaUserToken(token);
     if (userId === null) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
     }

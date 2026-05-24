@@ -6,6 +6,7 @@ import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 import { transporter } from '@jurmaq/shared/mail/transport';
 import {
   generateClienteToken,
+  generateClienteTokenAsync,
   setClienteSessionCookie,
   clearClienteSessionCookie,
   generateResetToken,
@@ -127,7 +128,7 @@ async function handleLogin(body: AuthBody, ip: string): Promise<NextResponse> {
   }
 
   // Login exitoso. Generar token + setear cookie.
-  const token = generateClienteToken(cliente.id);
+  const token = await generateClienteTokenAsync(cliente.id, { ip });
   await setClienteSessionCookie(token);
 
   // Actualizar ultimo_login_at (best-effort).
@@ -207,7 +208,7 @@ async function handleRegister(body: AuthBody, ip: string): Promise<NextResponse>
       console.error('[cuenta-register-update-fail]', updErr);
       return NextResponse.json({ error: 'No se pudo completar el registro' }, { status: 500 });
     }
-    const token = generateClienteToken(existing.id);
+    const token = await generateClienteTokenAsync(existing.id, { ip });
     await setClienteSessionCookie(token);
     return NextResponse.json({ ok: true, cliente: { id: existing.id, email, nombre }, token });
   }
@@ -236,7 +237,7 @@ async function handleRegister(body: AuthBody, ip: string): Promise<NextResponse>
     return NextResponse.json({ error: 'No se pudo crear la cuenta' }, { status: 500 });
   }
 
-  const token = generateClienteToken(created.id);
+  const token = await generateClienteTokenAsync(created.id, { ip });
   await setClienteSessionCookie(token);
 
   // Enviar email de bienvenida (best-effort).
@@ -275,11 +276,20 @@ async function handleForgot(body: AuthBody, ip: string): Promise<NextResponse> {
     .maybeSingle();
 
   if (cliente && cliente.activo) {
+    // Security (audit fase 2A.3): el reset token se guarda HASHEADO con bcrypt,
+    // nunca en plaintext. El raw token solo se envía en el email del usuario.
+    // Si la DB se compromete, los tokens activos son inutilizables sin el raw
+    // (no se puede revertir bcrypt). Migration: migrate-reset-token-hash.sql.
     const resetToken = generateResetToken();
+    const resetTokenHash = await bcrypt.hash(resetToken, BCRYPT_COST);
     const expiraAt = new Date(Date.now() + RESET_TTL_MIN * 60_000).toISOString();
     await supabaseAdmin
       .from('clientes')
-      .update({ reset_token: resetToken, reset_token_expira_at: expiraAt })
+      .update({
+        reset_token_hash: resetTokenHash,
+        reset_token: null, // limpiamos legacy plaintext si quedó alguno
+        reset_token_expira_at: expiraAt,
+      })
       .eq('id', cliente.id);
 
     const url = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl'}/cuenta/reset?token=${resetToken}`;
@@ -320,17 +330,39 @@ async function handleReset(body: AuthBody, ip: string): Promise<NextResponse> {
     return NextResponse.json({ error: 'Demasiados intentos.' }, { status: 429 });
   }
 
-  const { data: cliente } = await supabaseAdmin
+  // Security (audit fase 2A.3): tokens están hasheados con bcrypt.
+  // bcrypt.compare no es indexable → scan O(n) sobre tokens activos no expirados.
+  // En la práctica n es muy pequeño (típicamente <10 simultáneos).
+  const { data: candidates } = await supabaseAdmin
     .from('clientes')
-    .select('id, email, nombre, reset_token_expira_at, activo')
-    .eq('reset_token', resetToken)
-    .maybeSingle();
+    .select('id, email, nombre, reset_token_hash, reset_token_expira_at, activo')
+    .not('reset_token_hash', 'is', null)
+    .gt('reset_token_expira_at', new Date().toISOString());
 
-  if (!cliente || !cliente.activo) {
-    return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+  type ClienteCandidate = {
+    id: number;
+    email: string;
+    nombre: string;
+    reset_token_hash: string | null;
+    reset_token_expira_at: string | null;
+    activo: boolean;
+  };
+  let cliente: ClienteCandidate | null = null;
+  for (const c of (candidates ?? []) as ClienteCandidate[]) {
+    if (!c.activo || !c.reset_token_hash) continue;
+    try {
+      const matches = await bcrypt.compare(resetToken, c.reset_token_hash);
+      if (matches) {
+        cliente = c;
+        break;
+      }
+    } catch {
+      /* hash inválido, saltamos */
+    }
   }
-  if (cliente.reset_token_expira_at && new Date(cliente.reset_token_expira_at) < new Date()) {
-    return NextResponse.json({ error: 'Token expirado' }, { status: 401 });
+
+  if (!cliente) {
+    return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
   }
 
   const hash = await bcrypt.hash(newPassword, BCRYPT_COST);
@@ -339,13 +371,14 @@ async function handleReset(body: AuthBody, ip: string): Promise<NextResponse> {
     .update({
       password_hash: hash,
       reset_token: null,
+      reset_token_hash: null,
       reset_token_expira_at: null,
       email_verificado_at: cliente && new Date().toISOString(),
       ultimo_login_at: new Date().toISOString(),
     })
     .eq('id', cliente.id);
 
-  const token = generateClienteToken(cliente.id);
+  const token = await generateClienteTokenAsync(cliente.id, { ip });
   await setClienteSessionCookie(token);
 
   return NextResponse.json({
