@@ -6,6 +6,7 @@ import { TIPOS_MAQUINA, CIUDADES, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaTipo } from "@jurmaq/shared/whatsapp";
+import CrossLinksGrid from "@/components/public/CrossLinksGrid";
 
 interface Maquinaria {
   id: number;
@@ -291,28 +292,16 @@ export default async function ArriendoTipoPage({
           </div>
         </section>
 
-        {/* Ciudades servidas */}
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-4">
-              Ciudades donde llegamos con tu {tipoData.nombre.toLowerCase()}
-            </h2>
-            <p className="text-gray-600 mb-8">
-              Operamos desde Molina y despachamos a toda la Región del Maule.
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {CIUDADES.map((c) => (
-                <Link
-                  key={c.slug}
-                  href={`/arriendo-en/${c.slug}`}
-                  className="px-4 py-3 bg-white rounded-lg border border-gray-200 hover:border-gold-500 hover:bg-gold-50 transition-colors text-sm font-medium text-navy-950"
-                >
-                  {c.nombre}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Ciudades servidas — CrossLinksGrid editorial estilo barraca */}
+        <CrossLinksGrid
+          eyebrow="Cobertura · 12 ciudades del Maule"
+          title={`También en otras ciudades del Maule`}
+          subtitle={`Operamos desde Molina y despachamos a toda la Región del Maule. Tarifa de traslado se confirma al cotizar.`}
+          items={CIUDADES.map((c) => ({
+            label: `Arriendo en ${c.nombre}`,
+            href: `/arriendo-en/${c.slug}`,
+          }))}
+        />
 
         {/* FAQ */}
         <section className="py-16">

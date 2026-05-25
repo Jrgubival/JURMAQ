@@ -8,6 +8,7 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaCiudad } from "@jurmaq/shared/whatsapp";
 import { maquinariaHref } from "@/lib/maquinaria-slug";
+import CrossLinksGrid from "@/components/public/CrossLinksGrid";
 
 interface Maquinaria {
   id: number;
@@ -221,31 +222,16 @@ export default async function ArriendoEnCiudadPage({
           </div>
         </header>
 
-        {/* Tipos de máquina disponibles para esta ciudad */}
-        <section className="py-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-8">
-              Maquinaria disponible para arriendo en {c.nombre}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {TIPOS_MAQUINA.map((t) => (
-                <Link
-                  key={t.slug}
-                  href={`/arriendo/${t.slug}`}
-                  className="block bg-white border border-gray-200 hover:border-gold-500 rounded-xl p-5 transition-colors"
-                >
-                  <h3 className="text-lg font-bold text-navy-950 mb-2">
-                    {t.nombre}
-                  </h3>
-                  <p className="text-sm text-gray-600">{t.descripcionCorta}</p>
-                  <span className="inline-block mt-3 text-sm text-gold-600 font-semibold">
-                    Ver detalle →
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Tipos de máquina disponibles para esta ciudad — CrossLinksGrid editorial */}
+        <CrossLinksGrid
+          eyebrow={`Maquinaria · ${c.nombre} y comunas vecinas`}
+          title={`Tipos disponibles para arriendo en ${c.nombre}`}
+          subtitle="Flota propia con mantención al día. Despacho coordinado desde nuestra base en Molina."
+          items={TIPOS_MAQUINA.map((t) => ({
+            label: `${t.nombre} en ${c.nombre}`,
+            href: `/arriendo/${t.slug}`,
+          }))}
+        />
 
         {/* Logística */}
         <section className="py-16 bg-gray-50">

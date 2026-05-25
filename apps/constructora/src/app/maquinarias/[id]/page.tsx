@@ -11,6 +11,7 @@ import PricingTiers from "@/components/public/PricingTiers";
 import ObraCompletaCTA from "@/components/public/ObraCompletaCTA";
 import RelatedMachines from "@/components/public/RelatedMachines";
 import ViewItemTracker from "@/components/analytics/ViewItemTracker";
+import { getMaquinariaDescripcion } from "@jurmaq/shared/seo/maquinaria-descripciones";
 
 interface Maquinaria {
   id: number;
@@ -352,16 +353,71 @@ export default async function MaquinariaDetailPage({
                 )}
               </div>
 
-              {/* Description */}
-              <div className="bg-white rounded-2xl border border-gray-200 p-6 lg:p-8">
-                <h2 className="text-xl font-bold text-navy-950 mb-4">
-                  Descripcion
-                </h2>
-                <p className="text-gray-600 leading-relaxed">
-                  {machine.descripcion ||
-                    "Consulte por especificaciones técnicas de este equipo. Disponible para arriendo con o sin operador."}
-                </p>
-              </div>
+              {/* Description — intro + casos de uso + características + incluye */}
+              {(() => {
+                const desc = getMaquinariaDescripcion(machine.tipo, machine.descripcion);
+                return (
+                  <div className="bg-white rounded-2xl border border-[#EAEAEA] p-6 lg:p-8 space-y-6">
+                    <div>
+                      <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+                        Descripción del equipo
+                      </p>
+                      <p className="text-base text-[#5A5A57] leading-relaxed">
+                        {desc.intro}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#EAEAEA]">
+                      <div>
+                        <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+                          Usos típicos
+                        </p>
+                        <ul className="space-y-1.5">
+                          {desc.usos.map((u) => (
+                            <li key={u} className="flex items-start gap-2 text-sm text-[#5A5A57]">
+                              <svg className="w-3.5 h-3.5 text-[#956400] shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="m5 12 5 5L20 7" />
+                              </svg>
+                              <span>{u}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+                          Características técnicas
+                        </p>
+                        <ul className="space-y-1.5">
+                          {desc.caracteristicas.map((c) => (
+                            <li key={c} className="flex items-start gap-2 text-sm text-[#5A5A57]">
+                              <svg className="w-3.5 h-3.5 text-[#956400] shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M9 12h6M12 9v6" />
+                              </svg>
+                              <span>{c}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-[#EAEAEA]">
+                      <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+                        Incluye sin costo
+                      </p>
+                      <ul className="flex flex-wrap gap-x-6 gap-y-2">
+                        {desc.incluye.map((i) => (
+                          <li key={i} className="flex items-center gap-2 text-sm text-[#5A5A57]">
+                            <svg className="w-3.5 h-3.5 text-[#2F7F4E] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="m5 12 5 5L20 7" />
+                            </svg>
+                            <span>{i}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Specifications */}
               {Object.keys(specs).length > 0 && (
