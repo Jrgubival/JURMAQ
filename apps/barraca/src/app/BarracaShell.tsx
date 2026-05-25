@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
 import ToastContainer from "@/components/Toast";
 import { IconCoin, IconArrowRight } from "@jurmaq/shared/icons";
+import { LEGAL_INFO } from "@jurmaq/shared/seo";
 
 const CartDrawer = dynamic(
   () => import("@/components/barraca/CartDrawer"),
@@ -695,7 +696,7 @@ function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs text-gray-500">
-              &copy; {new Date().getFullYear()} Constructora Jorge Ubilla Rivera E.I.R.L. | RUT: {RUT} | Av. Poniente 2157, Molina, Maule.
+              &copy; {new Date().getFullYear()} {LEGAL_INFO.brands.barraca.nombre} · RUT {LEGAL_INFO.rut} · {LEGAL_INFO.brands.barraca.direccion}.
               Todos los derechos reservados.
             </p>
             <div className="flex items-center gap-3 text-xs text-gray-500">

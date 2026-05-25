@@ -906,3 +906,30 @@ export const HQ = {
   whatsapp: "https://wa.me/56976673577",
   email: "contacto@jurmaq.cl",
 };
+
+/**
+ * Información legal y comercial por brand.
+ *
+ * Mismo RUT (sociedad única) pero presentación con NOMBRE COMERCIAL para el
+ * footer público — el user no quiere razón social en la cara visible del sitio.
+ *
+ * Direcciones distintas: la barraca está en Molina (sucursal materiales), la
+ * constructora opera desde Maquehua, Curicó (oficina central + maestranza).
+ */
+export const LEGAL_INFO = {
+  rut: "76.624.872-1",
+  brands: {
+    constructora: {
+      nombre: "Constructora JURMAQ",
+      direccion: "LT 3 DEL LT A HJ 11, Maquehua, Curicó",
+      comuna: "Curicó",
+      region: "Maule",
+    },
+    barraca: {
+      nombre: "Barraca de Fierros JURMAQ",
+      direccion: "Av. Poniente 2157, Molina, Maule",
+      comuna: "Molina",
+      region: "Maule",
+    },
+  },
+} as const;

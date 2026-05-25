@@ -54,12 +54,15 @@ const TIERS_DIA: Tier[] = [
 ];
 
 // Tiers para máquinas tarifadas POR HORA — incluye HORA + SEMANA + MES.
-// Math: tarifa × 1 = hora, × 40 = semana, × 150 = mes.
-// El key 'dia' se reutiliza para 'hora' (mismo unidades=1) por compat de tipo.
+//
+// IMPORTANTE: 40h y 150h NO son las horas REALES de una semana/mes (serían 42h
+// y 168h respectivamente). Son EQUIVALENCIAS-PRECIO — el cliente paga "lo de"
+// 40h por una semana completa, no por 42h. Y "lo de" 150h por un mes completo,
+// no por 168h. Es el descuento por plazo largo de JURMAQ.
 const TIERS_HORA: Tier[] = [
   { key: 'dia', label: '1 hora', unidades: 1, detalle: 'tarifa base' },
-  { key: 'semana', label: '1 semana', unidades: 40, detalle: '× 40 horas', badge: 'mejor precio' },
-  { key: 'mes', label: '1 mes', unidades: 150, detalle: '× 150 horas', badge: 'mejor precio mes' },
+  { key: 'semana', label: 'Semana', unidades: 40, detalle: 'pagás 40h · ahorrás 2h', badge: 'ahorro vs 42h' },
+  { key: 'mes', label: 'Mes', unidades: 150, detalle: 'pagás 150h · ahorrás 18h', badge: 'ahorro vs 168h' },
 ];
 
 function formatPriceMoney(value: number): string {
@@ -99,8 +102,8 @@ export default function PricingTiers({
         </h3>
         <p className="text-sm text-[#787774] mt-2 max-w-[55ch] leading-relaxed">
           {unidadTarifa === 'hora'
-            ? `Esta máquina se cotiza por hora. La semana es 40 h, el mes 150 h. Todo con IVA incluido.`
-            : `Por día, por 4 días (semana) o por 13 días (mes). Todos los precios con IVA incluido.`}
+            ? `Esta máquina se cotiza por hora. La semana real son 42 h pero pagás solo 40, el mes son 168 h pero pagás solo 150 — descuento por plazo. IVA incluido.`
+            : `Por día, por 4 días (semana) o por 13 días (mes). A mayor plazo, mejor precio. Todos con IVA incluido.`}
         </p>
       </div>
 

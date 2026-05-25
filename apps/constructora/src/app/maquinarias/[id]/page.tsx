@@ -388,8 +388,8 @@ export default async function MaquinariaDetailPage({
               )}
             </div>
 
-            {/* Right: Pricing + CTA */}
-            <div className="space-y-6">
+            {/* Right: Pricing + CTA — gaps comprimidos (audit feedback) */}
+            <div className="space-y-4">
               {/* Pricing Tiers — tabs día/semana/mes con desglose IVA + CTAs */}
               {desdePrecio !== null && machine.tarifa_neta ? (
                 <PricingTiers

@@ -278,13 +278,8 @@ export default async function MaquinariasPage({
         </div>
       </section>
 
-      {/* Categorías visuales */}
-      <CategoriasShowcase
-        counts={counts}
-        variant="light"
-        title="Por categoría"
-        subtitle="Cinco tipos de equipo · flota propia con mantención al día."
-      />
+      {/* Categorías visuales — versión compact para no robar protagonismo del listing */}
+      <CategoriasShowcase counts={counts} variant="light" compact showHeader={false} />
 
       {/* Catalog */}
       <section className="pt-2 pb-12 lg:pb-20 bg-gray-50" id="catalogo">

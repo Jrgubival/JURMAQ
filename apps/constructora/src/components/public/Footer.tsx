@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { LEGAL_INFO } from "@jurmaq/shared/seo";
+import CuentaLinks from "./CuentaLinks";
 
 /**
  * Footer constructora — Editorial Luxury.
@@ -34,15 +36,7 @@ const COLS = [
       { href: "https://barraca.jurmaq.cl", label: "Barraca de fierros" },
     ],
   },
-  {
-    label: "Mi cuenta",
-    links: [
-      { href: "/cuenta", label: "Iniciar sesión" },
-      { href: "/cuenta/cotizaciones", label: "Mis cotizaciones" },
-      { href: "/cuenta/contratos", label: "Mis contratos" },
-      { href: "/cuenta/garantias", label: "Garantías" },
-    ],
-  },
+  // "Mi cuenta" rendered separately via <CuentaLinks /> (auth-aware client)
 ];
 
 export default function Footer() {
@@ -102,13 +96,15 @@ export default function Footer() {
                 </ul>
               </div>
             ))}
+            {/* Mi cuenta — auth-aware, client component */}
+            <CuentaLinks />
           </nav>
         </div>
 
         {/* Bottom row — hairline */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} JURMAQ Constructora SpA · 27 años en la Región del Maule
+            © {new Date().getFullYear()} {LEGAL_INFO.brands.constructora.nombre} · RUT {LEGAL_INFO.rut} · {LEGAL_INFO.brands.constructora.direccion}
           </p>
           <ul className="flex flex-wrap gap-6 text-xs text-gray-500">
             <li>

@@ -14,7 +14,6 @@ import WhatsappLink from '@/components/public/WhatsappLink';
 const NAV_LINKS = [
   { href: '/maquinarias', label: 'Maquinarias' },
   { href: '/como-funciona', label: 'Cómo Funciona' },
-  { href: '/arriendo-en/curico', label: 'Arriendo Maule' },
   { href: 'https://barraca.jurmaq.cl', label: 'Barraca', external: true },
   { href: '/contacto', label: 'Contacto' },
 ];

@@ -77,6 +77,9 @@ interface Props {
   title?: string;
   subtitle?: string;
   showHeader?: boolean;
+  /** Versión compacta para usar como nav auxiliar dentro de pages de listing
+   *  (no como hero section). Reduce padding, grid 3→6 cols, aspect square. */
+  compact?: boolean;
 }
 
 export default function CategoriasShowcase({
@@ -85,15 +88,21 @@ export default function CategoriasShowcase({
   title = 'Nuestras máquinas',
   subtitle = 'Flota propia con mantención al día — disponibles para arriendo con o sin operador en toda la Región del Maule.',
   showHeader = true,
+  compact = false,
 }: Props) {
   const isDark = variant === 'dark';
+  const sectionPadding = compact ? 'py-8 lg:py-10' : 'py-20 lg:py-28';
+  const gridCols = compact
+    ? 'grid grid-cols-3 md:grid-cols-6 gap-2 lg:gap-3'
+    : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 lg:gap-6';
+  const aspectClass = compact ? 'aspect-square' : 'aspect-[4/3]';
 
   return (
     <section
-      className={`py-20 lg:py-28 ${isDark ? 'bg-navy-950' : 'bg-[#FBFBFA]'} content-auto`}
+      className={`${sectionPadding} ${isDark ? 'bg-navy-950' : 'bg-[#FBFBFA]'} content-auto`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {showHeader && (
+        {showHeader && !compact && (
           <div className="mb-12 lg:mb-16 max-w-3xl">
             <p className={`text-[10px] font-semibold uppercase tracking-[0.22em] mb-4 ${isDark ? 'text-white/55' : 'text-[#787774]'}`}>
               Flota JURMAQ · 2026
@@ -116,7 +125,7 @@ export default function CategoriasShowcase({
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div className={gridCols}>
           {CATEGORIAS.map((cat) => {
             const count = counts[cat.tipo];
             return (
@@ -129,8 +138,8 @@ export default function CategoriasShowcase({
                     : 'border-[#EAEAEA] bg-white hover:border-[#111111]'
                 }`}
               >
-                {/* Foto — aspect-[4/3] estilo Sodimac/Prodalam */}
-                <div className={`relative aspect-[4/3] w-full overflow-hidden ${isDark ? 'bg-navy-950' : 'bg-[#F7F6F3]'}`}>
+                {/* Foto — aspect-[4/3] en versión hero, aspect-square en compacta */}
+                <div className={`relative ${aspectClass} w-full overflow-hidden ${isDark ? 'bg-navy-950' : 'bg-[#F7F6F3]'}`}>
                   <Image
                     src={cat.imagen}
                     alt={`${cat.label} JURMAQ — arriendo en Curicó y Región del Maule`}
@@ -152,21 +161,23 @@ export default function CategoriasShowcase({
                 </div>
 
                 {/* Label */}
-                <div className="px-5 py-4 lg:px-6 lg:py-5">
+                <div className={compact ? 'px-2 py-2 lg:px-3 lg:py-2.5' : 'px-5 py-4 lg:px-6 lg:py-5'}>
                   <h3
-                    className={`text-base lg:text-lg font-medium tracking-[-0.005em] ${
+                    className={`${compact ? 'text-[11px] lg:text-xs' : 'text-base lg:text-lg'} font-medium tracking-[-0.005em] leading-tight ${
                       isDark ? 'text-white' : 'text-[#111111]'
                     }`}
                   >
                     {cat.label}
                   </h3>
-                  <p
-                    className={`text-sm mt-1 ${
-                      isDark ? 'text-gray-400' : 'text-[#787774]'
-                    }`}
-                  >
-                    {cat.subtitle}
-                  </p>
+                  {!compact && (
+                    <p
+                      className={`text-sm mt-1 ${
+                        isDark ? 'text-gray-400' : 'text-[#787774]'
+                      }`}
+                    >
+                      {cat.subtitle}
+                    </p>
+                  )}
                 </div>
               </Link>
             );

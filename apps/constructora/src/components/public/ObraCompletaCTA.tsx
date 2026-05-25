@@ -24,7 +24,7 @@ export default function ObraCompletaCTA({ source = 'maquinaria_detail' }: Props)
   );
 
   return (
-    <section className="bg-[#FBFBFA] hairline rounded-[16px] p-8 lg:p-10">
+    <section className="bg-[#FBFBFA] hairline rounded-[16px] p-6 lg:p-7">
       <p className="eyebrow mb-4">Mejora precio · obra completa o multi-arriendo</p>
 
       <h3

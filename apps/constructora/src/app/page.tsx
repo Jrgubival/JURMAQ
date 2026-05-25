@@ -211,25 +211,38 @@ export default async function HomePage() {
             </p>
             </div>
 
-          {/* Prose-form facts (reemplaza hero-metric template banned por impeccable).
-              Números inline en Newsreader italic gold, no como big-number-small-label.
-              Datos orgánicos verificables, no round-numbers sintéticos. */}
-          <div className="mt-14 lg:mt-20 pt-8 border-t border-navy-800 max-w-[58ch] space-y-5 text-base lg:text-lg text-gray-200 leading-relaxed">
-            <p>
-              Llevamos{' '}
-              <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
-                27
-              </span>{' '}
-              años en la Región del Maule, construyendo obras industriales para Nestlé,
-              Miguel Torres, Iansagro, Surfrut y Cementos Biobío.
-            </p>
-            <p>
-              Hemos ejecutado más de{' '}
-              <span className="font-[var(--font-serif)] italic text-gold-500 text-[1.45em] align-baseline tabular-nums" style={{ fontWeight: 500 }}>
-                UF 139K
-              </span>{' '}
-              en proyectos documentados. Desde plantas industriales hasta
-              ampliaciones, con presupuesto cerrado y plazos cumplidos.
+          {/* Trayectoria — KPIs editoriales en lista divisible + prose limpio abajo.
+              Reemplaza la versión anterior con números inline text-[1.45em] que
+              rompía baseline. Números en serif italic gold como KPI dedicado. */}
+          <div className="mt-14 lg:mt-20 pt-10 border-t border-navy-800">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8 max-w-2xl">
+              <div>
+                <dd
+                  className="font-[var(--font-serif)] italic text-gold-500 tabular-nums leading-none"
+                  style={{ fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
+                >
+                  27
+                </dd>
+                <dt className="text-[10px] font-semibold text-white/55 uppercase tracking-[0.22em] mt-3">
+                  Años en el Maule
+                </dt>
+              </div>
+              <div>
+                <dd
+                  className="font-[var(--font-serif)] italic text-gold-500 tabular-nums leading-none"
+                  style={{ fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
+                >
+                  UF 139K
+                </dd>
+                <dt className="text-[10px] font-semibold text-white/55 uppercase tracking-[0.22em] mt-3">
+                  En proyectos documentados
+                </dt>
+              </div>
+            </dl>
+            <p className="mt-8 max-w-[58ch] text-base lg:text-lg text-gray-200 leading-relaxed">
+              Construimos obras industriales para Nestlé, Miguel Torres, Iansagro, Surfrut
+              y Cementos Biobío. Desde plantas industriales hasta ampliaciones, con
+              presupuesto cerrado y plazos cumplidos.
             </p>
           </div>
         </div>
@@ -438,10 +451,13 @@ export default async function HomePage() {
                         </div>
                       </div>
                       <Link
-                        href="/contacto"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-navy-950 hover:bg-navy-800 text-white text-sm font-medium rounded-lg transition-colors"
+                        href={`/cotizar-arriendo?maquinariaId=${machine.id}`}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-navy-950 hover:bg-[#111111] text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors"
                       >
-                        Pedir precio
+                        Cotizar online
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M5 12h14M13 5l7 7-7 7" />
+                        </svg>
                       </Link>
                     </div>
                   </div>
