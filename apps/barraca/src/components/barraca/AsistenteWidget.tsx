@@ -70,10 +70,27 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
 ];
 
+import CartAddedCard, { type CartAddedUi } from "@/components/barraca/CartAddedCard";
+
+type ChatMessageUi = CartAddedUi; // discriminated union para futuros tipos
+
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: number;
+  /** UI rich payload (ej. cart_added) emitido por ADIA tools */
+  ui?: ChatMessageUi;
+}
+
+/** Lee sessionId del carrito barraca desde localStorage. Mismo mecanismo que
+ *  ProductCard / PromotedProductCard usan para POST a /api/carrito. */
+function getCartSessionId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem("barraca_session") ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export default function AsistenteWidget() {
@@ -116,9 +133,14 @@ export default function AsistenteWidget() {
     setInput("");
 
     try {
+      const sid = getCartSessionId();
       const res = await fetch("/api/asistente/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          // Pasar sessionId para que tool_agregar_al_carrito sepa de qué cliente es.
+          ...(sid ? { "X-Session-Id": sid } : {}),
+        },
         body: JSON.stringify({
           message: msg,
           history: messages.slice(-6).map((m) => ({ role: m.role, content: m.content })),
@@ -128,10 +150,21 @@ export default function AsistenteWidget() {
       if (!res.ok) {
         setError(data.error || "Error en el servidor");
       } else {
+        // Si tool agregó al carrito, ADIA emitió `data.ui = { kind: 'cart_added', ... }`
+        // → guardamos en el mensaje y avisamos al navbar para refrescar el badge.
+        const ui: ChatMessageUi | undefined =
+          data.ui && data.ui.kind === "cart_added" ? (data.ui as CartAddedUi) : undefined;
+
         setMessages([
           ...newHistory,
-          { role: "assistant", content: data.reply, timestamp: Date.now() },
+          { role: "assistant", content: data.reply, timestamp: Date.now(), ui },
         ]);
+
+        if (ui) {
+          try {
+            window.dispatchEvent(new Event("cart-updated"));
+          } catch { /* no-op */ }
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error de red");
@@ -250,17 +283,24 @@ export default function AsistenteWidget() {
               {/* Conversation */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-2">
                 {messages.map((m, i) => (
-                  <div
-                    key={i}
-                    className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
+                  <div key={i}>
                     <div
-                      className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${
-                        m.role === "user" ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-900"
-                      }`}
+                      className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                     >
-                      {m.content}
+                      <div
+                        className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap ${
+                          m.role === "user" ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-900"
+                        }`}
+                      >
+                        {m.content}
+                      </div>
                     </div>
+                    {/* Rich UI card si ADIA agregó al carrito */}
+                    {m.ui?.kind === "cart_added" && (
+                      <div className="flex justify-start mt-2">
+                        <CartAddedCard ui={m.ui} />
+                      </div>
+                    )}
                   </div>
                 ))}
                 {loading && (

@@ -1,16 +1,20 @@
 /**
  * POST /api/asistente/chat
  *
- * Asistente conversacional híbrido: rule-based + Gemini Flash.
+ * Asistente conversacional ADIA con fallback automático entre providers IA.
  *
- * Configuración requerida:
- *   GEMINI_API_KEY en .env.local (free tier: 15 req/min, 1.500 req/día)
- *   Conseguir en https://aistudio.google.com/apikey
+ * Providers:
+ *   - GEMINI_API_KEY (primario): Gemini 2.0 Flash free tier — 15 req/min,
+ *     1.500 req/día, 1M context, mejor español, function calling maduro.
+ *   - GROQ_API_KEY (fallback): Llama-3.3-70B Versatile — 30 req/min,
+ *     14.4K req/día, ~200ms latencia, OpenAI-compat tool calling.
  *
- * Si GEMINI_API_KEY no está configurada, retorna respuestas pre-programadas.
+ * Cuando Gemini devuelve 429 (quota) o 5xx (downtime), automáticamente
+ * intentamos con Groq. Sin keys → respuesta canned con link WhatsApp.
  *
  * Tools disponibles (server-side):
  *   - buscar_producto(query): busca en barraca_productos
+ *   - agregar_al_carrito({producto_id, cantidad}): agrega al carrito del cliente
  *   - calcular_cemento({m2, espesor_cm}): cement bags
  *   - calcular_fierro({m2}): kg fierro
  *   - derivar_humano(motivo): retorna mensaje "consultá WhatsApp"
@@ -19,6 +23,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { isValidOrigin, sanitizeString, escapeOrFilter } from '@jurmaq/shared/sanitize';
+import { callAI, type AiToolDef, type AiToolHandler } from '@/lib/ai-provider';
 
 const SYSTEM_PROMPT = `Eres ADIA, asistente digital de JURMAQ Barraca — barraca de fierros y materiales de construcción en Curicó y Molina, Región del Maule, Chile.
 
@@ -73,7 +78,14 @@ SEGURIDAD (no negociable):
   texto plano — no formatees con tags.
 
 TOOLS DISPONIBLES:
-- buscar_producto(query): busca productos por nombre o tipo en el catálogo.
+- buscar_producto(query): busca productos por nombre o tipo. Retorna id, slug,
+  precio, unidad, medida y en_stock. SIEMPRE necesitás llamarla antes de
+  agregar_al_carrito (porque necesitás el id).
+- agregar_al_carrito({producto_id, cantidad}): AGREGA producto al carrito del
+  cliente. SOLO usar después de:
+    1) Haber llamado buscar_producto y mostrado el resultado al cliente.
+    2) Haber recibido confirmación EXPLÍCITA ("sí agregalo", "quiero 2 sacos").
+  NO agregues sin confirmación. NO inventes IDs.
 - calcular_cemento({m2, espesor_cm}): sacos de cemento para una losa/radier.
 - calcular_fierro({m2}): kg de fierro estriado para una losa armada estándar.
 - derivar_humano(motivo): cuando necesitás atención humana / WhatsApp.
@@ -86,6 +98,13 @@ EJEMPLOS:
   → calcular_cemento({m2: 20, espesor_cm: 8})
 - Cliente: "qué precio tiene el fierro estriado 10mm"
   → buscar_producto("fierro estriado 10mm")
+- Cliente: "quiero 2 sacos de cemento Polpaico"
+  → PASO 1: buscar_producto("cemento Polpaico")
+  → mostrar los matches: "Encontré Cemento Polpaico Especial 25kg a $X
+     y Cemento Polpaico Tradicional 42.5kg a $Y. ¿Cuál querés y confirmás
+     que agregue 2 al carrito?"
+  → PASO 2 (tras confirmación): agregar_al_carrito({producto_id: N, cantidad: 2})
+  → respuesta corta: "Listo, agregué 2 sacos al carrito. ¿Querés algo más?"
 - Cliente: "tienen disponibilidad de bolones para mañana?"
   → derivar_humano("consulta de stock + urgencia despacho")
 - Cliente: "tengo cotización de Sodimac, me la mejoran?"
@@ -108,10 +127,7 @@ interface ChatMessage {
 
 async function tool_buscar_producto(query: string): Promise<string> {
   // SECURITY (audit fase 2C.2): escapamos la query del LLM antes de meterla
-  // en .or() para evitar PostgREST filter injection. Pre-fix un atacante via
-  // prompt injection podía hacer `Gemini → tool_buscar_producto("foo),id.eq.1,(")`
-  // y extraer columnas arbitrarias. escapeOrFilter quita coma/paréntesis y
-  // escapa los wildcards LIKE.
+  // en .or() para evitar PostgREST filter injection.
   const safeQuery = escapeOrFilter(
     typeof query === 'string' ? query.slice(0, 80) : ''
   );
@@ -121,13 +137,12 @@ async function tool_buscar_producto(query: string): Promise<string> {
 
   const { data, error } = await supabaseAdmin
     .from('barraca_productos_public')
-    .select('nombre, precio, precio_original, en_oferta, unidad, medida')
+    .select('id, nombre, slug, precio, precio_original, en_oferta, unidad, medida, stock')
     .or(`nombre.ilike.%${safeQuery}%,descripcion.ilike.%${safeQuery}%`)
     .eq('activo', true)
     .limit(3);
 
   if (error) {
-    // No exponer detalles del error al LLM (pueden leak schema)
     console.error('[asistente.tool_buscar_producto] DB error', error);
     return JSON.stringify({ error: 'No pude consultar el catálogo en este momento.' });
   }
@@ -136,14 +151,133 @@ async function tool_buscar_producto(query: string): Promise<string> {
     return JSON.stringify({ error: 'No encontré productos que coincidan con esa búsqueda.' });
   }
 
+  // IMPORTANTE: incluimos `id` y `slug` ahora — ADIA los usa para invocar
+  // agregar_al_carrito({producto_id: N}) cuando el cliente confirma compra.
   return JSON.stringify({
     productos: data.map((p) => ({
+      id: p.id,
+      slug: p.slug,
       nombre: p.nombre,
       precio: p.precio,
       precio_oferta: p.en_oferta ? p.precio_original : null,
       unidad: p.unidad,
       medida: p.medida,
+      en_stock: (p.stock ?? 0) > 0,
     })),
+  });
+}
+
+/**
+ * tool_agregar_al_carrito — agrega un producto al carrito del cliente actual.
+ *
+ * sessionId debe venir del request (cookie barraca_session o header X-Session-Id)
+ * — lo inyectamos via closure desde el POST handler para no exponerlo a la
+ * lógica del LLM. Si no hay sessionId (cliente sin cookie), devuelve error.
+ *
+ * Validaciones:
+ *   - producto_id entero positivo
+ *   - cantidad entera 1-100 (más estricto que /api/carrito que permite 9999)
+ *   - producto debe existir y estar activo
+ *   - si tiene stock, validar no exceder
+ *
+ * Retorna `meta.ui` (consumido por callAI → response.ui en el endpoint) para
+ * que el frontend renderice una CartAddedCard en el flow del chat.
+ */
+async function tool_agregar_al_carrito(
+  args: { producto_id?: number | string; cantidad?: number | string },
+  sessionId: string | null,
+): Promise<string> {
+  if (!sessionId) {
+    return JSON.stringify({
+      error: 'No tengo tu sesión activa. Recargá la página y volvé a abrirme.',
+    });
+  }
+  const productoId = Number(args.producto_id);
+  const cantidad = Number(args.cantidad ?? 1);
+  if (!Number.isInteger(productoId) || productoId <= 0) {
+    return JSON.stringify({ error: 'producto_id inválido' });
+  }
+  if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > 100) {
+    return JSON.stringify({ error: 'cantidad debe ser entre 1 y 100' });
+  }
+
+  // Verificar producto existe + obtener datos para UI card
+  const { data: producto, error: pErr } = await supabaseAdmin
+    .from('barraca_productos_public')
+    .select('id, nombre, slug, precio, imagen, unidad, stock')
+    .eq('id', productoId)
+    .eq('activo', true)
+    .maybeSingle();
+
+  if (pErr || !producto) {
+    return JSON.stringify({ error: 'Producto no encontrado o no disponible.' });
+  }
+  if ((producto.stock ?? 0) > 0 && cantidad > Number(producto.stock)) {
+    return JSON.stringify({
+      error: `Solo tenemos ${producto.stock} unidades de "${producto.nombre}". ¿Querés que agregue esa cantidad?`,
+    });
+  }
+
+  // Upsert en carrito (busca item existente, suma cantidad si ya está)
+  const { data: existente } = await supabaseAdmin
+    .from('barraca_carrito_items')
+    .select('id, cantidad')
+    .eq('sesion_id', sessionId)
+    .eq('producto_id', productoId)
+    .maybeSingle();
+
+  if (existente) {
+    const nuevaCantidad = Number(existente.cantidad) + cantidad;
+    await supabaseAdmin
+      .from('barraca_carrito_items')
+      .update({ cantidad: nuevaCantidad })
+      .eq('id', existente.id);
+  } else {
+    await supabaseAdmin
+      .from('barraca_carrito_items')
+      .insert({
+        sesion_id: sessionId,
+        producto_id: productoId,
+        cantidad,
+        precio_unitario: Number(producto.precio),
+      });
+  }
+
+  // Total carrito post-add
+  const { data: totalItems } = await supabaseAdmin
+    .from('barraca_carrito_items')
+    .select('cantidad, precio_unitario')
+    .eq('sesion_id', sessionId);
+  const totalCarrito = (totalItems ?? []).reduce(
+    (s, it) => s + Number(it.cantidad) * Number(it.precio_unitario),
+    0,
+  );
+  const totalCantidad = (totalItems ?? []).reduce(
+    (s, it) => s + Number(it.cantidad),
+    0,
+  );
+
+  // El campo `meta.ui` es consumido por callAI() y propagado al endpoint para
+  // que el frontend renderice <CartAddedCard /> en el flow del chat.
+  return JSON.stringify({
+    ok: true,
+    mensaje: `Listo, agregué ${cantidad} ${producto.unidad || 'unidad(es)'} de "${producto.nombre}" al carrito.`,
+    meta: {
+      ui: {
+        kind: 'cart_added',
+        producto: {
+          id: producto.id,
+          slug: producto.slug,
+          nombre: producto.nombre,
+          precio: Number(producto.precio),
+          imagen: producto.imagen,
+          unidad: producto.unidad,
+        },
+        cantidad,
+        total_carrito: totalCarrito,
+        total_items_carrito: totalCantidad,
+      },
+    },
   });
 }
 
@@ -195,140 +329,70 @@ function tool_derivar_humano(motivo: string): string {
 // Gemini call
 // ---------------------------------------------------------------------------
 
-interface GeminiTool {
-  function_declarations: {
-    name: string;
-    description: string;
+const TOOL_DEFS: AiToolDef[] = [
+  {
+    name: 'buscar_producto',
+    description:
+      'Busca productos en la barraca por nombre o tipo. Retorna hasta 3 productos con id, slug, nombre, precio, unidad, medida y en_stock. El id es necesario para llamar agregar_al_carrito después.',
     parameters: {
-      type: 'object';
-      properties: Record<string, { type: string; description?: string }>;
-      required?: string[];
-    };
-  }[];
-}
-
-const GEMINI_TOOLS: GeminiTool[] = [{
-  function_declarations: [
-    {
-      name: 'buscar_producto',
-      description: 'Busca productos en la barraca por nombre o tipo. Usa cuando el cliente pregunta por precio, disponibilidad de un material.',
-      parameters: {
-        type: 'object',
-        properties: {
-          query: { type: 'string', description: 'Texto a buscar (ej: "fierro 10mm", "cemento")' },
-        },
-        required: ['query'],
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Texto a buscar (ej: "fierro 10mm", "cemento")' },
       },
+      required: ['query'],
     },
-    {
-      name: 'calcular_cemento',
-      description: 'Calcula sacos de cemento + arena + gravilla necesarios para una losa o radier.',
-      parameters: {
-        type: 'object',
-        properties: {
-          m2: { type: 'number', description: 'Superficie en metros cuadrados' },
-          espesor_cm: { type: 'number', description: 'Espesor de la losa en centímetros' },
+  },
+  {
+    name: 'agregar_al_carrito',
+    description:
+      'Agrega un producto al carrito del cliente. Llamar SOLO después de que el cliente confirme explícitamente la compra (ej: "sí agregalo", "quiero 2 sacos"). Antes, mostrale el producto encontrado con precio y pediendo confirmación.',
+    parameters: {
+      type: 'object',
+      properties: {
+        producto_id: {
+          type: 'integer',
+          description: 'ID del producto a agregar (obtenido de buscar_producto)',
         },
-        required: ['m2', 'espesor_cm'],
+        cantidad: { type: 'integer', description: 'Cantidad entre 1 y 100' },
       },
+      required: ['producto_id', 'cantidad'],
     },
-    {
-      name: 'calcular_fierro',
-      description: 'Calcula kg de fierro estriado necesarios para armar una losa.',
-      parameters: {
-        type: 'object',
-        properties: {
-          m2: { type: 'number', description: 'Superficie en metros cuadrados' },
-        },
-        required: ['m2'],
+  },
+  {
+    name: 'calcular_cemento',
+    description: 'Calcula sacos de cemento + arena + gravilla necesarios para una losa o radier.',
+    parameters: {
+      type: 'object',
+      properties: {
+        m2: { type: 'number', description: 'Superficie en metros cuadrados' },
+        espesor_cm: { type: 'number', description: 'Espesor de la losa en centímetros' },
       },
+      required: ['m2', 'espesor_cm'],
     },
-    {
-      name: 'derivar_humano',
-      description: 'Cuando la consulta requiere atención humana (stock real, condiciones especiales, problemas).',
-      parameters: {
-        type: 'object',
-        properties: {
-          motivo: { type: 'string', description: 'Por qué se deriva' },
-        },
-        required: ['motivo'],
+  },
+  {
+    name: 'calcular_fierro',
+    description: 'Calcula kg de fierro estriado necesarios para armar una losa.',
+    parameters: {
+      type: 'object',
+      properties: {
+        m2: { type: 'number', description: 'Superficie en metros cuadrados' },
       },
+      required: ['m2'],
     },
-  ],
-}];
-
-async function callGemini(messages: ChatMessage[], apiKey: string): Promise<string> {
-  // Convert to Gemini format
-  const contents = messages
-    .filter((m) => m.role !== 'system')
-    .map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }));
-
-  const body = {
-    contents,
-    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-    tools: GEMINI_TOOLS,
-    generationConfig: {
-      maxOutputTokens: 800,
-      temperature: 0.3,
+  },
+  {
+    name: 'derivar_humano',
+    description: 'Cuando la consulta requiere atención humana (stock real, condiciones especiales, problemas).',
+    parameters: {
+      type: 'object',
+      properties: {
+        motivo: { type: 'string', description: 'Por qué se deriva' },
+      },
+      required: ['motivo'],
     },
-  };
-
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
-  );
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini ${res.status}: ${errText.substring(0, 200)}`);
-  }
-
-  const data = await res.json();
-  const candidate = data.candidates?.[0];
-  if (!candidate) throw new Error('Gemini sin candidato');
-
-  // Tool calls
-  const funcCall = candidate.content?.parts?.find((p: { functionCall?: unknown }) => p.functionCall);
-  if (funcCall?.functionCall) {
-    const { name, args } = funcCall.functionCall as { name: string; args: Record<string, unknown> };
-    let toolResult = '';
-    if (name === 'buscar_producto') {
-      toolResult = await tool_buscar_producto(String(args.query || ''));
-    } else if (name === 'calcular_cemento') {
-      toolResult = tool_calcular_cemento(args as { m2: number; espesor_cm: number });
-    } else if (name === 'calcular_fierro') {
-      toolResult = tool_calcular_fierro(args as { m2: number });
-    } else if (name === 'derivar_humano') {
-      toolResult = tool_derivar_humano(String(args.motivo || 'consulta general'));
-    } else {
-      toolResult = JSON.stringify({ error: `Tool ${name} no implementada` });
-    }
-
-    // Re-call Gemini with tool result
-    const followUp = {
-      ...body,
-      contents: [
-        ...contents,
-        { role: 'model', parts: [{ functionCall: funcCall.functionCall }] },
-        { role: 'user', parts: [{ functionResponse: { name, response: { result: toolResult } } }] },
-      ],
-    };
-    const res2 = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(followUp) },
-    );
-    const data2 = await res2.json();
-    const text = data2.candidates?.[0]?.content?.parts?.find((p: { text?: string }) => p.text)?.text;
-    return text || 'No pude generar respuesta.';
-  }
-
-  // Plain text response
-  const text = candidate.content?.parts?.find((p: { text?: string }) => p.text)?.text;
-  return text || 'No pude generar respuesta.';
-}
+  },
+];
 
 // ---------------------------------------------------------------------------
 // POST handler
@@ -371,19 +435,47 @@ export async function POST(request: NextRequest) {
 
     const messages: ChatMessage[] = [...history, { role: 'user', content: userMessage }];
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    // sessionId del cliente: cookie httpOnly 'barraca_session' o header X-Session-Id
+    // (el AsistenteWidget envía X-Session-Id). Lo capturamos para inyectar en
+    // tool_agregar_al_carrito vía closure — no se expone al LLM.
+    const sessionId =
+      request.cookies.get('barraca_session')?.value ??
+      request.headers.get('x-session-id') ??
+      null;
 
-    // Fallback: sin API key, respuesta canned
-    if (!apiKey) {
-      return NextResponse.json({
-        reply: 'Aún no tengo IA configurada. Mientras tanto, contáctanos por WhatsApp al +56 9 1234 5678 para asistencia personalizada.',
-        canned: true,
-      });
-    }
+    let uiPayload: unknown = undefined;
 
-    const reply = await callGemini(messages, apiKey);
+    const result = await callAI({
+      systemPrompt: SYSTEM_PROMPT,
+      messages,
+      tools: TOOL_DEFS,
+      toolHandlers: {
+        buscar_producto: async (args) => tool_buscar_producto(String(args.query || '')),
+        agregar_al_carrito: async (args) =>
+          tool_agregar_al_carrito(
+            args as { producto_id?: number | string; cantidad?: number | string },
+            sessionId,
+          ),
+        calcular_cemento: ((args) =>
+          tool_calcular_cemento(args as { m2: number; espesor_cm: number })) as AiToolHandler,
+        calcular_fierro: ((args) =>
+          tool_calcular_fierro(args as { m2: number })) as AiToolHandler,
+        derivar_humano: ((args) =>
+          tool_derivar_humano(String((args as { motivo?: string }).motivo || 'consulta general'))) as AiToolHandler,
+      },
+      onToolUi: (_name, parsed) => {
+        if (parsed && typeof parsed === 'object' && 'meta' in parsed) {
+          const meta = (parsed as { meta?: { ui?: unknown } }).meta;
+          if (meta?.ui) uiPayload = meta.ui;
+        }
+      },
+    });
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({
+      reply: result.text,
+      ui: uiPayload ?? result.ui,
+      provider: result.provider,
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[asistente-chat]', msg);
