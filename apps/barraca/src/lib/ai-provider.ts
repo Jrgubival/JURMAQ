@@ -187,13 +187,18 @@ async function callGemini(
 // Groq caller (OpenAI-compatible API)
 // ---------------------------------------------------------------------------
 
-// llama-3.3-70b-versatile = 70B params, 128K context, soporta tool calling
-// custom, free tier 30 RPM / 6K TPM. Es el modelo más capaz de Groq que
-// acepta function calling — usamos esto en lugar de groq/compound (que es
-// agentic y NO permite tools custom del cliente, solo tools internas como
-// web search). Comprobado 2026-05-27 con error 400 "tool calling is not
-// supported with this model" para groq/compound.
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+// llama-3.1-8b-instant = 8B params, 128K context, soporta tool calling
+// custom. **Elegido por máxima durabilidad en free tier**:
+//   - 14.400 req/día (14x más que llama-3.3-70b o llama-4-scout)
+//   - 500K tokens/día (5x más que llama-3.3-70b)
+//   - ~200ms latencia (mejor UX que modelos más grandes)
+// Para ADIA con 5 tools simples (buscar_producto, calcular_cemento, etc.)
+// es más que suficiente. Si queremos más capacidad de razonamiento más
+// adelante, podemos subir a llama-4-scout-17b o llama-3.3-70b (ambos
+// también con tool calling, pero menos requests/día disponibles).
+//
+// NO usar groq/compound* (modelos agentic que NO aceptan tools custom).
+const GROQ_MODEL = "llama-3.1-8b-instant";
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
 async function callGroq(
