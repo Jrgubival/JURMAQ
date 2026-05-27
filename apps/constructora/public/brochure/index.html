@@ -2,6 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<!-- Fix paths relativos: Next.js redirige /brochure/ → /brochure (sin trailing
+     slash), por lo que los "img/X.jpg" relativos se resolvían contra root
+     del sitio (/img/X.jpg = 404) en vez de /brochure/img/X.jpg. Con <base>
+     todos los paths relativos se anclan a /brochure/ explícitamente. -->
+<base href="/brochure/">
 <title>Brochure Corporativo · Constructora JURMAQ E.I.R.L.</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
