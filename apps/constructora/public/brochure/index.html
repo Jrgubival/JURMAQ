@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Brochure Corporativo · Constructora JURMAQ E.I.R.L.</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  /* ===== RESET / BASE ===== */
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{font-family:'Inter',sans-serif;color:#1F2937;background:#E5E5E5;line-height:1.5;font-size:11.5pt}
+
+  /* ===== HOJA A4 ===== */
+  @page{size:A4;margin:0}
+  .hoja{
+    width:210mm;height:297mm;
+    margin:8mm auto;
+    background:#fff;
+    box-shadow:0 4px 20px rgba(0,0,0,.1);
+    page-break-after:always;
+    break-after:page;
+    page-break-inside:avoid;
+    break-inside:avoid;
+    overflow:hidden;
+    position:relative;
+    box-sizing:border-box;
+  }
+  .hoja:last-child{page-break-after:auto;break-after:auto}
+  .portada,.contacto-wrap{height:297mm !important;max-height:297mm;overflow:hidden}
+
+  /* ===== TIPOGRAFÍA ===== */
+  .display{font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;line-height:.95}
+  .sub{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+  .body{font-family:'Inter',sans-serif}
+
+  /* ===== HELPERS ===== */
+  .orange{color:#E67E22}
+  .ink{color:#1F2937}
+  .muted{color:#6B7280}
+  .bg-ink{background:#1F2937;color:#fff}
+  .bg-orange{background:#E67E22;color:#fff}
+  .bg-cream{background:#FAF7F2}
+  .filete{height:3px;background:#E67E22;width:60px;display:inline-block}
+  .filete-w{background:#fff !important}
+
+  /* ===== PÁGINA 1 — PORTADA ===== */
+  .portada{display:flex;flex-direction:column;height:100%}
+  .portada-top{flex:0 0 38%;background:#1F2937;color:#fff;padding:28mm 22mm 0;position:relative;overflow:hidden}
+  .portada-top::before{content:"";position:absolute;right:-40mm;top:-40mm;width:120mm;height:120mm;border:1px solid rgba(230,126,34,.25);border-radius:50%}
+  .portada-top::after{content:"";position:absolute;right:-20mm;bottom:-30mm;width:80mm;height:80mm;border:1px solid rgba(255,255,255,.06);border-radius:50%}
+  .portada-eyebrow{font-family:'Barlow Condensed',sans-serif;font-weight:500;letter-spacing:.3em;font-size:10pt;color:#E67E22;text-transform:uppercase;margin-bottom:8mm}
+  .portada-titulo{font-family:'Bebas Neue',sans-serif;font-size:78pt;line-height:.9;letter-spacing:.05em;color:#fff}
+  .portada-titulo .orange{color:#E67E22}
+  .portada-sub{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:14pt;letter-spacing:.2em;color:#9CA3AF;text-transform:uppercase;margin-top:6mm}
+  .portada-hero{flex:1;position:relative;overflow:hidden;background:#1F2937}
+  .portada-hero img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.05) brightness(.92)}
+  .portada-overlay{position:absolute;left:0;right:0;bottom:0;padding:14mm 22mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.85) 100%);color:#fff}
+  .portada-overlay .lema{font-family:'Bebas Neue',sans-serif;font-size:24pt;letter-spacing:.06em;line-height:1}
+  .portada-overlay .lema span{color:#E67E22}
+  .portada-overlay .anyo{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:9pt;color:#FAF7F2;text-transform:uppercase;margin-top:3mm}
+
+  /* ===== PÁGINA INTERIOR — LAYOUT GENERAL ===== */
+  .pagina{padding:18mm 18mm 14mm;display:flex;flex-direction:column;height:100%}
+  .pagina-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:8mm;margin-bottom:8mm;border-bottom:1px solid #E5E5E5}
+  .pagina-header .h-marca{font-family:'Bebas Neue',sans-serif;font-size:14pt;letter-spacing:.08em}
+  .pagina-header .h-num{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.2em;font-size:9pt;color:#6B7280;text-transform:uppercase}
+  .pagina-footer{margin-top:auto;padding-top:6mm;border-top:1px solid #E5E5E5;display:flex;justify-content:space-between;align-items:center;font-family:'Barlow Condensed',sans-serif;font-weight:500;letter-spacing:.15em;font-size:8.5pt;color:#9CA3AF;text-transform:uppercase}
+  .pagina-footer .web{color:#E67E22;font-weight:600}
+
+  .seccion-eyebrow{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.3em;font-size:9.5pt;color:#E67E22;text-transform:uppercase;margin-bottom:4mm}
+  .seccion-titulo{font-family:'Bebas Neue',sans-serif;font-size:42pt;letter-spacing:.04em;line-height:.95;color:#1F2937;margin-bottom:6mm}
+  .seccion-bajada{font-size:11pt;line-height:1.6;color:#374151;max-width:155mm}
+
+  /* ===== PÁGINA 2 — QUIÉNES SOMOS ===== */
+  .quienes-grid{display:grid;grid-template-columns:1fr;gap:6mm;flex:1}
+  .quienes-intro p{margin-bottom:4mm;font-size:11pt;line-height:1.65;color:#374151;text-align:justify}
+  .quienes-intro p strong{color:#1F2937;font-weight:600}
+  .quienes-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm;margin:6mm 0 4mm}
+  .stat{background:#FAF7F2;padding:6mm 4mm;border-left:3px solid #E67E22}
+  .stat .num{font-family:'Bebas Neue',sans-serif;font-size:34pt;line-height:1;color:#1F2937;letter-spacing:.02em}
+  .stat .lab{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;font-size:8.5pt;color:#6B7280;text-transform:uppercase;margin-top:2mm}
+  .quienes-imagen{flex:1;min-height:80mm;overflow:hidden}
+  .quienes-imagen img{width:100%;height:100%;object-fit:cover}
+
+  /* ===== PÁGINA 3 — ESPECIALIDADES ===== */
+  .esp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5mm;flex:1}
+  .esp-card{background:#FAF7F2;padding:7mm 7mm;border-top:3px solid #E67E22;display:flex;flex-direction:column}
+  .esp-card .num{font-family:'Bebas Neue',sans-serif;font-size:16pt;color:#E67E22;letter-spacing:.05em;margin-bottom:2mm}
+  .esp-card h3{font-family:'Bebas Neue',sans-serif;font-size:22pt;line-height:1;letter-spacing:.03em;color:#1F2937;margin-bottom:4mm}
+  .esp-card ul{list-style:none;padding:0;margin:0}
+  .esp-card li{padding:2mm 0;font-size:10pt;color:#374151;border-bottom:.3px solid rgba(31,41,55,.08);position:relative;padding-left:7mm}
+  .esp-card li:last-child{border-bottom:none}
+  .esp-card li::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3mm;height:.5mm;background:#E67E22}
+
+  /* ===== PÁGINAS 4-5 — SHOWCASE FOTOS ===== */
+  .showcase-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4mm;flex:1}
+  .showcase-grid.gd-3{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr}
+  .show-item{position:relative;overflow:hidden;background:#1F2937}
+  .show-item.big{grid-row:span 2}
+  .show-item img{width:100%;height:100%;object-fit:cover;display:block}
+  .show-cap{position:absolute;left:0;right:0;bottom:0;padding:5mm 6mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.85) 100%);color:#fff}
+  .show-cap .cat{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.2em;font-size:8pt;color:#E67E22;text-transform:uppercase}
+  .show-cap .ttl{font-family:'Bebas Neue',sans-serif;font-size:14pt;letter-spacing:.04em;line-height:1.05;margin-top:1mm}
+
+  /* ===== PÁGINA 6 — EXPERIENCIA ===== */
+  .exp-list{display:flex;flex-direction:column;gap:5mm;flex:1}
+  .exp-item{display:grid;grid-template-columns:38mm 1fr auto;gap:6mm;align-items:start;padding:5mm 0;border-bottom:1px solid #E5E5E5}
+  .exp-item:last-child{border-bottom:none}
+  .exp-cliente{font-family:'Bebas Neue',sans-serif;font-size:18pt;line-height:1;letter-spacing:.03em;color:#1F2937}
+  .exp-cliente .lugar{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:9pt;letter-spacing:.18em;color:#6B7280;text-transform:uppercase;margin-top:2mm}
+  .exp-desc{font-size:10.5pt;line-height:1.55;color:#374151}
+  .exp-anyos{font-family:'Bebas Neue',sans-serif;font-size:28pt;color:#E67E22;line-height:1;letter-spacing:.02em;text-align:right}
+  .exp-anyos .lab{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:8pt;letter-spacing:.2em;color:#6B7280;text-transform:uppercase;margin-top:1mm}
+
+  /* ===== PÁGINA ENFIERRADURA — HERO + GRID ===== */
+  .enf-wrap{display:flex;flex-direction:column;gap:4mm;flex:1}
+  .enf-hero{flex:0 0 100mm;position:relative;overflow:hidden;background:#1F2937}
+  .enf-hero img{width:100%;height:100%;object-fit:cover}
+  .enf-hero .cap{position:absolute;left:0;right:0;bottom:0;padding:6mm 8mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.9) 100%);color:#fff}
+  .enf-hero .cap .cat{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:9pt;color:#E67E22;text-transform:uppercase}
+  .enf-hero .cap .ttl{font-family:'Bebas Neue',sans-serif;font-size:22pt;letter-spacing:.04em;line-height:1.05;margin-top:1mm}
+  .enf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;flex:1}
+  .enf-item{position:relative;overflow:hidden;background:#1F2937}
+  .enf-item img{width:100%;height:100%;object-fit:cover}
+  .enf-item .cap-mini{position:absolute;left:0;right:0;bottom:0;padding:3mm 4mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.85) 100%);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;font-size:7.5pt;text-transform:uppercase}
+
+  /* ===== PÁGINA 9 — ARRIENDO MAQUINARIA (8 equipos oficiales · 4x2) ===== */
+  .arr-intro{margin-bottom:4mm}
+  .arr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;flex:1}
+  .arr-card{background:#fff;border:1px solid #E5E5E5;display:flex;flex-direction:column;overflow:hidden}
+  .arr-foto{height:38mm;background:#FAF7F2;overflow:hidden;position:relative}
+  .arr-foto img.contain{object-fit:contain !important;padding:2mm}
+  .arr-foto img{width:100%;height:100%;object-fit:cover;display:block}
+  .arr-foto .tag{position:absolute;left:0;top:0;background:#E67E22;color:#fff;padding:1.5mm 3mm;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.12em;font-size:7.5pt;text-transform:uppercase}
+  .arr-body{padding:3mm 4mm 3mm;display:flex;flex-direction:column;flex:1}
+  .arr-card h4{font-family:'Bebas Neue',sans-serif;font-size:12.5pt;letter-spacing:.04em;line-height:1.05;color:#1F2937;margin-bottom:1.5mm}
+  .arr-card p{font-size:8.5pt;color:#374151;line-height:1.4}
+  .arr-card .spec{margin-top:auto;padding-top:2mm;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;font-size:7.5pt;color:#6B7280;text-transform:uppercase;border-top:.5px dotted #C9BFB0}
+
+  /* ===== PÁGINA BARRACA DE FIERROS (con fotos reales del local) ===== */
+  .bar-wrap{display:flex;flex-direction:column;gap:3mm;flex:1}
+  .bar-hero{flex:0 0 75mm;position:relative;overflow:hidden;background:#1F2937}
+  .bar-hero img{width:100%;height:100%;object-fit:cover}
+  .bar-hero .cap{position:absolute;left:0;right:0;bottom:0;padding:6mm 8mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.92) 100%);color:#fff}
+  .bar-hero .cap .lab{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:9pt;color:#E67E22;text-transform:uppercase;margin-bottom:2mm}
+  .bar-hero .cap .ubic{font-family:'Bebas Neue',sans-serif;font-size:24pt;letter-spacing:.04em;line-height:1}
+  .bar-hero .cap .desc{font-size:10pt;color:#E5E7EB;line-height:1.5;margin-top:2mm;max-width:120mm}
+  .bar-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
+  .bar-thumb{position:relative;overflow:hidden;background:#1F2937;aspect-ratio:1/1}
+  .bar-thumb img{width:100%;height:100%;object-fit:cover}
+  .bar-thumb .cap-mini{position:absolute;left:0;right:0;bottom:0;padding:2.5mm 3mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.92) 100%);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.12em;font-size:7.5pt;text-transform:uppercase;line-height:1.2}
+  .bar-prov-wrap{background:#1F2937;color:#fff;padding:5mm 6mm;margin-top:auto}
+  .bar-prov-head{display:flex;justify-content:space-between;align-items:center;gap:6mm;padding-bottom:3mm;border-bottom:.5px solid rgba(230,126,34,.3);margin-bottom:3mm}
+  .bar-prov-head .lab{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:8.5pt;color:#E67E22;text-transform:uppercase}
+  .bar-prov-head .badge{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;font-size:8pt;color:#E67E22;border:1px solid #E67E22;padding:2mm 4mm;text-align:center;text-transform:uppercase;white-space:nowrap}
+  .bar-prov-grid{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+  .bar-prov-item .nom{font-family:'Bebas Neue',sans-serif;font-size:14pt;letter-spacing:.04em;line-height:1;color:#fff}
+  .bar-prov-item .det{font-size:8.5pt;color:#D1D5DB;margin-top:1.5mm;line-height:1.5}
+  .arr-cta{margin-top:5mm;padding:5mm 6mm;background:#1F2937;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:6mm}
+  .arr-cta .txt{flex:1}
+  .arr-cta .txt h5{font-family:'Bebas Neue',sans-serif;font-size:16pt;letter-spacing:.04em;line-height:1}
+  .arr-cta .txt p{font-size:9.5pt;color:#D1D5DB;margin-top:2mm}
+  .arr-cta .tel{font-family:'Bebas Neue',sans-serif;font-size:22pt;color:#E67E22;letter-spacing:.03em;white-space:nowrap}
+
+  /* ===== PÁGINA 8 — POR QUÉ JURMAQ + CAPACIDAD ===== */
+  .pilares{display:grid;grid-template-columns:repeat(2,1fr);gap:6mm;flex:1}
+  .pilar{padding:8mm 0 6mm;border-top:2px solid #1F2937}
+  .pilar .num{font-family:'Bebas Neue',sans-serif;font-size:42pt;color:#E67E22;line-height:.9;letter-spacing:.02em}
+  .pilar h4{font-family:'Bebas Neue',sans-serif;font-size:16pt;letter-spacing:.04em;color:#1F2937;margin:3mm 0 2mm;line-height:1.05}
+  .pilar p{font-size:10pt;line-height:1.55;color:#374151}
+
+  /* ===== PÁGINA 9 — CONTACTO ===== */
+  .contacto-wrap{display:flex;flex-direction:column;height:100%}
+  .contacto-top{flex:1;background:#1F2937;color:#fff;padding:22mm 22mm;position:relative;overflow:hidden}
+  .contacto-top::before{content:"";position:absolute;right:-50mm;top:-50mm;width:140mm;height:140mm;border:1px solid rgba(230,126,34,.2);border-radius:50%}
+  .contacto-top::after{content:"";position:absolute;right:-30mm;bottom:-30mm;width:90mm;height:90mm;border:1px solid rgba(230,126,34,.1);border-radius:50%}
+  .contacto-eyebrow{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.3em;font-size:10pt;color:#E67E22;text-transform:uppercase;margin-bottom:6mm}
+  .contacto-titulo{font-family:'Bebas Neue',sans-serif;font-size:62pt;letter-spacing:.03em;line-height:.9;margin-bottom:14mm}
+  .contacto-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8mm 12mm;position:relative;z-index:2}
+  .contacto-item .lab{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:8.5pt;color:#9CA3AF;text-transform:uppercase;margin-bottom:2mm}
+  .contacto-item .val{font-family:'Bebas Neue',sans-serif;font-size:18pt;letter-spacing:.04em;color:#fff;line-height:1.1}
+  .contacto-item .val.small{font-family:'Inter',sans-serif;font-size:11pt;font-weight:500;letter-spacing:.01em}
+  .contacto-bottom{flex:0 0 60mm;background:#E67E22;color:#fff;padding:14mm 22mm;display:flex;justify-content:space-between;align-items:center}
+  .contacto-bottom .marca-final{font-family:'Bebas Neue',sans-serif;font-size:32pt;letter-spacing:.06em;line-height:1;color:#fff}
+  .contacto-bottom .marca-final .azul{color:#1E3A8A}
+  .contacto-bottom .marca-final .tag-line{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:10pt;letter-spacing:.25em;color:#FAF7F2;margin-top:2mm;text-transform:uppercase}
+  .contacto-bottom .firma{text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:500;letter-spacing:.15em;font-size:9pt;text-transform:uppercase;line-height:1.6}
+
+  /* ===== IMPRESIÓN ===== */
+  @media print{
+    body{background:#fff}
+    .hoja{margin:0;box-shadow:none;page-break-after:always}
+    .hoja:last-child{page-break-after:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 1 — PORTADA                                            -->
+<!-- ============================================================ -->
+<section class="hoja portada">
+  <div class="portada-top">
+    <div class="portada-eyebrow">Brochure Corporativo · 2026</div>
+    <h1 class="portada-titulo">JUR<span class="orange">MAQ</span></h1>
+    <div class="portada-sub">Maestranza &amp; Construcción</div>
+  </div>
+  <div class="portada-hero">
+    <img src="img/alero-bodega-nestle-1.jpg" alt="Proyecto Jurmaq"/>
+    <div class="portada-overlay">
+      <div class="lema">OBRAS CIVILES · MAESTRANZA<br/><span>MONTAJE INDUSTRIAL</span></div>
+      <div class="anyo">Más de 25 años construyendo en planta activa</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 2 — QUIÉNES SOMOS                                      -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">01 · Quiénes Somos</div>
+    </header>
+
+    <div class="seccion-eyebrow">Identidad</div>
+    <h2 class="seccion-titulo">Más de dos décadas<br/>construyendo en<br/>planta <span class="orange">activa</span>.</h2>
+
+    <div class="quienes-intro">
+      <p><strong>Constructora JURMAQ E.I.R.L.</strong> es una empresa regional especializada en el desarrollo de obras industriales, civiles y metalmecánicas para el sector agroindustrial, alimenticio y productivo.</p>
+      <p>Con más de <strong>25 años de trayectoria</strong>, hemos ejecutado proyectos en plantas activas de alta exigencia técnica, manteniendo estándares de seguridad, cumplimiento y continuidad operacional. Nuestra base operacional está en <strong>Curicó, Región del Maule</strong>, con cobertura permanente en las regiones VI y VII.</p>
+    </div>
+
+    <div class="quienes-stats">
+      <div class="stat"><div class="num">25+</div><div class="lab">Años de trayectoria</div></div>
+      <div class="stat"><div class="num">VI–VII</div><div class="lab">Cobertura regional</div></div>
+      <div class="stat"><div class="num">8+</div><div class="lab">Clientes industriales</div></div>
+      <div class="stat"><div class="num">100%</div><div class="lab">Planta activa</div></div>
+    </div>
+
+    <div class="quienes-imagen">
+      <img src="img/revestimiento-bodega-1.jpg" alt="Obra Jurmaq en planta activa"/>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 02</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 3 — ESPECIALIDADES                                     -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">02 · Especialidades</div>
+    </header>
+
+    <div class="seccion-eyebrow">Áreas de trabajo</div>
+    <h2 class="seccion-titulo">Cinco frentes de<br/>ejecución <span class="orange">integral</span>.</h2>
+
+    <div class="esp-grid">
+      <div class="esp-card">
+        <div class="num">01</div>
+        <h3>Obras Civiles<br/>Industriales</h3>
+        <ul>
+          <li>Fundaciones especiales</li>
+          <li>Hormigón armado</li>
+          <li>Pavimentos industriales</li>
+          <li>Muros y estructuras de contención</li>
+          <li>Obras en planta activa</li>
+        </ul>
+      </div>
+      <div class="esp-card">
+        <div class="num">02</div>
+        <h3>Movimiento<br/>de Tierra</h3>
+        <ul>
+          <li>Excavaciones</li>
+          <li>Nivelaciones</li>
+          <li>Compactaciones</li>
+          <li>Preparación de terreno</li>
+          <li>Demoliciones y reposición</li>
+        </ul>
+      </div>
+      <div class="esp-card">
+        <div class="num">03</div>
+        <h3>Maestranza y<br/>Estructuras Metálicas</h3>
+        <ul>
+          <li>Fabricación estructural</li>
+          <li>Montaje de vigas y columnas</li>
+          <li>Pasarelas industriales</li>
+          <li>Soportes para equipos</li>
+          <li>Soldadura y fabricación</li>
+        </ul>
+      </div>
+      <div class="esp-card">
+        <div class="num">04</div>
+        <h3>Montaje<br/>Industrial</h3>
+        <ul>
+          <li>Izado de equipos</li>
+          <li>Posicionamiento de silos</li>
+          <li>Montaje de estanques</li>
+          <li>Instalación de estructuras</li>
+          <li>Maniobras industriales</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="esp-card" style="grid-column:span 2;margin-top:5mm">
+      <div class="num">05</div>
+      <h3 style="margin-bottom:2mm">Infraestructura Industrial</h3>
+      <p style="font-size:10.5pt;color:#374151;line-height:1.55">Construcción de bodegas, ampliaciones industriales, cobertizos, aleros, revestimientos y obras complementarias. Diseñamos cada solución a la medida de la operación del cliente, minimizando el impacto en sus líneas productivas.</p>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 03</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 4 — SHOWCASE: ENFIERRADURA                             -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">03 · Portafolio</div>
+    </header>
+
+    <div class="seccion-eyebrow">Enfierradura industrial</div>
+    <h2 class="seccion-titulo">Fundaciones para<br/>silos &amp; <span class="orange">obra mayor</span>.</h2>
+
+    <div class="enf-wrap" style="margin-top:4mm">
+      <div class="enf-hero">
+        <img src="img/enfierradura-silos-hero.jpg" alt="Enfierradura para fundaciones de silos"/>
+        <div class="cap">
+          <div class="cat">Fundaciones para silos · Cliente industrial</div>
+          <div class="ttl">Armadura circular y radial<br/>de gran diámetro</div>
+        </div>
+      </div>
+      <div class="enf-grid">
+        <div class="enf-item">
+          <img src="img/enfierradura-espirales.jpg" alt=""/>
+          <div class="cap-mini">Espirales y zunchos</div>
+        </div>
+        <div class="enf-item">
+          <img src="img/moldaje-radial.jpg" alt=""/>
+          <div class="cap-mini">Moldaje radial</div>
+        </div>
+        <div class="enf-item">
+          <img src="img/enfierradura-pedestal.jpg" alt=""/>
+          <div class="cap-mini">Pedestales armados</div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 04</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 5 — SHOWCASE: OBRAS CIVILES                            -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">03 · Portafolio</div>
+    </header>
+
+    <div class="seccion-eyebrow">Obras Civiles e Infraestructura</div>
+    <h2 class="seccion-titulo">Proyectos<br/>ejecutados.</h2>
+
+    <div class="showcase-grid" style="margin-top:4mm">
+      <div class="show-item big">
+        <img src="img/alero-bodega-nestle-2.jpg" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Nestlé Chile · Teno</div>
+          <div class="ttl">Construcción de Alero<br/>Bodega de Materias Primas</div>
+        </div>
+      </div>
+      <div class="show-item">
+        <img src="img/revestimiento-bodega-2.jpg" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Nestlé Chile · Teno</div>
+          <div class="ttl">Revestimiento Ampliación</div>
+        </div>
+      </div>
+      <div class="show-item">
+        <img src="img/fundaciones-circulares.jpg" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Hormigón armado</div>
+          <div class="ttl">Fundaciones circulares<br/>terminadas</div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 05</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 6 — SHOWCASE: MAESTRANZA & MONTAJE INDUSTRIAL          -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">03 · Portafolio</div>
+    </header>
+
+    <div class="seccion-eyebrow">Maestranza &amp; Montaje Industrial</div>
+    <h2 class="seccion-titulo">Estructura,<br/>izado y <span class="orange">terreno</span>.</h2>
+
+    <div class="showcase-grid gd-3" style="margin-top:4mm">
+      <div class="show-item big">
+        <img src="img/izado-estanque-maestranza.jpg" alt="Izado de estanque industrial en taller"/>
+        <div class="show-cap">
+          <div class="cat">Maestranza propia · Curicó</div>
+          <div class="ttl">Izado y posicionamiento<br/>de estanque industrial</div>
+        </div>
+      </div>
+      <div class="show-item">
+        <img src="img/perfiles-montaje.jpg" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Estructura metálica</div>
+          <div class="ttl">Perfiles para montaje</div>
+        </div>
+      </div>
+      <div class="show-item">
+        <img src="img/excavacion-retro.jpg" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Equipos en obra</div>
+          <div class="ttl">Excavación con retroexcavadora</div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 06</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 7 — SHOWCASE: COBERTIZOS & MOVIMIENTO TIERRA           -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">03 · Portafolio</div>
+    </header>
+
+    <div class="seccion-eyebrow">Cobertizos · Movimiento de Tierra</div>
+    <h2 class="seccion-titulo">Soluciones a<br/>la medida.</h2>
+
+    <div class="showcase-grid" style="margin-top:4mm">
+      <div class="show-item">
+        <img src="img/cobertizo-grasa-1.png" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Nestlé Chile · Teno</div>
+          <div class="ttl">Cobertizo Recepción<br/>Grasas y Aceites</div>
+        </div>
+      </div>
+      <div class="show-item">
+        <img src="img/cobertizo-grasa-3.png" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Estructura metálica</div>
+          <div class="ttl">Montaje en planta activa</div>
+        </div>
+      </div>
+      <div class="show-item">
+        <img src="img/nivelacion-terreno-nestle.jpg" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Movimiento de tierra</div>
+          <div class="ttl">Nivelación de terreno</div>
+        </div>
+      </div>
+      <div class="show-item">
+        <img src="img/desarme-faena-tremun.jpg" alt=""/>
+        <div class="show-cap">
+          <div class="cat">Proyecto Tremun</div>
+          <div class="ttl">Desarme Instalación de Faena</div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 07</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 6 — EXPERIENCIA DESTACADA                              -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">04 · Clientes</div>
+    </header>
+
+    <div class="seccion-eyebrow">Experiencia destacada</div>
+    <h2 class="seccion-titulo">Relaciones que se<br/>construyen <span class="orange">en el tiempo</span>.</h2>
+
+    <div class="exp-list">
+      <div class="exp-item">
+        <div class="exp-cliente">Nestlé Chile S.A.<span class="lugar">Planta Teno</span></div>
+        <div class="exp-desc">Obras civiles industriales, expansión de batcheo y molienda, fundaciones de silos, montaje de equipos, pavimentos y movimiento de tierra. Presencia continua desde 2017 con proyectos ejecutados en planta activa sin afectar la operación.</div>
+        <div class="exp-anyos">8+<span class="lab">Años</span></div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-cliente">Vinícola Miguel Torres<span class="lugar">Curicó</span></div>
+        <div class="exp-desc">Construcción de bodegas, traslado de cubas y mantención industrial permanente. Una relación comercial de más de dos décadas que refleja la confianza ganada en obras de alta especificación enológica.</div>
+        <div class="exp-anyos">25+<span class="lab">Años</span></div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-cliente">Cementos Biobío Centro S.A.<span class="lugar">Teno</span></div>
+        <div class="exp-desc">Sala eléctrica, pavimentos, cierres perimetrales y obras civiles industriales en una de las plantas más exigentes de la zona en materia de cumplimiento y seguridad.</div>
+        <div class="exp-anyos">★<span class="lab">Cliente activo</span></div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-cliente">Iansagro S.A.<span class="lugar">Industrial</span></div>
+        <div class="exp-desc">Mantención de infraestructura industrial y obras civiles. Trabajos recurrentes con coordinación estrecha entre nuestros equipos técnicos y la operación interna del cliente.</div>
+        <div class="exp-anyos">★<span class="lab">Cliente activo</span></div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-cliente">Surfrut<span class="lugar">Curicó</span></div>
+        <div class="exp-desc">Canalizaciones, cámaras y estructuras para almacenamiento industrial dentro de la planta agroindustrial. Ejecución con criterios sanitarios y de inocuidad.</div>
+        <div class="exp-anyos">★<span class="lab">Cliente activo</span></div>
+      </div>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 08</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 9 — ARRIENDO DE MAQUINARIA                             -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">05 · Arriendo de Equipos</div>
+    </header>
+
+    <div class="seccion-eyebrow">Maquinaria propia</div>
+    <h2 class="seccion-titulo">Arriendo de<br/>equipos <span class="orange">y maquinaria</span>.</h2>
+
+    <div class="arr-intro">
+      <p class="seccion-bajada">Disponemos de flota propia para apoyar tus obras, mantenciones industriales o faenas puntuales. Tarifas por día, semana o mes, con o sin operador. Cobertura permanente en las regiones VI y VII.</p>
+    </div>
+
+    <div class="arr-grid">
+      <div class="arr-card">
+        <div class="arr-foto">
+          <span class="tag">Con operador</span>
+          <img class="contain" src="img/maq-retroexcavadora-hmk-102b.jpg" alt="Retroexcavadora Hidromek HMK 102B"/>
+        </div>
+        <div class="arr-body">
+          <h4>Retroexcavadora</h4>
+          <p>Movimiento de tierra, excavaciones y carga de áridos.</p>
+          <div class="spec">Hidromek HMK 102B</div>
+        </div>
+      </div>
+      <div class="arr-card">
+        <div class="arr-foto">
+          <span class="tag">Hasta 16 m</span>
+          <img class="contain" src="img/maq-brazo-articulado-jlg.jpg" alt="Brazo articulado JLG E450AJ"/>
+        </div>
+        <div class="arr-body">
+          <h4>Brazo Articulado</h4>
+          <p>Plataforma articulada para trabajos en altura con alcance vertical y lateral.</p>
+          <div class="spec">JLG E450AJ · Eléctrico</div>
+        </div>
+      </div>
+      <div class="arr-card">
+        <div class="arr-foto">
+          <span class="tag">Con operador</span>
+          <img class="contain" src="img/maq-camion-tolva.jpg" alt="Camión Tolva VW Constellation"/>
+        </div>
+        <div class="arr-body">
+          <h4>Camión Tolva</h4>
+          <p>Transporte de áridos, escombros y materiales para movimiento de tierra.</p>
+          <div class="spec">VW Constellation 31.260E</div>
+        </div>
+      </div>
+      <div class="arr-card">
+        <div class="arr-foto">
+          <span class="tag">Multipropósito</span>
+          <img class="contain" src="img/maq-bobcat-s570.jpg" alt="Minicargador Bobcat S570"/>
+        </div>
+        <div class="arr-body">
+          <h4>Minicargador</h4>
+          <p>Bobcat S570 con aditamentos: balde, barreno, escarificador y horquillas.</p>
+          <div class="spec">Bobcat S570</div>
+        </div>
+      </div>
+      <div class="arr-card">
+        <div class="arr-foto">
+          <span class="tag">Multipropósito</span>
+          <img class="contain" src="img/maq-bobcat-s650.jpg" alt="Minicargador Bobcat S650"/>
+        </div>
+        <div class="arr-body">
+          <h4>Minicargador Alto Tonelaje</h4>
+          <p>Bobcat S650, mayor capacidad de carga para faenas pesadas y movimiento de tierra.</p>
+          <div class="spec">Bobcat S650</div>
+        </div>
+      </div>
+      <div class="arr-card">
+        <div class="arr-foto">
+          <span class="tag">Compacta</span>
+          <img class="contain" src="img/maq-miniexcavadora-xcmg.jpg" alt="Miniexcavadora XCMG XE35U"/>
+        </div>
+        <div class="arr-body">
+          <h4>Miniexcavadora</h4>
+          <p>XCMG XE35U para excavaciones en espacios reducidos y zanjas industriales.</p>
+          <div class="spec">XCMG XE35U · 3,5 ton</div>
+        </div>
+      </div>
+      <div class="arr-card">
+        <div class="arr-foto">
+          <span class="tag">Diésel</span>
+          <img class="contain" src="img/maq-plataforma-fullen.jpg" alt="Plataforma Fullen PSC140"/>
+        </div>
+        <div class="arr-body">
+          <h4>Plataforma Diésel</h4>
+          <p>Tijera Fullen PSC140 para faenas en altura en exteriores y obra industrial.</p>
+          <div class="spec">Fullen PSC140 · 14 m</div>
+        </div>
+      </div>
+      <div class="arr-card">
+        <div class="arr-foto">
+          <span class="tag">Eléctrica</span>
+          <img class="contain" src="img/maq-plataforma-genie.png" alt="Plataforma Genie GS-1930"/>
+        </div>
+        <div class="arr-body">
+          <h4>Plataforma Eléctrica</h4>
+          <p>Tijera Genie GS-1930 para trabajos en bodegas, naves industriales y mantención.</p>
+          <div class="spec">Genie GS-1930 · 19 ft</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arr-cta">
+      <div class="txt">
+        <h5>¿Necesitas cotizar un arriendo?</h5>
+        <p>Cuéntanos qué equipo necesitas y por cuánto tiempo. Te respondemos con valores en menos de 24 horas.</p>
+        <p style="margin-top:2mm;color:#FAF7F2;font-size:9pt"><b>Jorge O. Ubilla Rivera</b> · Gerente · Ingeniero Mecánico</p>
+      </div>
+      <div class="tel">+56 9 9299 4452</div>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 09</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 10 — BARRACA DE FIERROS JURMAQ                         -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">06 · Suministros</div>
+    </header>
+
+    <div class="seccion-eyebrow">Materia prima propia</div>
+    <h2 class="seccion-titulo">Barraca de<br/>Fierros <span class="orange">JURMAQ</span>.</h2>
+
+    <div class="bar-wrap" style="margin-top:4mm">
+      <div class="bar-hero">
+        <img src="img/barraca-perfiles-tubos.jpg" alt="Perfiles, tubos cuadrados y redondos · Barraca de Fierros JURMAQ"/>
+        <div class="cap">
+          <div class="lab">Molina · Región del Maule</div>
+          <div class="ubic">Perfiles &amp; Tubos en Stock</div>
+          <div class="desc">Más de 1.600 productos: fierro de construcción, perfiles cuadrados, redondos, rectangulares, ángulos, canales, ferretería y soldadura. Despacho propio a 12 comunas del Maule.</div>
+        </div>
+      </div>
+
+      <div class="bar-thumbs">
+        <div class="bar-thumb">
+          <img src="img/barraca-galpon.jpg" alt="Galpón Barraca de Fierros JURMAQ en Molina"/>
+          <div class="cap-mini">Galpón · Molina</div>
+        </div>
+        <div class="bar-thumb">
+          <img src="img/barraca-meson.jpg" alt="Mesón JURMAQ Barraca de Fierros"/>
+          <div class="cap-mini">Mesón de atención</div>
+        </div>
+        <div class="bar-thumb">
+          <img src="img/barraca-angulos.jpg" alt="Ángulos y canales metálicos"/>
+          <div class="cap-mini">Ángulos &amp; canales</div>
+        </div>
+        <div class="bar-thumb">
+          <img src="img/barraca-camion-randon.jpg" alt="Camión Randon despachando materiales"/>
+          <div class="cap-mini">Despacho propio</div>
+        </div>
+      </div>
+
+      <div class="bar-prov-wrap">
+        <div class="bar-prov-head">
+          <div class="lab">Proveedores estratégicos</div>
+          <div class="badge">Acero<br/>Certificado</div>
+        </div>
+        <div class="bar-prov-grid">
+          <div class="bar-prov-item">
+            <div class="nom">VH Manufactura de Tubos de Acero S.A.</div>
+            <div class="det">Más de <b style="color:#fff">60 años</b> fabricando perfiles y tubos de acero en Chile. Certificados bajo normas <b style="color:#fff">NCh 3518</b> y <b style="color:#fff">NCh 3576</b>, ensayos validados por <b style="color:#fff">CESMEC</b> (ISO Casco 5).</div>
+          </div>
+          <div class="bar-prov-item">
+            <div class="nom">Imel Steel</div>
+            <div class="det">Más de <b style="color:#fff">75 años</b> de trayectoria (fundada en 1946). Perfiles, tubos, cañerías y sistemas constructivos galvanizados. Certificación <b style="color:#fff">ISO 9001:2015</b> y cumplimiento de normas <b style="color:#fff">ASTM</b> e <b style="color:#fff">ISO</b>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 10</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 11 — POR QUÉ JURMAQ                                    -->
+<!-- ============================================================ -->
+<section class="hoja">
+  <div class="pagina">
+    <header class="pagina-header">
+      <div class="h-marca">JUR<span class="orange">MAQ</span></div>
+      <div class="h-num">07 · Capacidades</div>
+    </header>
+
+    <div class="seccion-eyebrow">Por qué Jurmaq</div>
+    <h2 class="seccion-titulo">Seis razones para<br/>trabajar con <span class="orange">nosotros</span>.</h2>
+
+    <div class="pilares">
+      <div class="pilar">
+        <div class="num">01</div>
+        <h4>Experiencia industrial comprobable</h4>
+        <p>Más de 25 años ejecutando proyectos en plantas activas del rubro agroindustrial, alimenticio y de procesos productivos.</p>
+      </div>
+      <div class="pilar">
+        <div class="num">02</div>
+        <h4>Cercanía operacional</h4>
+        <p>Base en Curicó con respuesta inmediata para plantas de Teno, Molina, Romeral, Sagrada Familia y toda la zona industrial del Maule.</p>
+      </div>
+      <div class="pilar">
+        <div class="num">03</div>
+        <h4>Capacidad integral</h4>
+        <p>Maestranza propia, personal técnico especializado, equipos de apoyo y experiencia para ejecutar obras civiles, montaje y metalmecánica bajo un mismo contrato.</p>
+      </div>
+      <div class="pilar">
+        <div class="num">04</div>
+        <h4>Trabajo en planta activa</h4>
+        <p>Procedimientos validados para operar sin interrumpir la línea productiva del cliente: charlas IPER, permisos de trabajo, EPP y supervisión permanente.</p>
+      </div>
+      <div class="pilar">
+        <div class="num">05</div>
+        <h4>Respuesta rápida regional</h4>
+        <p>Cobertura permanente en regiones VI y VII. Equipos disponibles para visitas a terreno y cotizaciones en menos de 48 horas.</p>
+      </div>
+      <div class="pilar">
+        <div class="num">06</div>
+        <h4>Estándares industriales reales</h4>
+        <p>Cumplimiento documental (IPER, IRL, ITS, control documental) requerido por nuestros principales clientes industriales en sus mandatos de contratistas.</p>
+      </div>
+    </div>
+
+    <footer class="pagina-footer">
+      <span>Constructora JURMAQ E.I.R.L. · Curicó, Maule</span>
+      <span class="web">barraca.jurmaq.cl</span>
+      <span>Pág. 11</span>
+    </footer>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PÁGINA 12 — CONTACTO                                          -->
+<!-- ============================================================ -->
+<section class="hoja contacto-wrap">
+  <div class="contacto-top">
+    <div class="contacto-eyebrow">Hablemos de tu proyecto</div>
+    <h2 class="contacto-titulo">CON<span class="orange">TÁC</span>TANOS.</h2>
+
+    <div class="contacto-grid">
+      <div class="contacto-item" style="grid-column:1 / -1;border-left:3px solid #E67E22;padding-left:6mm;margin-bottom:2mm">
+        <div class="lab">Gerencia</div>
+        <div class="val" style="font-size:22pt">Jorge O. Ubilla Rivera</div>
+        <div class="val small" style="margin-top:2mm;color:#D1D5DB">Gerente · Ingeniero Mecánico</div>
+      </div>
+      <div class="contacto-item">
+        <div class="lab">Teléfono</div>
+        <div class="val">+56 9 9299 4452</div>
+      </div>
+      <div class="contacto-item">
+        <div class="lab">Correo</div>
+        <div class="val small">contacto@jurmaq.cl</div>
+      </div>
+      <div class="contacto-item">
+        <div class="lab">Sitio web</div>
+        <div class="val small">https://barraca.jurmaq.cl/</div>
+      </div>
+      <div class="contacto-item">
+        <div class="lab">Base operacional</div>
+        <div class="val small">Curicó · Región del Maule</div>
+      </div>
+      <div class="contacto-item">
+        <div class="lab">Cobertura</div>
+        <div class="val small">Regiones VI y VII</div>
+      </div>
+      <div class="contacto-item">
+        <div class="lab">Horario</div>
+        <div class="val small">Lun a Vie · 08:30 – 18:30 hrs</div>
+      </div>
+    </div>
+  </div>
+  <div class="contacto-bottom">
+    <div class="marca-final">JUR<span class="azul">MAQ</span><span class="tag-line">Maestranza &amp; Construcción</span></div>
+    <div class="firma">
+      Constructora<br/>JURMAQ E.I.R.L.<br/>
+      <span style="opacity:.85">Curicó · Maule</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

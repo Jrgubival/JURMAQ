@@ -1,0 +1,12 @@
+JURMAQ BROCHURE WEB — Subir esta carpeta completa al hosting
+=====================================================================
+
+URL FINAL: https://jurmaq.cl/brochure/
+
+CONTENIDO:
+  index.html    — Página principal (12 secciones)
+  img/          — 30 imágenes (fotos de obras, maquinaria, barraca)
+  robots.txt    — Configuración SEO
+  sitemap.xml   — Mapa del sitio para Google
+
+INSTRUCCIONES DE SUBIDA: ver LEEME.txt del paquete maestro

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jurmaq.cl/brochure/sitemap.xml
