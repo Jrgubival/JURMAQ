@@ -180,7 +180,7 @@ export default async function HomePage() {
               data-text-reveal
             >
               Tu obra avanza sin parar con{' '}
-              <span className="font-[var(--font-slab)] text-gold-500" style={{ fontWeight: 900 }}>
+              <span className="font-[var(--font-display)] text-gold-500 tracking-wide" style={{ fontWeight: 400 }}>
                 JURMAQ
               </span>
             </h1>

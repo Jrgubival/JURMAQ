@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Newsreader, Roboto_Slab } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import Analytics from "@jurmaq/shared/ui/Analytics";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
@@ -14,11 +14,12 @@ import "@jurmaq/shared/env";
 // Skill-driven typography (frontend-design + design-taste + minimalist-ui + web-typography):
 // - Inter banned across all design skills → replaced with Geist (sans body/UI)
 // - Editorial hero serif → Newsreader (recommended by minimalist-ui)
-// - Industrial brand accent → Roboto Slab Black 900 (slab serif para "JURMAQ" en
-//   H1 hero; mamá del owner pidió tipografía más robusta/firme, "como la
-//   construcción". Slab serifs son la tradición tipográfica de la industria
-//   pesada — letreros ferroviarios, marcas de maquinaria agrícola, ingeniería
-//   civil. Reemplaza el Newsreader italic editorial del accent JURMAQ).
+// - Industrial brand accent → Bebas Neue (sans-serif condensada bold uppercase,
+//   match exacto con la tipografía que JURMAQ usa en sus posters de marketing
+//   "NUESTRA FLOTA COMPLETA · JURMAQ ARRIENDO", "LA RETRO EN ACCIÓN", etc.
+//   El owner pidió matching tipográfico con sus máquinas/marketing. Bebas Neue
+//   es la fuente de referencia para letreros industriales y advertising de
+//   construcción / maquinaria pesada).
 // - Tabular numbers / code → Geist Mono
 // Variable fonts only, font-display: swap, latin subset only for payload.
 const geist = Geist({
@@ -41,11 +42,11 @@ const newsreader = Newsreader({
   style: ["normal", "italic"],
 });
 
-const robotoSlab = Roboto_Slab({
-  variable: "--font-slab",
+const bebasNeue = Bebas_Neue({
+  variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
-  weight: ["900"],
+  weight: ["400"], // Bebas Neue only ships in a single weight
 });
 
 export const viewport: Viewport = {
@@ -233,7 +234,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} ${robotoSlab.variable} h-full antialiased`}>
+    <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} ${bebasNeue.variable} h-full antialiased`}>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
