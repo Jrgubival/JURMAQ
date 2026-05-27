@@ -62,6 +62,30 @@ export interface AiCallResult {
 }
 
 // ---------------------------------------------------------------------------
+// Errors
+// ---------------------------------------------------------------------------
+
+/**
+ * Error de provider AI. Se usa para diferenciar errores recuperables (429
+ * rate limit, 5xx downtime) que callAI puede manejar con fallback al otro
+ * provider, vs errores no recuperables que se propagan al cliente.
+ *
+ * IMPORTANTE: esta clase está declarada ANTES de callGemini/callGroq porque
+ * esas funciones la usan en `throw new ProviderError(...)`. Class declarations
+ * NO se hoistean en JavaScript — moverlas abajo causa ReferenceError al
+ * run-time cuando el código intenta usar la clase antes de su declaración.
+ */
+class ProviderError extends Error {
+  constructor(
+    public provider: string,
+    public status: number,
+    msg: string,
+  ) {
+    super(`${provider} ${status}: ${msg}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Gemini caller
 // ---------------------------------------------------------------------------
 
@@ -416,15 +440,9 @@ function formatToolResultAsText(toolName: string, parsed: unknown): string {
 // Main entry: callAI con fallback transparente
 // ---------------------------------------------------------------------------
 
-class ProviderError extends Error {
-  constructor(
-    public provider: string,
-    public status: number,
-    msg: string,
-  ) {
-    super(`${provider} ${status}: ${msg}`);
-  }
-}
+// ProviderError ya está declarado arriba (antes de callGemini/callGroq porque
+// esas funciones lo throw). Class declarations NO se hoistean — moverlas
+// abajo causaba ReferenceError al run-time.
 
 /**
  * Llama AI con fallback automático. Si Gemini falla con 429 o 5xx,
