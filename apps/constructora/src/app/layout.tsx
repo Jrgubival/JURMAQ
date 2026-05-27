@@ -1,15 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader, Roboto_Slab } from "next/font/google";
 import "./globals.css";
-import Analytics from "@/components/Analytics";
-import CookieBanner from "@/components/CookieBanner";
+import Analytics from "@jurmaq/shared/ui/Analytics";
+import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
 import { buildPrerenderRules, CONSTRUCTORA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
+import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
+// Side-effect import: valida env vars al startup. Si falta una required en
+// prod, Zod tira un error explícito en lugar de propagar `undefined`.
+import "@jurmaq/shared/env";
 
 // Skill-driven typography (frontend-design + design-taste + minimalist-ui + web-typography):
 // - Inter banned across all design skills → replaced with Geist (sans body/UI)
 // - Editorial hero serif → Newsreader (recommended by minimalist-ui)
+// - Industrial brand accent → Roboto Slab Black 900 (slab serif para "JURMAQ" en
+//   H1 hero; mamá del owner pidió tipografía más robusta/firme, "como la
+//   construcción". Slab serifs son la tradición tipográfica de la industria
+//   pesada — letreros ferroviarios, marcas de maquinaria agrícola, ingeniería
+//   civil. Reemplaza el Newsreader italic editorial del accent JURMAQ).
 // - Tabular numbers / code → Geist Mono
 // Variable fonts only, font-display: swap, latin subset only for payload.
 const geist = Geist({
@@ -30,6 +39,13 @@ const newsreader = Newsreader({
   display: "swap",
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
+});
+
+const robotoSlab = Roboto_Slab({
+  variable: "--font-slab",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["900"],
 });
 
 export const viewport: Viewport = {
@@ -148,11 +164,20 @@ export const metadata: Metadata = {
     locale: "es_CL",
     type: "website",
     images: [
+      // Primary OG image — 1200×630 es el aspect ratio canonical
+      // (Facebook/LinkedIn/WhatsApp). Generado por scripts/og/generate-og-images.mjs.
+      {
+        url: "/og-image-1200x630.png",
+        width: 1200,
+        height: 630,
+        alt: "JURMAQ — Arriendo Maquinaria, Constructora y Barraca de Fierros en Curicó",
+      },
+      // Segundo intento por si algún crawler exótico prefiere square.
       {
         url: "/icon-512.png",
         width: 512,
         height: 512,
-        alt: "JURMAQ — Arriendo Maquinaria, Constructora y Barraca de Fierros en Curicó",
+        alt: "JURMAQ",
       },
     ],
   },
@@ -184,6 +209,22 @@ export const metadata: Metadata = {
     "DC.creator": "Constructora Jorge Ubilla Rivera E.I.R.L.",
     "DC.language": "es-CL",
   },
+  // Search-engine ownership verification (Google Search Console + Bing Webmaster).
+  // Tokens vienen de env (no hardcodear). Si ambas vars están vacías, el field
+  // se omite por completo para no inyectar <meta> con content="". Ver
+  // docs/auditorias/seo-gsc-bing-setup.md para el setup.
+  ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION || process.env.NEXT_PUBLIC_BING_VERIFICATION
+    ? {
+        verification: {
+          ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION
+            ? { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION }
+            : {}),
+          ...(process.env.NEXT_PUBLIC_BING_VERIFICATION
+            ? { other: { "msvalidate.01": process.env.NEXT_PUBLIC_BING_VERIFICATION } }
+            : {}),
+        },
+      }
+    : {}),
 };
 
 export default function RootLayout({
@@ -192,7 +233,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}>
+    <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} ${robotoSlab.variable} h-full antialiased`}>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -213,97 +254,12 @@ export default function RootLayout({
             __html: JSON.stringify(buildPrerenderRules(CONSTRUCTORA_PRERENDER_EXCLUDES)),
           }}
         />
-        {/* Organization + LocalBusiness JSON-LD for Google brand panel */}
+        {/* Organization + LocalBusiness + WebSite JSON-LD — shared helper
+            (mismo schema usado por barraca.jurmaq.cl con brand="barraca"). */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@graph": [
-                {
-                  "@type": "Organization",
-                  "@id": "https://jurmaq.cl/#organization",
-                  name: "JURMAQ",
-                  legalName: "Constructora Jorge Ubilla Rivera E.I.R.L.",
-                  url: "https://jurmaq.cl",
-                  logo: "https://jurmaq.cl/icon-512.png",
-                  image: "https://jurmaq.cl/icon-512.png",
-                  email: "contacto@jurmaq.cl",
-                  telephone: "+56976673577",
-                  description:
-                    "Arriendo de maquinaria pesada, constructora, maestranza y barraca de fierros en Curicó y Región del Maule. Súbenos tu cotización y en menos de 2 horas te mejoramos el precio.",
-                  address: {
-                    "@type": "PostalAddress",
-                    streetAddress: "Av. Poniente 2157",
-                    addressLocality: "Molina",
-                    addressRegion: "Región del Maule",
-                    postalCode: "3550000",
-                    addressCountry: "CL",
-                  },
-                  areaServed: [
-                    { "@type": "City", name: "Curicó" },
-                    { "@type": "City", name: "Molina" },
-                    { "@type": "City", name: "Teno" },
-                    { "@type": "City", name: "Romeral" },
-                    { "@type": "City", name: "Sagrada Familia" },
-                    { "@type": "City", name: "Hualañé" },
-                    { "@type": "City", name: "Licantén" },
-                    { "@type": "City", name: "Vichuquén" },
-                    { "@type": "City", name: "Rauco" },
-                    { "@type": "City", name: "Talca" },
-                    { "@type": "City", name: "Linares" },
-                    { "@type": "AdministrativeArea", name: "Región del Maule" },
-                  ],
-                  sameAs: ["https://www.instagram.com/jurmaq.cl"],
-                },
-                {
-                  "@type": "LocalBusiness",
-                  "@id": "https://jurmaq.cl/#localbusiness",
-                  name: "JURMAQ — Arriendo de Maquinaria y Constructora",
-                  url: "https://jurmaq.cl",
-                  image: "https://jurmaq.cl/icon-512.png",
-                  telephone: "+56976673577",
-                  priceRange: "$$",
-                  address: {
-                    "@type": "PostalAddress",
-                    streetAddress: "Av. Poniente 2157",
-                    addressLocality: "Molina",
-                    addressRegion: "Región del Maule",
-                    postalCode: "3550000",
-                    addressCountry: "CL",
-                  },
-                  geo: {
-                    "@type": "GeoCoordinates",
-                    latitude: -34.9833,
-                    longitude: -71.2333,
-                  },
-                  openingHoursSpecification: [
-                    {
-                      "@type": "OpeningHoursSpecification",
-                      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-                      opens: "08:30",
-                      closes: "18:30",
-                    },
-                    {
-                      "@type": "OpeningHoursSpecification",
-                      dayOfWeek: "Saturday",
-                      opens: "09:00",
-                      closes: "14:00",
-                    },
-                  ],
-                  areaServed: { "@type": "AdministrativeArea", name: "Región del Maule, Chile" },
-                  parentOrganization: { "@id": "https://jurmaq.cl/#organization" },
-                },
-                {
-                  "@type": "WebSite",
-                  "@id": "https://jurmaq.cl/#website",
-                  url: "https://jurmaq.cl",
-                  name: "JURMAQ",
-                  publisher: { "@id": "https://jurmaq.cl/#organization" },
-                  inLanguage: "es-CL",
-                },
-              ],
-            }),
+            __html: JSON.stringify(buildJsonLdGraph('constructora')),
           }}
         />
       </head>
@@ -313,7 +269,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer />
-        <CookieBanner />
+        <CookieBanner productLabel="máquinas" />
       </body>
     </html>
   );

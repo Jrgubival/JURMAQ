@@ -1,4 +1,5 @@
 import type { OtpProvider, OtpProviderResult } from '../types';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * WhatsApp Cloud API (Meta oficial) — plan B si OpenWA falla.
@@ -16,10 +17,10 @@ import type { OtpProvider, OtpProviderResult } from '../types';
  */
 
 function getEnv() {
-  const phoneNumberId = process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID;
-  const accessToken = process.env.WHATSAPP_CLOUD_ACCESS_TOKEN;
-  const template = process.env.WHATSAPP_CLOUD_OTP_TEMPLATE || 'jurmaq_otp';
-  const lang = process.env.WHATSAPP_CLOUD_LANG || 'es_CL';
+  const phoneNumberId = env.WHATSAPP_CLOUD_PHONE_NUMBER_ID;
+  const accessToken = env.WHATSAPP_CLOUD_ACCESS_TOKEN;
+  const template = env.WHATSAPP_CLOUD_OTP_TEMPLATE || 'jurmaq_otp';
+  const lang = env.WHATSAPP_CLOUD_LANG || 'es_CL';
   if (!phoneNumberId || !accessToken) return null;
   return { phoneNumberId, accessToken, template, lang };
 }

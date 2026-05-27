@@ -120,7 +120,7 @@ function ExitoContent() {
         <h1 className="text-2xl font-bold text-navy-950 mb-2">{titulo}</h1>
         {externalReference && (
           <p className="text-lg font-semibold text-orange-600 mb-4">
-            Cotizacion #{externalReference}
+            Cotización #{externalReference}
           </p>
         )}
         {paymentId && (

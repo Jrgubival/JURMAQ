@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
 
 /**
@@ -58,10 +59,12 @@ export default function CartAddedCard({ ui }: { ui: CartAddedUi }) {
 
       <div className="flex gap-3 mb-3">
         {producto.imagen ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={producto.imagen}
             alt={producto.nombre}
+            width={56}
+            height={56}
+            sizes="56px"
             className="w-14 h-14 object-cover rounded-lg bg-white border border-[#EAEAEA] shrink-0"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";

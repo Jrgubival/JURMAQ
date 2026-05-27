@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabasePublic } from "@jurmaq/shared/supabase";
-import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ } from "@jurmaq/shared/seo";
+import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ, DISTANCIAS_BARRACA } from "@jurmaq/shared/seo";
 import { applyDailyPromosToProducts } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
+import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
+import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 
 /**
  * Programmatic SEO landing for `[material] en [ciudad]` queries.
@@ -77,7 +79,7 @@ export async function generateMetadata({
 
   return {
     title: `${material.nombre} en ${ciudad.nombre} · Te mejoramos el precio en 2h · Barraca JURMAQ`,
-    description: `Compra ${lower} en ${ciudad.nombre} (${ciudad.region}). Despacho desde Molina en ${ciudad.tiempoDespacho}. Súbenos tu cotización de Sodimac, Easy o Construmart y en menos de 2 horas te mejoramos el precio. ${material.descripcionCorta}`,
+    description: `Compra ${lower} en ${ciudad.nombre} (${ciudad.region}). Despacho desde Molina en ${DISTANCIAS_BARRACA[ciudad.slug].tiempo}. Súbenos tu cotización de Sodimac, Easy o Construmart y en menos de 2 horas te mejoramos el precio. ${material.descripcionCorta}`,
     keywords: [
       `${lower} ${ciudad.nombre}`,
       `${lower} precio ${ciudad.nombre}`,
@@ -94,7 +96,7 @@ export async function generateMetadata({
     ],
     openGraph: {
       title: `${material.nombre} en ${ciudad.nombre} · Barraca JURMAQ`,
-      description: `${material.descripcionCorta} Despacho a ${ciudad.nombre} en ${ciudad.tiempoDespacho}. Te mejoramos el precio de la competencia en menos de 2 horas.`,
+      description: `${material.descripcionCorta} Despacho a ${ciudad.nombre} en ${DISTANCIAS_BARRACA[ciudad.slug].tiempo}. Te mejoramos el precio de la competencia en menos de 2 horas.`,
       url: `https://barraca.jurmaq.cl/material/${slug}`,
       siteName: "Barraca JURMAQ",
       locale: "es_CL",
@@ -106,7 +108,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title: `${material.nombre} en ${ciudad.nombre} · Te mejoramos el precio en 2h`,
-      description: `${material.descripcionCorta} · Despacho ${ciudad.tiempoDespacho} a ${ciudad.nombre}.`,
+      description: `${material.descripcionCorta} · Despacho ${DISTANCIAS_BARRACA[ciudad.slug].tiempo} a ${ciudad.nombre}.`,
     },
     icons: {
       icon: [
@@ -173,7 +175,7 @@ export default async function MaterialEnCiudadPage({
         "@id": `https://barraca.jurmaq.cl/material/${slug}#service`,
         name: `${material.nombre} en ${ciudad.nombre}`,
         serviceType: `Venta y despacho de ${material.nombre.toLowerCase()}`,
-        description: `${material.descripcionCorta} Despacho desde Molina a ${ciudad.nombre} en ${ciudad.tiempoDespacho}. Te mejoramos el precio de la competencia en menos de 2 horas.`,
+        description: `${material.descripcionCorta} Despacho desde Molina a ${ciudad.nombre} en ${DISTANCIAS_BARRACA[ciudad.slug].tiempo}. Te mejoramos el precio de la competencia en menos de 2 horas.`,
         provider: { "@id": "https://jurmaq.cl/#organization" },
         areaServed: { "@type": "City", name: ciudad.nombre, containedInPlace: { "@type": "AdministrativeArea", name: ciudad.region } },
         offers: productos
@@ -214,17 +216,19 @@ export default async function MaterialEnCiudadPage({
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
-              <Link href="/" className="hover:text-white">Barraca JURMAQ</Link>
-              <span className="mx-2">›</span>
-              <Link href={`/categorias/${material.categoriaSlug}`} className="hover:text-white">{material.nombrePlural}</Link>
-              <span className="mx-2">›</span>
-              <span className="text-white">{ciudad.nombre}</span>
-            </nav>
+            <Breadcrumbs
+              variant="dark"
+              className="mb-4"
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: material.nombrePlural, href: `/categorias/${material.categoriaSlug}` },
+                { label: ciudad.nombre },
+              ]}
+            />
             <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 bg-orange-600 text-white text-xs font-bold uppercase tracking-wider rounded">
               <span>✓ Despacho a {ciudad.nombre}</span>
               <span className="opacity-70">·</span>
-              <span>{ciudad.tiempoDespacho}</span>
+              <span>{DISTANCIAS_BARRACA[ciudad.slug].tiempo}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
               {material.nombre} en {ciudad.nombre}
@@ -233,7 +237,7 @@ export default async function MaterialEnCiudadPage({
               <strong className="text-orange-400">Súbenos tu cotización de Sodimac, Easy o Construmart</strong> y en menos de 2 horas te mejoramos el precio. {material.descripcionCorta}
             </p>
             <p className="text-gray-300 max-w-3xl mb-8">
-              Despacho desde Molina a {ciudad.nombre} ({ciudad.distanciaKm} km · {ciudad.tiempoDespacho}). Servicio para {ciudad.rubroLocal.slice(0, 2).join(" y ")} en la zona.
+              Despacho desde Molina a {ciudad.nombre} ({DISTANCIAS_BARRACA[ciudad.slug].km} km · {DISTANCIAS_BARRACA[ciudad.slug].tiempo}). Servicio para {ciudad.rubroLocal.slice(0, 2).join(" y ")} en la zona.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
@@ -287,7 +291,7 @@ export default async function MaterialEnCiudadPage({
                 {material.nombrePlural} disponibles para despacho a {ciudad.nombre}
               </h2>
               <p className="text-gray-700 mb-8">
-                Stock actualizado · Precios publicados · Despacho en {ciudad.tiempoDespacho}.
+                Stock actualizado · Precios publicados · Despacho en {DISTANCIAS_BARRACA[ciudad.slug].tiempo}.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {productos.map((p) => {
@@ -370,11 +374,11 @@ export default async function MaterialEnCiudadPage({
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">{ciudad.distanciaKm} km</div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">{DISTANCIAS_BARRACA[ciudad.slug].km} km</div>
                 <p className="text-gray-700">Distancia desde la barraca</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">{ciudad.tiempoDespacho}</div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">{DISTANCIAS_BARRACA[ciudad.slug].tiempo}</div>
                 <p className="text-gray-700">Tiempo de despacho típico</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
@@ -469,6 +473,19 @@ export default async function MaterialEnCiudadPage({
             </div>
           </div>
         </section>
+
+        <CrossLinksGrid
+          title={`${material.nombre} en otras ciudades del Maule`}
+          subtitle={`Despachamos ${material.nombre.toLowerCase()} desde Molina a Curicó, Talca, Linares y toda la región. Cotiza tu obra donde estés.`}
+          eyebrow="Cobertura · Maule"
+          variant="light"
+          items={CIUDADES.filter((c) => c.slug !== ciudad.slug)
+            .slice(0, 11)
+            .map((c) => ({
+              label: `${material.nombre} en ${c.nombre}`,
+              href: `/material/${material.slug}-en-${c.slug}`,
+            }))}
+        />
       </article>
     </>
   );

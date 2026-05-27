@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -7,6 +7,7 @@ import { signOut, useSession } from 'next-auth/react';
 import type { Module } from '@jurmaq/shared/roles';
 import { visibleModules } from '@jurmaq/shared/roles';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
+import { env } from '@jurmaq/shared/env';
 import NotificationsBell from './NotificationsBell';
 
 /**
@@ -220,7 +221,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   // Si el sysadmin tiene acceso al admin de constructora, ofrecemos un link
   // de cross-admin (configurable via env). En dev queda apuntando al puerto
   // de constructora; en prod a admin.jurmaq.cl o jurmaq.cl según deploy.
-  const constructoraUrl = process.env.NEXT_PUBLIC_CONSTRUCTORA_URL || '';
+  const constructoraUrl = env.NEXT_PUBLIC_CONSTRUCTORA_URL || '';
 
   return (
     <div className="min-h-screen flex bg-gray-50">

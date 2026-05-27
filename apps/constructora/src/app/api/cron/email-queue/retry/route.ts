@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dequeueEmails, markSent, markFailed } from '@/lib/email-queue';
 import { transporter, sendSignedContractEmail } from '@jurmaq/shared/mail/email';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * POST /api/cron/email-queue/retry
@@ -27,7 +28,7 @@ export const maxDuration = 60;
 const BATCH_SIZE = 10;
 
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = env.CRON_SECRET;
   if (!secret) return false;
   const provided = request.headers.get('x-cron-secret') || request.headers.get('authorization')?.replace('Bearer ', '');
   return provided === secret;

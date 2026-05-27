@@ -1,13 +1,15 @@
 // MercadoPago integration for JURMAQ Barraca
 // MercadoPago is the most popular payment gateway in Chile
 
+import { env } from '@jurmaq/shared/env';
+
 export async function createMercadoPagoPreference(cotizacion: {
   numero: string;
   items: Array<{ nombre: string; cantidad: number; precio: number }>;
   total: number;
   email: string;
 }): Promise<string | null> {
-  const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
+  const MP_ACCESS_TOKEN = env.MERCADOPAGO_ACCESS_TOKEN;
   if (!MP_ACCESS_TOKEN) {
     console.warn('MERCADOPAGO_ACCESS_TOKEN no configurado, omitiendo creacion de preferencia');
     return null;
@@ -15,7 +17,7 @@ export async function createMercadoPagoPreference(cotizacion: {
 
   // The barraca lives on its own subdomain. Payment returns and webhooks must
   // both target that app because the MercadoPago webhook route lives there.
-  const barracaUrl = process.env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl';
+  const barracaUrl = env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl';
 
   const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',

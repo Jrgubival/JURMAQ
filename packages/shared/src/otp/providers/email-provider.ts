@@ -1,5 +1,6 @@
 import type { OtpProvider, OtpProviderResult } from '../types';
 import { transporter } from '../../mail/transport';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Email provider — usa Resend a través del transporter común.
@@ -12,7 +13,7 @@ import { transporter } from '../../mail/transport';
  */
 
 function isResendConfigured(): boolean {
-  return !!process.env.RESEND_API_KEY;
+  return !!env.RESEND_API_KEY;
 }
 
 export const emailProvider: OtpProvider = {

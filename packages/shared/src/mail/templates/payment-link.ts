@@ -1,5 +1,6 @@
 import { transporter } from "../transport";
 import { formatCLP } from "../utils";
+import { env } from "@jurmaq/shared/env";
 
 /**
  * Email con link de pago tras aprobación de cotización.
@@ -32,10 +33,10 @@ export async function sendPaymentLinkEmail(
     )
     .join("");
 
-  const bankName = process.env.BANK_NAME;
-  const bankAccount = process.env.BANK_ACCOUNT;
-  const bankRut = process.env.BANK_RUT;
-  const bankEmail = process.env.BANK_EMAIL || "contacto@jurmaq.cl";
+  const bankName = env.BANK_NAME;
+  const bankAccount = env.BANK_ACCOUNT;
+  const bankRut = env.BANK_RUT;
+  const bankEmail = env.BANK_EMAIL || "contacto@jurmaq.cl";
 
   if (method === "efectivo" && (!bankName || !bankAccount || !bankRut)) {
     console.error("Faltan datos bancarios en variables de entorno: BANK_NAME, BANK_ACCOUNT, BANK_RUT");
@@ -47,7 +48,7 @@ export async function sendPaymentLinkEmail(
       ? `
       <div style="text-align: center; margin: 24px 0;">
         <p style="color: #374151; font-size: 15px; margin: 0 0 16px;">
-          Tu cotizacion ha sido aprobada. Haz click en el boton para completar tu pago de forma segura con MercadoPago:
+          Tu cotización ha sido aprobada. Haz click en el boton para completar tu pago de forma segura con MercadoPago:
         </p>
         <a href="${paymentUrl}" style="display: inline-block; background-color: #009ee3; color: #ffffff; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px;">
           Pagar con MercadoPago
@@ -60,7 +61,7 @@ export async function sendPaymentLinkEmail(
       : `
       <div style="margin: 24px 0;">
         <p style="color: #374151; font-size: 15px; margin: 0 0 16px;">
-          Tu cotizacion ha sido aprobada. Realiza una transferencia bancaria con los siguientes datos:
+          Tu cotización ha sido aprobada. Realiza una transferencia bancaria con los siguientes datos:
         </p>
         <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
           <table width="100%" cellpadding="0" cellspacing="0">
@@ -91,7 +92,7 @@ export async function sendPaymentLinkEmail(
           </table>
         </div>
         <p style="margin: 12px 0 0; color: #9a3412; font-size: 13px; font-weight: 500;">
-          Importante: Incluye el numero de cotizacion (${cotizacion.numero}) en el asunto de la transferencia para identificar tu pago.
+          Importante: Incluye el numero de cotización (${cotizacion.numero}) en el asunto de la transferencia para identificar tu pago.
         </p>
       </div>
     `;

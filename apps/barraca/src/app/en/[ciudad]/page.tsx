@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 // Audit A1+SEO: cliente publico (anon) para lecturas de catalogo. Reduce
 // blast-radius del admin client y permite SSG estatico de la landing.
 import { supabasePublic } from "@jurmaq/shared/supabase";
-import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ } from "@jurmaq/shared/seo";
+import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ, DISTANCIAS_BARRACA } from "@jurmaq/shared/seo";
+import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
+import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 
 interface Categoria {
   id: number;
@@ -27,7 +29,7 @@ export async function generateMetadata({
 
   return {
     title: `Barraca de Fierros y Materiales en ${c.nombre} · Te mejoramos el precio en 2h · JURMAQ`,
-    description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y +1.600 productos en ${c.nombre} (${c.region}). Despacho desde Molina en ${c.tiempoDespacho}. Súbenos tu cotización de Sodimac, Easy o Construmart y en menos de 2 horas te mejoramos el precio.`,
+    description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y +1.600 productos en ${c.nombre} (${c.region}). Despacho desde Molina en ${DISTANCIAS_BARRACA[c.slug].tiempo}. Súbenos tu cotización de Sodimac, Easy o Construmart y en menos de 2 horas te mejoramos el precio.`,
     keywords: [
       `barraca de fierros ${c.nombre}`,
       `barraca fierros ${c.nombre}`,
@@ -50,7 +52,7 @@ export async function generateMetadata({
     ],
     openGraph: {
       title: `Barraca JURMAQ en ${c.nombre} · Te mejoramos el precio en 2h`,
-      description: `+1.600 productos. Despacho a ${c.nombre} en ${c.tiempoDespacho}. Súbenos tu cotización de la competencia y en menos de 2 horas te llega contraoferta JURMAQ por correo.`,
+      description: `+1.600 productos. Despacho a ${c.nombre} en ${DISTANCIAS_BARRACA[c.slug].tiempo}. Súbenos tu cotización de la competencia y en menos de 2 horas te llega contraoferta JURMAQ por correo.`,
       url: `https://barraca.jurmaq.cl/en/${c.slug}`,
       siteName: "Barraca JURMAQ",
       locale: "es_CL",
@@ -135,7 +137,7 @@ export default async function BarracaEnCiudadPage({
             name: `¿Despachan a ${c.nombre}?`,
             acceptedAnswer: {
               "@type": "Answer",
-              text: `Sí. Despachamos a ${c.nombre} desde nuestra barraca en Molina (${c.distanciaKm} km). Tiempo de despacho típico: ${c.tiempoDespacho}. También cubrimos comunas vecinas: ${c.comunasVecinas.join(", ")}.`,
+              text: `Sí. Despachamos a ${c.nombre} desde nuestra barraca en Molina (${DISTANCIAS_BARRACA[c.slug].km} km). Tiempo de despacho típico: ${DISTANCIAS_BARRACA[c.slug].tiempo}. También cubrimos comunas vecinas: ${c.comunasVecinas.join(", ")}.`,
             },
           },
           {
@@ -181,13 +183,16 @@ export default async function BarracaEnCiudadPage({
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
-              <Link href="/" className="hover:text-white">Barraca JURMAQ</Link>
-              <span className="mx-2">›</span>
-              <span className="text-white">Despacho a {c.nombre}</span>
-            </nav>
+            <Breadcrumbs
+              variant="dark"
+              className="mb-4"
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: `Despacho a ${c.nombre}` },
+              ]}
+            />
             <div className="inline-block px-3 py-1 mb-4 bg-orange-600 text-white text-xs font-bold uppercase tracking-wider rounded">
-              ✓ Despacho a {c.nombre} · {c.tiempoDespacho}
+              ✓ Despacho a {c.nombre} · {DISTANCIAS_BARRACA[c.slug].tiempo}
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
               Barraca de Fierros y Materiales de Construcción en {c.nombre}
@@ -195,7 +200,7 @@ export default async function BarracaEnCiudadPage({
             <p className="text-lg text-gray-200 max-w-3xl mb-2">
               <strong className="text-orange-400">Súbenos tu cotización de Sodimac, Easy o Construmart</strong> y
               en menos de 2 horas te mejoramos el precio. Despacho desde Molina a {c.nombre}{" "}
-              en {c.tiempoDespacho} ({c.distanciaKm} km).
+              en {DISTANCIAS_BARRACA[c.slug].tiempo} ({DISTANCIAS_BARRACA[c.slug].km} km).
             </p>
             <p className="text-gray-300 max-w-3xl mb-8">{c.contextoLocal}</p>
             <div className="flex flex-wrap gap-3">
@@ -300,11 +305,11 @@ export default async function BarracaEnCiudadPage({
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">{c.distanciaKm} km</div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">{DISTANCIAS_BARRACA[c.slug].km} km</div>
                 <p className="text-gray-700">Distancia desde la barraca</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">{c.tiempoDespacho}</div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">{DISTANCIAS_BARRACA[c.slug].tiempo}</div>
                 <p className="text-gray-700">Tiempo de despacho típico</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
@@ -325,8 +330,8 @@ export default async function BarracaEnCiudadPage({
               <div>
                 <dt className="font-semibold text-navy-950 mb-1">¿Despachan a {c.nombre}?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Sí. Despachamos a {c.nombre} desde nuestra barraca en Molina ({c.distanciaKm} km). Tiempo de
-                  despacho típico: {c.tiempoDespacho}. También cubrimos {c.comunasVecinas.join(", ")}.
+                  Sí. Despachamos a {c.nombre} desde nuestra barraca en Molina ({DISTANCIAS_BARRACA[c.slug].km} km). Tiempo de
+                  despacho típico: {DISTANCIAS_BARRACA[c.slug].tiempo}. También cubrimos {c.comunasVecinas.join(", ")}.
                 </dd>
               </div>
               <div>
@@ -372,7 +377,7 @@ export default async function BarracaEnCiudadPage({
                     className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:border-orange-500 rounded-full text-sm font-medium text-navy-950 transition-colors"
                   >
                     Barraca en {v.nombre}
-                    <span className="text-xs text-gray-500">{v.distanciaKm} km</span>
+                    <span className="text-xs text-gray-500">{DISTANCIAS_BARRACA[v.slug].km} km</span>
                   </Link>
                 ))}
               </div>
@@ -407,6 +412,19 @@ export default async function BarracaEnCiudadPage({
             </div>
           </div>
         </section>
+
+        <CrossLinksGrid
+          title="También despachamos a otras ciudades del Maule"
+          subtitle="Materiales de construcción y barraca de fierros con despacho directo desde Molina a toda la región."
+          eyebrow="Cobertura · Maule"
+          variant="light"
+          items={CIUDADES.filter((x) => x.slug !== c.slug)
+            .slice(0, 11)
+            .map((x) => ({
+              label: `Despacho a ${x.nombre}`,
+              href: `/en/${x.slug}`,
+            }))}
+        />
       </article>
     </>
   );

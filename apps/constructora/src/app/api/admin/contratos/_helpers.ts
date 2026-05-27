@@ -1,5 +1,6 @@
 import 'server-only';
 import { formatCLP } from "@jurmaq/shared/format";
+import { LEGAL_INFO } from "@jurmaq/shared/seo";
 import {
   formatDate,
   numberToSpanishWords,
@@ -20,7 +21,7 @@ export type MaquinariaRow = Record<string, unknown>;
 export const JURMAQ_ARRENDADOR = {
   razon_social: 'Constructora Jorge Ubilla Rivera E.I.R.L.',
   rut: '76.624.872-1',
-  domicilio: 'Lote 3 del lote A, HJ 11, Maquehua, Curico, Region del Maule',
+  domicilio: LEGAL_INFO.brands.constructora.direccionLegal,
   telefono: '+56 9 7667 3577',
   email: 'contacto@jurmaq.cl',
   rep_legal: 'Jorge Ubilla Rivera',

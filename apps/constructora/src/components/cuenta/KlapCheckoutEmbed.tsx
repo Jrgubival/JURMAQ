@@ -1,6 +1,7 @@
-'use client';
+"use client"
 
 import { useState } from 'react';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * KlapCheckoutEmbed — UI para que el cliente autorice la garantía.
@@ -30,7 +31,7 @@ export default function KlapCheckoutEmbed({
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ hold_id: string; last4: string; brand: string } | null>(null);
 
-  const isProdMode = process.env.NEXT_PUBLIC_KLAP_MODE === 'production';
+  const isProdMode = env.NEXT_PUBLIC_KLAP_MODE === 'production';
   const montoFmt = new Intl.NumberFormat('es-CL').format(monto);
 
   async function autorizar() {

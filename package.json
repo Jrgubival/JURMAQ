@@ -17,7 +17,8 @@
     "build:barraca": "pnpm --filter @jurmaq/barraca build",
     "build:constructora": "pnpm --filter @jurmaq/constructora build",
     "lint": "pnpm --recursive --filter \"./apps/*\" lint",
-    "typecheck": "pnpm --recursive --filter \"./apps/*\" --filter \"./packages/*\" typecheck"
+    "typecheck": "pnpm --recursive --filter \"./apps/*\" --filter \"./packages/*\" typecheck",
+    "db:types": "supabase gen types typescript --project-id wmoizhbdalvnveclenvf --schema public > packages/shared/src/db-types.ts && echo '✓ Types regenerados en packages/shared/src/db-types.ts'"
   },
   "devDependencies": {
     "typescript": "^5"

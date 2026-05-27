@@ -56,7 +56,7 @@ export async function GET(
     }
 
     // Strip `costo` from variantes as well
-    const safeVariantes = (variantes || []).map(({ costo: _c, ...v }: any) => v);
+    const safeVariantes = (variantes || []).map(({ costo: _c, ...v }) => v);
 
     return NextResponse.json({
       producto,

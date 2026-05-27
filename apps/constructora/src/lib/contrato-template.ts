@@ -1,3 +1,5 @@
+import { LEGAL_INFO } from "@jurmaq/shared/seo";
+
 /**
  * REFERENCE ONLY — not loaded at runtime.
  *
@@ -223,7 +225,7 @@ export const DEFAULT_CONTRATO_TEMPLATE: string = `<!DOCTYPE html>
         <div>
           <div class="name">Constructora Jorge Ubilla Rivera E.I.R.L.</div>
           <div class="sub">JURMAQ &middot; Arriendo de maquinaria y materiales de construcción</div>
-          <div class="sub">RUT 76.624.872-1 &middot; Lote 3 del lote A, HJ 11, Maquehua, Curicó, Región del Maule</div>
+          <div class="sub">RUT 76.624.872-1 &middot; ${LEGAL_INFO.brands.constructora.direccionLegal}</div>
           <div class="sub">Teléfono +56 9 7667 3577 &middot; contacto@jurmaq.cl</div>
         </div>
       </div>
@@ -250,8 +252,7 @@ export const DEFAULT_CONTRATO_TEMPLATE: string = `<!DOCTYPE html>
     <p>
       Comparece por una parte <strong>Constructora Jorge Ubilla Rivera E.I.R.L.</strong>, empresa
       individual de responsabilidad limitada del giro de su denominación, Rol Único Tributario
-      <strong>76.624.872-1</strong>, con domicilio en <em>Lote 3 del lote A, HJ 11, Maquehua, comuna de Curicó,
-      Región del Maule, Chile</em>, representada legalmente por don <strong>Jorge Ubilla Rivera</strong>,
+      <strong>76.624.872-1</strong>, con domicilio en <em>${LEGAL_INFO.brands.constructora.direccionLegal}</em>, representada legalmente por don <strong>Jorge Ubilla Rivera</strong>,
       en adelante e indistintamente "<strong>el Arrendador</strong>" o "<strong>JURMAQ</strong>".
     </p>
 

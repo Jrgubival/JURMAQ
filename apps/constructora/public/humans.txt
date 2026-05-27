@@ -1,0 +1,11 @@
+/* TEAM */
+Owner: Jorge Ubilla Rivera
+Site: https://jurmaq.cl
+Contact: contacto@jurmaq.cl
+
+/* TECNOLOGÍA */
+Stack: Next.js 16, TypeScript, Tailwind CSS, Supabase, Vercel
+Last update: 2026-05-27
+
+/* THANKS */
+Claude Code · Vercel · Supabase · Anthropic

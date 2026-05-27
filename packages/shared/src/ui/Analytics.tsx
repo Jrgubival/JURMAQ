@@ -1,26 +1,33 @@
 import Script from "next/script";
+import { env } from "@jurmaq/shared/env";
 
 /**
- * Componente que monta gtag (GA4) si NEXT_PUBLIC_GA_MEASUREMENT_ID está
- * configurado. Sin la env var, NO hace nada (no carga script, no conecta
- * a Google) — ideal para previews y dev.
+ * Analytics + Google Consent Mode v2 — versión compartida entre barraca y constructora.
  *
- * Consent Mode v2 (audit fase 4.6):
+ * Por qué importa:
+ * - Google Analytics 4 + Ads requieren consentimiento explícito para uso de
+ *   cookies analíticas/marketing en Chile (Ley 21.719 indirectamente, pero
+ *   sobre todo política de Google) → Consent Mode v2 (granted/denied).
+ * - Sin Consent Mode v2, GA4 puede no registrar eventos en regiones EEA y
+ *   pierde conversiones en remarketing.
+ *
+ * Cómo funciona:
  * - Setea consent default DENIED para todas las categorías ANTES de cargar
  *   gtag.js. Necesario para cumplir política Google + Ley 21.719.
- * - CookieBanner.tsx llama gtag('consent', 'update', {...}) cuando el user
- *   acepta o rechaza. Sin banner, todo queda denied (modo más conservador).
+ * - {@link CookieBanner} llama `gtag('consent', 'update', {...})` cuando el
+ *   user acepta o rechaza. Sin banner, todo queda denied (modo conservador).
  *
- * Uso: importar en `src/app/layout.tsx` justo antes de `<body>` o en
- * `<head>` para montar gtag.js. Los events se disparan desde
- * `src/lib/analytics.ts` (track / trackEvents).
+ * Configuración:
+ * - Si `NEXT_PUBLIC_GA_MEASUREMENT_ID` no está seteado, retorna null — ideal
+ *   para previews y dev.
  *
- * CSP: el root layout ya permite `https://www.googletagmanager.com` y
- * `https://www.google-analytics.com` en `script-src` y `connect-src`
- * (ver next.config.ts).
+ * CSP:
+ * - El layout host debe permitir `https://www.googletagmanager.com` y
+ *   `https://www.google-analytics.com` en `script-src` y `connect-src`
+ *   (ver next.config.ts de cada app).
  */
 export default function Analytics() {
-  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gaId = env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   if (!gaId) return null;
 
   return (

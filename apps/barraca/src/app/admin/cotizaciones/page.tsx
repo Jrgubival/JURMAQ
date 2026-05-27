@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import { useState, useEffect } from 'react';
 import { formatCLP } from "@jurmaq/shared/format";
@@ -378,20 +378,30 @@ export default function BarracaCotizacionesPage() {
     }
   };
 
-  const parseItems = (itemsJson: string): any[] => {
+  type CotizacionItemParsed = CotizacionItem & {
+    tipo: EditableCotizacionItem['tipo'];
+    descuento: number;
+    subtotal: number;
+  };
+  const parseItems = (itemsJson: string): CotizacionItemParsed[] => {
     try {
       const arr = JSON.parse(itemsJson);
       if (!Array.isArray(arr)) return [];
-      return arr.map((item: any) => ({
-        ...item,
-        tipo: item.tipo || 'producto',
-        descuento: item.descuento || 0,
-        subtotal: (() => {
-          const base = (item.precio || 0) * (item.cantidad || 1);
-          if (item.descuento && item.descuento > 0) return Math.round(base * (1 - item.descuento / 100));
-          return base;
-        })(),
-      }));
+      return arr.map((item: CotizacionItem & { tipo?: string; descuento?: number }) => {
+        const rawTipo = item.tipo;
+        const tipo: EditableCotizacionItem['tipo'] =
+          rawTipo === 'flete' || rawTipo === 'servicio' || rawTipo === 'otro' ? rawTipo : 'producto';
+        return {
+          ...item,
+          tipo,
+          descuento: item.descuento || 0,
+          subtotal: (() => {
+            const base = (item.precio || 0) * (item.cantidad || 1);
+            if (item.descuento && item.descuento > 0) return Math.round(base * (1 - item.descuento / 100));
+            return base;
+          })(),
+        };
+      });
     } catch {
       return [];
     }
@@ -773,7 +783,7 @@ export default function BarracaCotizacionesPage() {
                 {/* Warning if editing cotización with contraoferta */}
                 {editMode && selectedCot.contraoferta_items && (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3 text-xs text-amber-800">
-                    <strong>Nota:</strong> Esta cotizacion tiene una contraoferta activa. Estos cambios aplican solo a la cotizacion original.
+                    <strong>Nota:</strong> Esta cotización tiene una contraoferta activa. Estos cambios aplican solo a la cotización original.
                   </div>
                 )}
 
@@ -914,15 +924,15 @@ export default function BarracaCotizacionesPage() {
                           <th className="text-left px-3 py-2 text-gray-600 font-medium">Producto</th>
                           <th className="text-center px-3 py-2 text-gray-600 font-medium">Cant.</th>
                           <th className="text-right px-3 py-2 text-gray-600 font-medium">Precio</th>
-                          {parseItems(selectedCot.items).some((i: any) => i.descuento > 0) && (
+                          {parseItems(selectedCot.items).some((i: CotizacionItemParsed) => i.descuento > 0) && (
                             <th className="text-center px-3 py-2 text-gray-600 font-medium">Dto.</th>
                           )}
                           <th className="text-right px-3 py-2 text-gray-600 font-medium">Subtotal</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {parseItems(selectedCot.items).map((item: any, idx: number) => {
-                          const hasAnyDiscount = parseItems(selectedCot.items).some((i: any) => i.descuento > 0);
+                        {parseItems(selectedCot.items).map((item: CotizacionItemParsed, idx: number) => {
+                          const hasAnyDiscount = parseItems(selectedCot.items).some((i: CotizacionItemParsed) => i.descuento > 0);
                           const sub = computeSubtotal(item);
                           return (
                             <tr key={idx} className="border-b border-gray-100">
@@ -955,7 +965,7 @@ export default function BarracaCotizacionesPage() {
                       </tbody>
                       <tfoot>
                         <tr className="bg-gray-50">
-                          <td colSpan={parseItems(selectedCot.items).some((i: any) => i.descuento > 0) ? 4 : 3} className="px-3 py-2 text-right font-semibold text-gray-900">Total</td>
+                          <td colSpan={parseItems(selectedCot.items).some((i: CotizacionItemParsed) => i.descuento > 0) ? 4 : 3} className="px-3 py-2 text-right font-semibold text-gray-900">Total</td>
                           <td className="px-3 py-2 text-right font-bold text-lg" style={{ color: '#e6b422' }}>{formatCLP(selectedCot.total)}</td>
                         </tr>
                       </tfoot>

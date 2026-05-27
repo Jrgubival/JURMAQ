@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GUIAS, getGuia } from "@/lib/guias-seo-data";
+import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 
 /**
  * pSEO landing — guías informacionales (qué es X, diferencia X vs Y, etc.).
@@ -101,13 +102,15 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-12">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
-              <Link href="/" className="hover:text-white">Barraca JURMAQ</Link>
-              <span className="mx-2">›</span>
-              <Link href="/guias" className="hover:text-white">Guías</Link>
-              <span className="mx-2">›</span>
-              <span className="text-white">{guia.titulo}</span>
-            </nav>
+            <Breadcrumbs
+              variant="dark"
+              className="mb-4"
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: "Guías", href: "/guias" },
+                { label: guia.titulo },
+              ]}
+            />
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
               {guia.h1}
             </h1>

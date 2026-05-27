@@ -7,6 +7,7 @@ import { klapPreauth } from '@/lib/klap-client';
 import { mockNetworkToken } from '@/lib/klap-mock';
 import { logContratoEvent } from '@/lib/contratos-audit';
 import { sendGarantiaAutorizadaEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-autorizada';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * POST /api/public/contratos/entrega/[token]/preauth
@@ -218,7 +219,7 @@ export async function POST(
     klap_transaction_id: preauthRes.data.trx_id,
     request_id: consumerTx,
     raw_response: preauthRes.raw ?? null,
-    origen: process.env.KLAP_ENABLED === 'true' ? 'api' : 'mock',
+    origen: env.KLAP_ENABLED ? 'api' : 'mock',
   });
   await logContratoEvent(request, contrato.id, 'delivery_card_authorized', {
     monto,

@@ -1,23 +1,16 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import { LEGAL_INFO, buildPageMetadata } from "@jurmaq/shared/seo";
 
-export const metadata: Metadata = {
+// Ejemplo de uso de `buildPageMetadata`: page legal sin necesidad de copy de OG
+// distinto al top-level. El helper centraliza canonical, siteName, OG image y
+// twitter card. Para pages de marketing con OG colorido, NO usar este helper.
+export const metadata = buildPageMetadata({
+  brand: "constructora",
   title: "Terminos y Condiciones | Constructora Jorge Ubilla Rivera E.I.R.L.",
   description:
-    "Terminos y condiciones de uso del sitio web JURMAQ.cl. Condiciones de venta, despacho, garantias y politicas comerciales de Constructora Jorge Ubilla Rivera E.I.R.L., Molina, Maule, Chile.",
-  alternates: {
-    canonical: "https://jurmaq.cl/terminos",
-  },
-  openGraph: {
-    title: "Terminos y Condiciones | JURMAQ.cl",
-    description:
-      "Terminos y condiciones de uso, venta y despacho de Constructora Jorge Ubilla Rivera E.I.R.L.",
-    url: "https://jurmaq.cl/terminos",
-    siteName: "JURMAQ.cl",
-    locale: "es_CL",
-    type: "website",
-  },
-};
+    "Terminos y condiciones de uso del sitio web JURMAQ.cl. Condiciones de venta, despacho, garantias y politicas comerciales de Constructora Jorge Ubilla Rivera E.I.R.L., Curicó, Maule, Chile.",
+  path: "/terminos",
+});
 
 export default function TerminosPage() {
   return (
@@ -63,19 +56,17 @@ export default function TerminosPage() {
                 El presente sitio web <strong>jurmaq.cl</strong> es operado por{" "}
                 <strong>Constructora Jorge Ubilla Rivera E.I.R.L.</strong>, empresa
                 constituida conforme a las leyes de la Republica de Chile, con
-                domicilio en Av. Poniente 2157, Molina, Region del Maule,
-                Chile.
+                domicilio en {LEGAL_INFO.brands.constructora.direccion}, {LEGAL_INFO.brands.constructora.addressRegion}, Chile.
               </p>
               <ul className="mt-3 space-y-1 text-sm text-gray-600">
                 <li>
                   <strong>Razon social:</strong> Constructora Jorge Ubilla Rivera E.I.R.L.
                 </li>
                 <li>
-                  <strong>RUT:</strong> 76.624.872-1
+                  <strong>RUT:</strong> {LEGAL_INFO.rut}
                 </li>
                 <li>
-                  <strong>Direccion:</strong> Av. Poniente 2157, Molina, Maule,
-                  Chile
+                  <strong>Direccion:</strong> {LEGAL_INFO.brands.constructora.direccion}, Chile
                 </li>
                 <li>
                   <strong>Email:</strong>{" "}
@@ -148,7 +139,7 @@ export default function TerminosPage() {
               <p className="text-gray-700 leading-relaxed">
                 Los precios publicados en el sitio web son referenciales y pueden
                 variar sin previo aviso. Los precios definitivos seran los
-                confirmados al momento de generar la cotizacion o el pedido.
+                confirmados al momento de generar la cotización o el pedido.
                 Todos los precios estan expresados en pesos chilenos (CLP) e
                 incluyen IVA salvo que se indique lo contrario. La disponibilidad
                 de productos esta sujeta a stock existente.
@@ -202,12 +193,12 @@ export default function TerminosPage() {
                   cobertura.
                 </li>
                 <li>
-                  Retiro en planta disponible en Av. Poniente 2157, Molina, en
+                  Retiro en planta disponible en {LEGAL_INFO.brands.constructora.direccion}, en
                   horario de atencion.
                 </li>
                 <li>
                   Los costos de despacho fuera de la zona de cobertura habitual
-                  seran informados al momento de la cotizacion.
+                  seran informados al momento de la cotización.
                 </li>
               </ul>
             </div>
@@ -380,8 +371,7 @@ export default function TerminosPage() {
                   </a>
                 </li>
                 <li>
-                  <strong>Direccion:</strong> Av. Poniente 2157, Molina, Maule,
-                  Chile
+                  <strong>Direccion:</strong> {LEGAL_INFO.brands.constructora.direccion}, Chile
                 </li>
               </ul>
             </div>

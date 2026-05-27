@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * GET /api/cuenta/contratos/[id]/pdf
@@ -58,6 +59,6 @@ export async function GET(
     return NextResponse.json({ error: 'Contrato sin token de acceso' }, { status: 404 });
   }
 
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl'}/contrato/firmar/${contrato.firma_token}`;
+  const url = `${env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl'}/contrato/firmar/${contrato.firma_token}`;
   return NextResponse.redirect(url, { status: 302 });
 }

@@ -25,3 +25,20 @@ export function maquinariaHref(machine: { id: number | string; nombre?: string }
   if (!machine.nombre) return `/maquinarias/${machine.id}`;
   return `/maquinarias/${slugifyMaquinaria(machine.nombre)}-${machine.id}`;
 }
+
+/**
+ * Extrae el id numérico de cualquier formato de slug aceptado por
+ * `/maquinarias/[id]`:
+ *   - `"9"`                       → 9
+ *   - `"minicargador-cat-246c-9"` → 9 (tail-id pattern, formato SEO)
+ *   - `"minicargador-cat-246c"`   → null (slug puro sin id — requiere lookup por nombre)
+ *
+ * Usado por las rutas dinámicas de detalle y por la sub-ruta `/en/[ciudad]`
+ * para no duplicar el regex.
+ */
+export function parseSlugId(slug: string): number | null {
+  if (/^\d+$/.test(slug)) return Number(slug);
+  const tail = slug.match(/-(\d+)$/);
+  if (tail) return Number(tail[1]);
+  return null;
+}

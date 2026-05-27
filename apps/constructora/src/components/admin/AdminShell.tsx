@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -7,6 +7,7 @@ import { signOut, useSession } from 'next-auth/react';
 import type { Module } from '@jurmaq/shared/roles';
 import { visibleModules } from '@jurmaq/shared/roles';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
+import { env } from '@jurmaq/shared/env';
 import GlobalSearch from './GlobalSearch';
 import NotificationsBell from './NotificationsBell';
 
@@ -214,7 +215,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   // Si el sysadmin tiene acceso al admin de barraca también, ofrecemos un
   // link de cross-admin (configurable via env). Quita la necesidad del
   // switcher que vivía dentro del shell antes.
-  const barracaUrl = process.env.NEXT_PUBLIC_BARRACA_URL || '';
+  const barracaUrl = env.NEXT_PUBLIC_BARRACA_URL || '';
 
   return (
     <div className="min-h-screen flex bg-gray-50">

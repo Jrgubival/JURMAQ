@@ -1,5 +1,6 @@
 import 'server-only';
 import crypto from 'crypto';
+import { env } from '@jurmaq/shared/env';
 import {
   mockCancel,
   mockCapture,
@@ -33,7 +34,7 @@ import type {
  */
 
 function isEnabled(): boolean {
-  return process.env.KLAP_ENABLED === 'true' && !!process.env.KLAP_API_KEY && !!process.env.KLAP_BASE_URL;
+  return env.KLAP_ENABLED && !!env.KLAP_API_KEY && !!env.KLAP_BASE_URL;
 }
 
 function generateIdempotencyKey(): string {
@@ -43,13 +44,13 @@ function generateIdempotencyKey(): string {
 function authHeaders(): HeadersInit {
   return {
     'Content-Type': 'application/json',
-    'Api-Key': process.env.KLAP_API_KEY || '',
+    'Api-Key': env.KLAP_API_KEY || '',
     'Idempotency-Key': generateIdempotencyKey(),
   };
 }
 
 function base(): string {
-  return (process.env.KLAP_BASE_URL || 'https://api.pasarela.multicaja.cl').replace(/\/$/, '');
+  return (env.KLAP_BASE_URL || 'https://api.pasarela.multicaja.cl').replace(/\/$/, '');
 }
 
 /** Crea un hold (pre-autorización). */
@@ -144,7 +145,7 @@ export async function klapOffsessionCharge(
 
 /** Verifica la firma HMAC de un webhook de Klap. */
 export function verifyKlapWebhookSignature(payload: string, signatureHeader: string | null): boolean {
-  const secret = process.env.KLAP_WEBHOOK_SECRET;
+  const secret = env.KLAP_WEBHOOK_SECRET;
   if (!secret) return false;
   if (!signatureHeader) return false;
 

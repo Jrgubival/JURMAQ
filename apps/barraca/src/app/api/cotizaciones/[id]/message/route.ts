@@ -4,6 +4,7 @@ import { transporter } from '@jurmaq/shared/mail/email';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
+import { whatsappCtaConsultaCotizacion } from "@jurmaq/shared/whatsapp";
 
 type MessageTipo = 'aprobada' | 'rechazada' | 'info' | 'pago' | 'custom';
 
@@ -14,15 +15,15 @@ function getSubject(
 ): string {
   switch (tipo) {
     case 'aprobada':
-      return `Cotizacion ${numero} Aprobada - JURMAQ Barraca`;
+      return `Cotización ${numero} Aprobada - JURMAQ Barraca`;
     case 'rechazada':
-      return `Informacion sobre tu Cotizacion ${numero} - JURMAQ Barraca`;
+      return `Informacion sobre tu Cotización ${numero} - JURMAQ Barraca`;
     case 'pago':
-      return `Link de Pago - Cotizacion ${numero} - JURMAQ Barraca`;
+      return `Link de Pago - Cotización ${numero} - JURMAQ Barraca`;
     case 'info':
-      return `Informacion Cotizacion ${numero} - JURMAQ Barraca`;
+      return `Informacion Cotización ${numero} - JURMAQ Barraca`;
     case 'custom':
-      return customAsunto || `Cotizacion ${numero} - JURMAQ Barraca`;
+      return customAsunto || `Cotización ${numero} - JURMAQ Barraca`;
   }
 }
 
@@ -44,13 +45,13 @@ function getIcon(tipo: MessageTipo): string {
 function getTitle(tipo: MessageTipo): string {
   switch (tipo) {
     case 'aprobada':
-      return 'Tu Cotizacion ha sido Aprobada';
+      return 'Tu Cotización ha sido Aprobada';
     case 'rechazada':
-      return 'Informacion sobre tu Cotizacion';
+      return 'Informacion sobre tu Cotización';
     case 'pago':
-      return 'Link de Pago para tu Cotizacion';
+      return 'Link de Pago para tu Cotización';
     case 'info':
-      return 'Informacion sobre tu Cotizacion';
+      return 'Informacion sobre tu Cotización';
     case 'custom':
       return 'Mensaje de JURMAQ Barraca';
   }
@@ -81,7 +82,7 @@ function buildEmailHtml(params: {
       ? `
               <div style="background-color: #d1fae5; border-radius: 8px; padding: 16px; margin-bottom: 20px; text-align: center;">
                 <p style="margin: 0; color: #065f46; font-size: 15px; font-weight: 600;">
-                  &#9989; Tu cotizacion ha sido aprobada. Te contactaremos para coordinar el pago y la entrega.
+                  &#9989; Tu cotización ha sido aprobada. Te contactaremos para coordinar el pago y la entrega.
                 </p>
               </div>`
       : '';
@@ -134,7 +135,7 @@ function buildEmailHtml(params: {
 
               <!-- WhatsApp CTA -->
               <div style="text-align: center; margin-bottom: 24px;">
-                <a href="https://wa.me/56976673577?text=Hola%2C%20consulto%20por%20mi%20cotizacion%20%23${numero}" style="display: inline-block; background-color: #25D366; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
+                <a href="${whatsappCtaConsultaCotizacion(numero, 'barraca')}" style="display: inline-block; background-color: #25D366; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
                   Escribenos por WhatsApp
                 </a>
               </div>
@@ -227,7 +228,7 @@ export async function POST(
       .single();
 
     if (fetchError || !cotizacion) {
-      return NextResponse.json({ error: 'Cotizacion no encontrada' }, { status: 404 });
+      return NextResponse.json({ error: 'Cotización no encontrada' }, { status: 404 });
     }
 
     if (!cotizacion.email) {

@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
 import { formatCLP } from "@jurmaq/shared/format";
+import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
 
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
@@ -106,41 +108,40 @@ export default function PromotedProductCard({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({} as { error?: string }));
-        const msg = (data as { error?: string }).error || (res.status === 429 ? "Demasiadas solicitudes" : "No se pudo agregar al carrito");
+        const msg = (data as { error?: string }).error || (res.status === 429 ? TOAST_MESSAGES.cart.RATE_LIMITED : TOAST_MESSAGES.cart.ADD_FAILED_FALLBACK);
         showToast(msg, "error");
         return;
       }
       setAdded(true);
       window.dispatchEvent(new Event("cart-updated"));
-      showToast("Agregado al carrito con descuento", "success");
+      showToast(TOAST_MESSAGES.cart.ADDED_WITH_DISCOUNT, "success");
       setTimeout(() => setAdded(false), 2000);
     } catch {
-      showToast("Error al agregar al carrito", "error");
+      showToast(TOAST_MESSAGES.cart.ADD_ERROR, "error");
     } finally {
       setAdding(false);
     }
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden group hover:shadow-lg hover:border-orange-200 transition-all duration-300 relative">
-      {/* Discount badge */}
-      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-        <span className="px-2 py-0.5 text-xs font-bold bg-red-600 text-white rounded-full">
-          -{descuento}%
-        </span>
-        <span className="px-2 py-0.5 text-[10px] font-bold bg-orange-500 text-white rounded-full uppercase tracking-wider">
-          Oferta del Dia
+    <div className="bg-white border border-[#EAEAEA] rounded-2xl overflow-hidden group hover:border-[#111111]/30 transition-colors duration-300 relative">
+      {/* Discount badge — single hairline pill, editorial */}
+      <div className="absolute top-3 left-3 z-10">
+        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] bg-white/95 border border-[#EAEAEA] text-[#111111] rounded-full tabular-nums">
+          Oferta · −{descuento}%
         </span>
       </div>
 
       <Link href={`/producto/${slug}`} className="block">
         <div className="aspect-square bg-gray-100 relative overflow-hidden">
           {displayImage ? (
-            <img
+            <Image
               src={displayImage}
               alt={nombre}
               className="w-full h-full object-cover"
-              loading="lazy"
+              width={400}
+              height={400}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               onError={() => { if (!imgError) setImgError(true); }}
             />
           ) : (
@@ -161,13 +162,13 @@ export default function PromotedProductCard({
             </div>
           )}
 
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-3 right-3">
             {stock > 0 ? (
-              <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+              <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] bg-white/95 border border-[#EAEAEA] text-[#2F7F4E] rounded-full">
                 En stock
               </span>
             ) : (
-              <span className="px-2.5 py-1 text-xs font-bold bg-red-600 text-white rounded-full">
+              <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] bg-white/95 border border-[#EAEAEA] text-[#9C2B1F] rounded-full">
                 Sin stock
               </span>
             )}
@@ -177,43 +178,43 @@ export default function PromotedProductCard({
 
       <div className="p-4">
         <Link href={`/producto/${slug}`} className="block">
-          <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1 group-hover:text-orange-600 transition-colors">
+          <h3 className="text-sm font-medium text-[#111111] line-clamp-2 mb-1 group-hover:text-[#111111] transition-colors">
             {titleCase(nombre)}
           </h3>
-          {medida && <p className="text-xs text-gray-500 mb-2">{medida}</p>}
+          {medida && <p className="text-xs text-[#787774] mb-2">{medida}</p>}
         </Link>
 
         {stock > 0 && stock < 10 && (
-          <p className="text-xs text-amber-600 font-medium mb-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#787774] mb-2">
             Quedan {stock} unidades
           </p>
         )}
 
         <div className="flex items-end justify-between mt-2 gap-2">
           <div>
-            <div className="flex items-baseline gap-1.5">
-              <p className="text-lg font-bold text-orange-600">
+            <p className="text-[10px] text-[#787774] line-through tabular-nums">
+              Antes {formatCLP(precioOriginal)}
+            </p>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <p className="text-lg font-medium text-[#111111] tabular-nums">
                 {formatCLP(precioDescuento)}
               </p>
               {unidad && (
-                <span className="text-xs text-gray-500 font-medium">
+                <span className="text-xs text-[#787774] font-medium">
                   /{unidad}
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500 line-through">
-              {formatCLP(precioOriginal)}
-            </p>
           </div>
           <button
             onClick={handleAdd}
             disabled={adding || stock <= 0}
-            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium tracking-[0.02em] rounded-lg transition-colors ${
               added
-                ? "bg-green-500 text-white"
+                ? "bg-[#2F7F4E] text-white"
                 : stock <= 0
-                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                : "bg-orange-600 text-white hover:bg-orange-700 active:scale-95"
+                ? "bg-[#F0EFEB] text-[#787774] cursor-not-allowed"
+                : "bg-navy-950 text-white hover:bg-[#111111]"
             }`}
           >
             {adding ? (

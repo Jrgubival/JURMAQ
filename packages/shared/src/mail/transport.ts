@@ -1,5 +1,6 @@
 import 'server-only';
 import { Resend } from 'resend';
+import { env } from '@jurmaq/shared/env';
 import { maskEmail } from '../logging';
 
 /**
@@ -14,15 +15,15 @@ import { maskEmail } from '../logging';
  * push) se agregarian aqui con la misma interfaz.
  */
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const EMAIL_FROM = process.env.EMAIL_FROM || 'JURMAQ <noreply@jurmaq.cl>';
+const resend = new Resend(env.RESEND_API_KEY);
+const EMAIL_FROM = env.EMAIL_FROM || 'JURMAQ <noreply@jurmaq.cl>';
 
 /**
  * BCC automatico a casillas internas para auditoria/respaldo. Configurable
  * via env ADMIN_BCC_EMAILS (separado por comas).
  */
-const ADMIN_BCC_EMAILS: string[] = (process.env.ADMIN_BCC_EMAILS ||
-  `${process.env.ADMIN_EMAIL || 'contacto@jurmaq.cl'},constructora@jurmaq.cl`)
+const ADMIN_BCC_EMAILS: string[] = (env.ADMIN_BCC_EMAILS ||
+  `${env.ADMIN_EMAIL || 'contacto@jurmaq.cl'},constructora@jurmaq.cl`)
   .split(',')
   .map((s) => s.trim().toLowerCase())
   .filter(Boolean);

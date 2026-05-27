@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * CookieBanner — Consent Mode v2 implementation.
+ * CookieBanner — Consent Mode v2 implementation compartida entre apps.
  *
  * Por qué importa:
  * - Google Analytics 4 + Ads requieren consentimiento explícito para uso de
@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
  *   pierde conversiones en remarketing.
  *
  * Cómo funciona:
- * - Default state se setea ANTES de gtag.js (en Analytics.tsx) con todo denied.
+ * - Default state se setea ANTES de gtag.js (en {@link Analytics}) con todo denied.
  * - Si el usuario ya consintió antes (localStorage `consent_v2`), se hace
  *   `gtag('consent', 'update', ...)` con granted en mount.
  * - Si NO consintió, renderizamos el banner. Accept → update granted.
@@ -21,6 +21,13 @@ import { useEffect, useState } from "react";
  * Privacy:
  * - Solo guardamos `accepted: true|false` y timestamp.
  * - Nada de PII, nada de email, nada que requiera RGPD/Ley21719 strict mode.
+ *
+ * Parámetros:
+ * - `productLabel`: palabra a usar en el copy ("productos" para barraca,
+ *   "máquinas" para constructora, etc.).
+ * - `acceptButtonClassName`: override opcional de la clase del botón "Aceptar
+ *   todo" para que cada brand pueda usar su token de color preferido
+ *   (default: `bg-navy-950` — funciona en ambas apps que tienen ese token).
  */
 
 type ConsentValue = "granted" | "denied";
@@ -70,21 +77,28 @@ function pushConsent(value: ConsentValue) {
     ad_personalization: value,
     analytics_storage: value,
   };
-  // gtag('consent', 'update', {...})
   window.gtag("consent", "update", params);
 }
 
-export default function CookieBanner() {
+export interface CookieBannerProps {
+  /** Palabra para el copy del banner — ej "productos", "máquinas". */
+  productLabel?: string;
+  /** Override del className para el botón "Aceptar todo" (default `bg-navy-950`). */
+  acceptButtonClassName?: string;
+}
+
+export default function CookieBanner({
+  productLabel = "productos",
+  acceptButtonClassName = "bg-navy-950 hover:bg-[#111111]",
+}: CookieBannerProps = {}) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const existing = getStoredConsent();
     if (!existing) {
-      // No decision yet → show banner.
       setVisible(true);
       return;
     }
-    // Already decided. Push the corresponding consent on mount so gtag knows.
     pushConsent(existing.accepted ? "granted" : "denied");
   }, []);
 
@@ -116,14 +130,14 @@ export default function CookieBanner() {
           Usamos cookies para mejorar tu experiencia.
         </h2>
         <p className="text-sm text-[#5A5A57] leading-relaxed mb-4">
-          Analytics y marketing nos ayudan a entender qué productos buscás y a
-          mostrarte ofertas relevantes. Sin datos personales identificables.
+          Analytics y marketing nos ayudan a entender qué {productLabel} buscás
+          y a mostrarte ofertas relevantes. Sin datos personales identificables.
         </p>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={accept}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-navy-950 text-white text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-[#111111] transition-colors"
+            className={`inline-flex items-center gap-2 px-4 py-2 ${acceptButtonClassName} text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors`}
           >
             Aceptar todo
           </button>

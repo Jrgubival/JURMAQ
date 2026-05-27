@@ -3,6 +3,8 @@ import { maquinariaHref } from "@/lib/maquinaria-slug";
 // Cliente publico (anon) — solo lecturas de maquinarias permitidas a anon.
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TIPOS_MAQUINA } from "@jurmaq/shared/seo";
+import { RECURSOS } from "@/lib/recursos-data";
+import { PROYECTOS } from "@/lib/proyectos-data";
 
 /**
  * Sitemap de jurmaq.cl (Constructora).
@@ -88,11 +90,63 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  // Cross landings máquina × ciudad — N×M long-tail
+  // (`<slug>-<id>/en/<ciudad>`). Priority < machineUrls porque son páginas
+  // derivadas, pero alta porque cada combinación captura intención específica.
+  const machineCityUrls: MetadataRoute.Sitemap = (machines || []).flatMap(
+    (m: { id: number | string; nombre: string; updated_at?: string | null }) =>
+      CIUDADES.map((c) => ({
+        url: `${baseUrl}${maquinariaHref(m)}/en/${c.slug}`,
+        lastModified: m.updated_at ? new Date(m.updated_at) : new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.75,
+      })),
+  );
+
+  // --- Recursos (guías informacionales) ---
+  // Hub + 1 landing por entrada en RECURSOS. Contenido evergreen, baja
+  // frecuencia de actualización pero alta autoridad informacional.
+  const recursosUrls: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/recursos`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    },
+    ...RECURSOS.map((r) => ({
+      url: `${baseUrl}/recursos/${r.slug}`,
+      lastModified: new Date(r.fechaModificacion || r.fechaPublicacion),
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    })),
+  ];
+
+  // --- Proyectos (case studies B2B) ---
+  // Hub + 1 detail page por entrada en PROYECTOS. Pages estáticas, alta
+  // autoridad por contenido único (cliente identificado + maquinaria + UF).
+  const proyectosUrls: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/proyectos`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+    },
+    ...PROYECTOS.map((p) => ({
+      url: `${baseUrl}/proyectos/${p.slug}`,
+      lastModified: new Date(p.fechaPublicacion),
+      changeFrequency: "yearly" as const,
+      priority: 0.7,
+    })),
+  ];
+
   return [
     ...staticPages,
     ...tipoLandings,
     ...ciudadArriendoLandings,
     ...ciudadTipoLandings,
     ...machineUrls,
+    ...machineCityUrls,
+    ...recursosUrls,
+    ...proyectosUrls,
   ];
 }

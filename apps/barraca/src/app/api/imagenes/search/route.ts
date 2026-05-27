@@ -1,5 +1,6 @@
 import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from '@jurmaq/shared/env';
 
 // Mapping of product keywords to curated Unsplash photo URLs
 function getDefaultImages(productName: string): string[] {
@@ -240,7 +241,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Parametro q es requerido' }, { status: 400 });
     }
 
-    const unsplashKey = process.env.UNSPLASH_ACCESS_KEY;
+    const unsplashKey = env.UNSPLASH_ACCESS_KEY;
 
     if (unsplashKey) {
       // Use Unsplash API

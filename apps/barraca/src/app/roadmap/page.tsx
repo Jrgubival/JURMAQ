@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { whatsappCtaIdea } from '@jurmaq/shared/whatsapp';
 
 /**
  * /roadmap — Roadmap público de JURMAQ.
@@ -165,7 +166,7 @@ export default function RoadmapPage() {
             Escríbenos por WhatsApp con la idea. Las que más se piden las priorizamos.
           </p>
           <a
-            href="https://wa.me/56976673577?text=Hola%2C%20tengo%20una%20idea%20para%20la%20web%20de%20JURMAQ"
+            href={whatsappCtaIdea()}
             target="_blank"
             rel="noopener noreferrer nofollow"
             className="inline-flex items-center gap-2 px-7 py-3.5 bg-navy-950 hover:bg-navy-900 text-white font-bold rounded-xl transition-colors"

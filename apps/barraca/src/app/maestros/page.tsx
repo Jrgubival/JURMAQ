@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { supabasePublic } from '@jurmaq/shared/supabase';
+import { whatsappCtaMaestro } from '@jurmaq/shared/whatsapp';
 
 /**
  * /maestros — Ranking público de Maestros JURMAQ.
@@ -60,7 +61,7 @@ async function getTopMaestros(limit = 20): Promise<MaestroRow[]> {
     if (error || !data) return [];
 
     const enriched = await Promise.all(
-      data.map(async (m: any) => {
+      data.map(async (m) => {
         const { count } = await supabasePublic
           .from('comisiones_maestro')
           .select('id', { count: 'exact', head: true })
@@ -199,7 +200,7 @@ export default async function MaestrosIndexPage() {
               {/* CTAs — button-in-button pattern (design-taste rule 5) */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
-                  href="https://wa.me/56976673577?text=Hola%2C%20quiero%20registrarme%20como%20maestro%20de%20JURMAQ"
+                  href={whatsappCtaMaestro('registro')}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="group inline-flex items-center gap-3 pl-5 pr-2 py-2 bg-[#111111] hover:bg-[#2F3437] text-white rounded-[10px] transition-spring tactile focus-visible:outline-2 focus-visible:outline-[#956400]"
@@ -315,7 +316,7 @@ export default async function MaestrosIndexPage() {
                 WhatsApp. Te aprobamos en 24h.
               </p>
               <a
-                href="https://wa.me/56976673577?text=Hola%2C%20quiero%20ser%20el%20primer%20maestro%20JURMAQ"
+                href={whatsappCtaMaestro('primer')}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 className="inline-flex items-center gap-2 px-5 py-3 bg-[#111111] hover:bg-[#2F3437] text-white rounded-[10px] text-sm font-semibold transition-spring tactile"
@@ -430,7 +431,7 @@ export default async function MaestrosIndexPage() {
             </div>
             <div className="lg:col-span-4 lg:text-right">
               <a
-                href="https://wa.me/56976673577?text=Hola%2C%20quiero%20registrarme%20como%20maestro%20JURMAQ"
+                href={whatsappCtaMaestro('registro')}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 className="group inline-flex items-center gap-3 pl-5 pr-2 py-2.5 bg-white hover:bg-[#F7F6F3] text-[#111111] rounded-[10px] transition-spring tactile"

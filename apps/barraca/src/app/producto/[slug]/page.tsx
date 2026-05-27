@@ -7,7 +7,8 @@ import AddToCartClient from "./AddToCartClient";
 import ShareButtons from "./ShareButtons";
 import ReviewsList from "@/components/barraca/ReviewsList";
 import ProductDetailImage from "@/components/barraca/ProductDetailImage";
-import ViewItemTracker from "@/components/analytics/ViewItemTracker";
+import ViewItemTracker from "@jurmaq/shared/ui/ViewItemTracker";
+import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs";
 import { getActiveCategoryDiscountMap, getDailyPromotions } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
@@ -96,21 +97,33 @@ export async function generateMetadata({
       title: `${producto.nombre} - ${precioFormateado} | Barraca JURMAQ`,
       description: `${producto.nombre} a ${precioFormateado}. ${stockTexto}. Despacho en Region del Maule.`,
       url: `https://barraca.jurmaq.cl/producto/${producto.slug}`,
-      siteName: "JURMAQ.cl",
+      // siteName se hereda del layout ("Barraca JURMAQ").
       locale: "es_CL",
       type: "article",
-      ...(producto.imagen
-        ? {
-            images: [
-              {
-                url: producto.imagen,
-                width: 800,
-                height: 800,
-                alt: producto.nombre,
-              },
-            ],
-          }
-        : {}),
+      images: producto.imagen
+        ? [
+            {
+              url: producto.imagen,
+              width: 800,
+              height: 800,
+              alt: producto.nombre,
+            },
+          ]
+        : [
+            // Fallback al OG default de la barraca cuando no hay imagen del producto.
+            {
+              url: "/og-image-barraca-1200x630.png",
+              width: 1200,
+              height: 630,
+              alt: `${producto.nombre} · Barraca JURMAQ`,
+            },
+            {
+              url: "/icon-512.png",
+              width: 512,
+              height: 512,
+              alt: "Barraca JURMAQ",
+            },
+          ],
     },
     alternates: {
       canonical: `https://barraca.jurmaq.cl/producto/${producto.slug}`,
@@ -275,18 +288,18 @@ export default async function ProductoPage({
 
       {/* Extra bottom padding on mobile for sticky add-to-cart bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 pb-56 lg:pb-12">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-[#787774] mb-10 flex-wrap">
-          <Link href="/" className="hover:text-[#111111] transition-colors">Inicio</Link>
-          {categoria && (
-            <>
-              <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
-              <Link href={`/categorias/${categoria.slug}`} className="hover:text-[#111111] transition-colors">{categoria.nombre}</Link>
-            </>
-          )}
-          <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" /></svg>
-          <span className="text-[#111111] font-medium">{producto.nombre}</span>
-        </nav>
+        <Breadcrumbs
+          variant="light"
+          className="mb-10"
+          items={(() => {
+            const items: BreadcrumbItem[] = [{ label: "Inicio", href: "/" }];
+            if (categoria) {
+              items.push({ label: categoria.nombre, href: `/categorias/${categoria.slug}` });
+            }
+            items.push({ label: producto.nombre });
+            return items;
+          })()}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* Image — hairline frame, no shadow heavy */}
@@ -478,7 +491,7 @@ export default async function ProductoPage({
               También te puede <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>interesar</span>.
             </h2>
             <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
-              {(relacionados || []).map((p: any) => (
+              {(relacionados || []).map((p) => (
                 <ProductCard key={p.id} id={p.id} nombre={p.nombre} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={categoria?.slug || ''} />
               ))}
             </div>

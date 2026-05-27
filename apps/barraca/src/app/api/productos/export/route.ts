@@ -2,6 +2,15 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
 import { NextResponse } from 'next/server';
 import XLSX from 'xlsx';
+import type { Database } from '@jurmaq/shared/db-types';
+
+type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
+type ProductoExportRow = Pick<
+  BarracaProductoRow,
+  'codigo' | 'nombre' | 'medida' | 'precio' | 'precio_original' | 'en_oferta' | 'costo' | 'stock' | 'unidad' | 'peso' | 'activo' | 'solo_cotizar'
+> & {
+  barraca_categorias: { nombre: string | null } | null;
+};
 
 export async function GET() {
   try {
@@ -11,7 +20,7 @@ export async function GET() {
     }
 
     // Fetch ALL products with category names, paginated to bypass Supabase 1000-row limit
-    let allProducts: any[] = [];
+    let allProducts: ProductoExportRow[] = [];
     let offset = 0;
 
     while (true) {
@@ -25,13 +34,13 @@ export async function GET() {
         .range(offset, offset + 999);
 
       if (!data || data.length === 0) break;
-      allProducts.push(...data);
+      allProducts.push(...(data as unknown as ProductoExportRow[]));
       offset += 1000;
       if (data.length < 1000) break;
     }
 
     // Map to export format
-    const rows = allProducts.map((p: any) => ({
+    const rows = allProducts.map((p) => ({
       Codigo: p.codigo || '',
       Nombre: p.nombre || '',
       Medida: p.medida || '',

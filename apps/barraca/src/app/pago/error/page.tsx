@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { HQ } from "@jurmaq/shared/seo";
 
 function ErrorContent() {
   const searchParams = useSearchParams();
@@ -31,13 +32,13 @@ function ErrorContent() {
         </h1>
         {externalReference && (
           <p className="text-lg font-semibold text-orange-600 mb-4">
-            Cotizacion #{externalReference}
+            Cotización #{externalReference}
           </p>
         )}
         <p className="text-gray-600 mb-8">
           No pudimos procesar tu pago. Esto puede deberse a fondos
           insuficientes, datos incorrectos o un problema temporal. Tu
-          cotizacion sigue activa y puedes intentar nuevamente.
+          cotización sigue activa y puedes intentar nuevamente.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
@@ -58,10 +59,10 @@ function ErrorContent() {
           <p className="text-sm text-gray-500">
             Si el problema persiste, contactanos al{" "}
             <a
-              href="tel:+56912345678"
+              href={`tel:${HQ.telefono}`}
               className="text-orange-600 font-semibold hover:underline"
             >
-              +56 9 1234 5678
+              {HQ.telefonoDisplay}
             </a>{" "}
             o a{" "}
             <a

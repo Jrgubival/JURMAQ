@@ -8,13 +8,16 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaHome } from "@jurmaq/shared/whatsapp";
 import { IconWhatsapp, IconBolt } from "@jurmaq/shared/icons";
+import { LEGAL_INFO } from "@jurmaq/shared/seo";
 import HeroSearch from "@/components/public/HeroSearch";
 import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
+import TestimoniosGrid from "@/components/public/TestimoniosGrid";
+import { getTestimoniosDestacados } from "@/lib/testimonios-data";
 
 
 export const metadata: Metadata = {
   title:
-    "JURMAQ · Arriendo Retroexcavadora, Minicargador y Maquinaria en Curicó",
+    "JURMAQ · Arriendo Retroexcavadora y Maquinaria en Curicó",
   description:
     "Arriendo de retroexcavadora, miniexcavadora, minicargador y maquinaria pesada en Curicó, Teno, Molina, Romeral, Talca y toda la Región del Maule. Constructora, maestranza y barraca de fierros JURMAQ. +25 años. Para barraca: súbenos tu cotización y en menos de 2 horas te mejoramos el precio.",
   keywords: [
@@ -67,7 +70,7 @@ export const metadata: Metadata = {
     description:
       "Arriendo de retroexcavadoras, miniexcavadoras, minicargadores y maquinaria pesada en Curicó, Teno, Molina y toda la Región del Maule. Construcción industrial, maestranza y barraca de fierros. +25 años.",
     url: "https://jurmaq.cl",
-    siteName: "JURMAQ.cl",
+    // siteName + images se heredan del layout.tsx (canonical "JURMAQ").
     locale: "es_CL",
     type: "website",
   },
@@ -106,7 +109,7 @@ const divisions = [
     description:
       "Venta de fierros de construcción, perfiles metálicos, planchas, tubos y materiales de acero para proyectos de construcción e industria.",
     number: "04",
-    href: "/barraca",
+    href: "https://barraca.jurmaq.cl",
     cta: "Ver catálogo",
   },
 ];
@@ -114,6 +117,7 @@ const divisions = [
 const clients = [
   { name: "Nestlé Chile", logo: "/images/clientes/nestle.png" },
   { name: "Vinícola Miguel Torres", logo: "/images/clientes/miguel-torres.png" },
+  { name: "Viña Valdivieso", logo: "/images/clientes/valdivieso.png" },
   { name: "Cementos Biobío", logo: "/images/clientes/cbb-cementos.png" },
   { name: "Iansagro S.A.", logo: "/images/clientes/iansa.webp" },
   { name: "Surfrut Romeral", logo: "/images/clientes/surfrut.svg" },
@@ -148,6 +152,11 @@ export default async function HomePage() {
     categoryCounts[t] = (categoryCounts[t] || 0) + 1;
   }
 
+  // Testimonios B2B — fuente estática `testimonios-data.ts` hasta que la
+  // migration `constructora_testimonios` se aplique en Supabase.
+  // Future: cambiar a `await supabasePublic.from('constructora_testimonios')...`
+  const testimoniosDestacados = getTestimoniosDestacados(3);
+
   return (
     <>
       <main id="main-content">
@@ -171,7 +180,7 @@ export default async function HomePage() {
               data-text-reveal
             >
               Tu obra avanza sin parar con{' '}
-              <span className="font-[var(--font-serif)] italic text-gold-500" style={{ fontWeight: 500 }}>
+              <span className="font-[var(--font-slab)] text-gold-500" style={{ fontWeight: 900 }}>
                 JURMAQ
               </span>
             </h1>
@@ -337,9 +346,15 @@ export default async function HomePage() {
               return (
                 <div key={division.title}>
                   {division.href ? (
-                    <Link href={division.href}>
-                      {content}
-                    </Link>
+                    division.href.startsWith('http') ? (
+                      <a href={division.href} rel="noopener">
+                        {content}
+                      </a>
+                    ) : (
+                      <Link href={division.href}>
+                        {content}
+                      </Link>
+                    )
                   ) : (
                     content
                   )}
@@ -404,13 +419,12 @@ export default async function HomePage() {
                 >
                   <div className="h-48 bg-gradient-to-br from-navy-900 to-navy-800 overflow-hidden">
                     {machine.imagen ? (
-                      <img
+                      <Image
                         src={machine.imagen}
                         alt={`Maquinaria ${machine.nombre} disponible para arriendo en JURMAQ`}
-                        loading="lazy"
-                        decoding="async"
                         width={400}
                         height={192}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -575,6 +589,16 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ===== TESTIMONIOS B2B ===== */}
+      <TestimoniosGrid
+        testimonios={testimoniosDestacados}
+        variant="light"
+        title="Lo que dicen quienes confiaron"
+        subtitle="Empresas agroindustriales y constructoras que llevan años trabajando con JURMAQ."
+        eyebrow="Testimonios"
+        ctaLink={{ label: "Ver todos los proyectos", href: "/proyectos" }}
+      />
+
       {/* ===== CTA SECTION ===== */}
         <section className="bg-navy-950 py-20 lg:py-28 border-t border-navy-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -629,16 +653,15 @@ export default async function HomePage() {
             image: "https://jurmaq.cl/logo.png",
             address: {
               "@type": "PostalAddress",
-              streetAddress: "Av. Poniente 2157",
-              addressLocality: "Molina",
-              addressRegion: "Maule",
-              postalCode: "3560000",
-              addressCountry: "CL",
+              streetAddress: LEGAL_INFO.brands.constructora.streetAddress,
+              addressLocality: LEGAL_INFO.brands.constructora.addressLocality,
+              addressRegion: LEGAL_INFO.brands.constructora.addressRegion,
+              addressCountry: LEGAL_INFO.brands.constructora.addressCountry,
             },
             geo: {
               "@type": "GeoCoordinates",
-              latitude: -35.1167,
-              longitude: -71.2833,
+              latitude: LEGAL_INFO.brands.constructora.geo.latitude,
+              longitude: LEGAL_INFO.brands.constructora.geo.longitude,
             },
             areaServed: [
               { "@type": "City", name: "Curicó" },
@@ -662,7 +685,7 @@ export default async function HomePage() {
                   "Friday",
                 ],
                 opens: "08:30",
-                closes: "18:30",
+                closes: "18:00",
               },
               {
                 "@type": "OpeningHoursSpecification",
@@ -673,6 +696,10 @@ export default async function HomePage() {
             ],
             priceRange: "$$",
             foundingDate: "2000",
+            // TODO(M8): si en el futuro creamos pages dedicadas /servicios/construccion-industrial,
+            // /servicios/maestranza, etc., emitir un Service schema dedicado por page con
+            // provider: { @id: '#organization' }, areaServed, serviceType. Por ahora Google
+            // infiere correctamente desde este OfferCatalog para una single-page de servicios.
             hasOfferCatalog: {
               "@type": "OfferCatalog",
               name: "Servicios JURMAQ",

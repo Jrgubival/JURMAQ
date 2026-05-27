@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./env": "./src/env.ts",
+    "./db-types": "./src/db-types.ts",
+    "./messages": "./src/messages.ts",
     "./auth": "./src/auth/index.ts",
     "./auth/config": "./src/auth/config.ts",
     "./auth/guard": "./src/auth/guard.ts",
@@ -25,6 +28,8 @@
     "./seo": "./src/seo/index.ts",
     "./seo/prerender-rules": "./src/seo/prerender-rules.ts",
     "./seo/maquinaria-descripciones": "./src/seo/maquinaria-descripciones.ts",
+    "./seo/jsonld": "./src/seo/jsonld.ts",
+    "./seo/metadata": "./src/seo/metadata.ts",
     "./logging": "./src/logging/index.ts",
     "./a11y": "./src/a11y/index.ts",
     "./a11y/reduced-motion": "./src/a11y/use-prefers-reduced-motion.ts",
@@ -32,7 +37,13 @@
     "./a11y/Modal": "./src/a11y/Modal.tsx",
     "./a11y/useFocusTrap": "./src/a11y/useFocusTrap.ts",
     "./a11y/useEscapeKey": "./src/a11y/useEscapeKey.ts",
-    "./ui/CommandPalette": "./src/ui/CommandPalette.tsx"
+    "./ui/CommandPalette": "./src/ui/CommandPalette.tsx",
+    "./ui/Analytics": "./src/ui/Analytics.tsx",
+    "./ui/CookieBanner": "./src/ui/CookieBanner.tsx",
+    "./ui/ViewItemTracker": "./src/ui/ViewItemTracker.tsx",
+    "./ui/Breadcrumbs": "./src/ui/Breadcrumbs.tsx",
+    "./ui/CrossLinksGrid": "./src/ui/CrossLinksGrid.tsx",
+    "./styles/globals.css": "./src/styles/globals.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
@@ -46,7 +57,8 @@
     "nodemailer": "^7.0.13",
     "react": "^19.2.6",
     "resend": "^6.11.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

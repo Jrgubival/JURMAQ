@@ -1,6 +1,9 @@
 import XLSX from 'xlsx';
 import { readFile } from 'node:fs/promises';
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import type { Database } from "@jurmaq/shared/db-types";
+
+type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
 
 // ---------------------------------------------------------------------------
 // Types
@@ -17,7 +20,7 @@ export interface ParsedExcel {
 export interface MatchResult {
   rowIndex: number;
   excelRow: any;
-  matchedProduct: any | null;
+  matchedProduct: BarracaProductoRow | null;
   status: 'update' | 'create' | 'skip';
   changes: Array<{ field: string; oldValue: any; newValue: any }>;
 }
@@ -105,8 +108,8 @@ function slugify(text: string): string {
   return `${base}-${rand}`;
 }
 
-async function fetchAllProducts(): Promise<any[]> {
-  let allProducts: any[] = [];
+async function fetchAllProducts(): Promise<BarracaProductoRow[]> {
+  let allProducts: BarracaProductoRow[] = [];
   let offset = 0;
 
   while (true) {
@@ -117,7 +120,7 @@ async function fetchAllProducts(): Promise<any[]> {
       .range(offset, offset + 999);
 
     if (!data || data.length === 0) break;
-    allProducts.push(...data);
+    allProducts.push(...(data as BarracaProductoRow[]));
     offset += 1000;
     if (data.length < 1000) break;
   }
@@ -205,7 +208,7 @@ export async function matchProducts(
   const existingProducts = await fetchAllProducts();
 
   // Build lookup map keyed by the match field (normalized)
-  const lookupMap = new Map<string, any>();
+  const lookupMap = new Map<string, BarracaProductoRow>();
   for (const product of existingProducts) {
     const key = matchBy === 'codigo'
       ? normalize(String(product.codigo || ''))
@@ -254,7 +257,7 @@ export async function matchProducts(
 
         if (newValue === null) continue;
 
-        const oldValue = matchedProduct[dbField];
+        const oldValue = matchedProduct[dbField as keyof BarracaProductoRow];
 
         // Only record if actually different
         if (String(oldValue) !== String(newValue)) {

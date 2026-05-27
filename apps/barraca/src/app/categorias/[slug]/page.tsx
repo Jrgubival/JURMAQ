@@ -4,6 +4,19 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
 import ProductCard from "@/components/barraca/ProductCard";
 import { applyDailyPromosToProducts } from "@/lib/promotions";
+import type { Database } from "@jurmaq/shared/db-types";
+import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs";
+import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
+import { CIUDADES } from "@jurmaq/shared/seo";
+
+type BarracaCategoriaRow = Pick<
+  Database['public']['Tables']['barraca_categorias']['Row'],
+  'id' | 'nombre' | 'slug'
+>;
+type BarracaProductoRow = Pick<
+  Database['public']['Tables']['barraca_productos']['Row'],
+  'id' | 'codigo' | 'nombre' | 'slug' | 'precio' | 'precio_original' | 'en_oferta' | 'solo_cotizar' | 'stock' | 'unidad' | 'imagen' | 'medida' | 'categoria_id'
+>;
 
 interface CategoriaRow {
   id: number;
@@ -51,7 +64,7 @@ export async function generateMetadata({
     .from('barraca_categorias')
     .select('id')
     .eq('padre_id', cat.id);
-  const allCatIds = [cat.id, ...(subcatRows || []).map((s: any) => s.id)];
+  const allCatIds = [cat.id, ...(subcatRows || []).map((s) => s.id)];
 
   const { count: productTotal } = await supabasePublic
     .from('barraca_productos')
@@ -151,7 +164,7 @@ export default async function CategoriaPage({
     .order('nombre');
 
   // Get product counts for subcats
-  const subcatIds = (rawSubcats || []).map((s: any) => s.id);
+  const subcatIds = (rawSubcats || []).map((s: BarracaCategoriaRow) => s.id);
   const catIds = [categoria.id, ...subcatIds];
   let subcatCounts: Record<number, number> = {};
   if (catIds.length > 0) {
@@ -167,8 +180,10 @@ export default async function CategoriaPage({
     }
   }
 
-  const subcats: SubCat[] = (rawSubcats || []).map((s: any) => ({
-    ...s,
+  const subcats: SubCat[] = (rawSubcats || []).map((s: BarracaCategoriaRow) => ({
+    id: s.id,
+    nombre: s.nombre,
+    slug: s.slug,
     product_count: subcatCounts[s.id] || 0,
   }));
 
@@ -240,16 +255,16 @@ export default async function CategoriaPage({
   // Compute aggregate price stats so Google can show a price range in the
   // category snippet (e.g. "Fierros desde $3.750"). The lower-bound is the
   // strongest signal for shoppers comparing against homecenters.
-  const pricedProducts = (productos || []).filter((p: any) => !p.solo_cotizar && p.precio > 0);
+  const pricedProducts = (productos || []).filter((p: BarracaProductoRow) => !p.solo_cotizar && p.precio > 0);
   const lowPrice = pricedProducts.reduce(
-    (min: number, p: any) => {
+    (min: number, p: BarracaProductoRow) => {
       const effective = p.en_oferta && p.precio_original ? p.precio_original : p.precio;
       return effective < min ? effective : min;
     },
     Number.MAX_SAFE_INTEGER
   );
   const highPrice = pricedProducts.reduce(
-    (max: number, p: any) => {
+    (max: number, p: BarracaProductoRow) => {
       const effective = p.en_oferta && p.precio_original ? p.precio_original : p.precio;
       return effective > max ? effective : max;
     },
@@ -262,7 +277,7 @@ export default async function CategoriaPage({
     name: `${categoria.nombre} - Barraca JURMAQ`,
     description: `Productos de ${categoria.nombre.toLowerCase()} disponibles en Barraca JURMAQ Curicó. Te mejoramos el precio de Sodimac, Easy o Construmart en menos de 2 horas. Despacho a toda la Región del Maule.`,
     numberOfItems: total,
-    itemListElement: (productos || []).map((p: any, i: number) => {
+    itemListElement: (productos || []).map((p: BarracaProductoRow, i: number) => {
       const effective = p.en_oferta && p.precio_original ? p.precio_original : p.precio;
       return {
         "@type": "ListItem",
@@ -276,7 +291,7 @@ export default async function CategoriaPage({
             "@type": "Offer",
             price: effective,
             priceCurrency: "CLP",
-            availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            availability: (p.stock ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             seller: { "@id": "https://jurmaq.cl/#organization" },
             priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
           },
@@ -349,35 +364,21 @@ export default async function CategoriaPage({
         />
       )}
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-      {/* Breadcrumb — editorial hairline */}
-      <nav className="flex items-center gap-2 text-sm text-[#787774] mb-10 flex-wrap">
-        <Link href="/" className="hover:text-[#111111] transition-colors">
-          Inicio
-        </Link>
-        <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-        </svg>
-        <Link href="/categorias" className="hover:text-[#111111] transition-colors">
-          Categorías
-        </Link>
-        {parentCat && (
-          <>
-            <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-            </svg>
-            <Link
-              href={`/categorias/${parentCat.slug}`}
-              className="hover:text-[#111111] transition-colors"
-            >
-              {parentCat.nombre}
-            </Link>
-          </>
-        )}
-        <svg className="w-3.5 h-3.5 shrink-0 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-        </svg>
-        <span className="text-[#111111] font-medium">{categoria.nombre}</span>
-      </nav>
+      <Breadcrumbs
+        variant="light"
+        className="mb-10"
+        items={(() => {
+          const items: BreadcrumbItem[] = [
+            { label: "Inicio", href: "/" },
+            { label: "Categorías", href: "/categorias" },
+          ];
+          if (parentCat) {
+            items.push({ label: parentCat.nombre, href: `/categorias/${parentCat.slug}` });
+          }
+          items.push({ label: categoria.nombre });
+          return items;
+        })()}
+      />
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar - Sodimac-style filters. Native <details> collapsible on mobile,
@@ -588,7 +589,7 @@ export default async function CategoriaPage({
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {(productos || []).map((p: any) => (
+                {(productos || []).map((p: BarracaProductoRow) => (
                   <ProductCard
                     key={p.id}
                     id={p.id}
@@ -596,10 +597,10 @@ export default async function CategoriaPage({
                     slug={p.slug}
                     precio={p.precio}
                     precio_original={p.precio_original}
-                    en_oferta={p.en_oferta}
-                    solo_cotizar={p.solo_cotizar}
+                    en_oferta={p.en_oferta ?? undefined}
+                    solo_cotizar={p.solo_cotizar ?? undefined}
                     imagen={p.imagen}
-                    stock={p.stock}
+                    stock={p.stock ?? 0}
                     unidad={p.unidad}
                     medida={p.medida}
                     categoriaSlug={categoria.slug}
@@ -659,6 +660,16 @@ export default async function CategoriaPage({
         </div>
       </div>
     </div>
+    <CrossLinksGrid
+      title="Despacho a todo el Maule"
+      subtitle={`Llevamos ${categoria.nombre.toLowerCase()} y todo lo que necesitas para tu obra a Curicó, Talca, Linares y comunas vecinas.`}
+      eyebrow="Cobertura · Maule"
+      variant="light"
+      items={CIUDADES.slice(0, 12).map((ciudad) => ({
+        label: `Despacho a ${ciudad.nombre}`,
+        href: `/en/${ciudad.slug}`,
+      }))}
+    />
     </>
   );
 }

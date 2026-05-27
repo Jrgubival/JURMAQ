@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { formatCLP } from "@jurmaq/shared/format";
+import { whatsappCtaConsultaCotizacion } from "@jurmaq/shared/whatsapp";
 
 interface CotizacionItem {
   nombre: string;
@@ -70,7 +71,7 @@ export default function CotizacionPublicPage() {
       const data = await res.json();
       setCotizacion(data);
     } catch {
-      setError("Error al cargar la cotizacion");
+      setError("Error al cargar la cotización");
     } finally {
       setLoading(false);
     }
@@ -147,8 +148,8 @@ export default function CotizacionPublicPage() {
           <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Cotizacion no encontrada</h1>
-          <p className="text-gray-500 mb-6">El enlace puede estar incorrecto o la cotizacion ya no existe.</p>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Cotización no encontrada</h1>
+          <p className="text-gray-500 mb-6">El enlace puede estar incorrecto o la cotización ya no existe.</p>
           <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors">
             Ir al Inicio
           </Link>
@@ -401,7 +402,7 @@ export default function CotizacionPublicPage() {
         <div className="text-center">
           <p className="text-sm text-gray-500 mb-3">Tienes dudas? Contactanos</p>
           <a
-            href={`https://wa.me/56976673577?text=${encodeURIComponent(`Hola, tengo una consulta sobre la cotización ${cotizacion.numero}`)}`}
+            href={whatsappCtaConsultaCotizacion(cotizacion.numero, 'barraca')}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-2.5 border border-green-300 text-green-700 hover:bg-green-50 font-medium rounded-lg transition-colors text-sm"

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { showToast } from "@/components/Toast";
 import { formatCLP } from "@jurmaq/shared/format";
+import { whatsappCtaProducto } from "@jurmaq/shared/whatsapp";
+import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
 
 interface Producto {
   id: number;
@@ -74,7 +76,7 @@ export default function AddToCartClient({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        showToast(data?.error || "No se pudo agregar al carrito", "error");
+        showToast(data?.error || TOAST_MESSAGES.cart.ADD_FAILED_FALLBACK, "error");
         return;
       }
       // Track conversion event GA4 (no-op si NEXT_PUBLIC_GA_MEASUREMENT_ID falta)
@@ -89,10 +91,10 @@ export default function AddToCartClient({
       } catch { /* no romper UX si el track falla */ }
       setAdded(true);
       window.dispatchEvent(new Event("cart-updated"));
-      showToast("Agregado al carrito", "success");
+      showToast(TOAST_MESSAGES.cart.ADDED, "success");
       setTimeout(() => setAdded(false), 2000);
     } catch {
-      showToast("Error al agregar al carrito", "error");
+      showToast(TOAST_MESSAGES.cart.ADD_ERROR, "error");
     } finally {
       setAdding(false);
     }
@@ -253,7 +255,7 @@ export default function AddToCartClient({
 
         {/* WhatsApp quick quote */}
         <a
-          href={`https://wa.me/56976673577?text=${encodeURIComponent(`Hola, quiero cotizar: ${producto.nombre} (x${cantidad})`)}`}
+          href={whatsappCtaProducto(String(producto.id), producto.nombre, cantidad)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full h-12 border-2 border-green-500 text-green-700 hover:bg-green-50 font-semibold rounded-xl text-sm transition-colors"

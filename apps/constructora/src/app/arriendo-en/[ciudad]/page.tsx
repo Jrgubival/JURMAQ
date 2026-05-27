@@ -3,12 +3,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { supabasePublic } from "@jurmaq/shared/supabase";
-import { CIUDADES, TIPOS_MAQUINA, HQ } from "@jurmaq/shared/seo";
+import { CIUDADES, TIPOS_MAQUINA, HQ, LEGAL_INFO, DISTANCIAS_CONSTRUCTORA } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaCiudad } from "@jurmaq/shared/whatsapp";
 import { maquinariaHref } from "@/lib/maquinaria-slug";
-import CrossLinksGrid from "@/components/public/CrossLinksGrid";
+import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
+import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 
 interface Maquinaria {
   id: number;
@@ -36,7 +37,7 @@ export async function generateMetadata({
 
   return {
     title: `Arriendo de Maquinaria en ${c.nombre} · JURMAQ ${c.region}`,
-    description: `Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado y maquinaria pesada en ${c.nombre} (${c.region}). Despacho desde Molina en ${c.tiempoDespacho}. Servicio para ${c.rubroLocal.slice(0, 2).join(" y ")}. JURMAQ +25 años.`,
+    description: `Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado y maquinaria pesada en ${c.nombre} (${c.region}). Despacho desde Curicó en ${DISTANCIAS_CONSTRUCTORA[c.slug].tiempo}. Servicio para ${c.rubroLocal.slice(0, 2).join(" y ")}. JURMAQ +25 años.`,
     keywords: [
       `arriendo maquinaria ${c.nombre}`,
       `arriendo retroexcavadora ${c.nombre}`,
@@ -52,7 +53,7 @@ export async function generateMetadata({
     ],
     openGraph: {
       title: `Arriendo de Maquinaria en ${c.nombre} · JURMAQ`,
-      description: `Maquinaria pesada en ${c.nombre} con despacho en ${c.tiempoDespacho} desde nuestra base en Molina. Cotiza por WhatsApp.`,
+      description: `Maquinaria pesada en ${c.nombre} con despacho en ${DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} desde nuestra base en Curicó. Cotiza por WhatsApp.`,
       url: `https://jurmaq.cl/arriendo-en/${c.slug}`,
       siteName: "JURMAQ",
       locale: "es_CL",
@@ -99,7 +100,7 @@ export default async function ArriendoEnCiudadPage({
         "@type": "LocalBusiness",
         "@id": `https://jurmaq.cl/arriendo-en/${c.slug}#business`,
         name: `JURMAQ — Arriendo de Maquinaria en ${c.nombre}`,
-        description: `Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado y maquinaria pesada en ${c.nombre}. Despacho en ${c.tiempoDespacho} desde Molina.`,
+        description: `Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado y maquinaria pesada en ${c.nombre}. Despacho en ${DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} desde Curicó.`,
         url: `https://jurmaq.cl/arriendo-en/${c.slug}`,
         telephone: HQ.telefono,
         priceRange: "$$",
@@ -116,10 +117,10 @@ export default async function ArriendoEnCiudadPage({
         },
         address: {
           "@type": "PostalAddress",
-          streetAddress: "Av. Poniente 2157",
-          addressLocality: "Molina",
-          addressRegion: "Región del Maule",
-          addressCountry: "CL",
+          streetAddress: LEGAL_INFO.brands.constructora.streetAddress,
+          addressLocality: LEGAL_INFO.brands.constructora.addressLocality,
+          addressRegion: LEGAL_INFO.brands.constructora.addressRegion,
+          addressCountry: LEGAL_INFO.brands.constructora.addressCountry,
         },
       },
       {
@@ -127,7 +128,7 @@ export default async function ArriendoEnCiudadPage({
         "@id": `https://jurmaq.cl/arriendo-en/${c.slug}#service`,
         name: `Arriendo de Maquinaria en ${c.nombre}`,
         serviceType: "Arriendo de maquinaria pesada",
-        description: `Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado y maquinaria pesada en ${c.nombre}. Despacho en ${c.tiempoDespacho} desde Molina.`,
+        description: `Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado y maquinaria pesada en ${c.nombre}. Despacho en ${DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} desde Curicó.`,
         provider: { "@id": `https://jurmaq.cl/arriendo-en/${c.slug}#business` },
         areaServed: { "@type": "City", name: c.nombre, containedInPlace: { "@type": "AdministrativeArea", name: c.region } },
       },
@@ -155,7 +156,7 @@ export default async function ArriendoEnCiudadPage({
             name: `¿Cuánto demora el despacho a ${c.nombre}?`,
             acceptedAnswer: {
               "@type": "Answer",
-              text: `Despachamos desde Molina en ${c.tiempoDespacho} (${c.distanciaKm} km). Para urgencias y obras programadas coordinamos horarios específicos.`,
+              text: `Despachamos desde Curicó en ${DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} (${DISTANCIAS_CONSTRUCTORA[c.slug].km} km). Para urgencias y obras programadas coordinamos horarios específicos.`,
             },
           },
         ],
@@ -180,15 +181,16 @@ export default async function ArriendoEnCiudadPage({
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-20 lg:py-28 border-b border-navy-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/55 mb-6 flex-wrap">
-              <Link href="/" className="hover:text-gold-400 transition-colors">Inicio</Link>
-              <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="text-white/85 font-medium">Arriendo en {c.nombre}</span>
-            </nav>
+            <Breadcrumbs
+              variant="dark"
+              className="mb-6"
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: `Arriendo en ${c.nombre}` },
+              ]}
+            />
             <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
-              {c.nombre} · {c.distanciaKm} km de Molina · {c.tiempoDespacho}
+              {c.nombre} · {DISTANCIAS_CONSTRUCTORA[c.slug].km} km de Curicó · {DISTANCIAS_CONSTRUCTORA[c.slug].tiempo}
             </p>
             <h1
               className="text-white leading-[1.05] mb-6 max-w-3xl"
@@ -226,7 +228,7 @@ export default async function ArriendoEnCiudadPage({
         <CrossLinksGrid
           eyebrow={`Maquinaria · ${c.nombre} y comunas vecinas`}
           title={`Tipos disponibles para arriendo en ${c.nombre}`}
-          subtitle="Flota propia con mantención al día. Despacho coordinado desde nuestra base en Molina."
+          subtitle="Flota propia con mantención al día. Despacho coordinado desde nuestra base en Curicó."
           items={TIPOS_MAQUINA.map((t) => ({
             label: `${t.nombre} en ${c.nombre}`,
             href: `/arriendo/${t.slug}`,
@@ -237,15 +239,15 @@ export default async function ArriendoEnCiudadPage({
         <section className="py-16 bg-gray-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-8">
-              Despacho desde Molina a {c.nombre}
+              Despacho desde Curicó a {c.nombre}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-gold-600 mb-2">{c.distanciaKm} km</div>
-                <p className="text-gray-700">Distancia desde nuestra base en Molina</p>
+                <div className="text-3xl font-bold text-gold-600 mb-2">{DISTANCIAS_CONSTRUCTORA[c.slug].km} km</div>
+                <p className="text-gray-700">Distancia desde nuestra base en Curicó</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-gold-600 mb-2">{c.tiempoDespacho}</div>
+                <div className="text-3xl font-bold text-gold-600 mb-2">{DISTANCIAS_CONSTRUCTORA[c.slug].tiempo}</div>
                 <p className="text-gray-700">Tiempo estimado de despacho</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
@@ -334,7 +336,7 @@ export default async function ArriendoEnCiudadPage({
               <div>
                 <dt className="font-semibold text-navy-950 mb-1">¿Cuánto demora el despacho a {c.nombre}?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Despachamos desde Molina en {c.tiempoDespacho} ({c.distanciaKm} km). Para urgencias y obras
+                  Despachamos desde Curicó en {DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} ({DISTANCIAS_CONSTRUCTORA[c.slug].km} km). Para urgencias y obras
                   programadas coordinamos horarios específicos.
                 </dd>
               </div>
@@ -350,7 +352,7 @@ export default async function ArriendoEnCiudadPage({
                 Arriendo en comunas vecinas
               </h2>
               <p className="text-sm text-gray-600 mb-6">
-                Misma flota, mismo despacho desde Molina.
+                Misma flota, mismo despacho desde Curicó.
               </p>
               <div className="flex flex-wrap gap-3">
                 {vecinasConLanding.map((v) => (
@@ -360,7 +362,7 @@ export default async function ArriendoEnCiudadPage({
                     className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:border-orange-500 rounded-full text-sm font-medium text-navy-950 transition-colors"
                   >
                     Arriendo en {v.nombre}
-                    <span className="text-xs text-gray-500">{v.distanciaKm} km</span>
+                    <span className="text-xs text-gray-500">{DISTANCIAS_CONSTRUCTORA[v.slug].km} km</span>
                   </Link>
                 ))}
               </div>

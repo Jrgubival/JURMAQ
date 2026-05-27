@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
 import SearchBar from "@/components/barraca/SearchBar";
 
 /**
@@ -25,7 +26,8 @@ const slides = [
     subtitle: "Stock real con despacho propio en Curicó, Molina y toda la Región del Maule.",
     cta: { label: "Ver catálogo", href: "/categorias" },
     showSearch: true,
-    bg: "from-navy-950 via-navy-950/95 to-navy-900/85",
+    bg: "from-navy-950/95 via-navy-950/75 to-navy-900/55",
+    image: "/images/barraca/hero/hero-fachada.webp",
   },
   {
     eyebrow: "FIERROS DE CONSTRUCCIÓN",
@@ -34,7 +36,8 @@ const slides = [
     subtitle: "Estriados, lisos y trefilados. Todos los diámetros, despacho desde 1 barra.",
     cta: { label: "Ver fierros", href: "/categorias/fierros-construccion" },
     showSearch: false,
-    bg: "from-navy-950 via-navy-900/95 to-navy-900/70",
+    bg: "from-navy-950/95 via-navy-950/70 to-navy-900/45",
+    image: "/images/barraca/hero/hero-fierros.webp",
   },
   {
     eyebrow: "OFERTAS DEL MES",
@@ -43,7 +46,8 @@ const slides = [
     subtitle: "Stock limitado, despacho mismo día. Revisá antes que se acaben.",
     cta: { label: "Ver ofertas", href: "/categorias" },
     showSearch: false,
-    bg: "from-navy-950 via-navy-950/92 to-navy-900/75",
+    bg: "from-navy-950/95 via-navy-950/72 to-navy-900/50",
+    image: "/images/barraca/hero/hero-maderas.webp",
   },
 ];
 
@@ -77,10 +81,14 @@ export default function HeroSlider() {
       aria-label="Categorías destacadas"
       aria-roledescription="carrusel"
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${slide.bg} transition-colors duration-1000`} />
-      <div className="absolute inset-0 opacity-10">
-        <div className="w-full h-full bg-[url('/images/barraca-hero.jpg')] bg-cover bg-center" />
-      </div>
+      {/* Foto del slide (visible 50%) */}
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-[background-image] duration-700"
+        style={{ backgroundImage: `url(${slide.image})` }}
+        aria-hidden="true"
+      />
+      {/* Overlay navy editorial — gradiente que mantiene legibilidad del texto */}
+      <div className={`absolute inset-0 bg-gradient-to-r ${slide.bg} transition-colors duration-1000`} />
       {/* hairline divider top — Editorial frame */}
       <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
 
@@ -122,7 +130,7 @@ export default function HeroSlider() {
               </svg>
             </Link>
             <a
-              href="https://wa.me/56976673577?text=Hola%2C%20necesito%20cotizar%20productos"
+              href={whatsappCtaBarracaCotizar('productos', 'hero_slider')}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 border border-white/25 text-white text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-white/10 transition-colors"

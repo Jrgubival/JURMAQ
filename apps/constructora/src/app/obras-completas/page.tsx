@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { whatsappCtaObraCompleta } from '@jurmaq/shared/whatsapp';
 
 /**
  * /obras-completas — Página del programa "mejora precio por obra completa".
@@ -124,7 +125,7 @@ export default function ObrasCompletasPage() {
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
-                  href="https://wa.me/56976673577?text=Hola%2C%20quiero%20precio%20personalizado%20para%20una%20obra%20completa&utm_source=site&utm_medium=hero&utm_campaign=obra_completa"
+                  href={whatsappCtaObraCompleta('personalizado', 'hero')}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
                   className="group inline-flex items-center gap-3 px-6 py-3.5 bg-[#111111] hover:bg-[#2F3437] text-white text-sm font-semibold rounded-[10px] transition-spring tactile"
@@ -271,7 +272,7 @@ export default function ObrasCompletasPage() {
             </div>
             <div className="lg:col-span-4 lg:text-right">
               <a
-                href="https://wa.me/56976673577?text=Hola%2C%20quiero%20precio%20de%20obra%20completa&utm_source=site&utm_medium=footer&utm_campaign=obra_completa"
+                href={whatsappCtaObraCompleta('precio', 'footer')}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 className="group inline-flex items-center gap-3 px-6 py-3.5 bg-white hover:bg-[#F7F6F3] text-[#111111] text-sm font-semibold rounded-[10px] transition-spring tactile"

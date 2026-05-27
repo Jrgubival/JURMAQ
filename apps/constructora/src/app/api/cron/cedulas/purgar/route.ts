@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { logContratoEvent } from '@/lib/contratos-audit';
 import { hid } from '@jurmaq/shared/logging';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * POST /api/cron/cedulas/purgar
@@ -30,7 +31,7 @@ const RETENTION_DAYS = 90;
 const BUCKET = 'cedulas-firma';
 
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = env.CRON_SECRET;
   if (!secret) return false;
   const provided =
     request.headers.get('x-cron-secret') ||

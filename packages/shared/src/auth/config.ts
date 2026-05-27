@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from 'next-auth';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Aislamiento de sesión entre barraca y constructora:
@@ -19,10 +20,10 @@ import type { NextAuthConfig } from 'next-auth';
  *   ese prefijo requiere HTTPS. El aislamiento por scope sigue activo a
  *   nivel JWT.
  */
-const IS_PROD = process.env.NODE_ENV === 'production';
+const IS_PROD = env.NODE_ENV === 'production';
 
 function getAuthScope(): 'barraca' | 'constructora' | 'app' {
-  const s = process.env.AUTH_SCOPE;
+  const s = env.AUTH_SCOPE;
   return s === 'barraca' || s === 'constructora' ? s : 'app';
 }
 

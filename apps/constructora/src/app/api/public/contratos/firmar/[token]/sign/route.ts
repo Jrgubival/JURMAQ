@@ -9,6 +9,7 @@ import { logContratoEvent, resolveIpGeolocation } from '@/lib/contratos-audit';
 import crypto from 'crypto';
 import { hid } from '@jurmaq/shared/logging';
 import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Use the Node runtime (not Edge) — puppeteer-core + @sparticuz/chromium-min
@@ -404,7 +405,7 @@ async function sendSignedContractEmailAsync(args: {
     pdfBuffer = undefined;
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || 'https://jurmaq.cl';
+  const baseUrl = env.NEXTAUTH_URL || 'https://jurmaq.cl';
   const pdfUrl = `${baseUrl}/api/admin/contratos/${args.contratoId}/pdf`;
 
   await sendSignedContractEmail(args.toEmail, {

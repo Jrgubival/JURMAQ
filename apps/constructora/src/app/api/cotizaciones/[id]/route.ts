@@ -4,6 +4,8 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { transporter } from '@jurmaq/shared/mail/email';
 import { formatCLP } from "@jurmaq/shared/format";
+import { whatsappCtaConsultaCotizacion } from "@jurmaq/shared/whatsapp";
+import { env } from "@jurmaq/shared/env";
 
 export async function GET(
   request: NextRequest,
@@ -120,7 +122,7 @@ export async function PUT(
       ['aceptada', 'rechazada', 'enviada'].includes(newEstado)
     ) {
       try {
-        const baseUrl = process.env.NEXTAUTH_URL || 'https://jurmaq.cl';
+        const baseUrl = env.NEXTAUTH_URL || 'https://jurmaq.cl';
         // Escape HTML attribute *and* text contexts. See solicitudes/route.ts:109.
         const escape = (s: string) => String(s).replace(/[<>&"'`=/]/g, (c) => (
           { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;', '`': '&#96;', '=': '&#61;', '/': '&#47;' }[c] || c
@@ -132,17 +134,17 @@ export async function PUT(
         let bodyMsg = '';
         let highlight = '#0c1d3a';
         if (newEstado === 'aceptada') {
-          subject = `Cotizacion aceptada - JURMAQ`;
+          subject = `Cotización aceptada - JURMAQ`;
           title = 'Tu cotización fue aceptada';
           bodyMsg = `Hola <strong>${escape(clienteNombre)}</strong>, hemos aceptado tu cotización de <strong>${escape(servicio)}</strong>${monto > 0 ? ` por <strong>${fmt(monto)}</strong>` : ''}. En breve nos pondremos en contacto para coordinar los siguientes pasos.`;
           highlight = '#16a34a';
         } else if (newEstado === 'rechazada') {
-          subject = `Actualizacion de tu cotizacion - JURMAQ`;
+          subject = `Actualización de tu cotización - JURMAQ`;
           title = 'Estado de tu cotización';
           bodyMsg = `Hola <strong>${escape(clienteNombre)}</strong>, lamentablemente no podemos avanzar con tu solicitud de <strong>${escape(servicio)}</strong> en este momento. Si quieres conversarlo o tienes consultas, escribenos por WhatsApp.`;
           highlight = '#dc2626';
         } else if (newEstado === 'enviada') {
-          subject = `Tu cotizacion esta lista - JURMAQ`;
+          subject = `Tu cotización está lista - JURMAQ`;
           title = 'Tu cotización está lista';
           bodyMsg = `Hola <strong>${escape(clienteNombre)}</strong>, ya tenemos tu cotización de <strong>${escape(servicio)}</strong>${monto > 0 ? ` por <strong>${fmt(monto)}</strong>` : ''} preparada. Cualquier duda, contestanos por WhatsApp.`;
           highlight = '#2563eb';
@@ -163,7 +165,7 @@ export async function PUT(
       <h2 style="color:#0c1d3a;margin:16px 0 12px;font-size:22px;">${title}</h2>
       <p style="color:#374151;font-size:15px;line-height:1.6;">${bodyMsg}</p>
       <div style="margin-top:24px;text-align:center;">
-        <a href="https://wa.me/56976673577?text=${encodeURIComponent('Hola, consulto por mi cotizacion ' + (result?.id || ''))}" style="display:inline-block;background:#25D366;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-right:8px;">Escribir por WhatsApp</a>
+        <a href="${whatsappCtaConsultaCotizacion(String(result?.id || ''), 'constructora')}" style="display:inline-block;background:#25D366;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-right:8px;">Escribir por WhatsApp</a>
         <a href="${baseUrl}/contacto" style="display:inline-block;background:#fff;color:#0c1d3a;padding:14px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;border:2px solid #0c1d3a;">Llamar</a>
       </div>
     </td></tr>

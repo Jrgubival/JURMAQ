@@ -1,10 +1,13 @@
-'use client';
+"use client"
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatRut, validateRut } from '@/lib/rut';
 import { formatCLP } from "@jurmaq/shared/format";
+import type { Database } from '@jurmaq/shared/db-types';
+
+type ContratoInsertPayload = Partial<Database['public']['Tables']['contratos']['Insert']>;
 
 type Modalidad = 'dia' | 'semana' | 'mes';
 type TipoArrendatario = 'natural' | 'juridica';
@@ -235,9 +238,9 @@ export default function NuevoContratoPage() {
     return Object.keys(errors).length === 0;
   }
 
-  function buildCreatePayload() {
+  function buildCreatePayload(): ContratoInsertPayload | null {
     if (!selectedMaq) return null;
-    const payload: any = {
+    const payload: ContratoInsertPayload = {
       maquinaria_id: selectedMaq.id,
       arrendatario_tipo: arrendatario.tipo,
       fecha_inicio: condiciones.fecha_inicio,

@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       .eq('numero', numeroStr)
       .maybeSingle();
     if (!cot || (cot.email || '').toLowerCase() !== email.toLowerCase()) {
-      return NextResponse.json({ error: 'Email no coincide con la cotizacion' }, { status: 400 });
+      return NextResponse.json({ error: 'Email no coincide con la cotización' }, { status: 400 });
     }
 
     // Genera accept_token unico para esta contraoferta. Reemplaza cualquier

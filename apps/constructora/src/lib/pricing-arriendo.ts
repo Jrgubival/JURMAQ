@@ -189,9 +189,27 @@ export function precioPublicoDesde(m: {
 }): number | null {
   if (!m.tarifa_neta || m.tarifa_neta <= 0) return null;
   if (m.unidad_tarifa !== 'hora' && m.unidad_tarifa !== 'dia') return null;
+  // Mostrar el "desde" en la MISMA unidad de la tarifa. Antes, para items
+  // por hora, multiplicábamos × minimo_unidades y lo etiquetábamos como /día
+  // — confuso. El card debe leer "$X / hora" cuando es hora y "$X / día"
+  // cuando es día, en ambos casos NETO (sin IVA).
+  return Math.round(Number(m.tarifa_neta));
+}
+
+// Para SORT: normalizar a jornada-equivalente. Sin esto, ítems por hora
+// quedarían siempre primero en "precio_asc" porque su número es 1/8 del
+// de los ítems por día. Mantenemos precioPublicoDesde para display, y este
+// helper aparte para comparar.
+export function precioJornadaEstimada(m: {
+  tarifa_neta?: number | null;
+  unidad_tarifa?: string | null;
+  minimo_unidades?: number | null;
+}): number | null {
+  if (!m.tarifa_neta || m.tarifa_neta <= 0) return null;
+  if (m.unidad_tarifa !== 'hora' && m.unidad_tarifa !== 'dia') return null;
   const minimo = Math.max(Number(m.minimo_unidades) || 1, 1);
-  const baseNeta = m.unidad_tarifa === 'hora'
+  const base = m.unidad_tarifa === 'hora'
     ? Number(m.tarifa_neta) * minimo
     : Number(m.tarifa_neta);
-  return Math.round(baseNeta * (1 + IVA_RATE));
+  return Math.round(base);
 }

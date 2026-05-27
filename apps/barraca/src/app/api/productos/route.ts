@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 
     // Flatten the joined category data to match the old API shape
     // Strip `costo` from public responses (internal field)
-    const productosFlat = (rawProductos || []).map((p: any) => {
+    const productosFlat = (rawProductos || []).map((p) => {
       const { barraca_categorias, costo, ...rest } = p;
       return {
         ...rest,

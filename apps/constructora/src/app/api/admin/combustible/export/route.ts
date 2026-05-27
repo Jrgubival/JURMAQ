@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: 'Error al procesar la solicitud' }, { status: 500 });
 
-  const rows: any[] = [];
+  const rows: Record<string, string | number>[] = [];
   for (const f of facturas || []) {
     const items = (f as any).combustible_items || [];
     if (items.length === 0) {

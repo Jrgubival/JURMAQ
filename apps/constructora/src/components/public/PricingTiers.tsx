@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -20,7 +20,8 @@ import { whatsappCtaMaquinaria } from '@jurmaq/shared/whatsapp';
  *     - 1 sem   = tarifa_neta × 40 horas
  *     - 1 mes   = tarifa_neta × 150 horas
  *
- * Todos los totales con IVA incluido (19%).
+ * Display: SOLO valores netos. El IVA se agrega en la cotización formal
+ * (post-wizard), no en la página pública.
  */
 
 interface Props {
@@ -31,8 +32,6 @@ interface Props {
   unidadTarifa: 'hora' | 'dia';
   minimoUnidades: number;
 }
-
-const IVA = 0.19;
 
 type Periodo = 'dia' | 'semana' | 'mes';
 
@@ -46,11 +45,15 @@ interface Tier {
   badge?: string;
 }
 
-// Tiers para máquinas tarifadas POR DÍA
+// Tiers para máquinas tarifadas POR DÍA — incluye DÍA + SEMANA + MES.
+//
+// IMPORTANTE: 4 días y 13 días NO son los días REALES de una semana/mes (serían
+// 5-7 días y 20-22 días). Son EQUIVALENCIAS-PRECIO — el cliente paga "lo de"
+// 4 días por una semana completa, no por 5 ni 7. Mismo patrón que TIERS_HORA.
 const TIERS_DIA: Tier[] = [
-  { key: 'dia', label: '1 día', unidades: 1, detalle: '1 día' },
-  { key: 'semana', label: '1 semana', unidades: 4, detalle: '4 días', badge: 'mejor precio' },
-  { key: 'mes', label: '1 mes', unidades: 13, detalle: '13 días', badge: 'mejor precio mes' },
+  { key: 'dia', label: '1 día', unidades: 1, detalle: 'tarifa base' },
+  { key: 'semana', label: 'Semana', unidades: 4, detalle: 'pagás 4 días · ahorrás 1-3', badge: 'ahorro vs 5-7 días' },
+  { key: 'mes', label: 'Mes', unidades: 13, detalle: 'pagás 13 días · ahorrás 7-9', badge: 'ahorro vs 20-22 días' },
 ];
 
 // Tiers para máquinas tarifadas POR HORA — incluye HORA + SEMANA + MES.
@@ -81,11 +84,9 @@ export default function PricingTiers({
   const [activo, setActivo] = useState<Periodo>('dia');
 
   const calcular = (tier: Tier) => {
-    // unidades del tier × tarifa_neta unitaria
+    // unidades del tier × tarifa_neta unitaria — sin IVA en UI pública
     const subtotal = Math.round(tarifaNeta * tier.unidades);
-    const iva = Math.round(subtotal * IVA);
-    const total = subtotal + iva;
-    return { subtotal, iva, total };
+    return { subtotal };
   };
 
   const tierActivo = tiers.find((t) => t.key === activo) ?? tiers[0];
@@ -102,8 +103,8 @@ export default function PricingTiers({
         </h3>
         <p className="text-sm text-[#787774] mt-2 max-w-[55ch] leading-relaxed">
           {unidadTarifa === 'hora'
-            ? `Esta máquina se cotiza por hora. La semana real son 42 h pero pagás solo 40, el mes son 168 h pero pagás solo 150 — descuento por plazo. IVA incluido.`
-            : `Por día, por 4 días (semana) o por 13 días (mes). A mayor plazo, mejor precio. Todos con IVA incluido.`}
+            ? `Esta máquina se cotiza por hora. La semana real son 42 h pero pagás solo 40, el mes son 168 h pero pagás solo 150 — descuento por plazo. Valores netos.`
+            : `Por día, semana (equivalente a 4 días) o mes (equivalente a 13 días). A mayor plazo, mejor precio. Valores netos.`}
         </p>
       </div>
 
@@ -137,26 +138,26 @@ export default function PricingTiers({
         <div className="flex items-baseline justify-between mb-1">
           <span className="text-sm text-[#787774]">Total {tierActivo.label.toLowerCase()}</span>
           <span className="font-[var(--font-serif)] text-3xl text-[#111111] tracking-tight tabular-nums">
-            {formatPriceMoney(calc.total)}
+            {formatPriceMoney(calc.subtotal)}
           </span>
         </div>
         <div className="flex items-baseline justify-between mb-6">
-          <span className="text-xs text-[#787774]">{tierActivo.detalle} a tarifa neta + IVA</span>
+          <span className="text-xs text-[#787774]">{tierActivo.detalle}</span>
           <span className="text-sm text-[#956400] tabular-nums">
-            {formatPriceMoney(Math.round(calc.total / tierActivo.unidades))} / {unidadSingular}
+            {formatPriceMoney(Math.round(calc.subtotal / tierActivo.unidades))} / {unidadSingular}
           </span>
         </div>
 
         <div className="space-y-2 text-sm text-[#787774] pb-5 border-b border-[#EAEAEA] mb-6">
           <div className="flex justify-between">
             <span>
-              {tierActivo.detalle} × {formatPriceMoney(tarifaNeta)} neto
+              Tarifa unitaria neta
             </span>
-            <span className="font-medium text-[#111111] tabular-nums">{formatPriceMoney(calc.subtotal)}</span>
+            <span className="font-medium text-[#111111] tabular-nums">{formatPriceMoney(tarifaNeta)}</span>
           </div>
           <div className="flex justify-between">
-            <span>IVA (19%)</span>
-            <span className="font-medium text-[#111111] tabular-nums">{formatPriceMoney(calc.iva)}</span>
+            <span>Período seleccionado</span>
+            <span className="font-medium text-[#111111] tabular-nums">{tierActivo.unidades} × tarifa</span>
           </div>
         </div>
 

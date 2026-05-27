@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
+import { env } from "@jurmaq/shared/env";
 import bcrypt from 'bcryptjs';
 
 let initialized = false;
@@ -12,7 +13,7 @@ export async function initializeDatabase() {
     // This function only seeds initial data if tables are empty.
 
     // Seed admin user
-    const hashedPassword = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'change-me-in-env', 12);
+    const hashedPassword = bcrypt.hashSync(env.ADMIN_PASSWORD || 'change-me-in-env', 12);
     const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('id')

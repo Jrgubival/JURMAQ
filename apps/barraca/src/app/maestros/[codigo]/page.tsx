@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { HQ } from '@jurmaq/shared/seo';
+import { env } from '@jurmaq/shared/env';
 import MaestroLandingClient from './MaestroLandingClient';
 
 /**
@@ -26,8 +28,8 @@ interface MaestroPublic {
 
 async function getMaestro(codigo: string): Promise<MaestroPublic | null> {
   const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3001');
+    env.NEXT_PUBLIC_BASE_URL ||
+    (env.VERCEL_URL ? `https://${env.VERCEL_URL}` : 'http://localhost:3001');
 
   try {
     const res = await fetch(`${baseUrl}/api/public/maestros/${codigo}`, {
@@ -143,7 +145,7 @@ export default async function MaestroLandingPage({
           {/* ¿Sos maestro? */}
           <div className="px-6 py-5 text-center text-xs text-gray-500">
             ¿Sos maestro de construcción y querés registrarte?{' '}
-            <a href="https://wa.me/56983221440?text=Hola%2C+quiero+registrarme+como+maestro" className="text-orange-600 hover:underline">
+            <a href={`${HQ.whatsapp}?text=Hola%2C+quiero+registrarme+como+maestro`} className="text-orange-600 hover:underline">
               Escribinos por WhatsApp
             </a>
           </div>

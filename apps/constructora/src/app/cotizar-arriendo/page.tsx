@@ -4,7 +4,7 @@ import WizardClient from './WizardClient';
 
 export const metadata: Metadata = {
   title: 'Cotizar arriendo de maquinaria | JURMAQ',
-  description: 'Cotiza tu arriendo de maquinaria pesada en 4 pasos: retroexcavadora, miniexcavadora, minicargador, brazo articulado, camión tolva. Tarifas transparentes, desglose con IVA.',
+  description: 'Cotiza tu arriendo de maquinaria pesada en 4 pasos: retroexcavadora, miniexcavadora, minicargador, brazo articulado, camión tolva. Tarifas transparentes, valores netos con desglose claro.',
   alternates: {
     canonical: 'https://jurmaq.cl/cotizar-arriendo',
   },
@@ -92,7 +92,7 @@ export default async function CotizarArriendoPage({
             Cotiza tu arriendo en 4 pasos
           </h1>
           <p className="text-gray-600">
-            Tarifas transparentes. Desglose con IVA y traslado incluido. Sin sorpresas.
+            Tarifas transparentes. Valores netos con desglose claro y traslado incluido. Sin sorpresas.
           </p>
         </header>
 

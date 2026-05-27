@@ -36,6 +36,7 @@
  */
 
 import crypto from 'node:crypto';
+import { env } from '@jurmaq/shared/env';
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -96,9 +97,9 @@ function base64UrlDecode(str: string): Buffer {
 }
 
 function getSecret(): Buffer {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret || secret.length < 32) {
-    throw new Error('AUTH_SECRET must be set and ≥ 32 chars');
+  const secret = env.AUTH_SECRET;
+  if (secret.length < 32) {
+    throw new Error('AUTH_SECRET must be ≥ 32 chars');
   }
   return Buffer.from(secret, 'utf8');
 }

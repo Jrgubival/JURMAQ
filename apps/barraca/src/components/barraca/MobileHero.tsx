@@ -24,7 +24,7 @@ export default function MobileHero() {
           <p className="text-[10px] font-semibold text-white/55 uppercase tracking-[0.22em] mb-2">
             Barraca · Maule
           </p>
-          <p
+          <h1
             className="text-white leading-[1.1]"
             style={{ fontSize: 'clamp(1.5rem, 6vw, 1.875rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
           >
@@ -33,7 +33,7 @@ export default function MobileHero() {
             <span className="font-[var(--font-serif)] italic text-white/90" style={{ fontWeight: 400 }}>
               a precio justo
             </span>
-          </p>
+          </h1>
           <p className="text-xs text-white/65 mt-3 inline-flex items-center gap-1.5">
             Ver catálogo
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -47,8 +47,7 @@ export default function MobileHero() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/barraca/categorias/morteros.webp"
-            alt=""
-            aria-hidden="true"
+            alt="Cementos, morteros y materiales de construcción en Barraca JURMAQ Molina"
             width={400}
             height={300}
             loading="eager"

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { signToken as signSessionJWT, verifyToken as verifySessionJWT } from '@jurmaq/shared/auth/session-token';
+import { env } from '@jurmaq/shared/env';
 import { NextRequest } from 'next/server';
 
 /**
@@ -17,7 +18,7 @@ import { NextRequest } from 'next/server';
  *     tokens nuevos son JWT firmados.
  * `parseClienteTokenAsync` siempre acepta AMBOS formatos durante la transición.
  */
-const USE_SIGNED_TOKENS = process.env.AUTH_SESSIONS_ENABLED === 'true';
+const USE_SIGNED_TOKENS = env.AUTH_SESSIONS_ENABLED;
 
 /**
  * Auth helpers para el portal cliente arriendo (constructora).
@@ -40,7 +41,7 @@ const USE_SIGNED_TOKENS = process.env.AUTH_SESSIONS_ENABLED === 'true';
  *   - Logout: borrar la cookie es atómico.
  */
 
-const COOKIE_NAME = process.env.NODE_ENV === 'production'
+const COOKIE_NAME = env.NODE_ENV === 'production'
   ? '__Host-cuenta.session'
   : 'dev-cuenta.session';
 
@@ -139,7 +140,7 @@ export async function setClienteSessionCookie(token: string): Promise<void> {
   const c = await cookies();
   c.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
     maxAge: COOKIE_MAX_AGE,

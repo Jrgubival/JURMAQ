@@ -1,4 +1,6 @@
+import { HQ, LEGAL_INFO } from '../../seo';
 import { transporter } from '../transport';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Templates de email "manuales" que el admin de arriendo dispara desde
@@ -47,11 +49,11 @@ export interface SendAdminManualEmailArgs {
 }
 
 const CONSTRUCTORA_URL = (
-  process.env.NEXT_PUBLIC_CONSTRUCTORA_URL || 'https://jurmaq.cl'
+  env.NEXT_PUBLIC_CONSTRUCTORA_URL || 'https://jurmaq.cl'
 ).replace(/\/$/, '');
 
-const WHATSAPP_LINK = 'https://wa.me/56983221440';
-const WHATSAPP_DISPLAY = '+56 9 8322 1440';
+const WHATSAPP_LINK = HQ.whatsapp;
+const WHATSAPP_DISPLAY = HQ.telefonoDisplay;
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -139,7 +141,7 @@ function buildHtml(args: BuildArgs): string {
           <td style="background-color:#f9fafb;padding:20px 32px;text-align:center;">
             <p style="margin:0 0 6px;color:#6b7280;font-size:13px;line-height:1.6;">
               Tel/WhatsApp: ${WHATSAPP_DISPLAY} · contacto@jurmaq.cl<br>
-              Av. Poniente 2157, Molina, Maule
+              ${LEGAL_INFO.brands.constructora.direccion}
             </p>
             <p style="margin:8px 0 0;">
               <a href="${WHATSAPP_LINK}" style="display:inline-block;background-color:#25D366;color:#ffffff;padding:8px 18px;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;">

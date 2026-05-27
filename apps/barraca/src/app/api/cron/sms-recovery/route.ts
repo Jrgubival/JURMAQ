@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { sendSms, isValidChileanPhone } from '@jurmaq/shared/sms';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * POST /api/cron/sms-recovery
@@ -29,7 +30,7 @@ export const maxDuration = 60;
 const BATCH = 30;
 
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = env.CRON_SECRET;
   if (!secret) return false;
   const provided =
     request.headers.get('x-cron-secret') ||
@@ -46,7 +47,7 @@ interface CarritoAbandonadoSms {
   last_activity: string;
 }
 
-const SHORT_URL = (process.env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl').replace(
+const SHORT_URL = (env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl').replace(
   /\/$/,
   '',
 );

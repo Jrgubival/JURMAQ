@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -14,6 +14,7 @@ import WhatsappLink from '@/components/public/WhatsappLink';
 const NAV_LINKS = [
   { href: '/maquinarias', label: 'Maquinarias' },
   { href: '/como-funciona', label: 'Cómo Funciona' },
+  { href: '/recursos', label: 'Recursos' },
   { href: 'https://barraca.jurmaq.cl', label: 'Barraca', external: true },
   { href: '/contacto', label: 'Contacto' },
 ];

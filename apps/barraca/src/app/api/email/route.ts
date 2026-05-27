@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Email del destinatario invalido' }, { status: 400 });
         }
         if (!cotizacion?.numero || !cotizacion?.nombre || !cotizacion?.items || !cotizacion?.total) {
-          return NextResponse.json({ error: 'Datos de cotizacion incompletos (numero, nombre, items, total)' }, { status: 400 });
+          return NextResponse.json({ error: 'Datos de cotización incompletos (numero, nombre, items, total)' }, { status: 400 });
         }
 
         await sendFollowUpEmail(to, cotizacion);

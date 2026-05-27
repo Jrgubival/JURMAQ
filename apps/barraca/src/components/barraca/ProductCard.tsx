@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
 import { formatCLP } from "@jurmaq/shared/format";
+import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
 import WishlistHeart from "./WishlistHeart";
 import StarRating from "./StarRating";
 
@@ -125,16 +127,16 @@ export default function ProductCard({
         // Antes el catch solo agarraba network errors y mostrabamos "Agregado"
         // aunque el server hubiera rechazado el item.
         const data = await res.json().catch(() => ({} as { error?: string }));
-        const msg = (data as { error?: string }).error || (res.status === 429 ? "Demasiadas solicitudes" : "No se pudo agregar al carrito");
+        const msg = (data as { error?: string }).error || (res.status === 429 ? TOAST_MESSAGES.cart.RATE_LIMITED : TOAST_MESSAGES.cart.ADD_FAILED_FALLBACK);
         showToast(msg, "error");
         return;
       }
       setAdded(true);
       window.dispatchEvent(new Event("cart-updated"));
-      showToast("Agregado al carrito", "success");
+      showToast(TOAST_MESSAGES.cart.ADDED, "success");
       setTimeout(() => setAdded(false), 2000);
     } catch {
-      showToast("Error al agregar al carrito", "error");
+      showToast(TOAST_MESSAGES.cart.ADD_ERROR, "error");
     } finally {
       setAdding(false);
     }
@@ -152,14 +154,13 @@ export default function ProductCard({
       <Link href={`/producto/${slug}`} className="block" aria-label={`Ver detalles de ${nombre}${medida ? ` - ${medida}` : ''}`}>
         <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
           {displayImage ? (
-            <img
+            <Image
               src={displayImage}
               alt={`Producto ${nombre}${medida ? ` ${medida}` : ''} disponible en Barraca JURMAQ`}
               className="w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
               width={400}
               height={300}
+              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               onError={() => { if (!imgError) setImgError(true); }}
             />
           ) : (

@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 /**
- * CrossLinksGrid — grid editorial de cross-links SEO.
+ * CrossLinksGrid — grid editorial de cross-links SEO compartido entre apps.
  *
- * Estilo barraca-de-fierros: pills/boxes que cubren las combinaciones de
- * ciudad × tipo de máquina para mejorar SEO local. El user pidió este patrón
- * para /arriendo/[tipo] (cross-link a 12 ciudades) y /arriendo-en/[ciudad]
- * (cross-link a 6 tipos de máquina).
+ * Estilo barraca-de-fierros: pills/boxes que cubren combinaciones de
+ * ciudad × tipo / categoría × ciudad para mejorar SEO local. Usado en
+ * constructora para arriendo/ciudad/tipo y en barraca para categorías,
+ * materiales, productos y despachos por ciudad.
  *
  * Uso:
  *   <CrossLinksGrid

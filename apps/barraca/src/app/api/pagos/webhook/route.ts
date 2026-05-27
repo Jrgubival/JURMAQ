@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Verify MercadoPago webhook signature.
@@ -12,7 +13,7 @@ import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
  * Algorithm: HMAC-SHA256 with webhook secret, hex-encoded.
  */
 function verifyMercadoPagoSignature(request: NextRequest, dataId: string | number | undefined): boolean {
-  const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+  const secret = env.MERCADOPAGO_WEBHOOK_SECRET;
   // FAIL CLOSED: if the secret isn't configured, refuse the webhook entirely.
   // Previously we returned true here ("don't throw in prod"), but that was a
   // critical hole — without the secret set, anyone could POST to this
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Fetch payment details from MercadoPago
-      const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
+      const MP_ACCESS_TOKEN = env.MERCADOPAGO_ACCESS_TOKEN;
       if (!MP_ACCESS_TOKEN) {
         console.error('MERCADOPAGO_ACCESS_TOKEN no configurado');
         return NextResponse.json({ error: 'Configuracion incompleta' }, { status: 500 });

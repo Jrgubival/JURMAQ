@@ -4,6 +4,24 @@ import { sanitizeString, isPositiveInt, isValidOrigin } from '@jurmaq/shared/san
 import { getCartPrice } from '@/lib/pricing';
 import { getActiveCategoryDiscountMap } from '@/lib/promotions';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { env } from '@jurmaq/shared/env';
+import type { Database } from '@jurmaq/shared/db-types';
+
+type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
+
+// `barraca_productos!inner(...)` garantiza producto no-null en runtime,
+// pero el resto de los campos nullables del row deben respetar el schema.
+type CarritoItemConProducto = {
+  id: number;
+  producto_id: number;
+  cantidad: number;
+  precio_unitario: number | null;
+  created_at: string;
+  barraca_productos: Pick<
+    BarracaProductoRow,
+    'nombre' | 'precio' | 'precio_original' | 'en_oferta' | 'imagen' | 'slug' | 'medida' | 'unidad' | 'stock' | 'categoria_id'
+  >;
+};
 
 function getSessionId(request: NextRequest): string | null {
   // Audit A5: PRIORIZAR cookie httpOnly sobre header. Las requests viejas
@@ -36,7 +54,7 @@ function attachSessionCookie(response: NextResponse, sessionId: string, request:
   // Solo emitimos si llego por header (cliente legacy) y NO existe cookie.
   if (request.cookies.get('barraca_session')?.value) return;
   if (!request.headers.get('X-Session-Id')) return;
-  const isHttps = (process.env.NEXT_PUBLIC_SITE_URL || '').startsWith('https://')
+  const isHttps = (env.NEXT_PUBLIC_SITE_URL || '').startsWith('https://')
     || request.headers.get('x-forwarded-proto') === 'https';
   response.cookies.set('barraca_session', sessionId, {
     httpOnly: true,
@@ -78,7 +96,7 @@ export async function GET(request: NextRequest) {
     // the live state would produce.
     const promoMap = await getActiveCategoryDiscountMap();
 
-    const items = (rawItems || []).map((item: any) => {
+    const items = ((rawItems || []) as unknown as CarritoItemConProducto[]).map((item) => {
       const p = item.barraca_productos;
       const stored = item.precio_unitario || 0;
 
@@ -86,14 +104,14 @@ export async function GET(request: NextRequest) {
       // 2. Otherwise apply current daily promo if the product's category has one.
       // 3. Fall back to current base price.
       let livePrice: number;
-      if (p?.en_oferta && p?.precio_original && p.precio_original > 0) {
+      if (p.en_oferta && p.precio_original && p.precio_original > 0) {
         livePrice = p.precio_original;
       } else {
-        const discountPct = p?.categoria_id != null ? promoMap.get(p.categoria_id) : undefined;
+        const discountPct = p.categoria_id != null ? promoMap.get(p.categoria_id) : undefined;
         livePrice =
-          discountPct && discountPct > 0 && p?.precio > 0
+          discountPct && discountPct > 0 && p.precio > 0
             ? Math.round(p.precio * (1 - discountPct / 100))
-            : p?.precio || 0;
+            : p.precio || 0;
       }
 
       // Pick the lower of (stored, live) so the customer never pays more than
@@ -103,9 +121,9 @@ export async function GET(request: NextRequest) {
       const precioReal = candidates.length > 0
         ? Math.min(...candidates)
         : getCartPrice({
-            precio: p?.precio,
-            precio_original: p?.precio_original,
-            en_oferta: p?.en_oferta,
+            precio: p.precio,
+            precio_original: p.precio_original,
+            en_oferta: p.en_oferta ?? undefined,
           });
 
       return {
@@ -113,18 +131,18 @@ export async function GET(request: NextRequest) {
         producto_id: item.producto_id,
         cantidad: item.cantidad,
         created_at: item.created_at,
-        nombre: p?.nombre,
+        nombre: p.nombre,
         precio: precioReal,
-        imagen: p?.imagen,
-        slug: p?.slug,
-        medida: p?.medida,
-        unidad: p?.unidad,
-        stock: p?.stock,
+        imagen: p.imagen,
+        slug: p.slug,
+        medida: p.medida,
+        unidad: p.unidad,
+        stock: p.stock,
       };
     });
 
-    const total = items.reduce((sum: number, item: any) => sum + (item.precio * item.cantidad), 0);
-    const cantidad = items.reduce((sum: number, item: any) => sum + item.cantidad, 0);
+    const total = items.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+    const cantidad = items.reduce((sum, item) => sum + item.cantidad, 0);
 
     {
       const res = NextResponse.json({ items, total, cantidad });
@@ -156,7 +174,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const productoId = typeof body.productoId === 'number' ? body.productoId : parseInt(body.productoId);
     const cantidad = typeof body.cantidad === 'number' ? body.cantidad : parseInt(body.cantidad);
-    const sessionId = sanitizeString(body.sessionId);
+    // Audit bug-fix: priorizar cookie/header sobre body.sessionId. Si la cookie
+    // httpOnly ya existe (set en POSTs previos), POST y GET deben usar la MISMA
+    // session_id, si no el cliente escribe en una y lee desde otra.
+    const sessionId = getSessionId(request) || sanitizeString(body.sessionId);
 
     if (!isPositiveInt(productoId) || !isPositiveInt(cantidad) || !sessionId) {
       return NextResponse.json(

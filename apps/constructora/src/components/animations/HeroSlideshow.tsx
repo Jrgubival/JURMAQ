@@ -6,18 +6,22 @@ const slides = [
   {
     image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1920&q=80",
     title: "Construcción Industrial",
+    alt: "Obra de construcción industrial JURMAQ en planta agroindustrial del Maule",
   },
   {
     image: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=1920&q=80",
     title: "Arriendo de Maquinaria",
+    alt: "Retroexcavadora JURMAQ disponible para arriendo en Curicó",
   },
   {
     image: "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=1920&q=80",
     title: "Maestranza",
+    alt: "Maestranza JURMAQ: fabricación y soldadura de piezas metálicas",
   },
   {
     image: "https://images.unsplash.com/photo-1587293852726-70cdb56c2866?w=1920&q=80",
     title: "Barraca de Fierros",
+    alt: "Acopio de fierros y materiales de construcción en Barraca JURMAQ Molina",
   },
 ];
 
@@ -94,9 +98,7 @@ export default function HeroSlideshow() {
           >
             <img
               src={slide.image}
-              alt=""
-              aria-hidden="true"
-              role="presentation"
+              alt={slide.alt}
               loading={i === 0 ? "eager" : "lazy"}
               fetchPriority={i === 0 ? "high" : undefined}
               decoding={i === 0 ? "sync" : "async"}

@@ -5,16 +5,17 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { transporter } from '@jurmaq/shared/mail/email';
 import crypto from 'crypto';
 import { hid } from '@jurmaq/shared/logging';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Base URL used to construct the public signature link.
  * In production this is jurmaq.cl; in dev it falls back to NEXTAUTH_URL.
  */
 function publicBaseUrl(): string {
-  if (process.env.NODE_ENV === 'production') {
+  if (env.NODE_ENV === 'production') {
     return 'https://jurmaq.cl';
   }
-  return process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  return env.NEXTAUTH_URL || 'http://localhost:3000';
 }
 
 /**

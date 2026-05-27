@@ -81,25 +81,28 @@ export async function getPromotedProducts(
     .eq('padre_id', promocion.categoria_id)
     .eq('activa', true);
 
-  const catIds = [promocion.categoria_id, ...(subCats || []).map((s: any) => s.id)];
+  const catIds = [promocion.categoria_id, ...(subCats || []).map((s) => s.id)];
 
-  // Query products from parent AND subcategories
+  // Query products from parent AND subcategories.
+  // Filtramos stock > 0: en la sección "Ofertas del día" no tiene sentido
+  // mostrar productos agotados (el botón quedaría desactivado y confunde).
   const { data: products } = await supabasePublic
     .from('barraca_productos')
     .select('*')
     .in('categoria_id', catIds)
     .eq('activo', true)
     .gt('precio', 0)
+    .gt('stock', 0)
     .order('precio', { ascending: false })
     .limit(limit);
 
-  return (products || []).map((p: any) => ({
+  return (products || []).map((p) => ({
     ...p,
     precio_original_calculado: p.precio,
     precio_con_descuento: Math.round(p.precio * (1 - promocion.descuento_porcentaje / 100)),
     descuento: promocion.descuento_porcentaje,
     promo_titulo: promocion.titulo,
-  }));
+  })) as ProductoPromocionado[];
 }
 
 /**
@@ -170,7 +173,7 @@ export async function getActiveCategoryDiscountMap(): Promise<Map<number, number
  * Sticky offers (system #1) take precedence.
  */
 export async function applyDailyPromosToProducts<
-  T extends { id: number; categoria_id: number | null; precio: number; en_oferta?: boolean; precio_original?: number | null }
+  T extends { id: number; categoria_id: number | null; precio: number; en_oferta?: boolean | null; precio_original?: number | null }
 >(productos: T[]): Promise<T[]> {
   if (!productos || productos.length === 0) return productos;
 

@@ -5,6 +5,7 @@ import { klapCancel, klapPreauth } from '@/lib/klap-client';
 import { logContratoEvent } from '@/lib/contratos-audit';
 import { sendGarantiaRenovadaEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-renovada';
 import { sendGarantiaFalloRenovacionEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-fallo-renovacion';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * POST /api/cron/klap-renew-holds
@@ -32,7 +33,7 @@ const BATCH_SIZE = 50;
 const RENEW_WINDOW_DAYS = 30;
 
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = env.CRON_SECRET;
   if (!secret) return false;
   const provided =
     request.headers.get('x-cron-secret') ||

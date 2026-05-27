@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidEmail, isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 import { transporter } from '@jurmaq/shared/mail/transport';
+import { env } from '@jurmaq/shared/env';
 import {
   generateClienteToken,
   generateClienteTokenAsync,
@@ -292,7 +293,7 @@ async function handleForgot(body: AuthBody, ip: string): Promise<NextResponse> {
       })
       .eq('id', cliente.id);
 
-    const url = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl'}/cuenta/reset?token=${resetToken}`;
+    const url = `${env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl'}/cuenta/reset?token=${resetToken}`;
     void transporter
       .sendMail({
         to: cliente.email,

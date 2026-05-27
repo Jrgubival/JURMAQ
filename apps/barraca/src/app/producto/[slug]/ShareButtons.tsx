@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { whatsappShare } from "@jurmaq/shared/whatsapp";
 
 export default function ShareButtons({ nombre, slug }: { nombre: string; slug: string }) {
   const [copied, setCopied] = useState(false);
@@ -17,7 +18,7 @@ export default function ShareButtons({ nombre, slug }: { nombre: string; slug: s
     <div className="mt-6 flex items-center gap-3">
       <span className="text-sm text-gray-500">Compartir:</span>
       <a
-        href={`https://wa.me/?text=${encodeURIComponent(`Mira este producto en JURMAQ Barraca: ${nombre} - ${url}`)}`}
+        href={whatsappShare(`Mira este producto en JURMAQ Barraca: ${nombre} - ${url}`)}
         target="_blank"
         rel="noopener noreferrer"
         className="w-9 h-9 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg flex items-center justify-center transition-colors"

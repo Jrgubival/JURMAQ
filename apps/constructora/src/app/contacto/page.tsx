@@ -1,14 +1,17 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ContactForm } from "@/components/public/ContactForm";
 import { whatsappCtaContacto } from "@jurmaq/shared/whatsapp";
+import { LEGAL_INFO, buildPageMetadata } from "@jurmaq/shared/seo";
 
-export const metadata: Metadata = {
-  title:
-    "Contacto y Cotización | Constructora y Maquinaria en Curicó, Maule",
+// Ejemplo de uso de `buildPageMetadata` con keywords. El helper sigue
+// generando canonical, siteName, OG image y twitter card automáticamente.
+export const metadata = buildPageMetadata({
+  brand: "constructora",
+  title: "Contacto y Cotización | Constructora y Maquinaria en Curicó, Maule",
   description:
     "Cotiza sin compromiso para construcción industrial, arriendo de maquinaria pesada, maestranza y barraca de fierros en Curicó, Teno, Molina, Romeral, Sagrada Familia y toda la Provincia de Curicó, Región del Maule, Chile. Constructora Jorge Ubilla Rivera E.I.R.L.",
+  path: "/contacto",
   keywords: [
     "cotización constructora Curicó",
     "cotización construcción Curicó",
@@ -24,16 +27,7 @@ export const metadata: Metadata = {
     "presupuesto obra Molina",
     "constructora presupuesto Maule",
   ],
-  openGraph: {
-    title: "Contacto y Cotización | JURMAQ - Constructora en Curicó, Maule",
-    description:
-      "Cotiza sin compromiso. Construcción industrial, arriendo de maquinaria, maestranza y barraca de fierros en la Provincia de Curicó.",
-    url: "https://jurmaq.cl/contacto",
-  },
-  alternates: {
-    canonical: "https://jurmaq.cl/contacto",
-  },
-};
+});
 
 export default function ContactoPage() {
   return (
@@ -120,9 +114,9 @@ export default function ContactoPage() {
                         Dirección
                       </p>
                       <p className="text-sm text-gray-600">
-                        Av. Poniente 2157
+                        {LEGAL_INFO.brands.constructora.streetAddress}
                         <br />
-                        Molina, Maule, Chile
+                        {LEGAL_INFO.brands.constructora.addressLocality}, {LEGAL_INFO.brands.constructora.addressRegion}, Chile
                       </p>
                     </div>
                   </li>
@@ -252,7 +246,7 @@ export default function ContactoPage() {
           "name": "Constructora Jorge Ubilla Rivera E.I.R.L.",
           "telephone": "+56976673577",
           "email": "contacto@jurmaq.cl",
-          "address": { "@type": "PostalAddress", "streetAddress": "Av. Poniente 2157", "addressLocality": "Molina", "addressRegion": "Maule", "addressCountry": "CL" }
+          "address": { "@type": "PostalAddress", "streetAddress": LEGAL_INFO.brands.constructora.streetAddress, "addressLocality": LEGAL_INFO.brands.constructora.addressLocality, "addressRegion": LEGAL_INFO.brands.constructora.addressRegion, "addressCountry": LEGAL_INFO.brands.constructora.addressCountry }
         }
       })}} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({

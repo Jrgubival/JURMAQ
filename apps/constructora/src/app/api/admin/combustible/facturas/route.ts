@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { isValidOrigin, sanitizeString, escapeOrFilter } from '@jurmaq/shared/sanitize';
+import type { Database } from '@jurmaq/shared/db-types';
 import {
   ALLOWED_ESTADOS,
   ALLOWED_TIPOS_COMBUSTIBLE,
@@ -9,6 +10,24 @@ import {
   computeMesTributario,
   getSignedUrl,
 } from '../_helpers';
+
+type CombustibleFacturaRow = Database['public']['Tables']['combustible_facturas']['Row'];
+type CombustibleItemRow = Database['public']['Tables']['combustible_items']['Row'];
+type FacturaWithItems = CombustibleFacturaRow & {
+  combustible_items: CombustibleItemRow[] | null;
+};
+
+type FacturaItemInput = {
+  tipo_combustible: string;
+  litros: number | string;
+  monto: number | string;
+  maquinaria_id?: number | string | null;
+  contrato_id?: number | string | null;
+  precio_por_litro?: number | string | null;
+  horometro?: number | string | null;
+  odometro?: number | string | null;
+  observaciones?: string | null;
+};
 
 /**
  * GET /api/admin/combustible/facturas
@@ -50,17 +69,17 @@ export async function GET(request: NextRequest) {
   }
 
   // Filter by maquinaria_id client-side since it's in the nested items
-  let results = data || [];
+  let results = (data || []) as FacturaWithItems[];
   if (maquinariaId) {
     const mId = parseInt(maquinariaId, 10);
-    results = results.filter((f: any) =>
+    results = results.filter((f: FacturaWithItems) =>
       Array.isArray(f.combustible_items) &&
-      f.combustible_items.some((i: any) => i.maquinaria_id === mId)
+      f.combustible_items.some((i: CombustibleItemRow) => i.maquinaria_id === mId)
     );
   }
 
   // Resolve signed URLs
-  const withUrls = await Promise.all(results.map(async (f: any) => ({
+  const withUrls = await Promise.all(results.map(async (f: FacturaWithItems) => ({
     ...f,
     items: f.combustible_items || [],
     combustible_items: undefined,
@@ -163,7 +182,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Insert items
-  const itemsToInsert = items.map((item: any) => ({
+  const itemsToInsert = items.map((item: FacturaItemInput) => ({
     factura_id: factura.id,
     maquinaria_id: item.maquinaria_id ? Number(item.maquinaria_id) : null,
     contrato_id: item.contrato_id ? Number(item.contrato_id) : null,

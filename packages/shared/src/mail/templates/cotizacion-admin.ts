@@ -1,5 +1,6 @@
 import { transporter } from "../transport";
 import { formatCLP } from "../utils";
+import { env } from "@jurmaq/shared/env";
 
 /**
  * Notificación al admin/equipo cuando entra una cotización nueva.
@@ -66,7 +67,7 @@ export async function sendCotizacionAdminEmail(cotizacion: {
               </table>
 
               <div style="text-align: center;">
-                <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/admin/barraca/cotizaciones" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                <a href="${env.NEXTAUTH_URL || "http://localhost:3000"}/admin/barraca/cotizaciones" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                   Ver en Panel Admin
                 </a>
               </div>
@@ -86,7 +87,7 @@ export async function sendCotizacionAdminEmail(cotizacion: {
   `;
 
   await transporter.sendMail({
-    to: process.env.ADMIN_EMAIL || "contacto@jurmaq.cl",
+    to: env.ADMIN_EMAIL || "contacto@jurmaq.cl",
     subject: `${isLargeOrder ? "[URGENTE] " : ""}Nueva Cotizacion ${cotizacion.numero} - ${cotizacion.nombre} - ${formatCLP(cotizacion.total)}`,
     html: adminHtml,
   });

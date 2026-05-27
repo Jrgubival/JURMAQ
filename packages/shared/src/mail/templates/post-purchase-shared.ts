@@ -1,4 +1,5 @@
 import { transporter } from '../transport';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Layout compartido para los emails post-compra de barraca.
@@ -21,7 +22,7 @@ interface BuildEmailOptions {
   footerNote?: string;
 }
 
-const BARRACA_URL = (process.env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl').replace(/\/$/, '');
+const BARRACA_URL = (env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl').replace(/\/$/, '');
 
 export function buildPostPurchaseHtml(opts: BuildEmailOptions): string {
   return `

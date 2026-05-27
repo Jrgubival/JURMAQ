@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     const rows = PROMOTIONS.map((p, i) => {
       let catId: number;
       if (p.match) {
-        const cat = categorias.find((c: any) =>
+        const cat = categorias.find((c) =>
           c.nombre.toLowerCase().includes(p.match!) ||
           c.slug.toLowerCase().includes(p.match!)
         );

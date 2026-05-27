@@ -2,8 +2,9 @@ import { Resend } from "resend";
 import { ADMIN_BCC_EMAILS, EMAIL_FROM } from "../transport";
 import { escapeHtml } from "../utils";
 import { maskEmail } from "../../logging";
+import { env } from "@jurmaq/shared/env";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(env.RESEND_API_KEY);
 
 /**
  * Envía el email del contrato firmado al cliente.

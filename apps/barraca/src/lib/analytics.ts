@@ -17,6 +17,8 @@
  *   track('add_to_cart', { currency: 'CLP', value: 12500, items: [...] });
  */
 
+import { env } from '@jurmaq/shared/env';
+
 type GtagEventParams = Record<string, unknown>;
 
 declare global {
@@ -26,7 +28,7 @@ declare global {
   }
 }
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const GA_ID = env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 /** True solo en cliente con GA configurado. */
 function gtagAvailable(): boolean {

@@ -1,6 +1,7 @@
 import { transporter } from "@jurmaq/shared/mail/email";
 import { formatCLP } from "@jurmaq/shared/format";
-const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+import { env } from "@jurmaq/shared/env";
+const BASE_URL = env.NEXTAUTH_URL || 'http://localhost:3000';
 const WHATSAPP_NUMBER = '56976673577';
 
 // ============================================================
@@ -106,7 +107,7 @@ ${emailHeader()}
               </div>
 
               <h2 style="margin: 0 0 8px; color: #0c1d3a; font-size: 20px; font-weight: 700; text-align: center;">
-                Necesitas ayuda con tu cotizacion?
+                Necesitas ayuda con tu cotización?
               </h2>
               <p style="margin: 0 0 4px; color: #ea580c; font-size: 15px; font-weight: 600; text-align: center;">
                 #${cotizacion.numero}
@@ -114,7 +115,7 @@ ${emailHeader()}
 
               <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 20px 0;">
                 Hola <strong>${cotizacion.nombre}</strong>,<br><br>
-                Notamos que aun no has respondido a tu cotizacion. Queremos asegurarnos de que tengas todo lo que necesitas. Si tienes dudas sobre precios, disponibilidad o formas de pago, estamos para ayudarte.
+                Notamos que aun no has respondido a tu cotización. Queremos asegurarnos de que tengas todo lo que necesitas. Si tienes dudas sobre precios, disponibilidad o formas de pago, estamos para ayudarte.
               </p>
 
               <!-- Items reminder -->
@@ -153,7 +154,7 @@ ${emailFooter()}`;
 
   await transporter.sendMail({
         to,
-    subject: `Necesitas ayuda con tu cotizacion #${cotizacion.numero}? - JURMAQ Barraca`,
+    subject: `Necesitas ayuda con tu cotización #${cotizacion.numero}? - JURMAQ Barraca`,
     html: htmlContent,
   });
 }

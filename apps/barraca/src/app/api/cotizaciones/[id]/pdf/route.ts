@@ -3,6 +3,7 @@ import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import { LEGAL_INFO } from '@jurmaq/shared/seo';
 function formatDate(dateStr: string): string {
   try {
     const date = new Date(dateStr);
@@ -81,7 +82,17 @@ export async function GET(
       const raw = typeof cotizacion.items === 'string'
         ? JSON.parse(cotizacion.items)
         : cotizacion.items;
-      items = raw.map((item: any) => ({
+      type RawCotizacionItem = {
+        nombre: string;
+        cantidad: number;
+        precio: number;
+        subtotal?: number;
+        medida?: string;
+        tipo?: string;
+        descuento?: number;
+        descuento_monto?: number;
+      };
+      items = (raw as RawCotizacionItem[]).map((item) => ({
         ...item,
         tipo: item.tipo || 'producto',
         descuento: item.descuento || 0,
@@ -105,7 +116,14 @@ export async function GET(
       const rawC = typeof cotizacion.contraoferta_items === 'string'
         ? JSON.parse(cotizacion.contraoferta_items)
         : cotizacion.contraoferta_items;
-      contraofertaItems = rawC.map((item: any) => ({
+      type RawContraofertaItem = {
+        nombre: string;
+        cantidad: number;
+        precio: number;
+        precioContraoferta?: number;
+        subtotal?: number;
+      };
+      contraofertaItems = (rawC as RawContraofertaItem[]).map((item) => ({
         ...item,
         subtotal: item.subtotal || ((item.precioContraoferta || item.precio) * item.cantidad),
       }));
@@ -463,8 +481,8 @@ export async function GET(
   <div class="page">
     <div class="header">
       <div class="header-left">
-        <h1>JURMAQ</h1>
-        <div class="subtitle">E.I.R.L.</div>
+        <h1>${LEGAL_INFO.nombreComercial}</h1>
+        <div class="subtitle">${LEGAL_INFO.nombreLegal}</div>
       </div>
       <div class="header-right">
         Av. Poniente 2157, Molina<br>
@@ -571,8 +589,8 @@ export async function GET(
     </div>
 
     <div class="footer">
-      <p><strong>JURMAQ E.I.R.L.</strong> - Av. Poniente 2157, Molina, Region del Maule, Chile</p>
-      <p>Tel: +56 9 7667 3577 | contacto@jurmaq.cl</p>
+      <p><strong>${LEGAL_INFO.nombreLegal}</strong> - ${LEGAL_INFO.brands.barraca.direccion}, Chile</p>
+      <p>Tel: ${LEGAL_INFO.brands.barraca.telefonoDisplay} | contacto@jurmaq.cl</p>
       <p style="margin-top: 8px; font-style: italic;">Los precios son referenciales y pueden variar segun disponibilidad. Cotizacion valida por 15 dias.</p>
     </div>
   </div>
@@ -588,7 +606,7 @@ export async function GET(
   } catch (error) {
     console.error('Error al generar PDF de cotizacion:', error);
     return NextResponse.json(
-      { error: 'Error al generar la cotizacion' },
+      { error: 'Error al generar la cotización' },
       { status: 500 }
     );
   }

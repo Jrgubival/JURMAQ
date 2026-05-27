@@ -4,6 +4,7 @@ import { authConfig } from './config';
 import bcrypt from 'bcryptjs';
 import { rateLimitPersistent } from '../rate-limit';
 import { headers } from 'next/headers';
+import { env } from '@jurmaq/shared/env';
 import { maskEmail, maskIp } from '../logging';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -52,7 +53,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // con scope='barraca' NO debe poder loguearse en el proceso de
           // constructora aunque acierte email+password. `scope='both'`
           // entra en cualquiera (es el dueño).
-          const authScope = process.env.AUTH_SCOPE;
+          const authScope = env.AUTH_SCOPE;
           const isScopedApp = authScope === 'barraca' || authScope === 'constructora';
 
           let query = supabaseAdmin

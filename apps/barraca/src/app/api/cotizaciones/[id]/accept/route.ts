@@ -7,14 +7,15 @@ import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
 import { logSafeError } from '@jurmaq/shared/logging';
+import { env } from '@jurmaq/shared/env';
 
 async function sendAcceptRejectAdminEmail(
   cotizacion: { numero: string; nombre: string; email: string; total: number; contraoferta_total?: number },
   action: 'accept' | 'reject'
 ) {
   const isAccepted = action === 'accept';
-  const adminEmail = process.env.ADMIN_EMAIL || 'contacto@jurmaq.cl';
-  const adminUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/barraca/cotizaciones`;
+  const adminEmail = env.ADMIN_EMAIL || 'contacto@jurmaq.cl';
+  const adminUrl = `${env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/barraca/cotizaciones`;
   const total = cotizacion.contraoferta_total || cotizacion.total;
 
   const htmlContent = `

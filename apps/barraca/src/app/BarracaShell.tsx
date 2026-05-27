@@ -3,11 +3,13 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
+import { env } from "@jurmaq/shared/env";
 import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
 import ToastContainer from "@/components/Toast";
 import { IconCoin, IconArrowRight } from "@jurmaq/shared/icons";
-import { LEGAL_INFO } from "@jurmaq/shared/seo";
+import { LEGAL_INFO, buildFooterCopyright } from "@jurmaq/shared/seo";
+import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
 
 const CartDrawer = dynamic(
   () => import("@/components/barraca/CartDrawer"),
@@ -511,7 +513,7 @@ function WhatsAppFloat() {
   // Verde mantenido por reconocimiento de marca WhatsApp.
   return (
     <a
-      href="https://wa.me/56976673577?text=Hola%2C%20necesito%20cotizar%20productos%20de%20la%20barraca"
+      href={whatsappCtaBarracaCotizar('productos-barraca', 'shell_fab')}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 left-6 z-40 w-11 h-11 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-md whatsapp-float transition-colors safe-bottom"
@@ -525,7 +527,7 @@ function WhatsAppFloat() {
 }
 
 // The actual RUT should be set via NEXT_PUBLIC_COMPANY_RUT in .env
-const RUT = process.env.NEXT_PUBLIC_COMPANY_RUT || '76.624.872-1';
+const RUT = env.NEXT_PUBLIC_COMPANY_RUT || '76.624.872-1';
 
 function Footer() {
   return (
@@ -696,8 +698,7 @@ function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-xs text-gray-500">
-              &copy; {new Date().getFullYear()} {LEGAL_INFO.brands.barraca.nombre} · RUT {LEGAL_INFO.rut} · {LEGAL_INFO.brands.barraca.direccion}.
-              Todos los derechos reservados.
+              {buildFooterCopyright('barraca')}
             </p>
             <div className="flex items-center gap-3 text-xs text-gray-500">
               <a href="https://jurmaq.cl/terminos" className="hover:text-orange-500 transition-colors">Terminos y Condiciones</a>

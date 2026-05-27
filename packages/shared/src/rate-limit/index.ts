@@ -3,6 +3,8 @@
  * Tracks requests by IP address with a sliding window.
  */
 
+import { env } from '@jurmaq/shared/env';
+
 interface RateLimitEntry {
   count: number;
   resetAt: number;
@@ -48,7 +50,7 @@ interface RateLimitResult {
  * para compat hacia atrás durante el rollout.
  */
 function getScopePrefix(): string {
-  const scope = process.env.AUTH_SCOPE;
+  const scope = env.AUTH_SCOPE;
   return scope === 'barraca' || scope === 'constructora' ? scope : 'app';
 }
 

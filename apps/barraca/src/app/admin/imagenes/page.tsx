@@ -1,7 +1,8 @@
-'use client';
+"use client"
 
 import { useState, useEffect, useCallback } from 'react';
 import { searchImageCandidates, type ImageCandidate } from '@/lib/imagenes-search';
+import { TOAST_MESSAGES } from '@jurmaq/shared/messages';
 
 /* ───────────────────── Types ───────────────────── */
 
@@ -161,16 +162,14 @@ export default function ImagenesBarracaPage() {
       if (res.ok) {
         const count = data.updated || 1;
         setTotalAsignados((prev) => prev + count);
-        showToast(
-          `Imagen asignada a ${count} producto${count > 1 ? 's' : ''}`
-        );
+        showToast(TOAST_MESSAGES.admin.imageAssignedTo(count));
         moveToNext();
       } else {
-        showToast('Error al asignar imagen');
+        showToast(TOAST_MESSAGES.admin.IMAGE_ASSIGN_ERROR);
       }
     } catch (err) {
       console.error('Error assigning image:', err);
-      showToast('Error al asignar imagen');
+      showToast(TOAST_MESSAGES.admin.IMAGE_ASSIGN_ERROR);
     } finally {
       setSaving(false);
     }
@@ -196,7 +195,7 @@ export default function ImagenesBarracaPage() {
   };
 
   const skip = () => {
-    showToast('Producto saltado');
+    showToast(TOAST_MESSAGES.admin.PRODUCT_SKIPPED);
     moveToNext();
   };
 

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { buildWhatsappUrl, SALUDO } from '@jurmaq/shared/whatsapp';
 
 /**
  * ObraCompletaCTA — Banner inline para destacar mejora-precio en obras completas
@@ -19,9 +20,13 @@ interface Props {
 }
 
 export default function ObraCompletaCTA({ source = 'maquinaria_detail' }: Props) {
-  const whatsappMessage = encodeURIComponent(
-    'Hola, quiero precio personalizado para arriendo de varias máquinas / obra completa en JURMAQ. ¿Me podés ayudar?',
-  );
+  const ctaUrl = buildWhatsappUrl({
+    text: `${SALUDO}quiero precio personalizado para arriendo de varias máquinas / obra completa en JURMAQ. ¿Me podés ayudar?`,
+    utm_source: 'site',
+    utm_medium: 'cta',
+    utm_content: source,
+    utm_campaign: 'obra_completa',
+  });
 
   return (
     <section className="bg-[#FBFBFA] hairline rounded-[16px] p-6 lg:p-7">
@@ -77,7 +82,7 @@ export default function ObraCompletaCTA({ source = 'maquinaria_detail' }: Props)
 
       <div className="flex flex-col sm:flex-row gap-3">
         <a
-          href={`https://wa.me/56976673577?text=${whatsappMessage}&utm_source=site&utm_medium=cta&utm_campaign=obra_completa&utm_content=${source}`}
+          href={ctaUrl}
           target="_blank"
           rel="noopener noreferrer nofollow"
           className="group inline-flex items-center justify-center gap-3 px-5 py-3 bg-[#111111] hover:bg-[#2F3437] text-white text-sm font-semibold rounded-[10px] transition-spring tactile"

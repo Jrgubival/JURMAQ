@@ -5,6 +5,7 @@ import { escapeLikePattern, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { transporter } from '@jurmaq/shared/mail/email';
 import { logSafeError } from '@jurmaq/shared/logging';
+import { env } from '@jurmaq/shared/env';
 
 export async function GET(request: NextRequest) {
   try {
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
     // landed in the DB but no one was notified, so emails would only get
     // seen if someone manually opened the admin panel.
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || 'contacto@jurmaq.cl';
+      const adminEmail = env.ADMIN_EMAIL || 'contacto@jurmaq.cl';
       // Escape chars that have meaning in HTML attribute *or* text contexts.
       // Without escaping single quotes/backticks/equals/slash, a value injected
       // inside an attribute (e.g. <a href="?q=${val}">) can break out and
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
         <div style="color:#1f2937;font-size:14px;line-height:1.5;white-space:pre-wrap;">${escape(sanitize(body.mensaje))}</div>
       </div>` : ''}
       <div style="margin-top:24px;text-align:center;">
-        <a href="${process.env.NEXTAUTH_URL || 'https://jurmaq.cl'}/admin/solicitudes" style="display:inline-block;background:#0c1d3a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Ver en panel admin</a>
+        <a href="${env.NEXTAUTH_URL || 'https://jurmaq.cl'}/admin/solicitudes" style="display:inline-block;background:#0c1d3a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Ver en panel admin</a>
       </div>
     </td></tr>
     <tr><td style="background:#f9fafb;padding:14px;text-align:center;color:#9ca3af;font-size:11px;">JURMAQ - Notificacion automatica - ${new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago' })}</td></tr>

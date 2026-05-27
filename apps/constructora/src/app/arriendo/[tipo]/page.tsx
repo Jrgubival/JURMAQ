@@ -6,7 +6,8 @@ import { TIPOS_MAQUINA, CIUDADES, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaTipo } from "@jurmaq/shared/whatsapp";
-import CrossLinksGrid from "@/components/public/CrossLinksGrid";
+import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
+import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 
 interface Maquinaria {
   id: number;
@@ -58,7 +59,7 @@ export async function generateMetadata({
     ],
     openGraph: {
       title: `Arriendo ${tipoData.nombrePlural} en Curicó y Región del Maule · JURMAQ`,
-      description: `${tipoData.descripcionCorta} Disponible para arriendo en toda la Región del Maule. Despacho rápido desde Molina.`,
+      description: `${tipoData.descripcionCorta} Disponible para arriendo en toda la Región del Maule. Despacho rápido desde Curicó.`,
       url: `https://jurmaq.cl/arriendo/${tipoData.slug}`,
       siteName: "JURMAQ",
       locale: "es_CL",
@@ -162,17 +163,15 @@ export default async function ArriendoTipoPage({
         {/* Hero — editorial */}
         <header className="bg-navy-950 text-white py-20 lg:py-28 border-b border-navy-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-white/55 mb-6 flex-wrap">
-              <Link href="/" className="hover:text-gold-400 transition-colors">Inicio</Link>
-              <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-              <Link href="/maquinarias" className="hover:text-gold-400 transition-colors">Maquinaria</Link>
-              <svg className="w-3.5 h-3.5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="text-white/85 font-medium">{tipoData.nombrePlural}</span>
-            </nav>
+            <Breadcrumbs
+              variant="dark"
+              className="mb-6"
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: "Maquinaria", href: "/maquinarias" },
+                { label: tipoData.nombrePlural },
+              ]}
+            />
             <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
               Curicó · Molina · Región del Maule
             </p>
@@ -296,7 +295,7 @@ export default async function ArriendoTipoPage({
         <CrossLinksGrid
           eyebrow="Cobertura · 12 ciudades del Maule"
           title={`También en otras ciudades del Maule`}
-          subtitle={`Operamos desde Molina y despachamos a toda la Región del Maule. Tarifa de traslado se confirma al cotizar.`}
+          subtitle={`Operamos desde nuestra base en Curicó y despachamos a toda la Región del Maule. Tarifa de traslado se confirma al cotizar.`}
           items={CIUDADES.map((c) => ({
             label: `Arriendo en ${c.nombre}`,
             href: `/arriendo-en/${c.slug}`,

@@ -1,4 +1,5 @@
 import type { OtpProvider, OtpProviderResult } from '../types';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Twilio SMS — fallback si WhatsApp no funciona.
@@ -12,9 +13,9 @@ import type { OtpProvider, OtpProviderResult } from '../types';
  */
 
 function getEnv() {
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_FROM_NUMBER;
+  const sid = env.TWILIO_ACCOUNT_SID;
+  const token = env.TWILIO_AUTH_TOKEN;
+  const from = env.TWILIO_FROM_NUMBER;
   if (!sid || !token || !from) return null;
   return { sid, token, from };
 }

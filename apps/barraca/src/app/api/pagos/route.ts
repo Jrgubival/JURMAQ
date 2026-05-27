@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
         : cotizacion.items;
     } catch {
       return NextResponse.json(
-        { error: 'Error al procesar los items de la cotizacion' },
+        { error: 'Error al procesar los items de la cotización' },
         { status: 500 }
       );
     }

@@ -20,6 +20,7 @@
  */
 
 import { logSafeError } from "@jurmaq/shared/logging";
+import { env } from "@jurmaq/shared/env";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -186,7 +187,9 @@ async function callGemini(
 // Groq caller (OpenAI-compatible API)
 // ---------------------------------------------------------------------------
 
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+// groq/compound = free tier 200 RPM / 200K TPM, 131K context, 8K max completion.
+// Equivalente a Llama-3.3-70b en español + function calling, gratis.
+const GROQ_MODEL = "groq/compound";
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
 async function callGroq(
@@ -335,8 +338,8 @@ class ProviderError extends Error {
  * intenta con Groq. Si ambos fallan, throw.
  */
 export async function callAI(opts: AiCallOptions): Promise<AiCallResult> {
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const groqKey = process.env.GROQ_API_KEY;
+  const geminiKey = env.GEMINI_API_KEY;
+  const groqKey = env.GROQ_API_KEY;
 
   // Caso 1: ambas keys ausentes → canned
   if (!geminiKey && !groqKey) {

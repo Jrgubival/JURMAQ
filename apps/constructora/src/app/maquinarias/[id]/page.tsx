@@ -10,7 +10,8 @@ import { whatsappCtaMaquinaria } from "@jurmaq/shared/whatsapp";
 import PricingTiers from "@/components/public/PricingTiers";
 import ObraCompletaCTA from "@/components/public/ObraCompletaCTA";
 import RelatedMachines from "@/components/public/RelatedMachines";
-import ViewItemTracker from "@/components/analytics/ViewItemTracker";
+import ViewItemTracker from "@jurmaq/shared/ui/ViewItemTracker";
+import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import { getMaquinariaDescripcion } from "@jurmaq/shared/seo/maquinaria-descripciones";
 
 interface Maquinaria {
@@ -104,7 +105,7 @@ export async function generateStaticParams() {
   const { data: machines } = await supabasePublic
     .from('maquinarias')
     .select('id, nombre');
-  return (machines || []).map((m: any) => ({
+  return (machines || []).map((m) => ({
     id: `${slugify(m.nombre)}-${m.id}`,
   }));
 }
@@ -160,8 +161,19 @@ export async function generateMetadata({
       locale: "es_CL",
       type: "website",
       images: machine.imagen
-        ? [{ url: machine.imagen, alt: `${machine.nombre} en arriendo · JURMAQ Curicó` }]
-        : [{ url: "/icon-512.png", width: 512, height: 512, alt: "JURMAQ" }],
+        ? [
+            {
+              url: machine.imagen,
+              width: 1200,
+              height: 630,
+              alt: `${machine.nombre} en arriendo · JURMAQ Curicó`,
+            },
+          ]
+        : [
+            // Fallback al OG default de constructora cuando no hay foto de la máquina.
+            { url: "/og-image-1200x630.png", width: 1200, height: 630, alt: "JURMAQ" },
+            { url: "/icon-512.png", width: 512, height: 512, alt: "JURMAQ" },
+          ],
     },
     twitter: {
       card: "summary_large_image",
@@ -216,7 +228,7 @@ export default async function MaquinariaDetailPage({
         "@type": "Offer",
         priceCurrency: "CLP",
         price: desdePrecio,
-        name: "Arriendo por dia (desde, IVA incl., sin traslado)",
+        name: "Arriendo por dia (desde, neto, sin traslado)",
         availability:
           machine.estado === "disponible"
             ? "https://schema.org/InStock"
@@ -248,44 +260,15 @@ export default async function MaquinariaDetailPage({
       <section className="bg-navy-950 py-10 lg:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection animation="fadeUp">
-            <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-              <Link href="/" className="hover:text-gold-500 transition-colors">
-                Inicio
-              </Link>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-              <Link
-                href="/maquinarias"
-                className="hover:text-gold-500 transition-colors"
-              >
-                Maquinarias
-              </Link>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-              <span className="text-gray-300">{machine.nombre}</span>
-            </nav>
+            <Breadcrumbs
+              variant="dark"
+              className="mb-6"
+              items={[
+                { label: "Inicio", href: "/" },
+                { label: "Maquinarias", href: "/maquinarias" },
+                { label: machine.nombre },
+              ]}
+            />
 
             <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-4">
               {getTipoLabel(machine.tipo)} · Flota propia

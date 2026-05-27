@@ -2,11 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { supabasePublic } from '@jurmaq/shared/supabase';
-import { CIUDADES, TIPOS_MAQUINA, HQ } from '@jurmaq/shared/seo';
+import { CIUDADES, TIPOS_MAQUINA, HQ, DISTANCIAS_CONSTRUCTORA } from '@jurmaq/shared/seo';
 import { formatCLP } from '@jurmaq/shared/format';
 import { precioPublicoDesde } from '@/lib/pricing-arriendo';
 import { whatsappCtaCiudadTipo } from '@jurmaq/shared/whatsapp';
 import { maquinariaHref } from '@/lib/maquinaria-slug';
+import Breadcrumbs from '@jurmaq/shared/ui/Breadcrumbs';
 
 /**
  * Tier 7 G1: Cross landings programáticas [ciudad] × [tipo].
@@ -59,7 +60,7 @@ export async function generateMetadata({
   if (!c || !t) return { title: 'Página no encontrada' };
 
   const title = `Arriendo de ${t.nombre} en ${c.nombre} · JURMAQ`;
-  const description = `${t.nombrePlural} en arriendo para ${c.nombre} (${c.region}). Despacho en ${c.tiempoDespacho} desde Molina. ${t.descripcionCorta} Cotiza por WhatsApp con disponibilidad inmediata.`;
+  const description = `${t.nombrePlural} en arriendo para ${c.nombre} (${c.region}). Despacho en ${DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} desde Curicó. ${t.descripcionCorta} Cotiza por WhatsApp con disponibilidad inmediata.`;
 
   return {
     title,
@@ -113,8 +114,9 @@ export default async function CiudadTipoLanding({
 
   const maquinarias = (maquinariasRaw ?? []) as Maquinaria[];
 
-  // Coords HQ desde la lista de ciudades (Molina) — single source of truth.
-  const HQ_CITY = CIUDADES.find((x) => x.slug === 'molina') ?? CIUDADES[0];
+  // Coords HQ desde la lista de ciudades (Curicó) — constructora despacha
+  // desde Maquehua, Curicó. Usamos Curicó centroide como aproximación SEO.
+  const HQ_CITY = CIUDADES.find((x) => x.slug === 'curico') ?? CIUDADES[0];
 
   // JSON-LD Service + LocalBusiness con geo coords del CLIENTE (no HQ) para
   // capturar Pack local de Google en la ciudad específica.
@@ -208,18 +210,15 @@ export default async function CiudadTipoLanding({
       />
       <main className="bg-gradient-to-br from-gray-50 to-white min-h-screen">
         <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
-          {/* Breadcrumbs */}
-          <nav className="text-sm text-gray-500 mb-6 flex flex-wrap gap-2">
-            <Link href="/" className="hover:text-navy-950">
-              Inicio
-            </Link>
-            <span>/</span>
-            <Link href={`/arriendo-en/${c.slug}`} className="hover:text-navy-950">
-              Arriendo en {c.nombre}
-            </Link>
-            <span>/</span>
-            <span className="text-gray-700">{t.nombre}</span>
-          </nav>
+          <Breadcrumbs
+            variant="light"
+            className="mb-6"
+            items={[
+              { label: "Inicio", href: "/" },
+              { label: `Arriendo en ${c.nombre}`, href: `/arriendo-en/${c.slug}` },
+              { label: t.nombre },
+            ]}
+          />
 
           {/* H1 + intro */}
           <header className="mb-8">
@@ -242,8 +241,8 @@ export default async function CiudadTipoLanding({
               </h2>
               <p className="text-gray-700 leading-relaxed mb-3">{c.contextoLocal}</p>
               <p className="text-gray-700 leading-relaxed">
-                Estamos a <strong>{c.distanciaKm} km</strong> de tu obra ({c.tiempoDespacho} de
-                despacho desde nuestra base en Molina). Trabajamos habitualmente con{' '}
+                Estamos a <strong>{DISTANCIAS_CONSTRUCTORA[c.slug].km} km</strong> de tu obra ({DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} de
+                despacho desde nuestra base en Curicó). Trabajamos habitualmente con{' '}
                 {c.rubroLocal.slice(0, 3).join(', ')} en la zona.
               </p>
               <div className="mt-4 text-sm text-gray-500">
@@ -415,7 +414,7 @@ export default async function CiudadTipoLanding({
               ¿Necesitas {t.nombre.toLowerCase()} en {c.nombre} esta semana?
             </h2>
             <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-              Despacho en {c.tiempoDespacho} desde Molina. Operador certificado disponible.
+              Despacho en {DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} desde Curicó. Operador certificado disponible.
               Cotiza ahora y nos contactamos en menos de 1 hora hábil.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -1,7 +1,8 @@
-'use client';
+"use client"
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { LEGAL_INFO } from "@jurmaq/shared/seo";
 
 interface Template {
   id: number;
@@ -28,7 +29,7 @@ const DEFAULT_VARS: Record<string, string | number | boolean> = {
   fecha_emision: '21/04/2026',
   arrendador_nombre: 'JURMAQ SpA',
   arrendador_rut: '76.123.456-7',
-  arrendador_domicilio: 'Av. Poniente 2157, Molina',
+  arrendador_domicilio: LEGAL_INFO.brands.constructora.direccionLegal,
   arrendador_rep: 'Juan Rep Legal',
   arrendatario_nombre: 'Cliente de Prueba',
   arrendatario_rut: '12.345.678-9',

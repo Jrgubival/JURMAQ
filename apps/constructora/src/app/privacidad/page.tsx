@@ -1,23 +1,15 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import { LEGAL_INFO, buildPageMetadata } from "@jurmaq/shared/seo";
 
-export const metadata: Metadata = {
+// Ejemplo de uso de `buildPageMetadata`: page legal estándar. El helper
+// genera canonical, OG y twitter consistentes con la marca constructora.
+export const metadata = buildPageMetadata({
+  brand: "constructora",
   title: "Politica de Privacidad | Constructora Jorge Ubilla Rivera E.I.R.L.",
   description:
     "Politica de privacidad y proteccion de datos personales de JURMAQ.cl. Informacion sobre recopilacion, uso y resguardo de datos conforme a la ley chilena 19.628.",
-  alternates: {
-    canonical: "https://jurmaq.cl/privacidad",
-  },
-  openGraph: {
-    title: "Politica de Privacidad | JURMAQ.cl",
-    description:
-      "Politica de privacidad y proteccion de datos personales de Constructora Jorge Ubilla Rivera E.I.R.L.",
-    url: "https://jurmaq.cl/privacidad",
-    siteName: "JURMAQ.cl",
-    locale: "es_CL",
-    type: "website",
-  },
-};
+  path: "/privacidad",
+});
 
 export default function PrivacidadPage() {
   return (
@@ -63,8 +55,8 @@ export default function PrivacidadPage() {
                 1. Introduccion
               </h2>
               <p className="text-gray-700 leading-relaxed">
-                <strong>Constructora Jorge Ubilla Rivera E.I.R.L.</strong>, con domicilio en
-                Av. Poniente 2157, Molina, Region del Maule, Chile, se
+                <strong>Constructora Jorge Ubilla Rivera E.I.R.L.</strong>, con domicilio en{" "}
+                {LEGAL_INFO.brands.constructora.direccion}, {LEGAL_INFO.brands.constructora.addressRegion}, Chile, se
                 compromete a proteger la privacidad y los datos personales de
                 los usuarios de su sitio web{" "}
                 <strong>jurmaq.cl</strong>. La presente Politica de Privacidad
@@ -185,7 +177,7 @@ export default function PrivacidadPage() {
                 </li>
                 <li>
                   <strong>Resend:</strong> Proveedor de correo transaccional
-                  para enviar confirmaciones de cotizacion, notificaciones de
+                  para enviar confirmaciones de cotización, notificaciones de
                   cuenta y comunicaciones de servicio.
                 </li>
                 <li>
@@ -350,8 +342,7 @@ export default function PrivacidadPage() {
                   </a>
                 </li>
                 <li>
-                  <strong>Direccion:</strong> Av. Poniente 2157, Molina, Maule,
-                  Chile
+                  <strong>Direccion:</strong> {LEGAL_INFO.brands.constructora.direccion}, Chile
                 </li>
               </ul>
             </div>

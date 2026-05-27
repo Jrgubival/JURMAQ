@@ -7,6 +7,7 @@ import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { sanitizeString, isValidEmail, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { logSafe, maskEmail, logSafeError } from '@jurmaq/shared/logging';
 import { signToken as signSessionJWT, verifyToken as verifySessionJWT } from '@jurmaq/shared/auth/session-token';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * SECURITY (audit fase 2A.1):
@@ -15,7 +16,7 @@ import { signToken as signSessionJWT, verifyToken as verifySessionJWT } from '@j
  * JWT firmados HMAC-SHA256 con revocación contra `user_sessions`.
  * parseToken acepta AMBOS formatos durante la transición.
  */
-const USE_SIGNED_TOKENS = process.env.AUTH_SESSIONS_ENABLED === 'true';
+const USE_SIGNED_TOKENS = env.AUTH_SESSIONS_ENABLED;
 const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 días
 
 // Sync emisor LEGACY (forjable, mantenido para compat con código existente).
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         user,
-        cotizaciones: cotizaciones.map((c: any) => ({
+        cotizaciones: cotizaciones.map((c) => ({
           id: c.id,
           numero: c.numero,
           fecha: c.created_at,

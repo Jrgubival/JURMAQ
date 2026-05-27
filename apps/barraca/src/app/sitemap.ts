@@ -145,15 +145,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // All active categories
   const { data: categories } = await supabasePublic
     .from('barraca_categorias')
-    .select('slug')
+    .select('id, slug, padre_id')
     .eq('activa', true);
 
-  const categoryUrls: MetadataRoute.Sitemap = (categories || []).map((c: { slug: string }) => ({
-    url: `${baseUrl}/categorias/${c.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
+  const categoryUrls: MetadataRoute.Sitemap = (categories || []).map(
+    (c: { slug: string }) => ({
+      url: `${baseUrl}/categorias/${c.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })
+  );
+
+  // pSEO categoría × ciudad — `/categorias/<slug>/en/<ciudad-slug>`
+  // Filtra categorías sin productos activos (incluyendo herencia desde
+  // subcategorías) para no indexar doorway pages vacías. Misma lógica que
+  // `getEligibleCategoriaIds` en la página, replicada aquí para mantener
+  // alineadas las URLs del sitemap con las que generateStaticParams produce.
+  const { data: productsForEligibility } = await supabasePublic
+    .from('barraca_productos')
+    .select('categoria_id')
+    .eq('activo', true);
+  const directHasProducts = new Set<number>();
+  for (const p of productsForEligibility || []) {
+    if (p.categoria_id != null) directHasProducts.add(p.categoria_id);
+  }
+  const eligibleCatIds = new Set<number>(directHasProducts);
+  for (const cat of categories || []) {
+    if (cat.padre_id != null && directHasProducts.has(cat.id)) {
+      eligibleCatIds.add(cat.padre_id);
+    }
+  }
+  const categoriaCiudadUrls: MetadataRoute.Sitemap = [];
+  for (const cat of categories || []) {
+    if (!eligibleCatIds.has(cat.id)) continue;
+    for (const c of CIUDADES) {
+      categoriaCiudadUrls.push({
+        url: `${baseUrl}/categorias/${cat.slug}/en/${c.slug}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.65,
+      });
+    }
+  }
 
   // All active products via la vista publica (sin costo). Usamos updated_at
   // real si existe para señalar a Google qué páginas tienen contenido fresco
@@ -193,6 +227,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...alternativaUrls,
     ...guiasUrls,
     ...categoryUrls,
+    ...categoriaCiudadUrls,
     ...productUrls,
     ...maestroUrls,
   ];

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { env } from '@jurmaq/shared/env';
 import EntregaClient from './EntregaClient';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +25,7 @@ export default async function EntregaPage({
   if (!token) notFound();
 
   // Server-side fetch to avoid token leak in client.
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl';
+  const base = env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl';
   let data: EntregaInfo | null = null;
   try {
     const res = await fetch(`${base}/api/public/contratos/entrega/${encodeURIComponent(token)}`, {

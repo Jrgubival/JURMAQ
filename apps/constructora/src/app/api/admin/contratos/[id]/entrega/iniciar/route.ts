@@ -5,6 +5,7 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { transporter } from '@jurmaq/shared/mail/transport';
 import { logContratoEvent } from '@/lib/contratos-audit';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * POST /api/admin/contratos/[id]/entrega/iniciar
@@ -87,7 +88,7 @@ export async function POST(
 
   // Si es Klap y hay email del arrendatario, enviar link al cliente.
   if (contrato.garantia_metodo === 'klap_hold' && entregaToken && contrato.arrendatario_email) {
-    const portalUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl'}/cuenta/contratos/${encodeURIComponent(
+    const portalUrl = `${env.NEXT_PUBLIC_SITE_URL || 'https://jurmaq.cl'}/cuenta/contratos/${encodeURIComponent(
       String(contrato.numero || contratoId),
     )}/entrega?token=${entregaToken}`;
     const nombre = contrato.arrendatario_nombre || contrato.arrendatario_razon_social || '';

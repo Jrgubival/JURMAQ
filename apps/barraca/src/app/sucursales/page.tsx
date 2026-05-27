@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { whatsappCtaSucursal } from '@jurmaq/shared/whatsapp';
 
 /**
  * /sucursales — Página pública con 4 sucursales JURMAQ.
@@ -232,7 +233,7 @@ export default function SucursalesPage() {
                           📞 Llamar
                         </a>
                         <a
-                          href={`https://wa.me/${suc.whatsapp}?text=Hola%2C%20consulto%20por%20la%20sucursal%20${encodeURIComponent(suc.ciudad)}`}
+                          href={whatsappCtaSucursal(suc.ciudad, { phone: suc.whatsapp })}
                           target="_blank"
                           rel="noopener noreferrer nofollow"
                           className="inline-flex items-center justify-center gap-2 px-3 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold text-sm rounded-lg transition-colors"

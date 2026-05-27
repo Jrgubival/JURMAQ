@@ -1,6 +1,7 @@
-'use client';
+"use client"
 
 import { useState, useRef, useEffect } from 'react';
+import type { MatchResult } from '@/lib/import-barraca-smart';
 
 const STEP_LABELS = ['Subir Archivo', 'Mapear Columnas', 'Configurar', 'Vista Previa', 'Ejecutar'];
 
@@ -216,12 +217,12 @@ export default function BarracaImportarPage() {
   // Flatten matches into displayable rows (one row per change)
   function getFilteredRows() {
     if (!previewResult?.matches) return [];
-    const matches = previewResult.matches as any[];
+    const matches = previewResult.matches as MatchResult[];
 
     // Filter by status
     const filtered = previewFilter === 'all'
       ? matches
-      : matches.filter((m: any) => m.status === previewFilter);
+      : matches.filter((m) => m.status === previewFilter);
 
     // Flatten: each match can have multiple changes
     const rows: any[] = [];

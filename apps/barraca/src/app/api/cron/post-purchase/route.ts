@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { sendReviewRequestEmail } from '@jurmaq/shared/mail/templates/review-request';
 import { sendReplenishmentEmail } from '@jurmaq/shared/mail/templates/replenishment';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * POST /api/cron/post-purchase
@@ -25,7 +26,7 @@ export const maxDuration = 60;
 const BATCH = 50;
 
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = env.CRON_SECRET;
   if (!secret) return false;
   const provided =
     request.headers.get('x-cron-secret') ||

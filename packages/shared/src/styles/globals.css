@@ -1,0 +1,534 @@
+/* ====================================================================
+   JURMAQ Design System — Editorial Luxury aesthetic
+   Compartido entre apps/barraca y apps/constructora.
+   Derived from: frontend-design, design-taste-frontend, minimalist-ui,
+   web-typography, high-end-visual-design, redesign-existing-projects.
+   Skill consensus: warm bone background, off-black text (no #000),
+   1px hairline borders, ultra-diffuse shadows, spring physics motion.
+
+   Cada app importa este archivo desde su propio globals.css junto con
+   @import "tailwindcss". Los overrides app-específicos van en el
+   globals.css de la app, después de este import.
+   ==================================================================== */
+
+@theme inline {
+  /* Editorial Luxury surface palette (warm monochrome) */
+  --color-canvas: #FBFBFA;          /* page background — warm bone */
+  --color-surface: #FFFFFF;         /* card/elevated surface */
+  --color-surface-alt: #F7F6F3;     /* secondary surface (warm bone) */
+  --color-ink: #111111;             /* primary text (off-black, never #000) */
+  --color-ink-soft: #2F3437;        /* secondary text */
+  --color-ink-muted: #787774;       /* tertiary / labels */
+  --color-hairline: #EAEAEA;        /* 1px borders / dividers */
+  --color-hairline-soft: rgba(0,0,0,0.06);
+
+  /* Muted pastel accents (from minimalist-ui spec) */
+  --color-pale-red-bg: #FDEBEC;
+  --color-pale-red-fg: #9F2F2D;
+  --color-pale-blue-bg: #E1F3FE;
+  --color-pale-blue-fg: #1F6C9F;
+  --color-pale-green-bg: #EDF3EC;
+  --color-pale-green-fg: #346538;
+  --color-pale-yellow-bg: #FBF3DB;
+  --color-pale-yellow-fg: #956400;
+
+  /* Motion (spring-physics analogues for CSS) */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 200ms;
+  --dur-base: 300ms;
+  --dur-slow: 600ms;
+
+  /* Legacy navy + gold (preserved for backwards compat during retrofit) */
+  --color-navy-50: #e8edf5;
+  --color-navy-100: #c5d0e5;
+  --color-navy-200: #9eb2d3;
+  --color-navy-300: #7793c1;
+  --color-navy-400: #5a7db4;
+  --color-navy-500: #2563a8;
+  --color-navy-600: #1e4d8e;
+  --color-navy-700: #1a3d72;
+  --color-navy-800: #132d56;
+  --color-navy-900: #0c1d3a;
+  --color-navy-950: #081428;
+  --color-gold-50: #fef9e8;
+  --color-gold-100: #fdf0c4;
+  --color-gold-200: #fbe49c;
+  --color-gold-300: #f0c940;
+  --color-gold-400: #e6b422;
+  --color-gold-500: #d4a017;
+  --color-gold-600: #b8880f;
+  --color-gold-700: #96700c;
+  --color-gold-800: #745708;
+  --color-gold-900: #524005;
+}
+
+/* ========== ACCESSIBILITY ========== */
+
+/* Visible focus outlines for keyboard navigation.
+   accessibility skill P0: scroll-margin-top so foco no queda
+   oculto bajo navbar fixed (WCAG 2.4.11). */
+*:focus-visible {
+  outline: 2px solid #e6b422;
+  outline-offset: 2px;
+  scroll-margin-top: 100px;
+}
+
+/* Skip navigation link */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+}
+.skip-to-content:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  padding: 1rem 1.5rem;
+  background: #e6b422;
+  color: #081428;
+  font-weight: 700;
+  font-size: 1rem;
+  z-index: 9999;
+  outline: none;
+}
+
+/* Minimum touch target size for mobile accessibility */
+@media (pointer: coarse) {
+  button, [role="button"] {
+    min-height: 44px;
+  }
+  input, select, textarea {
+    font-size: 16px !important;
+    min-height: 44px;
+  }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #111827;
+  /* Navy used by every navbar and the iOS notch fill */
+  --safe-area-bg: #0c1d3a;
+}
+
+/* Prevent horizontal overflow globally */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/*
+ * The notch / dynamic-island area sits on top of <html>, NOT <body>.
+ * Painting <html> in navy makes the notch and any iOS over-scroll bounce
+ * appear navy instead of the previous white flash. The body still uses
+ * its own background for actual content.
+ */
+html {
+  background: var(--safe-area-bg);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  /* Inter banned (audit P0): usa var(--font-sans) = Geist desde next/font/google */
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+  /* No top padding here — the navbar absorbs safe-area-inset-top itself
+     (see navbar pt-[env(safe-area-inset-top)] in barraca + public layouts).
+     This avoids the white strip above the navbar on devices with a notch. */
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* Lock body scroll when modal/drawer is open */
+body.overflow-hidden {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Safe area for iPhone notch */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+/* ========== ANIMATIONS ========== */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Status badges */
+.badge-disponible { background: #dcfce7; color: #166534; }
+.badge-arrendada { background: #dbeafe; color: #1e40af; }
+.badge-mantencion { background: #fef3c7; color: #92400e; }
+.badge-pendiente { background: #f3f4f6; color: #374151; }
+.badge-aprobada { background: #dcfce7; color: #166534; }
+.badge-rechazada { background: #fee2e2; color: #991b1b; }
+.badge-en_progreso { background: #dbeafe; color: #1e40af; }
+.badge-completado { background: #dcfce7; color: #166534; }
+.badge-cancelado { background: #fee2e2; color: #991b1b; }
+.badge-enviada { background: #e0e7ff; color: #3730a3; }
+.badge-aceptada { background: #dcfce7; color: #166534; }
+.badge-finalizada { background: #f3f4f6; color: #374151; }
+
+/* Scroll Animations - used sparingly on below-fold grids and cards only */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.animate-on-scroll.animated {
+  opacity: 1;
+  transform: none;
+}
+.animate-fade-in { opacity: 0; transition: opacity 0.5s ease; }
+.animate-fade-in.animated { opacity: 1; }
+.animate-slide-left { opacity: 0; transform: translateX(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.animate-slide-left.animated { opacity: 1; transform: none; }
+.animate-slide-right { opacity: 0; transform: translateX(-20px); transition: opacity 0.5s ease, transform 0.5s ease; }
+.animate-slide-right.animated { opacity: 1; transform: none; }
+.animate-scale-in { opacity: 0; transform: scale(0.95); transition: opacity 0.5s ease, transform 0.5s ease; }
+.animate-scale-in.animated { opacity: 1; transform: none; }
+
+/* Hero image grain overlay - makes stock photos look less generic */
+.hero-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ken Burns */
+@keyframes kenburns {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.08); }
+}
+
+/* WhatsApp floating button */
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
+  50% { box-shadow: 0 0 0 12px rgba(37, 211, 102, 0); }
+}
+
+.whatsapp-float {
+  animation: pulse-green 2s infinite;
+}
+
+/* Mega menu */
+.mega-menu {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+}
+.mega-menu-trigger:hover .mega-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Hero slider */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.hero-slide-enter {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+/* Image zoom on hover (product detail) */
+.product-image-zoom {
+  overflow: hidden;
+  cursor: zoom-in;
+}
+.product-image-zoom img {
+  transition: transform 0.4s ease;
+}
+.product-image-zoom:hover img {
+  transform: scale(1.15);
+}
+
+/* Floating label inputs */
+.floating-label-group {
+  position: relative;
+}
+.floating-label-group input:focus ~ label,
+.floating-label-group input:not(:placeholder-shown) ~ label,
+.floating-label-group textarea:focus ~ label,
+.floating-label-group textarea:not(:placeholder-shown) ~ label {
+  transform: translateY(-1.5rem) scale(0.85);
+  color: #ea580c;
+  background: white;
+  padding: 0 4px;
+}
+.floating-label-group label {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.2s ease;
+  pointer-events: none;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+.floating-label-group textarea ~ label {
+  top: 1rem;
+  transform: translateY(0);
+}
+.floating-label-group textarea:focus ~ label,
+.floating-label-group textarea:not(:placeholder-shown) ~ label {
+  transform: translateY(-1.75rem) scale(0.85);
+}
+
+/* Toast slide-in animation */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+/* Content visibility for below-fold sections - faster initial paint */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Step indicator */
+.step-connector {
+  height: 2px;
+  flex: 1;
+  background: #e5e7eb;
+  transition: background 0.3s ease;
+}
+.step-connector.active {
+  background: #ea580c;
+}
+
+/* Cart drawer smooth slide */
+.cart-drawer-enter {
+  transform: translateX(100%);
+}
+.cart-drawer-active {
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+/* Scroll margin for anchor links (accounts for sticky navbar) */
+[id] {
+  scroll-margin-top: 6rem;
+}
+
+/* Smooth transitions for interactive elements */
+.transition-smooth {
+  transition: all 0.2s ease-in-out;
+}
+
+/* ========== GSAP PREMIUM ANIMATIONS ========== */
+
+/* Smooth cursor follower for magnetic elements */
+[data-magnetic] { will-change: transform; }
+
+/* Text reveal overflow hidden */
+[data-text-reveal] span { display: inline-block; overflow: hidden; vertical-align: top; }
+[data-text-reveal] span span { display: inline-block; }
+
+/* Horizontal scroll section */
+[data-scroll-x] { overflow: hidden; }
+[data-scroll-x-inner] { display: flex; gap: 24px; width: max-content; }
+
+/* Smooth page transitions */
+.page-transition-enter { opacity: 0; transform: translateY(10px); }
+.page-transition-active { opacity: 1; transform: none; transition: all 0.4s ease; }
+
+/* ========== TASTE PASS (Emil Kowalski's "Agents with Taste" principles) ========== */
+/*
+ * Source: https://emilkowal.ski/ui/agents-with-taste
+ *
+ * Goal: encode design taste centrally so individual components don't have to
+ * remember to add `tabular-nums`, `tracking-wider`, `active:scale-97`, etc.
+ * Anything we can't sensibly default globally lives near the component.
+ */
+
+/* TYPOGRAPHY ---------------------------------------------------------------- */
+
+/* Tabular figures for any monetary / quantitative context.
+   Cards, tables, totals, badges with numbers — all align column-wise.
+   Opt-in via `tabular-nums` Tailwind utility or `.price` / `[data-price]`. */
+table,
+table *,
+.tabular-figures,
+[data-numeric],
+.price,
+[data-price] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+
+/* Loosen letter-spacing on every uppercase label so caps don't cramp.
+   Emil: "loosen letter-spacing on uppercase labels". Tailwind already
+   applies tracking-wider in many places — this catches the ones that don't. */
+.uppercase {
+  letter-spacing: 0.05em;
+}
+
+/* Reading width cap for body prose — Emil: ~65 characters. */
+.prose,
+.prose-content,
+article p,
+[data-prose] p {
+  max-width: 65ch;
+}
+
+/* Links are the only place underlines belong. Strip the browser default
+   underline on anything that isn't an explicit text link. */
+a:not([class*="underline"]):not(.link) {
+  text-decoration: none;
+}
+
+/* MOTION ------------------------------------------------------------------- */
+
+/* Default easing for any element using Tailwind's `transition-*` utilities,
+   unless the component overrides with ease-in/out/linear. ease-out for
+   entrances is the safe global default per Emil. */
+*[class*="transition"]:not([class*="ease-"]) {
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Buttons: tactile feedback on press. 0.97 scale, instant, no flicker.
+   Excluded for explicit disabled state. Skip a-tag-styled-as-button cases
+   where it would interfere with anchor behavior. */
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled):not([aria-disabled="true"]):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: scale(0.97);
+    transition: transform 75ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* Hover flicker fix on cards with nested decorations:
+   animate children, not the parent. */
+[data-card-hover] {
+  transition: none;
+}
+[data-card-hover] > * {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ========== SKILL-DRIVEN UTILITIES ==========
+   Applied from: microinteractions, design-taste, high-end-visual-design,
+   minimalist-ui, responsive-design.
+   ============================================== */
+
+/* Editorial serif H1 — used for hero headings (web-typography spec). */
+.editorial-h1 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+/* Eyebrow tag pattern (design-taste + high-end-visual-design). */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted, #787774);
+}
+
+/* Tabular figures for prices/stats (web-typography). */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scroll entry animation: fade-up + slight blur clear (microinteractions). */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal-on-load {
+  animation: reveal-up 800ms var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+.reveal-stagger > * {
+  animation: reveal-up 700ms var(--ease-out-quint, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  animation-delay: calc(var(--stagger-index, 0) * 80ms);
+}
+
+/* Hairline border utility (consistent across all cards per minimalist-ui). */
+.hairline {
+  border: 1px solid var(--color-hairline, #EAEAEA);
+}
+
+/* Ultra-diffuse shadow (high-end-visual-design — no harsh dark shadows). */
+.shadow-diffuse {
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.02),
+    0 4px 16px -4px rgba(0, 0, 0, 0.04),
+    0 16px 40px -16px rgba(0, 0, 0, 0.05);
+}
+
+/* Spring-feel transitions (design-taste mandate — no linear). */
+.transition-spring {
+  transition: transform 300ms var(--ease-spring), opacity 300ms var(--ease-spring);
+}
+
+/* Tactile button feedback (microinteractions + design-taste rule 5). */
+.tactile:active {
+  transform: scale(0.98) translateY(1px);
+}
+
+/* ========== REDUCED MOTION (al final para que aplique sobre todo) ========== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

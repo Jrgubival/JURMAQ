@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { formatCLP } from '@jurmaq/shared/format';
@@ -265,7 +265,7 @@ export default function WizardClient({
                       {m.minimo_unidades !== 1 ? 's' : ''})
                     </span>
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">+ IVA, traslado incluido si aplica</p>
+                  <p className="text-xs text-gray-500 mt-1">Valor neto · traslado incluido si aplica</p>
                 </button>
               ))}
             </div>

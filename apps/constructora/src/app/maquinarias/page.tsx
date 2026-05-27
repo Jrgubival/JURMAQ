@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { MaquinariaFilters } from "@/components/public/MaquinariaFilters";
 import { formatCLP } from "@jurmaq/shared/format";
-import { precioPublicoDesde } from "@/lib/pricing-arriendo";
-import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
+import { precioPublicoDesde, precioJornadaEstimada } from "@/lib/pricing-arriendo";
 import MaquinariaSort from "@/components/public/MaquinariaSort";
 import { maquinariaHref } from "@/lib/maquinaria-slug";
+import FleteCalculator from "@/components/public/FleteCalculator";
+import FleteCardSyncer from "@/components/public/FleteCardSyncer";
+import { LEGAL_INFO } from "@jurmaq/shared/seo";
+import type { Database } from "@jurmaq/shared/db-types";
+
+type MaquinariaRow = Database['public']['Tables']['maquinarias']['Row'];
 
 
 export const metadata: Metadata = {
   title:
-    "Arriendo Maquinaria Pesada en Curicó · Molina · Teno · Talca · JURMAQ",
+    "Arriendo de Maquinaria Pesada en Curicó y Maule · JURMAQ",
   description:
     "Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado, plataforma elevadora y camión tolva en Curicó, Teno, Molina, Romeral, Sagrada Familia, Talca y toda la Región del Maule. Con o sin operador. JURMAQ +25 años. Cotiza por WhatsApp.",
   keywords: [
@@ -59,11 +65,11 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title:
-      "Arriendo de Maquinaria Pesada en Curicó y Región del Maule | JURMAQ.cl",
+      "Arriendo de Maquinaria Pesada en Curicó y Región del Maule | JURMAQ",
     description:
       "Flota de maquinaria pesada para arriendo: retroexcavadoras, miniexcavadoras, brazos articulados, camiones tolva y más. Con o sin operador en toda la Región del Maule.",
     url: "https://jurmaq.cl/maquinarias",
-    siteName: "JURMAQ.cl",
+    // siteName + images se heredan del layout ("JURMAQ").
     locale: "es_CL",
     type: "website",
   },
@@ -109,14 +115,14 @@ export default async function MaquinariasPage({
 
   // 1. Filtrar por tipo
   let filteredMachines = params.tipo
-    ? machines.filter((m: any) => m.tipo === params.tipo)
+    ? machines.filter((m: MaquinariaRow) => m.tipo === params.tipo)
     : machines;
 
   // 2. Filtrar por texto de búsqueda
   if (params.q && params.q.trim()) {
     const q = params.q.trim().toLowerCase();
     filteredMachines = filteredMachines.filter(
-      (m: any) =>
+      (m: MaquinariaRow) =>
         (m.nombre || '').toLowerCase().includes(q) ||
         (m.descripcion || '').toLowerCase().includes(q) ||
         getTipoLabel(m.tipo).toLowerCase().includes(q),
@@ -125,10 +131,12 @@ export default async function MaquinariasPage({
 
   // 3. Ordenar
   const sortKey = params.sort || 'destacado';
-  filteredMachines = [...filteredMachines].sort((a: any, b: any) => {
+  filteredMachines = [...filteredMachines].sort((a: MaquinariaRow, b: MaquinariaRow) => {
     if (sortKey === 'precio_asc' || sortKey === 'precio_desc') {
-      const pa = precioPublicoDesde(a) ?? Number.MAX_SAFE_INTEGER;
-      const pb = precioPublicoDesde(b) ?? Number.MAX_SAFE_INTEGER;
+      // Usar jornada-equivalente para comparar items por hora vs por día
+      // en la misma escala. precioPublicoDesde devuelve per-unit (display).
+      const pa = precioJornadaEstimada(a) ?? Number.MAX_SAFE_INTEGER;
+      const pb = precioJornadaEstimada(b) ?? Number.MAX_SAFE_INTEGER;
       return sortKey === 'precio_asc' ? pa - pb : pb - pa;
     }
     if (sortKey === 'nombre') {
@@ -143,14 +151,7 @@ export default async function MaquinariasPage({
     return (a.nombre || '').localeCompare(b.nombre || '');
   });
 
-  const types = [...new Set(machines.map((m: any) => m.tipo))];
-
-  // Conteos por tipo para CategoriasShowcase
-  const counts: Partial<Record<TipoCategoria, number>> = {};
-  for (const m of machines) {
-    const t = m.tipo as TipoCategoria;
-    counts[t] = (counts[t] || 0) + 1;
-  }
+  const types = [...new Set(machines.map((m: MaquinariaRow) => m.tipo))];
 
   // JSON-LD ItemList for machinery catalog
   const itemListJsonLd = {
@@ -160,7 +161,7 @@ export default async function MaquinariasPage({
     description:
       "Flota completa de maquinaria pesada disponible para arriendo en Curicó y Región del Maule.",
     numberOfItems: machines.length,
-    itemListElement: machines.map((m: any, i: number) => ({
+    itemListElement: machines.map((m: MaquinariaRow, i: number) => ({
       "@type": "ListItem",
       position: i + 1,
       item: {
@@ -200,14 +201,15 @@ export default async function MaquinariasPage({
     telephone: "+56976673577",
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Curicó",
-      addressRegion: "Maule",
-      addressCountry: "CL",
+      streetAddress: LEGAL_INFO.brands.constructora.streetAddress,
+      addressLocality: LEGAL_INFO.brands.constructora.addressLocality,
+      addressRegion: LEGAL_INFO.brands.constructora.addressRegion,
+      addressCountry: LEGAL_INFO.brands.constructora.addressCountry,
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: -34.9833,
-      longitude: -71.2333,
+      latitude: LEGAL_INFO.brands.constructora.geo.latitude,
+      longitude: LEGAL_INFO.brands.constructora.geo.longitude,
     },
     areaServed: [
       { "@type": "City", name: "Curicó" },
@@ -278,12 +280,13 @@ export default async function MaquinariasPage({
         </div>
       </section>
 
-      {/* Categorías visuales — versión compact para no robar protagonismo del listing */}
-      <CategoriasShowcase counts={counts} variant="light" compact showHeader={false} />
-
       {/* Catalog */}
       <section className="pt-2 pb-12 lg:pb-20 bg-gray-50" id="catalogo">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Selector de ciudad para flete aprox + sync con cards */}
+          <FleteCalculator />
+          <FleteCardSyncer />
+
           {/* Filters */}
           <MaquinariaFilters
             types={types}
@@ -315,9 +318,12 @@ export default async function MaquinariasPage({
                     className="relative h-52 bg-gradient-to-br from-navy-900 to-navy-800 flex items-center justify-center overflow-hidden block"
                   >
                     {machine.imagen ? (
-                      <img
+                      <Image
                         src={machine.imagen}
                         alt={machine.nombre}
+                        width={500}
+                        height={208}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -370,9 +376,11 @@ export default async function MaquinariasPage({
                     {/* Pricing — neto (sin IVA) + flete aproximado */}
                     {(() => {
                       const desde = precioPublicoDesde(machine);
-                      // Flete estimado: $30k Curicó-Molina, ~$60k Teno/Romeral, ~$100k Talca.
-                      // Mostramos el rango más común (Curicó/Molina) como referencia editorial.
-                      const fleteAprox = 30000;
+                      // Flete: el span data-flete-card lo rellena FleteCardSyncer
+                      // cuando el usuario cotiza desde /cotizar-arriendo y guarda
+                      // el resultado en localStorage. Hasta entonces mostramos
+                      // un placeholder neutro sin monto (decisión de producto:
+                      // no anclar al cliente con un número arbitrario).
                       return (
                         <div className="mb-5 border-t border-b border-[#EAEAEA] py-4">
                           {desde !== null ? (
@@ -384,18 +392,19 @@ export default async function MaquinariasPage({
                                   style={{ fontSize: 'clamp(1.25rem, 1.6vw, 1.625rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
                                 >
                                   {formatPrice(desde)}
-                                  <span className="text-sm text-[#787774] font-normal ml-1">/ día</span>
+                                  <span className="text-sm text-[#787774] font-normal ml-1">
+                                    / {machine.unidad_tarifa === 'hora' ? 'hora' : 'día'}
+                                  </span>
                                 </span>
                               </div>
                               <p className="text-[11px] text-[#787774] leading-tight">
-                                Valor neto · sin IVA · {machine.unidad_tarifa === 'hora' ? '8 hrs mín.' : 'jornada base'}
+                                Valor neto · sin IVA · {machine.unidad_tarifa === 'hora' ? `${Math.max(Number(machine.minimo_unidades) || 1, 1)} hrs mín.` : 'jornada base'}
                               </p>
                               <p className="text-[11px] text-[#787774] leading-tight mt-1">
-                                Flete aprox.{' '}
-                                <span className="text-navy-950 font-medium tabular-nums">
-                                  {formatCLP(fleteAprox)}
-                                </span>{' '}
-                                desde Curicó/Molina · ida y vuelta
+                                Flete:{' '}
+                                <span data-flete-card className="italic">
+                                  según destino · cotiza tu flete
+                                </span>
                               </p>
                             </>
                           ) : (
@@ -409,7 +418,7 @@ export default async function MaquinariasPage({
 
                     {/* CTA */}
                     <Link
-                      href={`/contacto?servicio=arriendo&maquinaria=${encodeURIComponent(machine.nombre)}`}
+                      href={`/cotizar-arriendo?maquinariaId=${machine.id}`}
                       className="block w-full text-center px-5 py-3 bg-navy-950 hover:bg-[#111111] text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors"
                     >
                       Pedir cotización

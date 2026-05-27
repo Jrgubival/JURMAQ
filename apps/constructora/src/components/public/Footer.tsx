@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LEGAL_INFO } from "@jurmaq/shared/seo";
+import { LEGAL_INFO, buildFooterCopyright } from "@jurmaq/shared/seo";
 import CuentaLinks from "./CuentaLinks";
 
 /**
@@ -21,6 +21,7 @@ const COLS = [
       { href: "/", label: "Inicio" },
       { href: "/proyectos", label: "Proyectos" },
       { href: "/como-funciona", label: "Cómo funciona" },
+      { href: "/recursos", label: "Recursos" },
       { href: "/contacto", label: "Contacto" },
     ],
   },
@@ -41,7 +42,7 @@ const COLS = [
 
 export default function Footer() {
   return (
-    <footer role="contentinfo" className="bg-navy-950 text-gray-300 border-t border-navy-800 mt-24 lg:mt-32">
+    <footer role="contentinfo" className="bg-navy-950 text-gray-300 border-t border-navy-800 mt-12 lg:mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_2.5fr] gap-12 lg:gap-20 mb-16">
           {/* Brand block */}
@@ -61,8 +62,8 @@ export default function Footer() {
             </p>
             <ul className="space-y-2 text-sm text-gray-400">
               <li>
-                <a href="tel:+56972551666" className="hover:text-gold-400 transition-colors">
-                  +56 9 7255 1666
+                <a href={`tel:${LEGAL_INFO.brands.constructora.telefono}`} className="hover:text-gold-400 transition-colors">
+                  {LEGAL_INFO.brands.constructora.telefonoDisplay}
                 </a>
               </li>
               <li>
@@ -70,7 +71,7 @@ export default function Footer() {
                   contacto@jurmaq.cl
                 </a>
               </li>
-              <li>Camino a Molina, Curicó · Región del Maule</li>
+              <li>{LEGAL_INFO.brands.constructora.direccion} · {LEGAL_INFO.brands.constructora.addressRegion}</li>
             </ul>
           </div>
 
@@ -104,7 +105,7 @@ export default function Footer() {
         {/* Bottom row — hairline */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} {LEGAL_INFO.brands.constructora.nombre} · RUT {LEGAL_INFO.rut} · {LEGAL_INFO.brands.constructora.direccion}
+            {buildFooterCopyright('constructora')}
           </p>
           <ul className="flex flex-wrap gap-6 text-xs text-gray-500">
             <li>

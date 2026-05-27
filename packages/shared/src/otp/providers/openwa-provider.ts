@@ -1,4 +1,5 @@
 import type { OtpProvider, OtpProviderResult } from '../types';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * OpenWA self-hosted provider.
@@ -17,9 +18,9 @@ import type { OtpProvider, OtpProviderResult } from '../types';
  */
 
 function getEnv() {
-  const baseUrl = process.env.OPENWA_BASE_URL;
-  const session = process.env.OPENWA_SESSION || 'jurmaq';
-  const apiKey = process.env.OPENWA_API_KEY;
+  const baseUrl = env.OPENWA_BASE_URL;
+  const session = env.OPENWA_SESSION || 'jurmaq';
+  const apiKey = env.OPENWA_API_KEY;
   if (!baseUrl || !apiKey) return null;
   return { baseUrl: baseUrl.replace(/\/$/, ''), session, apiKey };
 }

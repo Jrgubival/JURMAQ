@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
+import type { Database } from '@jurmaq/shared/db-types';
 import { validateMes } from '../_helpers';
+
+type CombustibleItemWithMaquinaria = Database['public']['Tables']['combustible_items']['Row'] & {
+  maquinarias: Pick<Database['public']['Tables']['maquinarias']['Row'], 'id' | 'nombre'> | null;
+};
 
 /**
  * GET /api/admin/combustible/resumen?mes=YYYY-MM
@@ -24,13 +29,13 @@ export async function GET(request: NextRequest) {
   if (fErr) return NextResponse.json({ error: 'Error al procesar la solicitud' }, { status: 500 });
 
   const facturaIds = (facturas || []).map((f) => f.id);
-  let items: any[] = [];
+  let items: CombustibleItemWithMaquinaria[] = [];
   if (facturaIds.length > 0) {
     const { data: iData } = await supabaseAdmin
       .from('combustible_items')
       .select('*, maquinarias(id, nombre)')
       .in('factura_id', facturaIds);
-    items = iData || [];
+    items = (iData || []) as CombustibleItemWithMaquinaria[];
   }
 
   // Aggregate

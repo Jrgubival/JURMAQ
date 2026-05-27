@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import { useEffect, useRef } from 'react';
 import SignatureCanvas from 'react-signature-canvas';

@@ -1,5 +1,6 @@
 import { transporter } from "../transport";
 import { formatCLP } from "../utils";
+import { env } from "@jurmaq/shared/env";
 
 /**
  * Email "te mejoramos el precio" — contraoferta tras revisar cotización
@@ -42,7 +43,7 @@ export async function sendContraofertaEmail(
     })
     .join("");
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const baseUrl = env.NEXTAUTH_URL || "http://localhost:3000";
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -74,7 +75,7 @@ export async function sendContraofertaEmail(
                 Hola <strong>${cotizacion.nombre}</strong>,
               </p>
               <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">
-                Hemos revisado tu cotizacion de <strong>${cotizacion.nombreCompetencia}</strong> y te ofrecemos mejores precios en JURMAQ Barraca:
+                Hemos revisado tu cotización de <strong>${cotizacion.nombreCompetencia}</strong> y te ofrecemos mejores precios en JURMAQ Barraca:
               </p>
 
               ${
@@ -135,7 +136,7 @@ export async function sendContraofertaEmail(
                 &copy; ${new Date().getFullYear()} JURMAQ Barraca. Todos los derechos reservados.
               </p>
               <p style="margin: 4px 0 0; color: #6b7280; font-size: 11px;">
-                Cotizacion #${cotizacion.numero}
+                Cotización #${cotizacion.numero}
               </p>
             </td>
           </tr>

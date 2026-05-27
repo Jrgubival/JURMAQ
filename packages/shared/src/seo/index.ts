@@ -7,14 +7,27 @@
  * them as doorway pages.
  */
 
+// Re-export del lookup table de distancias auto-generado.
+// Para regenerar: `node scripts/calc-distancias.mjs`
+export {
+  DISTANCIAS_BARRACA,
+  DISTANCIAS_CONSTRUCTORA,
+} from "./distancias.generated";
+
+// Helper compartido para construir Next.js Metadata sin repetir boilerplate.
+// Ver `metadata.ts` para uso, decisiones de diseño y cuándo NO usarlo.
+export {
+  buildPageMetadata,
+  type Brand,
+  type BuildPageMetadataOptions,
+} from "./metadata";
+
 export interface CiudadSEO {
   slug: string;
   nombre: string;
   comuna: string;
   provincia: string;
   region: string;
-  distanciaKm: number; // desde Molina (HQ)
-  tiempoDespacho: string;
   poblacion?: number;
   /** WGS84 lat/lng del centro de la comuna. Usado en JSON-LD HardwareStore.geo
    *  para SEO local (Google Maps Pack, Knowledge Graph). */
@@ -25,6 +38,15 @@ export interface CiudadSEO {
   rubroLocal: string[]; // sectores económicos donde típicamente trabajamos
 }
 
+/**
+ * Lista de ciudades servidas — fuente de verdad para LANDINGS SEO.
+ *
+ * Distancia y tiempo de despacho NO viven aquí: están en
+ * `distancias.generated.ts` (auto-generado por scripts/calc-distancias.mjs
+ * usando OSRM, mismo motor que el calculador de flete runtime).
+ * Importar `DISTANCIAS_BARRACA` o `DISTANCIAS_CONSTRUCTORA` y hacer
+ * lookup por `ciudad.slug`.
+ */
 export const CIUDADES: CiudadSEO[] = [
   {
     slug: "curico",
@@ -34,8 +56,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Curicó",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 14,
-    tiempoDespacho: "30 minutos",
     poblacion: 149136,
     comunasVecinas: ["Romeral", "Teno", "Sagrada Familia", "Molina"],
     contextoLocal:
@@ -50,8 +70,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Molina",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 0,
-    tiempoDespacho: "inmediato",
     poblacion: 47148,
     comunasVecinas: ["Lontué", "Sagrada Familia", "Curicó"],
     contextoLocal:
@@ -66,8 +84,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Teno",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 28,
-    tiempoDespacho: "45 minutos",
     poblacion: 28796,
     comunasVecinas: ["Curicó", "Romeral", "Rauco"],
     contextoLocal:
@@ -82,8 +98,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Romeral",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 27,
-    tiempoDespacho: "45 minutos",
     poblacion: 14600,
     comunasVecinas: ["Curicó", "Teno"],
     contextoLocal:
@@ -98,8 +112,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Sagrada Familia",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 22,
-    tiempoDespacho: "40 minutos",
     poblacion: 18472,
     comunasVecinas: ["Molina", "Curicó", "Hualañé"],
     contextoLocal:
@@ -114,8 +126,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Hualañé",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 51,
-    tiempoDespacho: "1h 10min",
     poblacion: 9740,
     comunasVecinas: ["Sagrada Familia", "Licantén", "Vichuquén"],
     contextoLocal:
@@ -130,8 +140,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Licantén",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 71,
-    tiempoDespacho: "1h 30min",
     poblacion: 6534,
     comunasVecinas: ["Hualañé", "Vichuquén"],
     contextoLocal:
@@ -146,8 +154,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Vichuquén",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 80,
-    tiempoDespacho: "1h 45min",
     poblacion: 4916,
     comunasVecinas: ["Hualañé", "Licantén"],
     contextoLocal:
@@ -162,8 +168,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Rauco",
     provincia: "Curicó",
     region: "Maule",
-    distanciaKm: 22,
-    tiempoDespacho: "40 minutos",
     poblacion: 9670,
     comunasVecinas: ["Curicó", "Teno"],
     contextoLocal:
@@ -178,8 +182,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Talca",
     provincia: "Talca",
     region: "Maule",
-    distanciaKm: 51,
-    tiempoDespacho: "1 hora",
     poblacion: 220357,
     comunasVecinas: ["San Clemente", "Maule", "Pelarco"],
     contextoLocal:
@@ -194,8 +196,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Linares",
     provincia: "Linares",
     region: "Maule",
-    distanciaKm: 100,
-    tiempoDespacho: "1h 50min",
     poblacion: 96680,
     comunasVecinas: ["Yerbas Buenas", "San Javier", "Longaví"],
     contextoLocal:
@@ -210,8 +210,6 @@ export const CIUDADES: CiudadSEO[] = [
     comuna: "Constitución",
     provincia: "Talca",
     region: "Maule",
-    distanciaKm: 110,
-    tiempoDespacho: "2 horas",
     poblacion: 50166,
     comunasVecinas: ["Empedrado", "Maule"],
     contextoLocal:
@@ -898,14 +896,59 @@ export const TOP_PRODUCTOS_BARRACA: ProductoBarracaSEO[] = [
   },
 ];
 
+/**
+ * Helper para footer copyright unificado entre barraca y constructora.
+ *
+ * Formato canonical:
+ *   © {YYYY} {brand.nombre} · RUT {rut} · {brand.direccion}. Todos los derechos reservados.
+ *
+ * El año se calcula dinámicamente (`new Date().getFullYear()`), así que no
+ * necesitamos actualizarlo cada enero.
+ *
+ * @example
+ *   <p>{buildFooterCopyright('barraca')}</p>
+ *   <p>{buildFooterCopyright('constructora')}</p>
+ */
+export function buildFooterCopyright(brand: 'constructora' | 'barraca'): string {
+  const b = LEGAL_INFO.brands[brand];
+  const year = new Date().getFullYear();
+  return `© ${year} ${b.nombre} · RUT ${LEGAL_INFO.rut} · ${b.direccion}. Todos los derechos reservados.`;
+}
+
 export const HQ = {
   ciudad: "Molina",
   region: "Maule",
   direccion: "Av. Poniente 2157, Molina, Maule",
   telefono: "+56976673577",
+  telefonoDisplay: "+56 9 7667 3577",
   whatsapp: "https://wa.me/56976673577",
   email: "contacto@jurmaq.cl",
 };
+
+/**
+ * Coordenadas físicas de despacho — fuente única de verdad para ruteo OSRM.
+ *
+ * - Barraca: Av. Poniente 2157, Molina (sucursal materiales).
+ * - Constructora: Maquehua, sector rural ~5km al este del centro de Curicó.
+ *
+ * Consumidores: apps/constructora/src/lib/flete-pricing.ts (cálculo runtime
+ * de flete a dirección libre) y scripts/calc-distancias.mjs (genera el
+ * lookup table estático para landings SEO).
+ *
+ * NO confundir con `LEGAL_INFO.brands.*.geo` — esos son las coords usadas
+ * en JSON-LD LocalBusiness y pueden estar deliberadamente cerca del
+ * centroide de la ciudad para SEO Pack (Maquehua no aparecería en Google
+ * Pack como tal).
+ */
+export const HQ_BARRACA = {
+  lat: -35.1147,
+  lng: -71.2839,
+} as const;
+
+export const HQ_CONSTRUCTORA = {
+  lat: -34.9785,
+  lng: -71.1985,
+} as const;
 
 /**
  * Información legal y comercial por brand.
@@ -915,21 +958,67 @@ export const HQ = {
  *
  * Direcciones distintas: la barraca está en Molina (sucursal materiales), la
  * constructora opera desde Maquehua, Curicó (oficina central + maestranza).
+ *
+ * Teléfonos distintos por brand: la constructora atiende en un número propio,
+ * la barraca usa el número HQ histórico. NUNCA hardcodear un número de móvil
+ * fuera de este archivo — importar siempre desde aquí o desde HQ.
+ *
+ * ## Nombres legales
+ *
+ * - **`nombreComercial`** (`'JURMAQ'`): marca visible. Úsalo en marketing,
+ *   footer público, headers visuales, JSON-LD `name`, asuntos de email,
+ *   logos textuales, copy publicitario.
+ *
+ * - **`nombreLegal`** (`'Constructora Jorge Ubilla Rivera E.I.R.L.'`):
+ *   razón social. Úsalo en documentos vinculantes — contratos, términos y
+ *   condiciones, política de privacidad, PDFs de cotización legalmente
+ *   vinculantes, JSON-LD `legalName`, firma de contratos.
+ *
+ * - **`JURMAQ E.I.R.L.`**: ❌ NO usar — híbrido confuso (mezcla brand y
+ *   forma societaria sin la razón social completa). Si necesitas mostrar
+ *   la forma legal junto al brand, usa `nombreLegal` completo.
  */
 export const LEGAL_INFO = {
   rut: "76.624.872-1",
+  nombreComercial: "JURMAQ",
+  nombreLegal: "Constructora Jorge Ubilla Rivera E.I.R.L.",
   brands: {
     constructora: {
       nombre: "Constructora JURMAQ",
       direccion: "LT 3 DEL LT A HJ 11, Maquehua, Curicó",
+      // Versión formal/legible para contratos legales y documentos jurídicos.
+      // Se mantiene separada de `direccion` (formato catastro SII) porque cambiar
+      // ese campo afectaría SEO/JSON-LD que matchea con lo indexado en Google Maps.
+      direccionLegal: "Lote 3 del lote A, HJ 11, Maquehua, comuna de Curicó, Región del Maule, Chile",
+      // Campos estructurados para JSON-LD PostalAddress.
+      streetAddress: "LT 3 DEL LT A HJ 11, Maquehua",
+      addressLocality: "Curicó",
+      addressRegion: "Región del Maule",
+      addressCountry: "CL",
+      // postalCode omitido: Maquehua es sector rural; sin código verificado.
       comuna: "Curicó",
       region: "Maule",
+      telefono: "+56992994452",
+      telefonoDisplay: "+56 9 9299 4452",
+      whatsapp: "https://wa.me/56992994452",
+      // Coordenadas aproximadas (sector Maquehua, comuna Curicó).
+      geo: { latitude: -34.9833, longitude: -71.2333 },
     },
     barraca: {
       nombre: "Barraca de Fierros JURMAQ",
       direccion: "Av. Poniente 2157, Molina, Maule",
+      streetAddress: "Av. Poniente 2157",
+      addressLocality: "Molina",
+      addressRegion: "Región del Maule",
+      addressCountry: "CL",
+      postalCode: "3550000",
       comuna: "Molina",
       region: "Maule",
+      telefono: HQ.telefono,
+      telefonoDisplay: "+56 9 7667 3577",
+      whatsapp: HQ.whatsapp,
+      // Coordenadas centro de Molina (sucursal Av. Poniente).
+      geo: { latitude: -35.1147, longitude: -71.2839 },
     },
   },
 } as const;

@@ -3,6 +3,10 @@ import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
+import type { Database } from '@jurmaq/shared/db-types';
+
+type CategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
+type CategoriaConCount = CategoriaRow & { producto_count: number };
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     // Get product counts for each category
-    const catIds = (categorias || []).map((c: any) => c.id);
+    const catIds = (categorias || []).map((c: CategoriaRow) => c.id);
     let productCounts: Record<number, number> = {};
 
     if (catIds.length > 0) {
@@ -46,18 +50,18 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const catsWithCount = (categorias || []).map((c: any) => ({
+    const catsWithCount = (categorias || []).map((c: CategoriaRow) => ({
       ...c,
       producto_count: productCounts[c.id] || 0,
     }));
 
     // Group subcategories under their parents
-    const padres = catsWithCount.filter((c: any) => !c.padre_id);
-    const hijas = catsWithCount.filter((c: any) => c.padre_id);
+    const padres = catsWithCount.filter((c: CategoriaRow) => !c.padre_id);
+    const hijas = catsWithCount.filter((c: CategoriaRow) => c.padre_id);
 
-    const resultado = padres.map((padre: any) => ({
+    const resultado = padres.map((padre: CategoriaConCount) => ({
       ...padre,
-      subcategorias: hijas.filter((h: any) => h.padre_id === padre.id),
+      subcategorias: hijas.filter((h: CategoriaConCount) => h.padre_id === padre.id),
     }));
 
     return NextResponse.json(resultado);

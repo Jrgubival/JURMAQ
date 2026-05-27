@@ -1,7 +1,17 @@
 import 'server-only';
 import { supabasePublic } from "@jurmaq/shared/supabase";
+import type { Database } from "@jurmaq/shared/db-types";
 import { escapeLikePattern } from "@jurmaq/shared/sanitize";
 import { applyDailyPromosToProducts } from './promotions';
+
+type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
+type ProductoConCategoria = BarracaProductoRow & {
+  barraca_categorias?: { nombre: string | null; slug: string | null } | null;
+};
+type ProductoAplanado = Omit<BarracaProductoRow, 'costo'> & {
+  categoria_nombre: string | null;
+  categoria_slug: string | null;
+};
 
 /**
  * Sinónimos y abreviaciones comunes en ferretería/construcción chilena.
@@ -122,10 +132,10 @@ export async function searchProducts(q: string, limit: number = 48) {
 }
 
 /** Merge results from multiple strategies, removing duplicates by ID */
-function mergeResults(primary: any[], secondary: any[], limit: number): any[] {
+function mergeResults(primary: ProductoConCategoria[], secondary: ProductoConCategoria[], limit: number): ProductoAplanado[] {
   const flat1 = flattenProducts(primary);
   const flat2 = flattenProducts(secondary);
-  const seen = new Set(flat1.map((p: any) => p.id));
+  const seen = new Set(flat1.map((p) => p.id));
   const merged = [...flat1];
   for (const p of flat2) {
     if (!seen.has(p.id)) {
@@ -137,8 +147,8 @@ function mergeResults(primary: any[], secondary: any[], limit: number): any[] {
   return merged;
 }
 
-function flattenProducts(rawProductos: any[]): any[] {
-  return rawProductos.map((p: any) => {
+function flattenProducts(rawProductos: ProductoConCategoria[]): ProductoAplanado[] {
+  return rawProductos.map((p) => {
     const { barraca_categorias, costo, ...rest } = p;
     return {
       ...rest,

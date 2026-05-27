@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { showToast } from "@/components/Toast";
 import { formatCLP } from "@jurmaq/shared/format";
+import { whatsappCtaCotizacionEnviada } from "@jurmaq/shared/whatsapp";
+import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
 import CodigoMaestroInput from "@/components/barraca/CodigoMaestroInput";
 
 interface CartItem {
@@ -234,7 +236,7 @@ export default function CotizarPage() {
         setSuccess({ numero: data.numero || "COT-000000", id: data.id });
         localStorage.removeItem("barraca_session_id");
         window.dispatchEvent(new Event("cart-updated"));
-        showToast("Cotización enviada exitosamente", "success");
+        showToast(TOAST_MESSAGES.cotizacion.SENT_OK, "success");
 
         // If the client opted into marketing, subscribe them to the newsletter.
         // Fire-and-forget; duplicates/rate-limits are silently ignored.
@@ -247,13 +249,13 @@ export default function CotizarPage() {
         }
       } else {
         const data = await res.json();
-        const errMsg = data.error || "Error al enviar cotización";
+        const errMsg = data.error || TOAST_MESSAGES.cotizacion.SEND_ERROR;
         setError(errMsg);
         showToast(errMsg, "error");
       }
     } catch {
-      setError("Error de conexión");
-      showToast("Error de conexión", "error");
+      setError(TOAST_MESSAGES.generic.CONNECTION_ERROR);
+      showToast(TOAST_MESSAGES.generic.CONNECTION_ERROR, "error");
     } finally {
       setSubmitting(false);
     }
@@ -354,7 +356,7 @@ export default function CotizarPage() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
-              href={`https://wa.me/56976673577?text=${encodeURIComponent(`Hola, acabo de enviar la cotización ${success.numero}. Quedo atento a la confirmación.`)}`}
+              href={whatsappCtaCotizacionEnviada(success.numero)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-green-500 text-green-700 hover:bg-green-50 font-semibold rounded-lg transition-colors"
@@ -672,7 +674,7 @@ export default function CotizarPage() {
             </div>
             <p className="text-xs text-gray-500 mt-4">* Los precios son referenciales y pueden variar. Te confirmamos el valor final.</p>
             <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
-              Al enviar esta cotizacion aceptas los terminos del servicio. Consulta nuestras{" "}
+              Al enviar esta cotización aceptas los terminos del servicio. Consulta nuestras{" "}
               <a href="https://jurmaq.cl/terminos#garantia" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">politicas de garantia y devolucion</a>.
             </p>
             <Link href="/carrito" className="block text-center text-sm text-orange-600 font-medium hover:text-orange-700 mt-4 transition-colors">

@@ -3,8 +3,10 @@ import { ADMIN_BCC_EMAILS, EMAIL_FROM } from "../transport";
 import { escapeHtml } from "../utils";
 import { maskEmail } from "../../logging";
 import { formatCLP } from "../../format";
+import { HQ } from "../../seo";
+import { env } from "@jurmaq/shared/env";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(env.RESEND_API_KEY);
 
 export interface CotizacionArriendoEmailData {
   numero: string;
@@ -113,7 +115,7 @@ function buildEmailHtml(data: CotizacionArriendoEmailData): string {
           <p style="margin:0;color:#1e40af;font-size:13px;line-height:1.6;">
             <strong>¿Aceptas la cotización?</strong><br>
             Responde a este email o contáctanos por WhatsApp al
-            <a href="https://wa.me/56912345678" style="color:#1e40af;text-decoration:underline;">+56 9 1234 5678</a>
+            <a href="${HQ.whatsapp}" style="color:#1e40af;text-decoration:underline;">${HQ.telefonoDisplay}</a>
             para coordinar la entrega y firmar el contrato.
           </p>
         </div>

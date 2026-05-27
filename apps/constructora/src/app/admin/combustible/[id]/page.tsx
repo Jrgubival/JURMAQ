@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
@@ -6,11 +6,23 @@ import Link from 'next/link';
 import { tiposCombustibleLabels, estadosLabels, type EstadoFactura, type TipoCombustible } from '@/lib/combustible-utils';
 import { formatCLP as sharedFormatCLP } from "@jurmaq/shared/format";
 import { useConfirmDialog } from "@jurmaq/shared/ui/useConfirmDialog";
+import type { Database } from '@jurmaq/shared/db-types';
+
+type CombustibleFacturaRow = Database['public']['Tables']['combustible_facturas']['Row'];
+type CombustibleItemRow = Database['public']['Tables']['combustible_items']['Row'];
+type FacturaItemWithJoins = CombustibleItemRow & {
+  maquinarias: { id: number; nombre: string } | null;
+  contratos: { id: number; numero: string } | null;
+};
+type FacturaConItems = CombustibleFacturaRow & {
+  items?: FacturaItemWithJoins[];
+  archivo_signed_url?: string | null;
+};
 
 export default function FacturaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const [factura, setFactura] = useState<any>(null);
+  const [factura, setFactura] = useState<FacturaConItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -105,7 +117,7 @@ export default function FacturaDetailPage({ params }: { params: Promise<{ id: st
 
       <div className="bg-white rounded-xl border border-gray-200 p-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
         <Info label="Estado" value={estadosLabels[factura.estado as EstadoFactura] || factura.estado} />
-        <Info label="Mes tributario" value={factura.mes_tributario} />
+        <Info label="Mes tributario" value={factura.mes_tributario || '-'} />
         <Info label="Tipo documento" value={factura.tipo_documento} />
         <Info label="Proveedor" value={factura.proveedor_nombre} />
         <Info label="RUT proveedor" value={factura.proveedor_rut || '-'} />
@@ -131,7 +143,7 @@ export default function FacturaDetailPage({ params }: { params: Promise<{ id: st
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {(factura.items || []).map((it: any) => (
+            {(factura.items || []).map((it: FacturaItemWithJoins) => (
               <tr key={it.id}>
                 <td className="py-2">{it.maquinarias?.nombre || <span className="text-gray-500">sin asignar</span>}</td>
                 <td className="py-2">{it.contratos?.numero || '-'}</td>

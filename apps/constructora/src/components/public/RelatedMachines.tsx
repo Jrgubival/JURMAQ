@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabasePublic } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
 import { precioPublicoDesde } from '@/lib/pricing-arriendo';
@@ -71,7 +72,7 @@ export default async function RelatedMachines({ currentId, tipo }: Props) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
-          {related.map((m: any) => {
+          {related.map((m) => {
             const desde = precioPublicoDesde(m);
             return (
               <Link
@@ -81,9 +82,12 @@ export default async function RelatedMachines({ currentId, tipo }: Props) {
               >
                 <div className="relative h-44 bg-gradient-to-br from-navy-900 to-navy-800 flex items-center justify-center overflow-hidden">
                   {m.imagen ? (
-                    <img
+                    <Image
                       src={m.imagen}
                       alt={m.nombre}
+                      width={500}
+                      height={176}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (

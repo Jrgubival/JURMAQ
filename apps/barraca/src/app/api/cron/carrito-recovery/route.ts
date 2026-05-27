@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { transporter } from '@jurmaq/shared/mail/transport';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * POST /api/cron/carrito-recovery
@@ -22,7 +23,7 @@ export const maxDuration = 60;
 const BATCH = 25;
 
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
+  const secret = env.CRON_SECRET;
   if (!secret) return false;
   const provided =
     request.headers.get('x-cron-secret') ||
@@ -143,7 +144,7 @@ function renderRecoveryEmail(c: Carrito, recoveryNum: number): string {
     )
     .join('');
 
-  const carritoUrl = `${process.env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl'}/carrito`;
+  const carritoUrl = `${env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl'}/carrito`;
 
   const intro =
     recoveryNum === 1

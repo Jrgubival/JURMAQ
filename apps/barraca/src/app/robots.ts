@@ -4,10 +4,8 @@ const DISALLOW = [
   "/admin/",
   "/api/",
   "/cuenta/",
-  "/barraca/cuenta/",
-  "/barraca/carrito",
-  "/barraca/cotizar",
-  "/contrato/",
+  "/carrito",
+  "/cotizar",
 ];
 
 export default function robots(): MetadataRoute.Robots {
@@ -16,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "*", allow: "/", disallow: DISALLOW },
       { userAgent: "Googlebot", allow: "/", disallow: DISALLOW },
       { userAgent: "Bingbot", allow: "/", disallow: DISALLOW },
-      { userAgent: "Googlebot-Image", allow: ["/", "/icon-192.png", "/icon-512.png", "/barraca/"], disallow: DISALLOW },
+      { userAgent: "Googlebot-Image", allow: ["/", "/icon-192.png", "/icon-512.png"], disallow: DISALLOW },
       // AI search crawlers (ChatGPT/Perplexity/Gemini citaciones).
       // Decidimos permitirles indexar todo público — bloquear los saca de
       // las citaciones cuando un usuario pregunta "¿dónde comprar fierro
@@ -31,6 +29,6 @@ export default function robots(): MetadataRoute.Robots {
       "https://jurmaq.cl/sitemap.xml",
       "https://barraca.jurmaq.cl/sitemap.xml",
     ],
-    host: "https://jurmaq.cl",
+    host: "https://barraca.jurmaq.cl",
   };
 }

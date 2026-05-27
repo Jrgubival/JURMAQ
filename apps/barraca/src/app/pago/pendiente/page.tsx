@@ -31,7 +31,7 @@ function PendienteContent() {
         </h1>
         {externalReference && (
           <p className="text-lg font-semibold text-orange-600 mb-4">
-            Cotizacion #{externalReference}
+            Cotización #{externalReference}
           </p>
         )}
         <p className="text-gray-600 mb-4">

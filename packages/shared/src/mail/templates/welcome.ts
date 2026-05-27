@@ -1,4 +1,5 @@
 import { transporter } from "../transport";
+import { env } from "@jurmaq/shared/env";
 
 /**
  * Welcome email tras registro de cuenta nueva en barraca.jurmaq.cl.
@@ -42,7 +43,7 @@ export async function sendWelcomeEmail(to: string, nombre: string) {
               </div>
 
               <div style="text-align: center; margin-bottom: 16px;">
-                <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/barraca/categorias" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
+                <a href="${env.NEXTAUTH_URL || "http://localhost:3000"}/barraca/categorias" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
                   Explorar Categorias
                 </a>
               </div>
