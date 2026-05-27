@@ -77,7 +77,7 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
-              href="/cuenta"
+              href="/cuenta/login"
               className="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-gold-400 transition-colors"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -128,7 +128,7 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
-              href="/cuenta"
+              href="/cuenta/login"
               onClick={() => setMobileOpen(false)}
               className="block py-2 text-white/90 hover:text-gold-400 text-base font-medium inline-flex items-center gap-2"
             >
