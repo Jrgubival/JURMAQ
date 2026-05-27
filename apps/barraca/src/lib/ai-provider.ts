@@ -187,9 +187,13 @@ async function callGemini(
 // Groq caller (OpenAI-compatible API)
 // ---------------------------------------------------------------------------
 
-// groq/compound = free tier 200 RPM / 200K TPM, 131K context, 8K max completion.
-// Equivalente a Llama-3.3-70b en español + function calling, gratis.
-const GROQ_MODEL = "groq/compound";
+// llama-3.3-70b-versatile = 70B params, 128K context, soporta tool calling
+// custom, free tier 30 RPM / 6K TPM. Es el modelo más capaz de Groq que
+// acepta function calling — usamos esto en lugar de groq/compound (que es
+// agentic y NO permite tools custom del cliente, solo tools internas como
+// web search). Comprobado 2026-05-27 con error 400 "tool calling is not
+// supported with this model" para groq/compound.
+const GROQ_MODEL = "llama-3.3-70b-versatile";
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
 async function callGroq(
