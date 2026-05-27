@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8">
 <!-- Fix paths relativos: Next.js redirige /brochure/ → /brochure (sin trailing
-     slash), por lo que los "img/X.jpg" relativos se resolvían contra root
-     del sitio (/img/X.jpg = 404) en vez de /brochure/img/X.jpg. Con <base>
-     todos los paths relativos se anclan a /brochure/ explícitamente. -->
+     slash), por lo que los "img/X.jpg" relativos se resolvían contra root del
+     sitio (/img/X.jpg = 404) en vez de /brochure/img/X.jpg. Con <base> todos
+     los paths relativos se anclan a /brochure/ explícitamente.
+     RE-AGREGAR este tag cada vez que la mamá del owner mande nueva versión
+     del HTML — ella lo genera para hosting tradicional sin <base href>. -->
 <base href="/brochure/">
 <title>Brochure Corporativo · Constructora JURMAQ E.I.R.L.</title>
 <style>
@@ -59,10 +61,11 @@
   .portada-sub{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:14pt;letter-spacing:.2em;color:#9CA3AF;text-transform:uppercase;margin-top:6mm}
   .portada-hero{flex:1;position:relative;overflow:hidden;background:#1F2937}
   .portada-hero img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.05) brightness(.92)}
-  .portada-overlay{position:absolute;left:0;right:0;bottom:0;padding:14mm 22mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.85) 100%);color:#fff}
-  .portada-overlay .lema{font-family:'Bebas Neue',sans-serif;font-size:24pt;letter-spacing:.06em;line-height:1}
-  .portada-overlay .lema span{color:#E67E22}
-  .portada-overlay .anyo{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:9pt;color:#FAF7F2;text-transform:uppercase;margin-top:3mm}
+  .portada-overlay{position:absolute;left:0;right:0;bottom:0;padding:18mm 22mm 14mm;background:linear-gradient(180deg,rgba(31,41,55,0) 0,rgba(31,41,55,.75) 35%,rgba(31,41,55,.95) 100%);color:#fff}
+  .portada-overlay .lema{font-family:'Bebas Neue',sans-serif;font-size:24pt;letter-spacing:.06em;line-height:1;color:#FFFFFF}
+  .portada-overlay .lema span{color:#FFFFFF;display:inline-block;padding-left:9mm;position:relative}
+  .portada-overlay .lema span::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:6mm;height:1mm;background:#E67E22}
+  .portada-overlay .anyo{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:9pt;color:#FAF7F2;text-transform:uppercase;margin-top:4mm}
 
   /* ===== PÁGINA INTERIOR — LAYOUT GENERAL ===== */
   .pagina{padding:18mm 18mm 14mm;display:flex;flex-direction:column;height:100%}
@@ -87,13 +90,14 @@
   .quienes-imagen{flex:1;min-height:80mm;overflow:hidden}
   .quienes-imagen img{width:100%;height:100%;object-fit:cover}
 
-  /* ===== PÁGINA 3 — ESPECIALIDADES ===== */
-  .esp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5mm;flex:1}
-  .esp-card{background:#FAF7F2;padding:7mm 7mm;border-top:3px solid #E67E22;display:flex;flex-direction:column}
-  .esp-card .num{font-family:'Bebas Neue',sans-serif;font-size:16pt;color:#E67E22;letter-spacing:.05em;margin-bottom:2mm}
-  .esp-card h3{font-family:'Bebas Neue',sans-serif;font-size:22pt;line-height:1;letter-spacing:.03em;color:#1F2937;margin-bottom:4mm}
+  /* ===== PÁGINA 3 — ESPECIALIDADES (5 cards: 3 arriba + 2 abajo) ===== */
+  .esp-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3mm;flex:1}
+  .esp-card{background:#FAF7F2;padding:5mm 5mm;border-top:3px solid #E67E22;display:flex;flex-direction:column;grid-column:span 2}
+  .esp-card.wide{grid-column:span 3}
+  .esp-card .num{font-family:'Bebas Neue',sans-serif;font-size:13pt;color:#E67E22;letter-spacing:.05em;margin-bottom:1.5mm}
+  .esp-card h3{font-family:'Bebas Neue',sans-serif;font-size:17pt;line-height:1;letter-spacing:.03em;color:#1F2937;margin-bottom:3mm}
   .esp-card ul{list-style:none;padding:0;margin:0}
-  .esp-card li{padding:2mm 0;font-size:10pt;color:#374151;border-bottom:.3px solid rgba(31,41,55,.08);position:relative;padding-left:7mm}
+  .esp-card li{padding:1.5mm 0;font-size:9pt;color:#374151;border-bottom:.3px solid rgba(31,41,55,.08);position:relative;padding-left:6mm}
   .esp-card li:last-child{border-bottom:none}
   .esp-card li::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3mm;height:.5mm;background:#E67E22}
 
@@ -103,9 +107,10 @@
   .show-item{position:relative;overflow:hidden;background:#1F2937}
   .show-item.big{grid-row:span 2}
   .show-item img{width:100%;height:100%;object-fit:cover;display:block}
-  .show-cap{position:absolute;left:0;right:0;bottom:0;padding:5mm 6mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.85) 100%);color:#fff}
-  .show-cap .cat{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.2em;font-size:8pt;color:#E67E22;text-transform:uppercase}
-  .show-cap .ttl{font-family:'Bebas Neue',sans-serif;font-size:14pt;letter-spacing:.04em;line-height:1.05;margin-top:1mm}
+  .show-cap{position:absolute;left:0;right:0;bottom:0;padding:7mm 6mm 5mm;background:linear-gradient(180deg,rgba(31,41,55,0) 0,rgba(31,41,55,.7) 35%,rgba(31,41,55,.95) 100%);color:#fff}
+  .show-cap .cat{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.2em;font-size:8pt;color:#FFFFFF;text-transform:uppercase;display:inline-block;padding-left:6mm;position:relative}
+  .show-cap .cat::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:4mm;height:.6mm;background:#E67E22}
+  .show-cap .ttl{font-family:'Bebas Neue',sans-serif;font-size:14pt;letter-spacing:.04em;line-height:1.05;margin-top:1.5mm;color:#FFFFFF}
 
   /* ===== PÁGINA 6 — EXPERIENCIA ===== */
   .exp-list{display:flex;flex-direction:column;gap:5mm;flex:1}
@@ -121,9 +126,10 @@
   .enf-wrap{display:flex;flex-direction:column;gap:4mm;flex:1}
   .enf-hero{flex:0 0 100mm;position:relative;overflow:hidden;background:#1F2937}
   .enf-hero img{width:100%;height:100%;object-fit:cover}
-  .enf-hero .cap{position:absolute;left:0;right:0;bottom:0;padding:6mm 8mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.9) 100%);color:#fff}
-  .enf-hero .cap .cat{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:9pt;color:#E67E22;text-transform:uppercase}
-  .enf-hero .cap .ttl{font-family:'Bebas Neue',sans-serif;font-size:22pt;letter-spacing:.04em;line-height:1.05;margin-top:1mm}
+  .enf-hero .cap{position:absolute;left:0;right:0;bottom:0;padding:10mm 8mm 7mm;background:linear-gradient(180deg,rgba(31,41,55,0) 0,rgba(31,41,55,.75) 40%,rgba(31,41,55,.95) 100%);color:#fff}
+  .enf-hero .cap .cat{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.25em;font-size:9pt;color:#FFFFFF;text-transform:uppercase;display:inline-block;padding-left:7mm;position:relative}
+  .enf-hero .cap .cat::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:5mm;height:.7mm;background:#E67E22}
+  .enf-hero .cap .ttl{font-family:'Bebas Neue',sans-serif;font-size:22pt;letter-spacing:.04em;line-height:1.05;margin-top:2mm}
   .enf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;flex:1}
   .enf-item{position:relative;overflow:hidden;background:#1F2937}
   .enf-item img{width:100%;height:100%;object-fit:cover}
@@ -146,14 +152,15 @@
   .bar-wrap{display:flex;flex-direction:column;gap:3mm;flex:1}
   .bar-hero{flex:0 0 75mm;position:relative;overflow:hidden;background:#1F2937}
   .bar-hero img{width:100%;height:100%;object-fit:cover}
-  .bar-hero .cap{position:absolute;left:0;right:0;bottom:0;padding:6mm 8mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.92) 100%);color:#fff}
-  .bar-hero .cap .lab{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:9pt;color:#E67E22;text-transform:uppercase;margin-bottom:2mm}
-  .bar-hero .cap .ubic{font-family:'Bebas Neue',sans-serif;font-size:24pt;letter-spacing:.04em;line-height:1}
+  .bar-hero .cap{position:absolute;left:0;right:0;bottom:0;padding:12mm 8mm 8mm;background:linear-gradient(180deg,rgba(31,41,55,0) 0,rgba(31,41,55,.75) 35%,rgba(31,41,55,.97) 100%);color:#fff}
+  .bar-hero .cap .lab{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.25em;font-size:9pt;color:#FFFFFF;text-transform:uppercase;margin-bottom:3mm;display:inline-block;padding-left:7mm;position:relative}
+  .bar-hero .cap .lab::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:5mm;height:.7mm;background:#E67E22}
+  .bar-hero .cap .ubic{font-family:'Bebas Neue',sans-serif;font-size:24pt;letter-spacing:.04em;line-height:1;color:#FFFFFF}
   .bar-hero .cap .desc{font-size:10pt;color:#E5E7EB;line-height:1.5;margin-top:2mm;max-width:120mm}
   .bar-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm}
   .bar-thumb{position:relative;overflow:hidden;background:#1F2937;aspect-ratio:1/1}
   .bar-thumb img{width:100%;height:100%;object-fit:cover}
-  .bar-thumb .cap-mini{position:absolute;left:0;right:0;bottom:0;padding:2.5mm 3mm;background:linear-gradient(180deg,transparent 0,rgba(31,41,55,.92) 100%);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.12em;font-size:7.5pt;text-transform:uppercase;line-height:1.2}
+  .bar-thumb .cap-mini{position:absolute;left:0;right:0;bottom:0;padding:4mm 3mm 2.5mm;background:linear-gradient(180deg,rgba(31,41,55,0) 0,rgba(31,41,55,.75) 30%,rgba(31,41,55,.97) 100%);color:#FFFFFF;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.12em;font-size:7.5pt;text-transform:uppercase;line-height:1.2}
   .bar-prov-wrap{background:#1F2937;color:#fff;padding:5mm 6mm;margin-top:auto}
   .bar-prov-head{display:flex;justify-content:space-between;align-items:center;gap:6mm;padding-bottom:3mm;border-bottom:.5px solid rgba(230,126,34,.3);margin-bottom:3mm}
   .bar-prov-head .lab{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.25em;font-size:8.5pt;color:#E67E22;text-transform:uppercase}
@@ -277,7 +284,7 @@
           <li>Fundaciones especiales</li>
           <li>Hormigón armado</li>
           <li>Pavimentos industriales</li>
-          <li>Muros y estructuras de contención</li>
+          <li>Muros de contención</li>
           <li>Obras en planta activa</li>
         </ul>
       </div>
@@ -294,32 +301,37 @@
       </div>
       <div class="esp-card">
         <div class="num">03</div>
-        <h3>Maestranza y<br/>Estructuras Metálicas</h3>
+        <h3>Maestranza y<br/>Estr. Metálicas</h3>
         <ul>
           <li>Fabricación estructural</li>
-          <li>Montaje de vigas y columnas</li>
+          <li>Montaje vigas y columnas</li>
           <li>Pasarelas industriales</li>
           <li>Soportes para equipos</li>
           <li>Soldadura y fabricación</li>
         </ul>
       </div>
-      <div class="esp-card">
+      <div class="esp-card wide">
         <div class="num">04</div>
-        <h3>Montaje<br/>Industrial</h3>
+        <h3>Montaje Industrial</h3>
         <ul>
-          <li>Izado de equipos</li>
+          <li>Izado de equipos y maquinaria</li>
           <li>Posicionamiento de silos</li>
-          <li>Montaje de estanques</li>
+          <li>Montaje de estanques industriales</li>
           <li>Instalación de estructuras</li>
           <li>Maniobras industriales</li>
         </ul>
       </div>
-    </div>
-
-    <div class="esp-card" style="grid-column:span 2;margin-top:5mm">
-      <div class="num">05</div>
-      <h3 style="margin-bottom:2mm">Infraestructura Industrial</h3>
-      <p style="font-size:10.5pt;color:#374151;line-height:1.55">Construcción de bodegas, ampliaciones industriales, cobertizos, aleros, revestimientos y obras complementarias. Diseñamos cada solución a la medida de la operación del cliente, minimizando el impacto en sus líneas productivas.</p>
+      <div class="esp-card wide">
+        <div class="num">05</div>
+        <h3>Infraestructura Industrial</h3>
+        <ul>
+          <li>Construcción de bodegas y ampliaciones</li>
+          <li>Cobertizos y aleros industriales</li>
+          <li>Revestimientos y cierres perimetrales</li>
+          <li>Obras complementarias a la medida</li>
+          <li>Mínimo impacto en línea productiva</li>
+        </ul>
+      </div>
     </div>
 
     <footer class="pagina-footer">
