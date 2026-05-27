@@ -91,18 +91,17 @@
   .quienes-imagen img{width:100%;height:100%;object-fit:cover}
 
   /* ===== PÁGINA 3 — ESPECIALIDADES (5 cards: 3 arriba + 2 abajo) ===== */
-  /* esp-grid: ajustado para que 5 cards (3+2 wide) quepan sin cortar la 05.
-     Cambio: removido flex:1 (hacía crecer cards más allá del content), reducido
-     padding y font-size. */
-  .esp-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2.5mm}
-  .esp-card{background:#FAF7F2;padding:4mm 4.5mm;border-top:2.5px solid #E67E22;display:flex;flex-direction:column;grid-column:span 2}
-  .esp-card.wide{grid-column:span 3}
-  .esp-card .num{font-family:'Bebas Neue',sans-serif;font-size:12pt;color:#E67E22;letter-spacing:.05em;margin-bottom:1mm}
-  .esp-card h3{font-family:'Bebas Neue',sans-serif;font-size:15pt;line-height:1;letter-spacing:.03em;color:#1F2937;margin-bottom:2.5mm}
+  /* esp-grid: respeta el diseño 2-col de mamá (v2). 5 cards = 2 + 2 + 1.
+     La 5ta queda sola en fila 3 — comprimimos padding/font-size para que
+     quepa dentro de la altura A4 sin overflow. */
+  .esp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3.5mm;align-content:start}
+  .esp-card{background:#FAF7F2;padding:5mm 5.5mm;border-top:3px solid #E67E22;display:flex;flex-direction:column}
+  .esp-card .num{font-family:'Bebas Neue',sans-serif;font-size:13pt;color:#E67E22;letter-spacing:.05em;margin-bottom:1.5mm}
+  .esp-card h3{font-family:'Bebas Neue',sans-serif;font-size:16pt;line-height:1;letter-spacing:.03em;color:#1F2937;margin-bottom:3mm}
   .esp-card ul{list-style:none;padding:0;margin:0}
-  .esp-card li{padding:1.2mm 0;font-size:8.5pt;color:#374151;border-bottom:.3px solid rgba(31,41,55,.08);position:relative;padding-left:5mm;line-height:1.25}
+  .esp-card li{padding:1.3mm 0;font-size:9pt;color:#374151;border-bottom:.3px solid rgba(31,41,55,.08);position:relative;padding-left:5.5mm;line-height:1.25}
   .esp-card li:last-child{border-bottom:none}
-  .esp-card li::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:2.5mm;height:.5mm;background:#E67E22}
+  .esp-card li::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:3mm;height:.5mm;background:#E67E22}
 
   /* ===== PÁGINAS 4-5 — SHOWCASE FOTOS ===== */
   .showcase-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4mm;flex:1}
