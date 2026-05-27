@@ -24,11 +24,13 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
-  // No renderizar navbar en rutas admin, login, cuenta, firma de contratos.
+  // Ocultar navbar en rutas admin, login, cuenta, firma de contratos.
+  // IMPORTANTE: NO usar `return null` acá — eso causaba React error #300
+  // (hydration mismatch) cuando el cliente navega de la home (con navbar
+  // server-rendered) a /cuenta/login (donde el navbar quería desmontarse).
+  // Solución: ocultar visualmente con CSS sin remover del árbol React.
   const HIDE_PREFIXES = ['/admin', '/login', '/cuenta', '/contrato', '/api'];
-  if (HIDE_PREFIXES.some((p) => pathname?.startsWith(p))) {
-    return null;
-  }
+  const isHidden = HIDE_PREFIXES.some((p) => pathname?.startsWith(p));
 
   // Páginas con hero navy oscuro al inicio (transparent navbar OK).
   // Resto de páginas: fondo claro → necesita navbar sólido desde el inicio.
@@ -44,9 +46,11 @@ export default function Navbar() {
 
   return (
     <>
-    {/* Spacer para que el contenido de páginas sin hero oscuro no quede oculto bajo el navbar fixed. */}
-    {!HAS_DARK_HERO && <div aria-hidden="true" className="h-16 lg:h-18" />}
+    {/* Spacer para que el contenido de páginas sin hero oscuro no quede oculto bajo el navbar fixed.
+        Si isHidden, no agregar spacer (la página oculta tiene su propio layout). */}
+    {!HAS_DARK_HERO && !isHidden && <div aria-hidden="true" className="h-16 lg:h-18" />}
     <header
+      style={isHidden ? { display: 'none' } : undefined}
       className={`fixed top-0 left-0 right-0 z-50 transition-all ${
         isSolid
           ? 'bg-navy-950/95 backdrop-blur border-b border-navy-800/50 shadow-lg'
