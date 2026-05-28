@@ -460,7 +460,14 @@ export default async function HomePage() {
                         <div className="text-lg font-bold text-gold-600">
                           {(() => {
                             const d = precioPublicoDesde(machine);
-                            return d !== null ? `${formatPrice(d)}/día` : "Consultar";
+                            if (d === null) return "Consultar";
+                            // BUG fix: antes hardcodeaba "/día" pero la maquinaria
+                            // puede tener unidad_tarifa = 'hora'. Esto causaba que
+                            // un cliente viera "$25.000/día" cuando realmente era
+                            // "$25.000/hora" (24× más caro). Replica la lógica
+                            // correcta del listing /maquinarias.
+                            const unidad = machine.unidad_tarifa === 'hora' ? 'hora' : 'día';
+                            return `${formatPrice(d)}/${unidad}`;
                           })()}
                         </div>
                       </div>
