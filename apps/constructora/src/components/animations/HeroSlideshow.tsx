@@ -83,6 +83,14 @@ export default function HeroSlideshow() {
         const isPrev = i === prevIndex;
         const isVisible = isActive || isPrev;
 
+        // Unsplash soporta resize por URL (?w=). Servimos srcSet responsive para
+        // que móvil no baje 1920px (era el cuello de botella del LCP). `sizes`
+        // 100vw porque el hero ocupa todo el ancho.
+        const base = slide.image.split("?")[0];
+        const srcSet = [640, 960, 1280, 1600, 1920]
+          .map((w) => `${base}?w=${w}&q=${w <= 960 ? 70 : 75} ${w}w`)
+          .join(", ");
+
         return (
           <div
             key={i}
@@ -97,7 +105,9 @@ export default function HeroSlideshow() {
             aria-hidden={!isActive}
           >
             <img
-              src={slide.image}
+              src={`${base}?w=1280&q=75`}
+              srcSet={srcSet}
+              sizes="100vw"
               alt={slide.alt}
               loading={i === 0 ? "eager" : "lazy"}
               fetchPriority={i === 0 ? "high" : undefined}
