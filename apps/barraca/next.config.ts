@@ -39,6 +39,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'wmoizhbdalvnveclenvf.supabase.co' },
       { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: '*.mlstatic.com' },
+      { protocol: 'https', hostname: 'media.falabella.com' },
+      { protocol: 'https', hostname: 'upload.wikimedia.org' },
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -55,7 +58,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co",
+              "img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://*.mlstatic.com https://media.falabella.com https://upload.wikimedia.org",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://*.supabase.co https://wmoizhbdalvnveclenvf.supabase.co https://api.mercadopago.com https://www.google-analytics.com https://analytics.google.com https://*.googletagmanager.com",
               // Allow same-origin iframes so admin can embed contract preview.
