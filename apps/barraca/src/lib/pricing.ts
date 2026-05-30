@@ -106,6 +106,36 @@ export function resolvePrice(
 }
 
 /**
+ * Precio EFECTIVO de cobro de un ítem (carrito o cotización). Fuente ÚNICA de
+ * verdad para GET /api/carrito y POST /api/cotizaciones (audit 2.8): el cliente
+ * nunca paga más que el menor entre lo que vio congelado (`stored`) y el estado
+ * vivo (oferta real > promo del día > precio base). Antes cada ruta calculaba
+ * distinto → el total del carrito podía no cuadrar con el de la cotización.
+ */
+export function resolveCartItemPrice(args: {
+  /** precio_unitario congelado del carrito (0 si no hay) */
+  stored: number;
+  precio: number;
+  precio_original?: number | null;
+  en_oferta?: boolean | null;
+  /** % de descuento de promo del día para la categoría del producto (si aplica) */
+  promoDescuento?: number | null;
+}): number {
+  const { stored, precio, precio_original, en_oferta, promoDescuento } = args;
+  let livePrice: number;
+  if (en_oferta && precio_original && precio_original > 0) {
+    livePrice = precio_original;
+  } else if (promoDescuento && promoDescuento > 0 && precio > 0) {
+    livePrice = Math.round(precio * (1 - promoDescuento / 100));
+  } else {
+    livePrice = precio || 0;
+  }
+  const candidates = [stored, livePrice].filter((n) => n > 0);
+  if (candidates.length > 0) return Math.min(...candidates);
+  return getCartPrice({ precio, precio_original, en_oferta: en_oferta ?? undefined });
+}
+
+/**
  * Calcula el precio que se debe cobrar en el carrito.
  * Misma lógica que resolvePrice pero solo devuelve el número.
  */

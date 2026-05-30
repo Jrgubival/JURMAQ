@@ -201,11 +201,22 @@ export async function verifyOtp(opts: {
 
   const matches = await bcrypt.compare(opts.codigo, data.codigo_hash);
   if (!matches) {
-    const nuevoIntento = data.intentos + 1;
-    await supabaseAdmin
-      .from('otp_codigos')
-      .update({ intentos: nuevoIntento })
-      .eq('id', data.id);
+    // Incremento ATÓMICO del contador (evita lost-update bajo intentos
+    // concurrentes, que dejaría adivinar más de max_intentos). Fallback al
+    // UPDATE no atómico si el RPC aún no está migrado.
+    let nuevoIntento: number;
+    const { data: incData, error: incErr } = await supabaseAdmin.rpc('otp_increment_intentos', {
+      p_id: data.id,
+    });
+    if (!incErr && typeof incData === 'number') {
+      nuevoIntento = incData;
+    } else {
+      nuevoIntento = data.intentos + 1;
+      await supabaseAdmin
+        .from('otp_codigos')
+        .update({ intentos: nuevoIntento })
+        .eq('id', data.id);
+    }
     await supabaseAdmin
       .from('otp_eventos')
       .insert({

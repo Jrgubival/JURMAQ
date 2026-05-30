@@ -32,7 +32,7 @@ async function loadMaquinaria(id: number): Promise<MaquinariaPricing | null> {
     .from('maquinarias')
     .select('id, nombre, tarifa_neta, unidad_tarifa, minimo_unidades, requiere_traslado, estado')
     .eq('id', id)
-    .single();
+    .maybeSingle();
   if (!data || data.estado !== 'disponible') return null;
   if (!data.tarifa_neta || !data.unidad_tarifa || !data.minimo_unidades) return null;
   return {
@@ -54,7 +54,7 @@ async function loadTarifasVigentes(): Promise<TarifasVigentesConSnapshot | null>
   const { data } = await supabaseAdmin
     .from('tarifa_traslado_actual')
     .select('*')
-    .single();
+    .maybeSingle();
   if (!data) return null;
   return {
     tarifas: {
@@ -181,22 +181,35 @@ export async function POST(request: NextRequest) {
     const peajes = Number(body.peajes || 0);
     const operarios = parseInt(body.operarios || 1, 10);
     const horasOp = Number(body.horas_operario_estimadas || 0);
-    const fechaServicio = sanitizeString(body.fecha_servicio);
+    // El wizard envía `fecha_inicio`/`fecha_fin`; aceptamos `fecha_servicio` como
+    // alias retrocompatible. Sin este fallback, todo POST del wizard fallaba con 400.
+    const fechaServicio = sanitizeString(body.fecha_servicio ?? body.fecha_inicio);
+    const fechaFin = sanitizeString(body.fecha_fin);
     const ubicacion = sanitizeString(body.ubicacion_servicio);
 
     if (!fechaServicio || !ubicacion) {
-      return NextResponse.json({ error: 'fecha_servicio y ubicacion_servicio son requeridos' }, { status: 400 });
+      return NextResponse.json({ error: 'fecha de inicio y ubicacion_servicio son requeridos' }, { status: 400 });
     }
 
-    // B-4: rechazar fecha_servicio en el pasado. Usa fecha local (es-CL) para evitar
+    // B-4: rechazar fecha en el pasado. Usa fecha local (es-CL) para evitar
     // edge case donde UTC ya pasó al día siguiente pero en Chile aún es hoy.
     const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!isoDateRegex.test(fechaServicio)) {
-      return NextResponse.json({ error: 'fecha_servicio debe tener formato YYYY-MM-DD' }, { status: 400 });
+      return NextResponse.json({ error: 'fecha de inicio debe tener formato YYYY-MM-DD' }, { status: 400 });
     }
     const hoyCL = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Santiago' }); // 'YYYY-MM-DD'
     if (fechaServicio < hoyCL) {
-      return NextResponse.json({ error: 'fecha_servicio no puede ser en el pasado' }, { status: 400 });
+      return NextResponse.json({ error: 'la fecha de inicio no puede ser en el pasado' }, { status: 400 });
+    }
+    // Validar rango si el wizard envía fecha de término. La tabla solo persiste
+    // `fecha_servicio` (inicio), pero rechazamos rangos inválidos en origen.
+    if (fechaFin) {
+      if (!isoDateRegex.test(fechaFin)) {
+        return NextResponse.json({ error: 'fecha de término debe tener formato YYYY-MM-DD' }, { status: 400 });
+      }
+      if (fechaFin < fechaServicio) {
+        return NextResponse.json({ error: 'la fecha de término no puede ser anterior a la de inicio' }, { status: 400 });
+      }
     }
 
     const [maquinaria, tarifasResult] = await Promise.all([

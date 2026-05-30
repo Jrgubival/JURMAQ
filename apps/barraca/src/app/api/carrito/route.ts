@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeString, isPositiveInt, isValidOrigin } from '@jurmaq/shared/sanitize';
-import { getCartPrice } from '@/lib/pricing';
+import { getCartPrice, resolveCartItemPrice } from '@/lib/pricing';
 import { getActiveCategoryDiscountMap } from '@/lib/promotions';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { env } from '@jurmaq/shared/env';
@@ -103,28 +103,16 @@ export async function GET(request: NextRequest) {
       // 1. Sticky offer (en_oferta in DB) wins always.
       // 2. Otherwise apply current daily promo if the product's category has one.
       // 3. Fall back to current base price.
-      let livePrice: number;
-      if (p.en_oferta && p.precio_original && p.precio_original > 0) {
-        livePrice = p.precio_original;
-      } else {
-        const discountPct = p.categoria_id != null ? promoMap.get(p.categoria_id) : undefined;
-        livePrice =
-          discountPct && discountPct > 0 && p.precio > 0
-            ? Math.round(p.precio * (1 - discountPct / 100))
-            : p.precio || 0;
-      }
-
-      // Pick the lower of (stored, live) so the customer never pays more than
-      // either what they saw or what the current state offers. Falls back to
-      // getCartPrice for safety if both are 0.
-      const candidates = [stored, livePrice].filter((n) => n > 0);
-      const precioReal = candidates.length > 0
-        ? Math.min(...candidates)
-        : getCartPrice({
-            precio: p.precio,
-            precio_original: p.precio_original,
-            en_oferta: p.en_oferta ?? undefined,
-          });
+      // Precio efectivo: el menor entre el congelado (stored) y el estado vivo
+      // (oferta real > promo del día > precio base). Lógica compartida con
+      // POST /api/cotizaciones vía resolveCartItemPrice (audit 2.8).
+      const precioReal = resolveCartItemPrice({
+        stored,
+        precio: p.precio,
+        precio_original: p.precio_original,
+        en_oferta: p.en_oferta,
+        promoDescuento: p.categoria_id != null ? promoMap.get(p.categoria_id) : undefined,
+      });
 
       return {
         id: item.id,

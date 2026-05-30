@@ -13,6 +13,10 @@ import { getActiveCategoryDiscountMap, getDailyPromotions } from "@/lib/promotio
 import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
 
+// ISR: la ficha de producto es pública (precio/stock). Revalida cada 10 min en
+// vez de renderizar por request (antes la página no declaraba caché → dinámica).
+export const revalidate = 600;
+
 interface ProductoRow {
   id: number;
   codigo: string;

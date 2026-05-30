@@ -6,6 +6,9 @@ import { sanitizeString, isValidEmail, escapeLikePattern, isValidOrigin } from '
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
+import { validarCupon, registrarUsoCupon } from '@/lib/cupones';
+import { resolveCartItemPrice } from '@/lib/pricing';
+import { getActiveCategoryDiscountMap } from '@/lib/promotions';
 
 export async function GET(request: NextRequest) {
   try {
@@ -124,26 +127,40 @@ export async function POST(request: NextRequest) {
       try {
         const { data: cartRows } = await supabaseAdmin
           .from('barraca_carrito')
-          .select('cantidad, precio_unitario, barraca_productos!inner(nombre, precio, precio_original, en_oferta, medida)')
+          .select('cantidad, precio_unitario, barraca_productos!inner(nombre, precio, precio_original, en_oferta, medida, categoria_id)')
           .eq('session_id', sessionId);
         type CartRow = {
           cantidad: number;
           precio_unitario: number | null;
-          barraca_productos: { nombre: string; precio: number; medida: string | null };
+          barraca_productos: {
+            nombre: string;
+            precio: number;
+            precio_original: number | null;
+            en_oferta: boolean | null;
+            medida: string | null;
+            categoria_id: number | null;
+          };
         };
         const rows = (cartRows ?? []) as unknown as CartRow[];
         if (rows.length > 0) {
+          // Precio efectivo IDÉNTICO al que muestra el carrito (audit 2.8): menor
+          // entre el congelado y el estado vivo (oferta/promo/base). Antes acá se
+          // usaba solo `precio_unitario ?? precio`, sin tomar el mínimo con la
+          // promo viva → el total de la cotización podía diferir del carrito.
+          const promoMap = await getActiveCategoryDiscountMap();
           trustedItems = rows.map((r) => {
             const cantidad = Math.max(0, Math.min(Math.round(Number(r.cantidad) || 0), CANTIDAD_ITEM_MAX));
-            // Usa precio_unitario congelado del carrito (que ya paso por validacion
-            // de promo en el endpoint de carrito), o cae al precio actual del producto.
-            const precio = Math.max(
-              0,
-              Math.min(
-                Math.round(Number(r.precio_unitario ?? r.barraca_productos.precio) || 0),
-                PRECIO_ITEM_MAX
-              )
-            );
+            const precioEfectivo = resolveCartItemPrice({
+              stored: Number(r.precio_unitario) || 0,
+              precio: Number(r.barraca_productos.precio) || 0,
+              precio_original: r.barraca_productos.precio_original,
+              en_oferta: r.barraca_productos.en_oferta,
+              promoDescuento:
+                r.barraca_productos.categoria_id != null
+                  ? promoMap.get(r.barraca_productos.categoria_id)
+                  : undefined,
+            });
+            const precio = Math.max(0, Math.min(Math.round(precioEfectivo), PRECIO_ITEM_MAX));
             return {
               nombre: r.barraca_productos.nombre,
               cantidad,
@@ -158,7 +175,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const total = totalRecalculado;
+    // --- Cupón: validación y aplicación AUTORITATIVA server-side ---
+    // El cliente envía solo el código; el descuento se recalcula acá contra el
+    // total recalculado desde DB. Nunca se confía en el monto/descuento del cliente.
+    // Si el cupón es inválido (vencido, agotado, mínimo no alcanzado, etc.) se
+    // sigue SIN descuento — no abortamos la cotización por un cupón inválido.
+    const cuponCodigo = sanitizeString(body.cupon_codigo) || '';
+    let cuponAplicado: { cupon_id: string; codigo: string; descuento: number } | null = null;
+    let cuponDescuento = 0;
+    if (cuponCodigo) {
+      const cuponRes = await validarCupon({ codigo: cuponCodigo, monto: totalRecalculado, email: email || '' });
+      if (cuponRes.ok && cuponRes.descuento > 0) {
+        cuponAplicado = { cupon_id: cuponRes.cupon_id, codigo: cuponRes.codigo, descuento: cuponRes.descuento };
+        cuponDescuento = cuponRes.descuento;
+      }
+    }
+
+    const total = Math.max(0, totalRecalculado - cuponDescuento);
     // Only trust body.usuario_id if accompanied by a valid Bearer token for
     // that user. Otherwise anyone could poison another user's "Mis Cotizaciones".
     let usuarioId: number | null = null;
@@ -257,6 +290,13 @@ export async function POST(request: NextRequest) {
     if (cotizacionCompetencia) insertData.cotizacion_competencia = cotizacionCompetencia;
     if (nombreCompetencia) insertData.nombre_competencia = nombreCompetencia;
 
+    // Cupón aplicado: persistimos id/código/descuento (el `total` ya viene neto).
+    if (cuponAplicado) {
+      insertData.cupon_id = cuponAplicado.cupon_id;
+      insertData.cupon_codigo = cuponAplicado.codigo;
+      insertData.cupon_descuento = cuponAplicado.descuento;
+    }
+
     // Tier 2 B1: si el código de maestro es válido, persistimos en la cotización.
     // El trigger devengar_comision_barraca() generará la comisión cuando esta
     // cotización pase a estado 'pagada'.
@@ -272,6 +312,18 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) throw error;
+
+    // Registrar el uso del cupón (best-effort: no bloquea ni revierte la
+    // cotización ya creada). Incrementa el contador y respeta max_usos.
+    if (cuponAplicado && cotizacion?.id != null) {
+      await registrarUsoCupon({
+        cuponId: cuponAplicado.cupon_id,
+        cotizacionId: Number(cotizacion.id),
+        email: email || '',
+        descuento: cuponAplicado.descuento,
+        montoCompra: totalRecalculado,
+      });
+    }
 
     // Clear cart for sessionId
     if (sessionId) {

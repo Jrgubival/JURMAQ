@@ -131,7 +131,14 @@ export async function parseClienteTokenAsync(token: string): Promise<number | nu
       return null;
     }
   }
-  // 2. Fallback legacy
+  // 2. Fallback legacy (base64 sin firma → FORJABLE).
+  //    Audit 1.2: solo se acepta mientras AUTH_SESSIONS_ENABLED esté APAGADO
+  //    (transición). Con el flag encendido (tras aplicar migrate-user-sessions
+  //    y emitir JWT firmado), los tokens legacy se RECHAZAN → cierra el vector
+  //    de impersonación. El cambio es atómico y fail-safe: la emisión también
+  //    pasa a firmada con el mismo flag, así que desplegar con el flag apagado
+  //    NO altera el comportamiento actual.
+  if (USE_SIGNED_TOKENS) return null;
   return parseClienteToken(token);
 }
 

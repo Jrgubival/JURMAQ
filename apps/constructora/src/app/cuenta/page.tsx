@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
+import { escapeLikePattern } from '@jurmaq/shared/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,13 +29,13 @@ export default async function CuentaDashboard() {
     supabaseAdmin
       .from('cotizaciones_arriendo')
       .select('id, numero, fecha_servicio, ubicacion_servicio, total, estado, created_at')
-      .ilike('cliente_email', cliente.email)
+      .ilike('cliente_email', escapeLikePattern(cliente.email))
       .order('created_at', { ascending: false })
       .limit(5),
     supabaseAdmin
       .from('contratos')
       .select('id, numero, estado, fecha_inicio, fecha_termino, precio_total')
-      .ilike('arrendatario_email', cliente.email)
+      .ilike('arrendatario_email', escapeLikePattern(cliente.email))
       .order('created_at', { ascending: false })
       .limit(5),
   ]);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { isValidOrigin, isValidEmail, sanitizeString } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, isValidEmail, sanitizeString, escapeLikePattern } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 
 /**
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const { data } = await supabaseAdmin
       .from('barraca_carrito_abandonado')
       .select('id')
-      .ilike('email', email)
+      .ilike('email', escapeLikePattern(email))
       .is('converted_at', null)
       .order('last_activity', { ascending: false })
       .limit(1)

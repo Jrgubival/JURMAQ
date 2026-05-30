@@ -207,6 +207,17 @@ export default function CotizarPage() {
         }
       } catch { /* no user */ }
 
+      // Cupón aplicado en el carrito (si hay). Enviamos SOLO el código; el
+      // servidor revalida y recalcula el descuento de forma autoritativa.
+      let cuponCodigo: string | null = null;
+      try {
+        const storedCupon = localStorage.getItem('barraca_cupon');
+        if (storedCupon) {
+          const parsed = JSON.parse(storedCupon);
+          if (parsed?.codigo) cuponCodigo = String(parsed.codigo);
+        }
+      } catch { /* sin cupón */ }
+
       const sid = getSessionId();
       const res = await fetch("/api/cotizaciones", {
         method: "POST",
@@ -229,12 +240,15 @@ export default function CotizarPage() {
           }),
           // Tier 2 B1: código de maestro (server-side se revalida + resuelve a maestro_id).
           ...(codigoMaestro && { codigo_maestro: codigoMaestro }),
+          // Cupón: server-side revalida y recalcula el descuento.
+          ...(cuponCodigo && { cupon_codigo: cuponCodigo }),
         }),
       });
       if (res.ok) {
         const data = await res.json();
         setSuccess({ numero: data.numero || "COT-000000", id: data.id });
         localStorage.removeItem("barraca_session_id");
+        localStorage.removeItem("barraca_cupon");
         window.dispatchEvent(new Event("cart-updated"));
         showToast(TOAST_MESSAGES.cotizacion.SENT_OK, "success");
 

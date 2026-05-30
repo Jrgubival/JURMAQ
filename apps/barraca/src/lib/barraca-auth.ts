@@ -1,5 +1,6 @@
 import 'server-only';
 import { verifyToken as verifySessionJWT } from '@jurmaq/shared/auth/session-token';
+import { env } from '@jurmaq/shared/env';
 
 /**
  * Shared parser dual-mode para tokens de barraca (audit fase 2A.1).
@@ -38,7 +39,11 @@ export async function parseBarracaUserToken(token: string): Promise<number | nul
     }
   }
 
-  // Legacy base64 "id:random"
+  // Legacy base64 "id:random" → FORJABLE. Audit 1.2: solo se acepta mientras
+  // AUTH_SESSIONS_ENABLED esté apagado. Con el flag encendido (Fase 0 aplicada)
+  // se rechaza → cierra la impersonación. Fail-safe: la emisión también pasa a
+  // firmada con el mismo flag, así que desplegar con el flag apagado no cambia nada.
+  if (env.AUTH_SESSIONS_ENABLED) return null;
   try {
     const decoded = Buffer.from(token, 'base64').toString('utf8');
     const colonIdx = decoded.indexOf(':');

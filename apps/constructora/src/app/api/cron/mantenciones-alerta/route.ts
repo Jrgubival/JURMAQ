@@ -32,6 +32,10 @@ interface ProximaRow {
   maquinarias?: { nombre: string } | null;
 }
 
+// Vercel Cron invoca con GET; aceptamos ambos métodos. La autenticación real
+// es vía CRON_SECRET en isAuthorized(), no por el método HTTP.
+export const GET = (request: NextRequest) => POST(request);
+
 export async function POST(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });

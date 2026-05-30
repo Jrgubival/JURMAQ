@@ -2,14 +2,13 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { renderContrato } from '@/lib/contrato-render';
-import { buildRenderVars, injectFirmasIntoHtml } from '@/app/api/admin/contratos/_helpers';
-import { sendSignedContractEmail } from '@jurmaq/shared/mail/email';
+import { buildRenderVars } from '@/app/api/admin/contratos/_helpers';
+import { sendSignedContractEmailAsync } from '@/lib/signed-contract-email';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logContratoEvent, resolveIpGeolocation } from '@/lib/contratos-audit';
 import crypto from 'crypto';
 import { hid } from '@jurmaq/shared/logging';
 import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
-import { env } from '@jurmaq/shared/env';
 
 /**
  * Use the Node runtime (not Edge) — puppeteer-core + @sparticuz/chromium-min
@@ -350,69 +349,3 @@ export async function POST(
   }
 }
 
-/**
- * Generate the signed-contract PDF and send it as an email attachment to
- * the cliente. Runs after we've already returned 200 to the firmar page —
- * any failure here is logged but doesn't affect the signature record.
- */
-async function sendSignedContractEmailAsync(args: {
-  contratoId: number;
-  numero: string;
-  toEmail: string;
-  arrendatarioNombre: string;
-  telefonoCliente?: string;
-  firmaTimestamp: string;
-  firmaHash: string;
-  firmaIp: string;
-  firmaUserAgent: string;
-  firmaBase64: string;
-  firmaArrendador?: string | null;
-  templateContenido: string;
-  contrato: Record<string, unknown>;
-}) {
-  // Build the signed-version vars (with all firma_* metadata visible).
-  const vars = buildRenderVars(
-    args.contrato as Parameters<typeof buildRenderVars>[0],
-    (args.contrato.maquinarias ?? null) as Parameters<typeof buildRenderVars>[1]
-  );
-  vars.firma_ip = args.firmaIp;
-  vars.firma_timestamp = args.firmaTimestamp;
-  vars.otp_codigo = 'VERIFICADO';
-  vars.firma_email = (args.contrato.arrendatario_email as string) || '';
-  vars.hash_sha256 = args.firmaHash;
-
-  const renderedHtml = renderContrato(args.templateContenido, vars);
-
-  // Inject AMBAS firmas — la del arrendador (JURMAQ) si el admin ya firmó
-  // y la del arrendatario que se acaba de capturar. Helper compartido en
-  // _helpers.ts para que sign, render, pdf y send-signature usen la misma
-  // lógica.
-  const htmlWithFirma = injectFirmasIntoHtml(renderedHtml, {
-    firmaArrendador: args.firmaArrendador ?? null,
-    firmaArrendatario: args.firmaBase64,
-  });
-
-  // Try to generate a real PDF. If chromium fails (memory, timeout,
-  // missing binary), fall back to sending the email with a download link
-  // — better than not sending anything.
-  let pdfBuffer: Buffer | undefined;
-  try {
-    const { htmlToPdfBuffer } = await import('@/lib/pdf-generator');
-    pdfBuffer = await htmlToPdfBuffer(htmlWithFirma);
-    console.log('[signed-contract-pdf-ok]', args.contratoId, 'bytes=', pdfBuffer.length);
-  } catch (err) {
-    console.error('[signed-contract-pdf-fail]', hid(args.contratoId), err instanceof Error ? err.message : err);
-    pdfBuffer = undefined;
-  }
-
-  const baseUrl = env.NEXTAUTH_URL || 'https://jurmaq.cl';
-  const pdfUrl = `${baseUrl}/api/admin/contratos/${args.contratoId}/pdf`;
-
-  await sendSignedContractEmail(args.toEmail, {
-    numero: args.numero,
-    arrendatarioNombre: args.arrendatarioNombre,
-    pdfUrl,
-    telefonoCliente: args.telefonoCliente,
-    pdfBuffer,
-  });
-}

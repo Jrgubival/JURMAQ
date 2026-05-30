@@ -8,6 +8,9 @@ import { formatCLP } from "@jurmaq/shared/format";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 
+// ISR: landing pSEO público, cambia rara vez → revalida diariamente.
+export const revalidate = 86400;
+
 /**
  * Programmatic SEO landing for `[material] en [ciudad]` queries.
  *

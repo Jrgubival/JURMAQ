@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
-import { escapeOrFilter } from '@jurmaq/shared/sanitize';
+import { escapeOrFilter, escapeLikePattern } from '@jurmaq/shared/sanitize';
 
 /**
  * GET /api/cuenta/cotizaciones
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     .select(
       'id, numero, fecha_servicio, ubicacion_servicio, unidades_solicitadas, unidad, total, estado, created_at, maquinaria_id, distancia_km, peajes, operarios',
     )
-    .ilike('cliente_email', cliente.email)
+    .ilike('cliente_email', escapeLikePattern(cliente.email))
     .order('created_at', { ascending: false });
 
   if (estado) {

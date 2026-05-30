@@ -63,24 +63,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'webhook_id y evento_tipo requeridos' }, { status: 400 });
   }
 
-  // 3. Idempotency.
-  const { data: existing } = await supabaseAdmin
+  // 3. Idempotencia ATÓMICA: el INSERT contra el PK webhook_id es la barrera.
+  // Evita el TOCTOU de SELECT-then-INSERT: ante re-entregas concurrentes del
+  // mismo webhook_id, solo una gana el INSERT; las demás reciben 23505 y salen
+  // como ya procesadas, sin volver a ejecutar el efecto del evento.
+  const { error: idempErr } = await supabaseAdmin
     .from('klap_webhook_log')
-    .select('webhook_id, processed_at, result')
-    .eq('webhook_id', webhookId)
-    .maybeSingle();
-  if (existing) {
-    return NextResponse.json({ ok: true, already_processed: true, processed_at: existing.processed_at });
+    .insert({
+      webhook_id: webhookId,
+      evento_tipo: eventoTipo,
+      payload: body,
+      signature_valid: true,
+      result: 'processing',
+    })
+    .select('webhook_id');
+  if (idempErr) {
+    // 23505 = unique_violation → este webhook_id ya fue (o está siendo) procesado.
+    if (idempErr.code === '23505') {
+      return NextResponse.json({ ok: true, already_processed: true });
+    }
+    console.error('[klap-webhook-idemp]', idempErr);
+    return NextResponse.json({ error: 'No se pudo registrar el webhook' }, { status: 503 });
   }
-
-  // 4. Persistir log primero (anti-replay incluso si crashea procesamiento).
-  await supabaseAdmin.from('klap_webhook_log').insert({
-    webhook_id: webhookId,
-    evento_tipo: eventoTipo,
-    payload: body,
-    signature_valid: true,
-    result: 'processing',
-  });
 
   let resultText: string;
   try {

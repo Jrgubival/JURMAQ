@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dispatchOtp } from '@jurmaq/shared/otp';
 import type { OtpContexto } from '@jurmaq/shared/otp';
-import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
+import { getClientIp, rateLimitPersistent } from '@jurmaq/shared/rate-limit';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { supabaseAdmin } from '@jurmaq/shared/supabase';
 
 /**
  * POST /api/otp/enviar
@@ -71,9 +72,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'contexto inválido' }, { status: 400 });
   }
 
-  // Rate limit: 3 envíos por destino+contexto en 5 min.
+  // Rate limit: 3 envíos por destino+contexto en 5 min. Persistente (DB) para
+  // que el límite valga en serverless (cae a in-memory si falta la migración).
   const ip = getClientIp(request);
-  const rl = rateLimit(`otp-enviar:${destino}:${contexto}`, { maxAttempts: 3, windowSeconds: 300 });
+  const rl = await rateLimitPersistent(supabaseAdmin, `otp-enviar:${destino}:${contexto}`, { maxAttempts: 3, windowSeconds: 300 });
   if (!rl.success) {
     return NextResponse.json(
       { ok: false, error: 'Demasiadas solicitudes. Espera unos minutos.' },

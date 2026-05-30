@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { isValidEmail, isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
+import { isValidEmail, isValidOrigin, sanitizeString, escapeLikePattern } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 import { transporter } from '@jurmaq/shared/mail/transport';
 import { env } from '@jurmaq/shared/env';
@@ -104,7 +104,7 @@ async function handleLogin(body: AuthBody, ip: string): Promise<NextResponse> {
   const { data: cliente } = await supabaseAdmin
     .from('clientes')
     .select('id, email, nombre, password_hash, activo')
-    .ilike('email', email)
+    .ilike('email', escapeLikePattern(email))
     .maybeSingle();
 
   if (!cliente || !cliente.activo) {
@@ -181,7 +181,7 @@ async function handleRegister(body: AuthBody, ip: string): Promise<NextResponse>
   const { data: existing } = await supabaseAdmin
     .from('clientes')
     .select('id, password_hash')
-    .ilike('email', email)
+    .ilike('email', escapeLikePattern(email))
     .maybeSingle();
 
   if (existing) {
@@ -273,7 +273,7 @@ async function handleForgot(body: AuthBody, ip: string): Promise<NextResponse> {
   const { data: cliente } = await supabaseAdmin
     .from('clientes')
     .select('id, email, nombre, activo')
-    .ilike('email', email)
+    .ilike('email', escapeLikePattern(email))
     .maybeSingle();
 
   if (cliente && cliente.activo) {

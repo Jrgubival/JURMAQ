@@ -382,7 +382,7 @@ export const DEFAULT_CONTRATO_TEMPLATE: string = `<!DOCTYPE html>
       por uso normal, el pago de multas por restitución tardía, y los gastos de limpieza, reparación o
       reposición de accesorios y combustible.
     </p>
-    {{garantia_klap_clausula}}
+    {{{garantia_klap_clausula}}}
     <p>
       Dentro de los diez (10) días hábiles siguientes a la restitución conforme de la maquinaria y previa
       inspección y firma del acta de devolución, el Arrendador restituirá al Arrendatario el saldo de la

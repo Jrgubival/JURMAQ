@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
+import { escapeLikePattern } from '@jurmaq/shared/sanitize';
 
 /**
  * GET /api/cuenta/contratos
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     .select(
       'id, numero, estado, fecha_inicio, fecha_termino, precio_total, precio_unidad, maquinaria_id, firma_timestamp, created_at, arrendatario_nombre, arrendatario_razon_social',
     )
-    .ilike('arrendatario_email', cliente.email)
+    .ilike('arrendatario_email', escapeLikePattern(cliente.email))
     .order('created_at', { ascending: false });
 
   if (estado) {

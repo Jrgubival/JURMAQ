@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
+import { escapeLikePattern } from '@jurmaq/shared/sanitize';
 import CancelarCotizacionButton from './CancelarCotizacionButton';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,7 @@ export default async function CotizacionDetailPage({
     .from('cotizaciones_arriendo')
     .select('*')
     .eq('numero', numeroNorm)
-    .ilike('cliente_email', cliente.email)
+    .ilike('cliente_email', escapeLikePattern(cliente.email))
     .maybeSingle();
 
   if (!cot) notFound();

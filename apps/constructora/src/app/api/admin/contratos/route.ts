@@ -211,15 +211,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // --- Generate numero: CON-YYYYMMDD-NNN (next seq for today) ---
-    const now = new Date();
-    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
-    const { count: countToday } = await supabaseAdmin
-      .from('contratos')
-      .select('*', { count: 'exact', head: true })
-      .ilike('numero', `CON-${dateStr}-%`);
-    const seq = String((countToday || 0) + 1).padStart(3, '0');
-    const numero = `CON-${dateStr}-${seq}`;
+    // --- Generate numero: CON-YYYYMMDD-NNN ---
+    // Preferimos el RPC atómico next_contrato_numero() (advisory lock → race-free).
+    // Fallback a COUNT+1 solo si la función aún no está migrada en la DB, para que
+    // el deploy sea seguro en cualquier orden (ver migrate-contrato-numero.sql).
+    let numero: string;
+    const { data: numeroRpc, error: numeroErr } = await supabaseAdmin.rpc('next_contrato_numero');
+    if (!numeroErr && typeof numeroRpc === 'string' && numeroRpc) {
+      numero = numeroRpc;
+    } else {
+      if (numeroErr) {
+        console.warn('[contrato-numero] RPC next_contrato_numero no disponible, usando fallback COUNT+1:', numeroErr.message);
+      }
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+      const { count: countToday } = await supabaseAdmin
+        .from('contratos')
+        .select('*', { count: 'exact', head: true })
+        .ilike('numero', `CON-${dateStr}-%`);
+      const seq = String((countToday || 0) + 1).padStart(3, '0');
+      numero = `CON-${dateStr}-${seq}`;
+    }
 
     // --- Public signature token (hex, 64 chars) ---
     const firmaToken = crypto.randomBytes(32).toString('hex');

@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
+import { escapeLikePattern } from '@jurmaq/shared/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export default async function ContratoDetailPage({
     .from('contratos')
     .select('*')
     .eq('numero', numeroNorm)
-    .ilike('arrendatario_email', cliente.email)
+    .ilike('arrendatario_email', escapeLikePattern(cliente.email))
     .maybeSingle();
 
   if (!contrato) notFound();

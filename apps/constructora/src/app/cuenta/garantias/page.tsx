@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
+import { escapeLikePattern } from '@jurmaq/shared/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,7 @@ export default async function GarantiasPage() {
   const { data: contratos } = await supabaseAdmin
     .from('contratos')
     .select('id, numero')
-    .ilike('arrendatario_email', cliente.email);
+    .ilike('arrendatario_email', escapeLikePattern(cliente.email));
 
   const contratoIds = (contratos ?? []).map((c) => c.id);
   let holds: Array<Record<string, unknown>> = [];

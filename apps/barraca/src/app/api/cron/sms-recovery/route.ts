@@ -59,6 +59,10 @@ function buildSmsMessage(total: number, itemsCount: number): string {
   return `JURMAQ Barraca: dejaste ${itemsCount} item${itemsCount !== 1 ? 's' : ''} por ${totalFmt}. Vuelve y termina tu compra: ${SHORT_URL}/carrito`;
 }
 
+// Vercel Cron invoca con GET; aceptamos ambos métodos. La autenticación real
+// es vía CRON_SECRET en isAuthorized(), no por el método HTTP.
+export const GET = (request: NextRequest) => POST(request);
+
 export async function POST(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });

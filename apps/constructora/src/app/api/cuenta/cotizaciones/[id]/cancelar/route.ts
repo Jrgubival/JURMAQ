@@ -70,17 +70,28 @@ export async function POST(
     }
   }
 
-  const { error: updErr } = await supabaseAdmin
+  // UPDATE condicional por estado: cierra la carrera (TOCTOU) entre la
+  // verificación de arriba y este update. Si el admin avanzó el estado en el
+  // intertanto, ninguna fila se actualiza y devolvemos 409.
+  const { data: updRows, error: updErr } = await supabaseAdmin
     .from('cotizaciones_arriendo')
     .update({
       estado: 'cancelada',
       notas: motivo,
     })
-    .eq('id', cotId);
+    .eq('id', cotId)
+    .in('estado', ['enviada', 'aceptada'])
+    .select('id');
 
   if (updErr) {
     console.error('[cuenta-cancelar-fail]', updErr);
     return NextResponse.json({ error: 'No se pudo cancelar' }, { status: 500 });
+  }
+  if (!updRows || updRows.length === 0) {
+    return NextResponse.json(
+      { error: 'La cotización cambió de estado y ya no puede cancelarse. Recarga la página.' },
+      { status: 409 },
+    );
   }
 
   return NextResponse.json({ ok: true });

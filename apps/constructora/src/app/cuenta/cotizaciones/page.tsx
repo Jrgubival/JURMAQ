@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
+import { escapeLikePattern } from '@jurmaq/shared/sanitize';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ export default async function CotizacionesPage() {
     .select(
       'id, numero, fecha_servicio, ubicacion_servicio, unidades_solicitadas, unidad, total, estado, created_at',
     )
-    .ilike('cliente_email', cliente.email)
+    .ilike('cliente_email', escapeLikePattern(cliente.email))
     .order('created_at', { ascending: false })
     .limit(100);
 

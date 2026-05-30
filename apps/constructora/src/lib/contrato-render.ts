@@ -22,7 +22,16 @@ export function renderContrato(template: string, vars: ContratoVars): string {
     });
   }
 
-  // Second pass: simple {{ var }} replacements
+  // Second pass: raw {{{ var }}} — inyecta el valor SIN escapar. Reservado para
+  // HTML server-generado de confianza (p.ej. garantia_klap_clausula). Debe ir
+  // ANTES del pass escapado para que sus tres llaves no las consuma el regex {{ }}.
+  out = out.replace(/\{\{\{\s*([a-zA-Z_][\w]*)\s*\}\}\}/g, (_m, name: string) => {
+    const v = vars[name];
+    if (v === null || v === undefined) return '';
+    return String(v);
+  });
+
+  // Third pass: simple {{ var }} replacements (escapado)
   out = out.replace(/\{\{\s*([a-zA-Z_][\w]*)\s*\}\}/g, (_m, name: string) => {
     const v = vars[name];
     if (v === null || v === undefined) return '';

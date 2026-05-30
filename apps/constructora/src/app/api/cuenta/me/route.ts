@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { getClienteFromRequest } from '@/lib/cuenta-auth';
+import { escapeLikePattern } from '@jurmaq/shared/sanitize';
 
 /**
  * GET /api/cuenta/me
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
   const { data: cotizaciones } = await supabaseAdmin
     .from('cotizaciones_arriendo')
     .select('id, numero, fecha_servicio, ubicacion_servicio, total, estado, created_at, maquinaria_id')
-    .ilike('cliente_email', cliente.email)
+    .ilike('cliente_email', escapeLikePattern(cliente.email))
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
   const { data: contratos } = await supabaseAdmin
     .from('contratos')
     .select('id, numero, estado, fecha_inicio, fecha_termino, precio_total, maquinaria_id, created_at')
-    .ilike('arrendatario_email', cliente.email)
+    .ilike('arrendatario_email', escapeLikePattern(cliente.email))
     .order('created_at', { ascending: false })
     .limit(10);
 

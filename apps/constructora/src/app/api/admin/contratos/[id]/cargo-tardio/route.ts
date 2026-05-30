@@ -47,6 +47,18 @@ export async function POST(
   if (monto <= 0 || !motivo) {
     return NextResponse.json({ error: 'monto y motivo son requeridos' }, { status: 400 });
   }
+  // Guardrail anti fat-finger (audit): un cargo off-session se hace directo a la
+  // tarjeta del cliente. Esto NO es un límite de negocio — es un tope de sanidad
+  // para atrapar un monto mal tecleado (p.ej. pesos × 1000). Ajustable.
+  const MONTO_MAX_SANIDAD = 50_000_000;
+  if (monto > MONTO_MAX_SANIDAD) {
+    return NextResponse.json(
+      {
+        error: `El monto ($${monto.toLocaleString('es-CL')}) supera el tope de seguridad de $${MONTO_MAX_SANIDAD.toLocaleString('es-CL')}. Verifica la unidad (¿pesos vs miles?) e intenta de nuevo.`,
+      },
+      { status: 400 },
+    );
+  }
 
   const { data: contrato } = await supabaseAdmin
     .from('contratos')

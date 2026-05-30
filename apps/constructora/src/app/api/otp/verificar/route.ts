@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyOtp } from '@jurmaq/shared/otp';
 import type { OtpContexto } from '@jurmaq/shared/otp';
-import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
+import { getClientIp, rateLimitPersistent } from '@jurmaq/shared/rate-limit';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { supabaseAdmin } from '@jurmaq/shared/supabase';
 
 /**
  * POST /api/otp/verificar
@@ -64,8 +65,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'contexto inválido' }, { status: 400 });
   }
 
+  // Persistente (DB) para que el anti-brute-force valga en serverless
+  // (cae a in-memory si falta la migración rate-limit-persistente).
   const ip = getClientIp(request);
-  const rl = rateLimit(`otp-verificar:${destino}:${contexto}:${ip}`, { maxAttempts: 10, windowSeconds: 300 });
+  const rl = await rateLimitPersistent(supabaseAdmin, `otp-verificar:${destino}:${contexto}:${ip}`, { maxAttempts: 10, windowSeconds: 300 });
   if (!rl.success) {
     return NextResponse.json(
       { ok: false, error: 'Demasiados intentos. Espera unos minutos.' },

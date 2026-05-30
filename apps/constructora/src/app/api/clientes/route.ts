@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, escapeOrFilter } from '@jurmaq/shared/sanitize';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,8 +14,11 @@ export async function GET(request: NextRequest) {
     let query = supabaseAdmin.from('clientes').select('*');
 
     if (search) {
+      // Neutraliza operadores de filtro PostgREST (comas, paréntesis, comodines)
+      // antes de interpolar en .or(); evita inyección de filtros.
+      const safe = escapeOrFilter(search.slice(0, 80));
       query = query.or(
-        `nombre.ilike.%${search}%,empresa.ilike.%${search}%,rut.ilike.%${search}%,email.ilike.%${search}%,telefono.ilike.%${search}%`
+        `nombre.ilike.%${safe}%,empresa.ilike.%${safe}%,rut.ilike.%${safe}%,email.ilike.%${safe}%,telefono.ilike.%${safe}%`
       );
     }
 

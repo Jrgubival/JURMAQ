@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, escapeLikePattern } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 import { klapPreauth } from '@/lib/klap-client';
 import { mockNetworkToken } from '@/lib/klap-mock';
@@ -86,6 +86,29 @@ export async function POST(
     return NextResponse.json({ error: 'Monto de garantía inválido' }, { status: 400 });
   }
 
+  // Guarda de estado/idempotencia: evita un SEGUNDO hold real sobre la tarjeta
+  // del cliente si reenvía el formulario o reabre el link de entrega aún vigente.
+  // (Lo ideal a futuro es un índice único parcial en klap_holds por contrato_id
+  // con estado='active'; esta verificación cubre el caso de reenvío.)
+  if (contrato.estado === 'vigente') {
+    return NextResponse.json(
+      { error: 'La entrega de este contrato ya fue autorizada.' },
+      { status: 409 },
+    );
+  }
+  const { data: holdsActivos } = await supabaseAdmin
+    .from('klap_holds')
+    .select('id')
+    .eq('contrato_id', contrato.id)
+    .eq('estado', 'active')
+    .limit(1);
+  if (holdsActivos && holdsActivos.length > 0) {
+    return NextResponse.json(
+      { error: 'Ya existe una autorización de garantía activa para este contrato.' },
+      { status: 409 },
+    );
+  }
+
   // Resolver cliente_id (vía email del contrato).
   const arrendatarioEmail = (contrato.arrendatario_email as string | null)?.toLowerCase() || '';
   if (!arrendatarioEmail) {
@@ -94,7 +117,7 @@ export async function POST(
   const { data: cliente } = await supabaseAdmin
     .from('clientes')
     .select('id')
-    .ilike('email', arrendatarioEmail)
+    .ilike('email', escapeLikePattern(arrendatarioEmail))
     .maybeSingle();
   if (!cliente) {
     return NextResponse.json(

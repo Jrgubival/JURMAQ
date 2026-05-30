@@ -76,6 +76,9 @@ async function parseTokenAsync(token: string): Promise<number | null> {
       return null;
     }
   }
+  // Legacy base64 → FORJABLE. Audit 1.2: rechazar cuando el flag está encendido
+  // (emisión ya firmada); fail-safe con el flag apagado (comportamiento actual).
+  if (USE_SIGNED_TOKENS) return null;
   return parseToken(token);
 }
 
