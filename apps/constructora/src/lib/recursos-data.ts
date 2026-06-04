@@ -47,9 +47,9 @@ export const CATEGORIA_LABEL: Record<RecursoCategoria, string> = {
 export const RECURSOS: RecursoSEO[] = [
   {
     slug: 'precio-arriendo-retroexcavadora-chile',
-    titulo: 'Cuánto cuesta arrendar una retroexcavadora en Chile (2026)',
+    titulo: 'Precio Arriendo Retroexcavadora 2026: $25.000–$35.000/hora',
     descripcionMeta:
-      'Rangos reales de precio para arriendo de retroexcavadora en Chile: por hora, día, semana y mes. Con o sin operador, traslado, IVA. Referencia 2026 Región del Maule.',
+      'Precio arriendo retroexcavadora 2026: $25.000–$35.000/hora con operador, $230.000–$450.000/día. Por hora, día, semana y mes en la Región del Maule. Cotiza por WhatsApp.',
     h1: 'Cuánto Cuesta Arrendar una Retroexcavadora en Chile (Guía 2026)',
     resumen:
       'En 2026 el arriendo de una retroexcavadora en Chile oscila entre $25.000 y $35.000 por hora con operador, $230.000 a $450.000 por día y $1.200.000 a $2.200.000 por semana. El valor depende de modelo, operador y traslado.',
@@ -147,6 +147,158 @@ export const RECURSOS: RecursoSEO[] = [
       'arriendo-maquinaria-con-o-sin-operador',
       'diferencia-retroexcavadora-miniexcavadora',
       'seguros-y-responsabilidad-arriendo-maquinaria',
+    ],
+  },
+  {
+    slug: 'valor-hora-retroexcavadora',
+    titulo: 'Valor Hora Retroexcavadora 2026: $25.000–$35.000 con Operador',
+    descripcionMeta:
+      'Valor hora retroexcavadora en Chile 2026: $25.000–$35.000 con operador, $18.000–$25.000 sin operador. Qué incluye la hora-máquina, mínimo de horas y cómo se cobra. Maule.',
+    h1: 'Valor Hora de una Retroexcavadora en Chile (2026)',
+    resumen:
+      'El valor hora de una retroexcavadora en Chile en 2026 va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador. La mayoría de los arriendos exige un mínimo de 4 horas, y el traslado al sitio se cobra aparte.',
+    categoria: 'arriendo',
+    keywordsObjetivo: [
+      'valor hora retroexcavadora',
+      'valor hora retroexcavadora chile',
+      'precio hora retroexcavadora',
+      'cuanto cobra una retroexcavadora por hora',
+      'valor hora maquina retroexcavadora maule',
+      'arriendo retroexcavadora por hora curico',
+    ],
+    fechaPublicacion: '2026-06-03',
+    secciones: [
+      {
+        h2: 'Valor hora referencial (2026)',
+        html: `<p>El cobro por hora-máquina de una retroexcavadora estándar (tipo Caterpillar 416, JCB 3CX o Hidromek HMK 102B, 75–95 HP) en la zona central de Chile se mueve en estos rangos:</p>
+        <table style="width:100%;border-collapse:collapse;margin-top:12px">
+          <thead><tr style="background:#f3f4f6"><th style="padding:8px;text-align:left;border:1px solid #e5e7eb">Modalidad</th><th style="padding:8px;text-align:left;border:1px solid #e5e7eb">Valor por hora (neto)</th></tr></thead>
+          <tbody>
+            <tr><td style="padding:8px;border:1px solid #e5e7eb"><strong>Con operador</strong></td><td style="padding:8px;border:1px solid #e5e7eb">$25.000 – $35.000</td></tr>
+            <tr><td style="padding:8px;border:1px solid #e5e7eb"><strong>Sin operador</strong></td><td style="padding:8px;border:1px solid #e5e7eb">$18.000 – $25.000</td></tr>
+            <tr><td style="padding:8px;border:1px solid #e5e7eb"><strong>Hora extra (sobre jornada)</strong></td><td style="padding:8px;border:1px solid #e5e7eb">$20.000 – $30.000</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px"><em>Valores netos referenciales, no incluyen IVA ni traslado. El valor real de JURMAQ se cotiza según la obra, ubicación y duración.</em></p>`,
+      },
+      {
+        h2: 'Qué incluye la hora-máquina',
+        html: `<p>Cuando arriendas por hora con operador, la tarifa horaria normalmente cubre:</p>
+        <ul>
+          <li><strong>La máquina operativa</strong> con mantención al día y combustible (verificar si el combustible va incluido o se cobra aparte).</li>
+          <li><strong>El operador certificado</strong>, con licencia Clase D vigente y curso de operación de equipos.</li>
+          <li><strong>Seguro de responsabilidad civil</strong> ante daños a terceros.</li>
+        </ul>
+        <p>No suele incluir el <strong>traslado</strong> (camión cama-baja, se cobra por distancia ida y vuelta) ni los <strong>peajes</strong>. Por eso un arriendo de pocas horas puede salir caro en proporción: el flete se reparte entre menos horas.</p>`,
+      },
+      {
+        h2: 'Mínimo de horas y cuándo conviene pagar por hora',
+        html: `<p>Casi todos los contratos de arriendo por hora exigen un <strong>mínimo de 4 horas</strong>. Pagar por hora conviene solo para trabajos muy puntuales:</p>
+        <ul>
+          <li>Cargar uno o dos camiones de material.</li>
+          <li>Abrir una zanja corta para una matriz o empalme.</li>
+          <li>Una demolición ligera de pocas horas.</li>
+        </ul>
+        <p>Si la obra dura más de un día, conviene pasar a <strong>tarifa por día</strong> (8 horas) o por semana: la hora sale 20–40% más barata. Revisa nuestra guía de <a href="/recursos/precio-arriendo-retroexcavadora-chile">precio de arriendo de retroexcavadora por día, semana y mes</a>.</p>`,
+      },
+      {
+        h2: 'Cómo pedir el valor hora real',
+        html: `<p>Para recibir un valor hora exacto y sin sorpresas, ten a mano la comuna de la obra (para el flete), las fechas y si necesitas operador. En JURMAQ cotizamos el arriendo de retroexcavadora por hora, día o semana en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule, con respuesta en menos de 2 horas hábiles por WhatsApp.</p>`,
+      },
+    ],
+    faq: [
+      {
+        q: '¿Cuál es el valor hora de una retroexcavadora en 2026?',
+        a: 'En 2026, en Chile central, el valor hora de una retroexcavadora va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador (valores netos). La mayoría de los arriendos exige un mínimo de 4 horas y el traslado se cobra aparte.',
+      },
+      {
+        q: '¿Hay un mínimo de horas para arrendar?',
+        a: 'Sí, lo habitual es un mínimo de 4 horas por arriendo. Para trabajos de un día completo conviene la tarifa por jornada de 8 horas, donde la hora resulta más económica.',
+      },
+      {
+        q: '¿El valor hora incluye el traslado?',
+        a: 'No. El traslado de la retroexcavadora se hace en camión cama-baja y se cobra aparte según la distancia ida y vuelta. Para obras dentro del Maule (Curicó, Molina, Teno, Talca) JURMAQ ofrece tarifa de traslado preferente por cercanía.',
+      },
+    ],
+    relacionados: [
+      'precio-arriendo-retroexcavadora-chile',
+      'arriendo-maquinaria-con-o-sin-operador',
+      'diferencia-retroexcavadora-miniexcavadora',
+    ],
+  },
+  {
+    slug: 'arriendo-miniexcavadora-xcmg-xe35u',
+    titulo: 'Arriendo Miniexcavadora XCMG XE35U en Curicó y Maule',
+    descripcionMeta:
+      'Arriendo de miniexcavadora XCMG XE35U (3,5 ton) en Curicó, Molina, Talca y la Región del Maule. Excava 3,1 m, entra por pasajes angostos. Con o sin operador. Cotiza por WhatsApp.',
+    h1: 'Arriendo de Miniexcavadora XCMG XE35U en la Región del Maule',
+    resumen:
+      'La miniexcavadora XCMG XE35U es un equipo de 3,5 toneladas que excava hasta ~3,1 m de profundidad y entra por pasajes angostos donde una retroexcavadora no cabe. JURMAQ la arrienda con o sin operador en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule.',
+    categoria: 'maquinaria',
+    keywordsObjetivo: [
+      'arriendo excavadora xcmg',
+      'arriendo miniexcavadora xcmg xe35u',
+      'miniexcavadora xcmg curico',
+      'arriendo miniexcavadora maule',
+      'excavadora xcmg xe35u precio',
+      'arriendo miniexcavadora talca',
+    ],
+    fechaPublicacion: '2026-06-03',
+    secciones: [
+      {
+        h2: '¿Qué es la XCMG XE35U?',
+        html: `<p>La <strong>XCMG XE35U</strong> es una miniexcavadora de cola corta (zero/short tail swing) de la marca china XCMG, una de las mayores fabricantes de maquinaria pesada del mundo. Con un peso operacional cercano a las <strong>3,5 toneladas</strong>, es el punto justo entre las mini de 1,5 ton (muy livianas) y las excavadoras grandes: tiene fuerza real de excavación pero conserva un tamaño compacto que le permite trabajar en espacios reducidos.</p>`,
+      },
+      {
+        h2: 'Especificaciones técnicas',
+        html: `<table style="width:100%;border-collapse:collapse;margin-top:12px">
+          <thead><tr style="background:#f3f4f6"><th style="padding:8px;text-align:left;border:1px solid #e5e7eb">Característica</th><th style="padding:8px;text-align:left;border:1px solid #e5e7eb">XCMG XE35U</th></tr></thead>
+          <tbody>
+            <tr><td style="padding:8px;border:1px solid #e5e7eb">Peso operacional</td><td style="padding:8px;border:1px solid #e5e7eb">~3.500 kg</td></tr>
+            <tr><td style="padding:8px;border:1px solid #e5e7eb">Profundidad de excavación</td><td style="padding:8px;border:1px solid #e5e7eb">~3,1 m</td></tr>
+            <tr><td style="padding:8px;border:1px solid #e5e7eb">Cola</td><td style="padding:8px;border:1px solid #e5e7eb">Corta (gira sin sobresalir del chasis)</td></tr>
+            <tr><td style="padding:8px;border:1px solid #e5e7eb">Tracción</td><td style="padding:8px;border:1px solid #e5e7eb">Orugas de goma (no dañan pavimento)</td></tr>
+            <tr><td style="padding:8px;border:1px solid #e5e7eb">Ideal para</td><td style="padding:8px;border:1px solid #e5e7eb">Pasajes, patios, ampliaciones, zanjas urbanas</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px"><em>Especificaciones referenciales de la familia XE35U; pueden variar según el año y la configuración del equipo.</em></p>`,
+      },
+      {
+        h2: '¿Para qué obras conviene?',
+        html: `<p>La XE35U brilla justo donde una retroexcavadora no entra o haría daño:</p>
+        <ul>
+          <li><strong>Pasajes y antejardines angostos</strong> — su cola corta gira en espacios cerrados sin chocar muros.</li>
+          <li><strong>Zanjas para agua, alcantarillado y electricidad</strong> en zonas residenciales.</li>
+          <li><strong>Ampliaciones e interiores</strong> donde el acceso es por una puerta o portón estándar.</li>
+          <li><strong>Trabajo sobre pisos terminados</strong> — las orugas de goma evitan romper pavimentos y radieres.</li>
+          <li><strong>Paisajismo y movimiento de tierra fino</strong> en jardines y loteos pequeños.</li>
+        </ul>
+        <p>Si tu obra es grande y con espacio, compara con la retroexcavadora en nuestra guía <a href="/recursos/diferencia-retroexcavadora-miniexcavadora">retroexcavadora vs miniexcavadora</a>.</p>`,
+      },
+      {
+        h2: 'Arriendo en el Maule: con o sin operador',
+        html: `<p>JURMAQ arrienda la miniexcavadora XCMG XE35U <strong>con o sin operador</strong>. Con operador incluimos personal certificado, seguro de responsabilidad civil y la máquina con mantención al día. Sin operador, debes aportar un operador con experiencia comprobable.</p>
+        <p>Despachamos desde Curicó a toda la Región del Maule — Molina, Teno, Romeral, Sagrada Familia, Talca, Linares y comunas vecinas — con traslado en camión y tarifa preferente por cercanía. Mira la flota y cotiza en la página de <a href="/arriendo/miniexcavadora">arriendo de miniexcavadoras</a>.</p>`,
+      },
+    ],
+    faq: [
+      {
+        q: '¿Cuánto pesa y cuánto excava la XCMG XE35U?',
+        a: 'La XCMG XE35U pesa alrededor de 3,5 toneladas y excava hasta cerca de 3,1 metros de profundidad. Es una miniexcavadora de cola corta, ideal para espacios reducidos con buena fuerza de excavación.',
+      },
+      {
+        q: '¿La miniexcavadora XCMG entra a un patio o pasaje angosto?',
+        a: 'Sí. Su diseño compacto de cola corta y sus orugas de goma le permiten trabajar en pasajes, antejardines y patios sin dañar el pavimento y girando sin chocar con muros.',
+      },
+      {
+        q: '¿Dónde puedo arrendar la XCMG XE35U?',
+        a: 'JURMAQ arrienda la miniexcavadora XCMG XE35U en Curicó, Molina, Teno, Romeral, Sagrada Familia, Talca, Linares y toda la Región del Maule, con o sin operador y respuesta de cotización en menos de 2 horas por WhatsApp.',
+      },
+    ],
+    relacionados: [
+      'diferencia-retroexcavadora-miniexcavadora',
+      'arriendo-maquinaria-con-o-sin-operador',
+      'que-maquinaria-elegir-fundacion-casa',
     ],
   },
   {

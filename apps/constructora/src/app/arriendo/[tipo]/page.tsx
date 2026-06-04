@@ -6,6 +6,7 @@ import { TIPOS_MAQUINA, CIUDADES, HQ } from "@jurmaq/shared/seo";
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaTipo } from "@jurmaq/shared/whatsapp";
+import WhatsappLink from "@/components/public/WhatsappLink";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 
@@ -36,9 +37,20 @@ export async function generateMetadata({
 
   const cities = CIUDADES.slice(0, 6).map((c) => c.nombre).join(", ");
 
+  // Marca/modelo real de la flota por tipo, en el TÍTULO visible (no solo en
+  // keywords). Captura consultas de marca con alta intención: "arriendo
+  // excavadora xcmg" (78 impr, pos 10, 0 clics — mayor oportunidad única),
+  // "bobcat s650", "arriendo minicargador".
+  const marcaTitulo: Record<string, string> = {
+    miniexcavadora: " XCMG XE35U",
+    retroexcavadora: " Hidromek HMK 102B",
+    minicargador: " Bobcat S650",
+  };
+  const marcaSuffix = marcaTitulo[tipoData.slug] ?? "";
+
   return {
-    title: `Arriendo de ${tipoData.nombrePlural} en Curicó y Maule · JURMAQ`,
-    description: `Arriendo de ${tipoData.nombre.toLowerCase()} con o sin operador en ${cities} y toda la Región del Maule. ${tipoData.descripcionCorta} JURMAQ +25 años. Cotiza por WhatsApp.`,
+    title: `Arriendo de ${tipoData.nombrePlural}${marcaSuffix} en Curicó y Maule · JURMAQ`,
+    description: `Arriendo de ${tipoData.nombre.toLowerCase()}${marcaSuffix ? ` (${marcaSuffix.trim()})` : ""} con o sin operador en ${cities} y toda la Región del Maule. ${tipoData.descripcionCorta} JURMAQ +25 años. Cotiza por WhatsApp.`,
     keywords: [
       `arriendo ${tipoData.nombre.toLowerCase()}`,
       ...CIUDADES.map((c) => `arriendo ${tipoData.nombre.toLowerCase()} ${c.nombre}`),
@@ -173,7 +185,7 @@ export default async function ArriendoTipoPage({
               ]}
             />
             <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6">
-              Curicó · Molina · Región del Maule
+              Curicó · Molina · Talca · Linares · Región del Maule
             </p>
             <h1
               className="text-white leading-[1.05] mb-6 max-w-3xl"
@@ -188,14 +200,13 @@ export default async function ArriendoTipoPage({
               {tipoData.descripcionLarga}
             </p>
             <div className="flex flex-wrap gap-3">
-              <a
+              <WhatsappLink
                 href={whatsappCtaTipo(tipoData.slug, tipoData.nombre)}
-                target="_blank"
-                rel="noopener noreferrer"
+                source={`arriendo_tipo_${tipoData.slug}_hero`}
                 className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors"
               >
                 Cotizar por WhatsApp
-              </a>
+              </WhatsappLink>
               <Link
                 href="/contacto"
                 className="inline-flex items-center gap-2 bg-white text-navy-950 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -302,6 +313,23 @@ export default async function ArriendoTipoPage({
           }))}
         />
 
+        {/* Deep-links city×type para reforzar demanda real en Talca/Linares
+            (139 + impresiones, rankeando pos 7–13). Enlaza este tipo de máquina
+            en las ciudades con mayor búsqueda → sube esas landings vía enlazado
+            interno hacia la consulta "[tipo] en [ciudad]". */}
+        <CrossLinksGrid
+          eyebrow="Demanda · Talca · Linares"
+          title={`${tipoData.nombrePlural} por ciudad`}
+          subtitle={`Páginas específicas de arriendo de ${tipoData.nombre.toLowerCase()} en las principales ciudades que servimos.`}
+          items={["talca", "linares", "curico", "molina"].map((slug) => {
+            const c = CIUDADES.find((x) => x.slug === slug);
+            return {
+              label: `${tipoData.nombre} en ${c?.nombre ?? slug}`,
+              href: `/arriendo-en/${slug}/${tipoData.slug}`,
+            };
+          })}
+        />
+
         {/* FAQ */}
         <section className="py-16">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -328,14 +356,13 @@ export default async function ArriendoTipoPage({
             <p className="text-gray-200 mb-8">
               Cotiza por WhatsApp y recibe disponibilidad + valor el mismo día.
             </p>
-            <a
+            <WhatsappLink
               href={whatsappCtaTipo(tipoData.slug, tipoData.nombre)}
-              target="_blank"
-              rel="noopener noreferrer"
+              source={`arriendo_tipo_${tipoData.slug}_footer`}
               className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
             >
               Cotizar +56 9 7667 3577
-            </a>
+            </WhatsappLink>
           </div>
         </section>
       </article>

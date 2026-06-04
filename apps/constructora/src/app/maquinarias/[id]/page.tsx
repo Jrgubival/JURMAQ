@@ -8,6 +8,8 @@ import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import DisponibilidadCalendario from "@/components/maquinarias/DisponibilidadCalendario";
 import { whatsappCtaMaquinaria } from "@jurmaq/shared/whatsapp";
 import PricingTiers from "@/components/public/PricingTiers";
+import WhatsappLink from "@/components/public/WhatsappLink";
+import StickyMobileCTA from "@/components/public/StickyMobileCTA";
 import ObraCompletaCTA from "@/components/public/ObraCompletaCTA";
 import RelatedMachines from "@/components/public/RelatedMachines";
 import ViewItemTracker from "@jurmaq/shared/ui/ViewItemTracker";
@@ -123,14 +125,27 @@ export async function generateMetadata({
   }
 
   const desdePrecio = precioPublicoDesde(machine);
+  // Etiqueta de unidad real de la tarifa (hora / día). Antes se hardcodeaba
+  // "/día" aunque la máquina cobrara por hora — confundía y NO calzaba con la
+  // intención de búsqueda "valor hora retroexcavadora" (rankea #1–4.5 con 0
+  // clics). Ahora el título lidera con precio/valor en la unidad correcta.
+  const unidadLbl = machine.unidad_tarifa === "hora" ? "hora" : "día";
   const priceText = desdePrecio !== null
-    ? `Desde ${formatCLP(desdePrecio)}/día`
+    ? `Desde ${formatCLP(desdePrecio)}/${unidadLbl}`
     : "Consultar precio";
+  // Frase de precio que lidera el título y el primer ~120 chars del description.
+  // Para tarifa por hora usamos el literal "Valor hora desde…" para capturar
+  // la consulta de intención de precio. Para día, "Valor día desde…".
+  const valorText = desdePrecio !== null
+    ? (machine.unidad_tarifa === "hora"
+        ? `Valor hora desde ${formatCLP(desdePrecio)}`
+        : `Valor día desde ${formatCLP(desdePrecio)}`)
+    : "Consulta el valor";
   const tipoLbl = getTipoLabel(machine.tipo);
 
   return {
-    title: `Arriendo ${machine.nombre} en Curicó · Molina · Talca · ${priceText}`,
-    description: `Arriendo de ${machine.nombre} (${tipoLbl}) en Curicó, Teno, Molina, Romeral, Talca y toda la Región del Maule. ${machine.descripcion || "Equipo en operación con o sin operador, mantención al día."} ${priceText}. Cotiza por WhatsApp y recibe respuesta el mismo día.`,
+    title: `Arriendo ${machine.nombre} · ${valorText} · Curicó y Maule`,
+    description: `${valorText} (neto). Arriendo de ${machine.nombre} (${tipoLbl}) con o sin operador en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule. ${machine.descripcion || "Equipo en operación, mantención al día."} Cotiza por WhatsApp y recibe respuesta el mismo día.`,
     keywords: [
       `arriendo ${machine.nombre}`,
       `arriendo ${machine.nombre} Curicó`,
@@ -146,6 +161,10 @@ export async function generateMetadata({
       `${tipoLbl} sin operador Curicó`,
       `${machine.nombre} precio arriendo`,
       `precio ${tipoLbl} día Curicó`,
+      // Intención de precio/hora — capturada por el título "Valor hora desde…".
+      `valor hora ${tipoLbl.toLowerCase()}`,
+      `valor ${tipoLbl.toLowerCase()} por hora`,
+      `${tipoLbl.toLowerCase()} precio hora`,
       "arriendo maquinaria Curicó",
       "arriendo maquinaria Molina",
       "arriendo maquinaria Teno",
@@ -452,14 +471,13 @@ export default async function MaquinariaDetailPage({
                     >
                       Cotizar precio final →
                     </Link>
-                    <a
+                    <WhatsappLink
                       href={whatsappCtaMaquinaria(machine.id, machine.nombre)}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      source="maquinaria_detail_fallback"
                       className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-navy-950 hover:bg-navy-950 hover:text-white text-navy-950 font-bold text-sm rounded-xl transition-colors"
                     >
                       Consultar por WhatsApp
-                    </a>
+                    </WhatsappLink>
                   </div>
                 </div>
               )}
@@ -575,6 +593,12 @@ export default async function MaquinariaDetailPage({
           }),
         }}
       />
+
+      {/* Espaciador para que la barra sticky móvil no tape el último contenido */}
+      <div className="h-20 lg:hidden" aria-hidden="true" />
+
+      {/* CTA sticky móvil — Cotizar online + WhatsApp siempre visibles */}
+      <StickyMobileCTA maquinariaId={machine.id} maquinariaNombre={machine.nombre} />
     </>
   );
 }

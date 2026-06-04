@@ -7,6 +7,7 @@ import { CIUDADES, TIPOS_MAQUINA, HQ, LEGAL_INFO, DISTANCIAS_CONSTRUCTORA } from
 import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde } from "@/lib/pricing-arriendo";
 import { whatsappCtaCiudad } from "@jurmaq/shared/whatsapp";
+import WhatsappLink from "@/components/public/WhatsappLink";
 import { maquinariaHref } from "@/lib/maquinaria-slug";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
@@ -206,14 +207,13 @@ export default async function ArriendoEnCiudadPage({
             </p>
             <p className="text-sm lg:text-base text-white/65 max-w-3xl mb-10 leading-relaxed">{c.contextoLocal}</p>
             <div className="flex flex-wrap gap-3">
-              <a
+              <WhatsappLink
                 href={whatsappCtaCiudad(c.slug, c.nombre)}
-                target="_blank"
-                rel="noopener noreferrer"
+                source={`arriendo_ciudad_${c.slug}_hero`}
                 className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors"
               >
                 Cotizar por WhatsApp
-              </a>
+              </WhatsappLink>
               <Link
                 href="/maquinarias"
                 className="inline-flex items-center gap-2 bg-white text-navy-950 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -379,14 +379,13 @@ export default async function ArriendoEnCiudadPage({
             <p className="text-gray-200 mb-8">
               Cotiza por WhatsApp y te confirmamos disponibilidad + traslado en el día.
             </p>
-            <a
+            <WhatsappLink
               href={whatsappCtaCiudad(c.slug, c.nombre)}
-              target="_blank"
-              rel="noopener noreferrer"
+              source={`arriendo_ciudad_${c.slug}_footer`}
               className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
             >
               Cotizar +56 9 7667 3577
-            </a>
+            </WhatsappLink>
           </div>
         </section>
       </article>

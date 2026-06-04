@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { formatCLP } from '@jurmaq/shared/format';
 import { whatsappCtaMaquinaria } from '@jurmaq/shared/whatsapp';
+import WhatsappLink from '@/components/public/WhatsappLink';
 
 /**
  * PricingTiers — Tabla de tarifas según unidad de la máquina.
@@ -171,14 +172,13 @@ export default function PricingTiers({
               <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </Link>
-          <a
+          <WhatsappLink
             href={whatsappCtaMaquinaria(maquinariaId, maquinariaNombre)}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
+            source="pricing_tiers_maquinaria"
             className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white hairline hover:bg-[#F7F6F3] text-[#111111] text-sm font-semibold rounded-[10px] transition-spring tactile"
           >
             Consultar por WhatsApp
-          </a>
+          </WhatsappLink>
         </div>
 
         <p className="text-[11px] text-[#787774] mt-4 leading-relaxed">

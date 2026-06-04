@@ -246,11 +246,25 @@ export default function CotizarPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setSuccess({ numero: data.numero || "COT-000000", id: data.id });
+        const numero = data.numero || "COT-000000";
+        setSuccess({ numero, id: data.id });
         localStorage.removeItem("barraca_session_id");
         localStorage.removeItem("barraca_cupon");
         window.dispatchEvent(new Event("cart-updated"));
         showToast(TOAST_MESSAGES.cotizacion.SENT_OK, "success");
+
+        // Conversión principal de barraca: toda cotización enviada es un lead.
+        // Antes solo se trackeaba `mejora_precio` (cuando subían archivo de
+        // competencia), dejando la conversión estándar invisible en GA4.
+        // Dedupe por número para no doble-contar si el usuario recarga.
+        try {
+          const dedupeKey = `ga4_barraca_cot_${numero}`;
+          if (!sessionStorage.getItem(dedupeKey)) {
+            sessionStorage.setItem(dedupeKey, "1");
+            const { trackEvents } = await import("@/lib/analytics");
+            trackEvents.generateLead("cotizacion", total);
+          }
+        } catch { /* analytics no debe romper UX */ }
 
         // If the client opted into marketing, subscribe them to the newsletter.
         // Fire-and-forget; duplicates/rate-limits are silently ignored.

@@ -85,9 +85,18 @@ export async function generateMetadata({
   const precioFormateado = `${formatCLP(precioMostrar)}`;
   const stockTexto =
     producto.stock > 0 ? "Stock disponible" : "Consultar disponibilidad";
+  // Etiqueta corta de stock para el TÍTULO visible (lo que el usuario ve en
+  // Google). Antes el título solo decía "Precio y Stock" como palabras; ahora
+  // surfacea el precio real + stock → sube CTR en consultas tipo "fierro
+  // estriado 18mm", "cemento talca", "perfiles curico" (rankean pos 6–8.5, 0
+  // clics). El precio ya estaba solo en el OG title.
+  const stockBadge = producto.stock > 0 ? "En stock" : "Consultar stock";
+  const titlePrecio = metaResolved.tipo === "cotizar"
+    ? "Cotiza online"
+    : `${precioFormateado} · ${stockBadge}`;
 
   return {
-    title: `${producto.nombre} | Barraca JURMAQ Curico - Precio y Stock`,
+    title: `${producto.nombre} ${titlePrecio} · Barraca JURMAQ Curicó`,
     description: `Compra ${producto.nombre} en Barraca JURMAQ Curico. Precio: ${precioFormateado}. ${stockTexto}. Envio a Curico, Teno, Molina, Talca y toda la Region del Maule. Codigo: ${producto.codigo}.`,
     keywords: [
       producto.nombre.toLowerCase(),
@@ -214,6 +223,27 @@ export default async function ProductoPage({
     .neq('id', producto.id)
     .limit(4);
 
+  // AggregateRating REAL (no fabricado): agregado de reviews moderadas
+  // ('aprobada') desde la vista barraca_productos_rating. Solo se inyecta en el
+  // schema si hay al menos 1 review real → estrellas legítimas en Google. Si no
+  // hay reviews, NO se emite (política de Google: prohibido inventar ratings).
+  let aggregateRating: { ratingValue: number; reviewCount: number } | null = null;
+  try {
+    const { data: ratingRow } = await supabasePublic
+      .from('barraca_productos_rating')
+      .select('total_reviews, rating_promedio')
+      .eq('producto_id', producto.id)
+      .maybeSingle();
+    if (ratingRow && Number(ratingRow.total_reviews) > 0 && ratingRow.rating_promedio != null) {
+      aggregateRating = {
+        ratingValue: Math.round(Number(ratingRow.rating_promedio) * 10) / 10,
+        reviewCount: Number(ratingRow.total_reviews),
+      };
+    }
+  } catch {
+    // sin reviews / vista no disponible → no se emite aggregateRating
+  }
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -224,6 +254,18 @@ export default async function ProductoPage({
     mpn: producto.codigo,
     brand: { "@type": "Brand", name: "JURMAQ Barraca" },
     category: categoria?.nombre || "Materiales de Construccion",
+    // Solo si hay reviews reales aprobadas (ver fetch arriba). Nunca fabricado.
+    ...(aggregateRating
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: aggregateRating.ratingValue,
+            reviewCount: aggregateRating.reviewCount,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
     offers: {
       "@type": "Offer",
       url: `https://barraca.jurmaq.cl/producto/${producto.slug}`,
