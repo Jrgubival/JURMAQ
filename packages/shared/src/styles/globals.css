@@ -462,11 +462,13 @@ a:not([class*="underline"]):not(.link) {
    minimalist-ui, responsive-design.
    ============================================== */
 
-/* Editorial serif H1 — used for hero headings (web-typography spec). */
+/* H1 de titulares — Oswald (condensada industrial). Reemplaza al serif
+   Newsreader, que se sentía demasiado editorial para una marca de construcción
+   / maquinaria. Fallback a Bebas/sans si Oswald no carga. */
 .editorial-h1 {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-family: var(--font-heading), "Bebas Neue", var(--font-sans), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.005em;
   line-height: 1.05;
   text-wrap: balance;
 }

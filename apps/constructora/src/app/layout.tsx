@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Newsreader, Bebas_Neue } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader, Bebas_Neue, Oswald } from "next/font/google";
 import "./globals.css";
 import Analytics from "@jurmaq/shared/ui/Analytics";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
@@ -47,6 +47,17 @@ const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
   display: "swap",
   weight: ["400"], // Bebas Neue only ships in a single weight
+});
+
+// Titulares (h1 .editorial-h1) → Oswald. El serif Newsreader se sentía
+// demasiado editorial para una marca de construcción/maquinaria pesada; Oswald
+// es condensada con minúsculas, aire industrial y robusto, y combina natural
+// con el acento "JURMAQ" en Bebas Neue. (Decisión del owner.)
+const oswald = Oswald({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
 });
 
 export const viewport: Viewport = {
@@ -234,7 +245,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} ${bebasNeue.variable} h-full antialiased`}>
+    <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} ${bebasNeue.variable} ${oswald.variable} h-full antialiased`}>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader, Oswald } from "next/font/google";
 import BarracaShell from "./BarracaShell";
 import Analytics from "@jurmaq/shared/ui/Analytics";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
@@ -31,6 +31,15 @@ const newsreader = Newsreader({
   display: "swap",
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
+});
+
+// Titulares (h1 .editorial-h1) → Oswald condensada industrial, en línea con la
+// constructora. Reemplaza al serif para una identidad más de construcción.
+const oswald = Oswald({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700"],
 });
 
 export const viewport: Viewport = {
@@ -170,7 +179,7 @@ export default function BarracaLayout({
   children: ReactNode;
 }) {
   return (
-    <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable}`}>
+    <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} ${oswald.variable}`}>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
