@@ -226,22 +226,27 @@ export default function WizardClient({
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="bg-navy-950 text-white px-6 py-4">
+      <div className="bg-navy-950 text-white px-4 sm:px-6 py-4">
         <div className="flex items-center gap-2">
           {STEPS.map((label, i) => (
-            <div key={label} className="flex items-center gap-2 flex-1">
+            <div key={label} className="flex items-center gap-2 flex-1 min-w-0">
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
+                className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-sm font-bold ${
                   i <= step ? 'bg-orange-500' : 'bg-gray-600'
                 }`}
               >
                 {i + 1}
               </div>
-              <span className={`text-sm ${i === step ? 'font-bold' : 'text-gray-300'}`}>{label}</span>
+              {/* Etiquetas ocultas en móvil: las 4 no caben en una fila y se cortaban. */}
+              <span className={`text-sm truncate hidden sm:inline ${i === step ? 'font-bold' : 'text-gray-300'}`}>{label}</span>
               {i < STEPS.length - 1 && <div className="flex-1 h-0.5 bg-gray-600" />}
             </div>
           ))}
         </div>
+        {/* Móvil: nombre del paso activo (reemplaza las etiquetas ocultas). */}
+        <p className="sm:hidden mt-2.5 text-sm font-semibold text-white">
+          Paso {step + 1} de {STEPS.length}: {STEPS[step]}
+        </p>
       </div>
 
       <div className="p-6 md:p-8">

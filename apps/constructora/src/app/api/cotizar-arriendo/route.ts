@@ -255,16 +255,20 @@ export async function POST(request: NextRequest) {
       fechaServicio,
       fechaServicio,
     );
-    if (disponibilidad.errorVerificando) {
-      // B-1 fail-closed: si el RPC de disponibilidad falla, no creamos la
-      // cotización a ciegas. Devolvemos 503 (Service Unavailable) para que
-      // el cliente reintente en lugar de duplicar reservas.
-      return NextResponse.json(
-        { error: 'No se pudo verificar la disponibilidad. Intenta nuevamente en unos segundos.' },
-        { status: 503 },
-      );
-    }
-    if (!disponibilidad.disponible) {
+    // Una cotización es un LEAD, no una reserva en firme. Si la verificación de
+    // disponibilidad NO se puede ejecutar (p.ej. el RPC no está desplegado en la
+    // BD, o hay un hipo de DB), NO bloqueamos el envío: bloquearlo perdía el lead
+    // completo y dejaba la web SIN cotizaciones. Capturamos la cotización igual y
+    // la marcamos para que el equipo confirme disponibilidad a mano. El bloqueo
+    // duro (409) solo aplica cuando la verificación SÍ corre y detecta un
+    // conflicto real (máquina ya comprometida en esa fecha).
+    const disponibilidadNoVerificada = disponibilidad.errorVerificando === true;
+    if (disponibilidadNoVerificada) {
+      console.warn('[cot-arriendo] disponibilidad NO verificada — se captura el lead igual', {
+        maquinaria_id: maquinaria.id,
+        fecha: fechaServicio,
+      });
+    } else if (!disponibilidad.disponible) {
       return NextResponse.json(
         {
           error: 'Maquinaria no disponible en la fecha solicitada',
@@ -357,7 +361,7 @@ export async function POST(request: NextRequest) {
     void createAdminNotification({
       kind: 'cotizacion_arriendo_nueva',
       title: `Cotización arriendo nueva ${inserted.numero}`,
-      body: `${cliente_nombre} · ${maquinaria.nombre} · ${unidades} ${maquinaria.unidad_tarifa}${unidades !== 1 ? 's' : ''} · ${ubicacion}`,
+      body: `${cliente_nombre} · ${maquinaria.nombre} · ${unidades} ${maquinaria.unidad_tarifa}${unidades !== 1 ? 's' : ''} · ${ubicacion}${disponibilidadNoVerificada ? ' · ⚠ confirmar disponibilidad a mano' : ''}`,
       link: `/admin/cotizaciones-arriendo/${inserted.id}`,
       severity: 'info',
       ref_type: 'cotizacion_arriendo',
