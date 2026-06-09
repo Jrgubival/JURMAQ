@@ -247,7 +247,7 @@ export default async function MaquinariaDetailPage({
         "@type": "Offer",
         priceCurrency: "CLP",
         price: desdePrecio,
-        name: "Arriendo por dia (desde, neto, sin traslado)",
+        name: "Arriendo por día (desde, neto)",
         availability:
           machine.estado === "disponible"
             ? "https://schema.org/InStock"

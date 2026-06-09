@@ -63,10 +63,15 @@ export default function WizardClient({
   const [fechaInicio, setFechaInicio] = useState<string>('');
   const [fechaFin, setFechaFin] = useState<string>('');
   const [ubicacion, setUbicacion] = useState<string>(prefill?.ubicacion ?? '');
-  const [km, setKm] = useState<number>(prefill?.km ?? 0);
-  const [peajes, setPeajes] = useState<number>(prefill?.peajes ?? 0);
-  const [operarios, setOperarios] = useState<number>(prefill?.operarios ?? 1);
-  const [horasOp, setHorasOp] = useState<number>(prefill?.horasOp ?? 0);
+  // [flete-removido 2026-06] El traslado salió de la cotización pública para
+  // bajar la fricción: el cliente ya no ve ni ingresa un cargo de flete en el
+  // wizard online. Lo coordinamos aparte al confirmar el arriendo. Mantenemos
+  // estas constantes en 0/1 para que el preview/POST refleje SOLO el uso de la
+  // máquina + IVA (la API además fuerza requiere_traslado=false).
+  const km = 0;
+  const peajes = 0;
+  const operarios = 1;
+  const horasOp = 0;
   const [cliente, setCliente] = useState({
     nombre: prefill?.cliente?.nombre ?? '',
     email: prefill?.cliente?.email ?? '',
@@ -265,7 +270,7 @@ export default function WizardClient({
                       {m.minimo_unidades !== 1 ? 's' : ''})
                     </span>
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Valor neto · traslado incluido si aplica</p>
+                  <p className="text-xs text-gray-500 mt-1">Valor neto · sin IVA</p>
                 </button>
               ))}
             </div>
@@ -324,33 +329,10 @@ export default function WizardClient({
                 className="w-full border rounded px-3 py-2"
               />
             </div>
-            {selectedMaq.requiere_traslado && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-semibold mb-1">Distancia (km, una vía)</label>
-                  <input
-                    type="number"
-                    value={km}
-                    onChange={(e) => setKm(Number(e.target.value))}
-                    min={0}
-                    step={0.5}
-                    className="w-full border rounded px-3 py-2"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Se calcula ida + vuelta</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">Peajes (CLP)</label>
-                  <input
-                    type="number"
-                    value={peajes}
-                    onChange={(e) => setPeajes(Number(e.target.value))}
-                    min={0}
-                    step={500}
-                    className="w-full border rounded px-3 py-2"
-                  />
-                </div>
-              </div>
-            )}
+            <p className="text-xs text-gray-500">
+              El traslado de la máquina a tu obra lo coordinamos contigo al confirmar — no lo
+              sumamos a esta cotización online.
+            </p>
           </div>
         )}
 
@@ -406,17 +388,6 @@ export default function WizardClient({
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold mb-1">Cantidad de operarios</label>
-                <input
-                  type="number"
-                  value={operarios}
-                  onChange={(e) => setOperarios(Math.max(1, Math.min(10, Number(e.target.value))))}
-                  min={1}
-                  max={10}
-                  className="w-full border rounded px-3 py-2"
-                />
-              </div>
-              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold mb-1">Notas adicionales</label>
                 <textarea
                   value={notas}
@@ -447,30 +418,6 @@ export default function WizardClient({
                   <td className="py-2 border-b text-gray-600">Uso máquina ({desglose.unidades_aplicadas} {selectedMaq.unidad_tarifa})</td>
                   <td className="py-2 border-b text-right font-semibold">{formatCLP(desglose.precio_uso)}</td>
                 </tr>
-                {desglose.traslado_combustible > 0 && (
-                  <tr>
-                    <td className="py-2 border-b text-gray-600">Traslado ({desglose.km_total} km ida+vuelta)</td>
-                    <td className="py-2 border-b text-right">{formatCLP(desglose.traslado_combustible)}</td>
-                  </tr>
-                )}
-                {desglose.traslado_carga > 0 && (
-                  <tr>
-                    <td className="py-2 border-b text-gray-600">Carga y descarga</td>
-                    <td className="py-2 border-b text-right">{formatCLP(desglose.traslado_carga)}</td>
-                  </tr>
-                )}
-                {desglose.traslado_operario > 0 && (
-                  <tr>
-                    <td className="py-2 border-b text-gray-600">Operario ({horasOp}h × {operarios} pers.)</td>
-                    <td className="py-2 border-b text-right">{formatCLP(desglose.traslado_operario)}</td>
-                  </tr>
-                )}
-                {desglose.peajes > 0 && (
-                  <tr>
-                    <td className="py-2 border-b text-gray-600">Peajes</td>
-                    <td className="py-2 border-b text-right">{formatCLP(desglose.peajes)}</td>
-                  </tr>
-                )}
                 <tr>
                   <td className="py-2 border-b font-semibold">Subtotal neto</td>
                   <td className="py-2 border-b text-right font-semibold">{formatCLP(desglose.subtotal_neto)}</td>
@@ -488,7 +435,8 @@ export default function WizardClient({
 
             <div className="bg-blue-50 border border-blue-200 p-3 rounded text-sm mb-4">
               Al confirmar te enviamos la cotización a <strong>{cliente.email}</strong>.
-              No te cobramos nada todavía. Solo cuando aceptes y firmemos el contrato.
+              El traslado de la máquina a tu obra lo coordinamos contigo aparte. No te cobramos
+              nada todavía — solo cuando aceptes y firmemos el contrato.
             </div>
           </div>
         )}

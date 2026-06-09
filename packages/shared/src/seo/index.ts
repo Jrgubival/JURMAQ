@@ -264,7 +264,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
       },
       {
         q: "¿Hay traslado al sitio de obra?",
-        a: "Sí. El traslado a Curicó, Molina, Teno, Romeral, Sagrada Familia y Talca está incluido o tiene cargo bajo según distancia. Cotiza el flete junto al arriendo.",
+        a: "Sí. Llevamos la máquina directo a tu obra en Curicó, Molina, Teno, Romeral, Sagrada Familia, Talca y toda la Región del Maule. Coordinamos el traslado contigo al confirmar el arriendo.",
       },
     ],
   },

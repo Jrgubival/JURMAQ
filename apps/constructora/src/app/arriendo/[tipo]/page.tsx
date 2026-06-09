@@ -306,7 +306,7 @@ export default async function ArriendoTipoPage({
         <CrossLinksGrid
           eyebrow="Cobertura · 12 ciudades del Maule"
           title={`También en otras ciudades del Maule`}
-          subtitle={`Operamos desde nuestra base en Curicó y despachamos a toda la Región del Maule. Tarifa de traslado se confirma al cotizar.`}
+          subtitle={`Operamos desde nuestra base en Curicó y llevamos la máquina a toda la Región del Maule. Coordinamos el traslado contigo al confirmar.`}
           items={CIUDADES.map((c) => ({
             label: `Arriendo en ${c.nombre}`,
             href: `/arriendo-en/${c.slug}`,

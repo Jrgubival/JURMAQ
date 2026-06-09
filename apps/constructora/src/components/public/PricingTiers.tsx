@@ -182,9 +182,9 @@ export default function PricingTiers({
         </div>
 
         <p className="text-[11px] text-[#787774] mt-4 leading-relaxed">
-          Precios indicativos por uso. El traslado se cotiza por aparte según dirección de
-          obra. Para arriendos &gt; 1 mes o más de una máquina, pedí precio personalizado
-          (ver opción de obra completa abajo).
+          Precios indicativos por uso (valores netos). El traslado a tu obra lo coordinamos
+          contigo al confirmar. Para arriendos &gt; 1 mes o más de una máquina, pedí precio
+          personalizado (ver opción de obra completa abajo).
         </p>
       </div>
     </div>

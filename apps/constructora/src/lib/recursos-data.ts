@@ -84,7 +84,7 @@ export const RECURSOS: RecursoSEO[] = [
         <ul>
           <li><strong>Operador</strong> — sumar operador certificado agrega ~$60.000 a $120.000 al día (incluye su sueldo, leyes sociales, alimentación y EPP).</li>
           <li><strong>Duración del arriendo</strong> — a mayor plazo, menor tarifa unitaria. Una semana tiene descuento de 15–25% sobre la suma de días sueltos; un mes baja otro 20–30%.</li>
-          <li><strong>Traslado al sitio de obra</strong> — la retroexcavadora se mueve en camión cama-baja. Cobro típico entre $80.000 (radio 30 km) y $250.000 (radio 100 km), ida y vuelta. En JURMAQ el traslado a Curicó, Molina, Teno, Romeral y Sagrada Familia se cotiza con tarifa preferente por cercanía.</li>
+          <li><strong>Traslado al sitio de obra</strong> — la retroexcavadora se mueve en camión cama-baja. En JURMAQ el traslado a Curicó, Molina, Teno, Romeral y Sagrada Familia lo coordinamos contigo con tarifa preferente por cercanía, sin un cargo de flete que infle la cotización.</li>
           <li><strong>Modelo y año</strong> — máquinas con menos de 5 años y horómetro bajo cobran 10–15% más que máquinas de la misma capacidad pero más antiguas.</li>
           <li><strong>Combustible</strong> — algunos arriendos lo incluyen, otros lo cobran aparte (~12–18 L/hora de diésel a precio surtidor).</li>
           <li><strong>Ubicación</strong> — la Región Metropolitana suele cobrar 10–20% más que la Región del Maule por el mismo equipo, por mayor demanda y costo operacional.</li>
@@ -116,7 +116,7 @@ export const RECURSOS: RecursoSEO[] = [
         h2: 'Cómo cotizar bien',
         html: `<p>Para que la cotización sea precisa y comparable entre proveedores, prepara estos datos antes de pedirla:</p>
         <ul>
-          <li><strong>Ubicación de la obra</strong> (comuna y dirección aproximada) para calcular flete.</li>
+          <li><strong>Ubicación de la obra</strong> (comuna y dirección aproximada) para coordinar el traslado de la máquina.</li>
           <li><strong>Fechas estimadas</strong> y plazo total (afecta la tarifa unitaria).</li>
           <li><strong>Si requieres operador</strong> o aportas el tuyo (con licencia y curso al día).</li>
           <li><strong>Tipo de trabajo</strong> (excavación, carga, demolición) para confirmar que la máquina aplica.</li>
@@ -136,7 +136,7 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         q: '¿Cobran traslado al sitio de obra?',
-        a: 'Sí, casi siempre. La retroexcavadora se mueve en camión cama-baja y el flete depende de la distancia. Para obras dentro del Maule (Curicó, Molina, Teno, Talca) JURMAQ ofrece tarifa preferente; fuera del Maule se cotiza por kilómetro.',
+        a: 'La retroexcavadora se mueve en camión cama-baja. Dentro del Maule (Curicó, Molina, Teno, Talca y comunas vecinas) coordinamos el traslado contigo con tarifa preferente por cercanía, sin sumarte un cargo de flete aparte en la cotización. Para obras fuera del Maule lo conversamos caso a caso por WhatsApp.',
       },
       {
         q: '¿Qué pasa si trabajo más horas que las pactadas?',
@@ -156,7 +156,7 @@ export const RECURSOS: RecursoSEO[] = [
       'Valor hora retroexcavadora en Chile 2026: $25.000–$35.000 con operador, $18.000–$25.000 sin operador. Qué incluye la hora-máquina, mínimo de horas y cómo se cobra. Maule.',
     h1: 'Valor Hora de una Retroexcavadora en Chile (2026)',
     resumen:
-      'El valor hora de una retroexcavadora en Chile en 2026 va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador. La mayoría de los arriendos exige un mínimo de 4 horas, y el traslado al sitio se cobra aparte.',
+      'El valor hora de una retroexcavadora en Chile en 2026 va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador. La mayoría de los arriendos exige un mínimo de 4 horas, y el traslado al sitio se coordina según la ubicación de la obra.',
     categoria: 'arriendo',
     keywordsObjetivo: [
       'valor hora retroexcavadora',
@@ -179,7 +179,7 @@ export const RECURSOS: RecursoSEO[] = [
             <tr><td style="padding:8px;border:1px solid #e5e7eb"><strong>Hora extra (sobre jornada)</strong></td><td style="padding:8px;border:1px solid #e5e7eb">$20.000 – $30.000</td></tr>
           </tbody>
         </table>
-        <p style="margin-top:12px"><em>Valores netos referenciales, no incluyen IVA ni traslado. El valor real de JURMAQ se cotiza según la obra, ubicación y duración.</em></p>`,
+        <p style="margin-top:12px"><em>Valores netos referenciales, no incluyen IVA. El valor real de JURMAQ se cotiza según la obra, ubicación y duración, con el traslado coordinado contigo.</em></p>`,
       },
       {
         h2: 'Qué incluye la hora-máquina',
@@ -189,7 +189,7 @@ export const RECURSOS: RecursoSEO[] = [
           <li><strong>El operador certificado</strong>, con licencia Clase D vigente y curso de operación de equipos.</li>
           <li><strong>Seguro de responsabilidad civil</strong> ante daños a terceros.</li>
         </ul>
-        <p>No suele incluir el <strong>traslado</strong> (camión cama-baja, se cobra por distancia ida y vuelta) ni los <strong>peajes</strong>. Por eso un arriendo de pocas horas puede salir caro en proporción: el flete se reparte entre menos horas.</p>`,
+        <p>El <strong>traslado</strong> de la máquina (camión cama-baja) se coordina aparte según la ubicación de tu obra. Por eso un arriendo de pocas horas puede salir caro en proporción: el costo de llevar la máquina pesa más cuando hay menos horas de uso.</p>`,
       },
       {
         h2: 'Mínimo de horas y cuándo conviene pagar por hora',
@@ -203,13 +203,13 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         h2: 'Cómo pedir el valor hora real',
-        html: `<p>Para recibir un valor hora exacto y sin sorpresas, ten a mano la comuna de la obra (para el flete), las fechas y si necesitas operador. En JURMAQ cotizamos el arriendo de retroexcavadora por hora, día o semana en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule, con respuesta en menos de 2 horas hábiles por WhatsApp.</p>`,
+        html: `<p>Para recibir un valor hora exacto y sin sorpresas, ten a mano la comuna de la obra (para coordinar el traslado), las fechas y si necesitas operador. En JURMAQ cotizamos el arriendo de retroexcavadora por hora, día o semana en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule, con respuesta en menos de 2 horas hábiles por WhatsApp.</p>`,
       },
     ],
     faq: [
       {
         q: '¿Cuál es el valor hora de una retroexcavadora en 2026?',
-        a: 'En 2026, en Chile central, el valor hora de una retroexcavadora va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador (valores netos). La mayoría de los arriendos exige un mínimo de 4 horas y el traslado se cobra aparte.',
+        a: 'En 2026, en Chile central, el valor hora de una retroexcavadora va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador (valores netos). La mayoría de los arriendos exige un mínimo de 4 horas y el traslado se coordina según la ubicación de la obra.',
       },
       {
         q: '¿Hay un mínimo de horas para arrendar?',
@@ -217,7 +217,7 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         q: '¿El valor hora incluye el traslado?',
-        a: 'No. El traslado de la retroexcavadora se hace en camión cama-baja y se cobra aparte según la distancia ida y vuelta. Para obras dentro del Maule (Curicó, Molina, Teno, Talca) JURMAQ ofrece tarifa de traslado preferente por cercanía.',
+        a: 'El traslado de la retroexcavadora se hace en camión cama-baja y lo coordinamos contigo aparte del valor hora. Dentro del Maule (Curicó, Molina, Teno, Talca y comunas vecinas) tenemos tarifa preferente por cercanía, así que no te llega un cargo de flete que te sorprenda.',
       },
     ],
     relacionados: [
@@ -998,7 +998,7 @@ export const RECURSOS: RecursoSEO[] = [
           <div><dt style="font-weight:600;color:#0c1b3a">Licencia Clase D</dt><dd style="margin-top:2px">Licencia de conducir para maquinaria autopropulsada (retroexcavadora, cargadores, grúas). Emitida por Tránsito Municipal previo curso.</dd></div>
           <div><dt style="font-weight:600;color:#0c1b3a">SGSST</dt><dd style="margin-top:2px">Sistema de Gestión de Seguridad y Salud en el Trabajo. Obligatorio para empresas con riesgo. Define procedimientos para operación de maquinaria.</dd></div>
           <div><dt style="font-weight:600;color:#0c1b3a">Responsabilidad Civil (RC)</dt><dd style="margin-top:2px">Póliza que cubre daños a terceros causados por la operación de la máquina. Estándar en arriendo profesional.</dd></div>
-          <div><dt style="font-weight:600;color:#0c1b3a">Cama-baja</dt><dd style="margin-top:2px">Camión con plataforma baja para transportar maquinaria pesada (retroexcavadora, excavadora). Cobra flete por km recorrido.</dd></div>
+          <div><dt style="font-weight:600;color:#0c1b3a">Cama-baja</dt><dd style="margin-top:2px">Camión con plataforma baja para transportar maquinaria pesada (retroexcavadora, excavadora) hasta el sitio de obra.</dd></div>
         </dl>`,
       },
     ],

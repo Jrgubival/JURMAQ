@@ -456,8 +456,8 @@ export default async function MaquinariaCiudadLanding({
               </p>
               <p className="text-base text-[#5A5A57] leading-relaxed">
                 Desde {c.nombre} también llegamos a{' '}
-                <strong>{c.comunasVecinas.join(', ')}</strong> con tarifa de flete cercana.
-                Si tu obra está en una comuna intermedia, cotiza por WhatsApp y ajustamos el valor real.
+                <strong>{c.comunasVecinas.join(', ')}</strong> y comunas vecinas. Coordinamos
+                el traslado de la máquina contigo al confirmar el arriendo.
               </p>
             </div>
 
@@ -520,8 +520,8 @@ export default async function MaquinariaCiudadLanding({
                 <p className="text-xl font-semibold mb-1">A cotizar</p>
               )}
               <p className="text-xs text-gray-400 mb-5">
-                Valor de referencia sin traslado. El traslado a {c.nombre} se calcula
-                aparte ({dist.km} km).
+                Valor de referencia por uso (neto). El traslado de la máquina a {c.nombre} lo
+                coordinamos contigo al confirmar — sin cargos sorpresa.
               </p>
               <a
                 href={ctaWa}
@@ -579,7 +579,7 @@ export default async function MaquinariaCiudadLanding({
       <CrossLinksGrid
         eyebrow="Cobertura · Maule"
         title={`${m.nombre} también en otras ciudades`}
-        subtitle={`Si tu obra no está en ${c.nombre}, despachamos a estas ciudades del Maule con tarifa de flete actualizada.`}
+        subtitle={`Si tu obra no está en ${c.nombre}, despachamos a estas ciudades del Maule y coordinamos el traslado contigo.`}
         items={otrasCiudades.map((oc) => ({
           label: `${m.nombre} en ${oc.nombre}`,
           href: `${maquinariaHref(m)}/en/${oc.slug}`,

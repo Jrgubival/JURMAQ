@@ -7,8 +7,6 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { precioPublicoDesde, precioJornadaEstimada } from "@/lib/pricing-arriendo";
 import MaquinariaSort from "@/components/public/MaquinariaSort";
 import { maquinariaHref } from "@/lib/maquinaria-slug";
-import FleteCalculator from "@/components/public/FleteCalculator";
-import FleteCardSyncer from "@/components/public/FleteCardSyncer";
 import { LEGAL_INFO } from "@jurmaq/shared/seo";
 import type { Database } from "@jurmaq/shared/db-types";
 
@@ -283,10 +281,6 @@ export default async function MaquinariasPage({
       {/* Catalog */}
       <section className="pt-2 pb-12 lg:pb-20 bg-gray-50" id="catalogo">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Selector de ciudad para flete aprox + sync con cards */}
-          <FleteCalculator />
-          <FleteCardSyncer />
-
           {/* Filters */}
           <MaquinariaFilters
             types={types}
@@ -373,14 +367,11 @@ export default async function MaquinariasPage({
                       {machine.descripcion || "Consulta por especificaciones técnicas."}
                     </p>
 
-                    {/* Pricing — neto (sin IVA) + flete aproximado */}
+                    {/* Pricing — neto (sin IVA). El traslado se coordina aparte
+                        al confirmar el arriendo, por eso ya no mostramos un cargo
+                        de flete en la card (decisión de producto: bajar fricción). */}
                     {(() => {
                       const desde = precioPublicoDesde(machine);
-                      // Flete: el span data-flete-card lo rellena FleteCardSyncer
-                      // cuando el usuario cotiza desde /cotizar-arriendo y guarda
-                      // el resultado en localStorage. Hasta entonces mostramos
-                      // un placeholder neutro sin monto (decisión de producto:
-                      // no anclar al cliente con un número arbitrario).
                       return (
                         <div className="mb-5 border-t border-b border-[#EAEAEA] py-4">
                           {desde !== null ? (
@@ -399,12 +390,6 @@ export default async function MaquinariasPage({
                               </div>
                               <p className="text-[11px] text-[#787774] leading-tight">
                                 Valor neto · sin IVA · {machine.unidad_tarifa === 'hora' ? `${Math.max(Number(machine.minimo_unidades) || 1, 1)} hrs mín.` : 'jornada base'}
-                              </p>
-                              <p className="text-[11px] text-[#787774] leading-tight mt-1">
-                                Flete:{' '}
-                                <span data-flete-card className="italic">
-                                  según destino · cotiza tu flete
-                                </span>
                               </p>
                             </>
                           ) : (

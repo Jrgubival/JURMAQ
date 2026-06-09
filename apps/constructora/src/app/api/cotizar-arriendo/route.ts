@@ -41,7 +41,12 @@ async function loadMaquinaria(id: number): Promise<MaquinariaPricing | null> {
     tarifa_neta: Number(data.tarifa_neta),
     unidad_tarifa: data.unidad_tarifa as 'hora' | 'dia',
     minimo_unidades: Number(data.minimo_unidades),
-    requiere_traslado: Boolean(data.requiere_traslado ?? true),
+    // [flete-removido 2026-06] El traslado salió de la cotización pública para
+    // bajar la fricción: el cliente ya no ve un cargo de flete en el wizard
+    // online. Se coordina aparte al confirmar el arriendo. Forzamos false acá
+    // para que `calcularCotizacion` NO sume traslado_combustible/traslado_carga
+    // aunque el cliente envíe km. (El admin cotiza traslado por su propia ruta.)
+    requiere_traslado: false,
   };
 }
 
