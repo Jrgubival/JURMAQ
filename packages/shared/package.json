@@ -26,6 +26,7 @@
     "./notifications/admin": "./src/notifications/admin.ts",
     "./sms": "./src/sms/index.ts",
     "./seo": "./src/seo/index.ts",
+    "./seo/operador": "./src/seo/operador.ts",
     "./seo/prerender-rules": "./src/seo/prerender-rules.ts",
     "./seo/maquinaria-descripciones": "./src/seo/maquinaria-descripciones.ts",
     "./seo/jsonld": "./src/seo/jsonld.ts",

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { supabasePublic } from '@jurmaq/shared/supabase';
-import { CIUDADES, TIPOS_MAQUINA, HQ, DISTANCIAS_CONSTRUCTORA } from '@jurmaq/shared/seo';
+import { CIUDADES, TIPOS_MAQUINA, HQ, DISTANCIAS_CONSTRUCTORA, operaElCliente } from '@jurmaq/shared/seo';
 import { formatCLP } from '@jurmaq/shared/format';
 import { precioPublicoDesde } from '@/lib/pricing-arriendo';
 import { whatsappCtaCiudadTipo } from '@jurmaq/shared/whatsapp';
@@ -70,7 +70,7 @@ export async function generateMetadata({
       `arriendo ${t.nombrePlural.toLowerCase()} ${c.nombre}`,
       `${t.nombre.toLowerCase()} en ${c.nombre}`,
       `${t.nombre.toLowerCase()} ${c.region}`,
-      `arriendo ${t.nombre.toLowerCase()} con operador ${c.nombre}`,
+      ...(t.operadorIncluido ? [`arriendo ${t.nombre.toLowerCase()} con operador ${c.nombre}`] : []),
       `arriendo maquinaria ${c.nombre}`,
       ...c.comunasVecinas.map((cv) => `arriendo ${t.nombre.toLowerCase()} ${cv}`),
       'JURMAQ',
@@ -414,7 +414,14 @@ export default async function CiudadTipoLanding({
               ¿Necesitas {t.nombre.toLowerCase()} en {c.nombre} esta semana?
             </h2>
             <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-              Despacho en {DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} desde Curicó. Operador certificado disponible.
+              Despacho en {DISTANCIAS_CONSTRUCTORA[c.slug].tiempo} desde Curicó.{' '}
+              {t.operadorIncluido
+                ? t.tipoDb === 'camion'
+                  ? 'Conductor incluido en la tarifa.'
+                  : 'Operador incluido en la tarifa.'
+                : operaElCliente(t.tipoDb)
+                  ? 'Equipo listo para operar por tu equipo.'
+                  : 'Equipo con mantención al día.'}{' '}
               Cotiza ahora y nos contactamos en menos de 1 hora hábil.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

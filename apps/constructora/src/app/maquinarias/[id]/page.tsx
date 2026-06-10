@@ -15,6 +15,10 @@ import RelatedMachines from "@/components/public/RelatedMachines";
 import ViewItemTracker from "@jurmaq/shared/ui/ViewItemTracker";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import { getMaquinariaDescripcion } from "@jurmaq/shared/seo/maquinaria-descripciones";
+import {
+  tieneOperadorIncluido,
+  TIPOS_DB_OPERA_CLIENTE as TIPOS_OPERA_CLIENTE,
+} from "@jurmaq/shared/seo/operador";
 
 interface Maquinaria {
   id: number;
@@ -63,6 +67,21 @@ function getTipoLabel(tipo: string): string {
     otro: "Otro",
   };
   return labels[tipo] || tipo;
+}
+
+/**
+ * Frase verídica de operador según tipo (para metadata/OG).
+ * Movimiento de tierra y camión tolva van SIEMPRE con operador/conductor
+ * incluido en la tarifa; plataformas de elevación las opera el cliente.
+ */
+function fraseOperador(tipo: string): string {
+  if (tieneOperadorIncluido(tipo)) {
+    return tipo === "camion" ? " con conductor incluido" : " con operador incluido";
+  }
+  if (TIPOS_OPERA_CLIENTE.has(tipo)) {
+    return " con operación por el cliente (curso vigente)";
+  }
+  return "";
 }
 
 /**
@@ -142,10 +161,11 @@ export async function generateMetadata({
         : `Valor día desde ${formatCLP(desdePrecio)}`)
     : "Consulta el valor";
   const tipoLbl = getTipoLabel(machine.tipo);
+  const operadorTxt = fraseOperador(machine.tipo);
 
   return {
     title: `Arriendo ${machine.nombre} · ${valorText} · Curicó y Maule`,
-    description: `${valorText} (neto). Arriendo de ${machine.nombre} (${tipoLbl}) con o sin operador en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule. ${machine.descripcion || "Equipo en operación, mantención al día."} Cotiza por WhatsApp y recibe respuesta el mismo día.`,
+    description: `${valorText} (neto). Arriendo de ${machine.nombre} (${tipoLbl})${operadorTxt} en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule. ${machine.descripcion || "Equipo en operación, mantención al día."} Cotiza por WhatsApp y recibe respuesta el mismo día.`,
     keywords: [
       `arriendo ${machine.nombre}`,
       `arriendo ${machine.nombre} Curicó`,
@@ -157,8 +177,11 @@ export async function generateMetadata({
       `arriendo ${tipoLbl} Teno`,
       `arriendo ${tipoLbl} Talca`,
       `arriendo ${tipoLbl} Maule`,
-      `${tipoLbl} con operador Curicó`,
-      `${tipoLbl} sin operador Curicó`,
+      // "con operador" solo para tipos donde el operador va incluido en la
+      // tarifa (100% verídico). Nada de "sin operador" para esos tipos.
+      ...(tieneOperadorIncluido(machine.tipo)
+        ? [`${tipoLbl} con operador Curicó`, `${tipoLbl} con operador Maule`]
+        : []),
       `${machine.nombre} precio arriendo`,
       `precio ${tipoLbl} día Curicó`,
       // Intención de precio/hora — capturada por el título "Valor hora desde…".
@@ -174,7 +197,7 @@ export async function generateMetadata({
     ],
     openGraph: {
       title: `Arriendo ${machine.nombre} en Curicó y Maule · ${priceText} · JURMAQ`,
-      description: `${machine.nombre} (${tipoLbl}) disponible para arriendo con o sin operador en Curicó, Molina, Teno, Talca y Región del Maule. ${priceText}.`,
+      description: `${machine.nombre} (${tipoLbl}) disponible para arriendo${operadorTxt} en Curicó, Molina, Teno, Talca y Región del Maule. ${priceText}.`,
       url: `https://jurmaq.cl/maquinarias/${slugify(machine.nombre)}-${machine.id}`,
       siteName: "JURMAQ",
       locale: "es_CL",
@@ -247,7 +270,7 @@ export default async function MaquinariaDetailPage({
         "@type": "Offer",
         priceCurrency: "CLP",
         price: desdePrecio,
-        name: "Arriendo por día (desde, neto)",
+        name: `Arriendo por ${machine.unidad_tarifa === "hora" ? "hora" : "día"}${tieneOperadorIncluido(machine.tipo) ? (machine.tipo === "camion" ? " con conductor incluido" : " con operador incluido") : ""} (desde, neto)`,
         availability:
           machine.estado === "disponible"
             ? "https://schema.org/InStock"
@@ -481,6 +504,32 @@ export default async function MaquinariaDetailPage({
                   </div>
                 </div>
               )}
+
+              {/* Operador — indicador verídico por tipo, junto a la tarifa.
+                  Movimiento de tierra y camión tolva: operador/conductor incluido.
+                  Plataformas de elevación: las opera el equipo del cliente. */}
+              {(() => {
+                const badge = tieneOperadorIncluido(machine.tipo)
+                  ? {
+                      titulo: machine.tipo === "camion" ? "Conductor incluido" : "Operador incluido",
+                      detalle: "en la tarifa — no pagas extra",
+                    }
+                  : TIPOS_OPERA_CLIENTE.has(machine.tipo)
+                    ? { titulo: "La opera tu equipo", detalle: "(curso de operación vigente)" }
+                    : null;
+                if (!badge) return null;
+                return (
+                  <div className="flex items-center gap-2.5 bg-white rounded-2xl border border-[#EAEAEA] px-5 py-3.5">
+                    <svg className="w-5 h-5 text-[#2F7F4E] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p className="text-sm text-navy-950 leading-snug">
+                      <span className="font-bold">{badge.titulo}</span>{" "}
+                      <span className="text-[#6F6F6C]">{badge.detalle}</span>
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Mejora-precio para obras completas + multi-arriendo (diferenciador único) */}
               <ObraCompletaCTA source={`maquinaria_${machine.id}_${machine.tipo}`} />

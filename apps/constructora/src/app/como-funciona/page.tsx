@@ -34,7 +34,7 @@ const STEPS = [
   {
     n: "03",
     title: "Recibes en obra",
-    desc: "Coordinamos traslado a Curicó, Molina, Teno, Talca o donde estés. Operador certificado opcional.",
+    desc: "Coordinamos traslado a Curicó, Molina, Teno, Talca o donde estés. Operador certificado incluido en maquinaria de movimiento de tierra.",
     detail: ["Despacho propio", "Entrega coordinada por GPS", "Mantención al día"],
   },
   {
@@ -56,7 +56,7 @@ const FAQ = [
   },
   {
     q: "¿Incluyen operador?",
-    a: "Sí, opcional. Puedes arrendar con o sin operador. Si pides operador, viene certificado y con todos los seguros vigentes.",
+    a: "Depende del equipo. La retroexcavadora, la miniexcavadora, los minicargadores y el camión tolva incluyen operador certificado en la tarifa: no pagas extra. Las plataformas elevadoras y el brazo articulado se entregan listos para que los opere tu equipo, con curso de operación vigente.",
   },
   {
     q: "¿Qué pasa si la máquina se daña en obra?",

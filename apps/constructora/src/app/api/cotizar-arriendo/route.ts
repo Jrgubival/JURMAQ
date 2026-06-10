@@ -27,10 +27,13 @@ import {
   type TarifasTraslado,
 } from '@/lib/pricing-arriendo';
 
-async function loadMaquinaria(id: number): Promise<MaquinariaPricing | null> {
+// `tipo` viaja junto al pricing para que el email de confirmación pueda decir
+// "operador/conductor incluido" solo en los tipos donde es verdad (helper
+// compartido `tieneOperadorIncluido`).
+async function loadMaquinaria(id: number): Promise<(MaquinariaPricing & { tipo: string | null }) | null> {
   const { data } = await supabaseAdmin
     .from('maquinarias')
-    .select('id, nombre, tarifa_neta, unidad_tarifa, minimo_unidades, requiere_traslado, estado')
+    .select('id, nombre, tipo, tarifa_neta, unidad_tarifa, minimo_unidades, requiere_traslado, estado')
     .eq('id', id)
     .maybeSingle();
   if (!data || data.estado !== 'disponible') return null;
@@ -38,6 +41,7 @@ async function loadMaquinaria(id: number): Promise<MaquinariaPricing | null> {
   return {
     id: data.id,
     nombre: data.nombre,
+    tipo: data.tipo ?? null,
     tarifa_neta: Number(data.tarifa_neta),
     unidad_tarifa: data.unidad_tarifa as 'hora' | 'dia',
     minimo_unidades: Number(data.minimo_unidades),
@@ -269,11 +273,11 @@ export async function POST(request: NextRequest) {
         fecha: fechaServicio,
       });
     } else if (!disponibilidad.disponible) {
+      // No exponer el detalle de conflictos (números de cotización/contrato de
+      // otros clientes y motivos de bloqueo internos) en un endpoint público.
+      // La UI no consume este campo; con el error basta.
       return NextResponse.json(
-        {
-          error: 'Maquinaria no disponible en la fecha solicitada',
-          conflictos: disponibilidad.conflictos,
-        },
+        { error: 'Maquinaria no disponible en la fecha solicitada' },
         { status: 409 },
       );
     }
@@ -348,6 +352,7 @@ export async function POST(request: NextRequest) {
       cliente_nombre,
       cliente_email,
       maquinaria_nombre: maquinaria.nombre,
+      maquinaria_tipo: maquinaria.tipo,
       fecha_servicio: fechaServicio,
       ubicacion_servicio: ubicacion,
       unidades_solicitadas: unidades,

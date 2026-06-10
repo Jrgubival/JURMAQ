@@ -4,6 +4,7 @@ import { escapeHtml } from "../utils";
 import { maskEmail } from "../../logging";
 import { formatCLP } from "../../format";
 import { HQ } from "../../seo";
+import { tieneOperadorIncluido } from "../../seo/operador";
 import { env } from "@jurmaq/shared/env";
 
 const resend = new Resend(env.RESEND_API_KEY);
@@ -13,6 +14,10 @@ export interface CotizacionArriendoEmailData {
   cliente_nombre: string;
   cliente_email: string;
   maquinaria_nombre: string;
+  /** tipoDb de la máquina — para mostrar "operador/conductor incluido" solo
+   *  en los tipos donde es verdad (ver tieneOperadorIncluido). Opcional para
+   *  no romper llamadas existentes. */
+  maquinaria_tipo?: string | null;
   fecha_servicio: string; // ISO YYYY-MM-DD
   ubicacion_servicio: string;
   unidades_solicitadas: number;
@@ -80,7 +85,11 @@ function buildEmailHtml(data: CotizacionArriendoEmailData): string {
         <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:20px;">
           <tr>
             <td style="padding:8px 0;color:#6b7280;font-size:13px;border-bottom:1px solid #f3f4f6;">Máquina</td>
-            <td style="padding:8px 0;color:#1f2937;font-size:13px;text-align:right;font-weight:600;border-bottom:1px solid #f3f4f6;">${escapeHtml(data.maquinaria_nombre)}</td>
+            <td style="padding:8px 0;color:#1f2937;font-size:13px;text-align:right;font-weight:600;border-bottom:1px solid #f3f4f6;">${escapeHtml(data.maquinaria_nombre)}${
+              tieneOperadorIncluido(data.maquinaria_tipo)
+                ? `<br><span style="font-size:12px;font-weight:600;color:#346538;">${data.maquinaria_tipo === "camion" ? "Conductor incluido en la tarifa" : "Operador incluido en la tarifa"}</span>`
+                : ""
+            }</td>
           </tr>
           <tr>
             <td style="padding:8px 0;color:#6b7280;font-size:13px;border-bottom:1px solid #f3f4f6;">Fecha del servicio</td>

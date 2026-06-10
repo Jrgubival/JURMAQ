@@ -76,7 +76,7 @@ export const RECURSOS: RecursoSEO[] = [
             <tr><td style="padding:8px;border:1px solid #e5e7eb"><strong>Por mes</strong></td><td style="padding:8px;border:1px solid #e5e7eb">$3.200.000 – $5.500.000</td><td style="padding:8px;border:1px solid #e5e7eb">$4.500.000 – $7.500.000</td></tr>
           </tbody>
         </table>
-        <p style="margin-top:12px"><em>Valores netos referenciales (no incluyen IVA). Pueden variar según marca, año y disponibilidad. Los valores reales de JURMAQ se cotizan según obra específica.</em></p>`,
+        <p style="margin-top:12px"><em>Valores netos referenciales del mercado general (no incluyen IVA). Pueden variar según marca, año y disponibilidad. Los valores reales de JURMAQ se cotizan según obra específica y siempre incluyen operador en la tarifa.</em></p>`,
       },
       {
         h2: 'Factores que afectan el precio',
@@ -118,7 +118,7 @@ export const RECURSOS: RecursoSEO[] = [
         <ul>
           <li><strong>Ubicación de la obra</strong> (comuna y dirección aproximada) para coordinar el traslado de la máquina.</li>
           <li><strong>Fechas estimadas</strong> y plazo total (afecta la tarifa unitaria).</li>
-          <li><strong>Si requieres operador</strong> o aportas el tuyo (con licencia y curso al día).</li>
+          <li><strong>Si el proveedor incluye operador</strong> o te exige aportar el tuyo (con licencia y curso al día). En JURMAQ la retroexcavadora va siempre con operador incluido en la tarifa.</li>
           <li><strong>Tipo de trabajo</strong> (excavación, carga, demolición) para confirmar que la máquina aplica.</li>
           <li><strong>Forma de pago</strong> (transferencia, tarjeta o factura a 30 días para empresas).</li>
         </ul>
@@ -132,7 +132,7 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         q: '¿Es más barato sin operador?',
-        a: 'Sí, entre 25% y 35% más barato si aportas operador propio. Pero el operador debe tener licencia Clase D vigente y curso Sernageomin de operación de equipos. Si no, el contrato exige operador del arrendador.',
+        a: 'En el mercado general, arrendar sin operador puede salir entre 25% y 35% más barato, pero exige aportar un operador propio con licencia Clase D vigente y curso Sernageomin de operación de equipos. En JURMAQ la retroexcavadora se arrienda siempre con operador certificado incluido en la tarifa — no existe modalidad sin operador ni cobro aparte por él.',
       },
       {
         q: '¿Cobran traslado al sitio de obra?',
@@ -153,10 +153,10 @@ export const RECURSOS: RecursoSEO[] = [
     slug: 'valor-hora-retroexcavadora',
     titulo: 'Valor Hora Retroexcavadora 2026: $25.000–$35.000 con Operador',
     descripcionMeta:
-      'Valor hora retroexcavadora en Chile 2026: $25.000–$35.000 con operador, $18.000–$25.000 sin operador. Qué incluye la hora-máquina, mínimo de horas y cómo se cobra. Maule.',
+      'Valor hora retroexcavadora en Chile 2026: $25.000–$35.000 con operador (mercado). En JURMAQ el operador va siempre incluido en la tarifa. Guía Maule.',
     h1: 'Valor Hora de una Retroexcavadora en Chile (2026)',
     resumen:
-      'El valor hora de una retroexcavadora en Chile en 2026 va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador. La mayoría de los arriendos exige un mínimo de 4 horas, y el traslado al sitio se coordina según la ubicación de la obra.',
+      'El valor hora de una retroexcavadora en Chile en 2026 va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador (mercado general). En JURMAQ la retroexcavadora se arrienda siempre con operador certificado incluido en la tarifa. La mayoría de los arriendos exige un mínimo de 4 horas, y el traslado al sitio se coordina según la ubicación de la obra.',
     categoria: 'arriendo',
     keywordsObjetivo: [
       'valor hora retroexcavadora',
@@ -179,7 +179,7 @@ export const RECURSOS: RecursoSEO[] = [
             <tr><td style="padding:8px;border:1px solid #e5e7eb"><strong>Hora extra (sobre jornada)</strong></td><td style="padding:8px;border:1px solid #e5e7eb">$20.000 – $30.000</td></tr>
           </tbody>
         </table>
-        <p style="margin-top:12px"><em>Valores netos referenciales, no incluyen IVA. El valor real de JURMAQ se cotiza según la obra, ubicación y duración, con el traslado coordinado contigo.</em></p>`,
+        <p style="margin-top:12px"><em>Valores netos referenciales del mercado general, no incluyen IVA. El valor real de JURMAQ se cotiza según la obra, ubicación y duración, siempre con operador incluido en la tarifa y el traslado coordinado contigo.</em></p>`,
       },
       {
         h2: 'Qué incluye la hora-máquina',
@@ -203,13 +203,13 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         h2: 'Cómo pedir el valor hora real',
-        html: `<p>Para recibir un valor hora exacto y sin sorpresas, ten a mano la comuna de la obra (para coordinar el traslado), las fechas y si necesitas operador. En JURMAQ cotizamos el arriendo de retroexcavadora por hora, día o semana en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule, con respuesta en menos de 2 horas hábiles por WhatsApp.</p>`,
+        html: `<p>Para recibir un valor hora exacto y sin sorpresas, ten a mano la comuna de la obra (para coordinar el traslado), las fechas y el tipo de trabajo. En JURMAQ cotizamos el arriendo de retroexcavadora por hora, día o semana en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule, con operador incluido en la tarifa y respuesta en menos de 2 horas hábiles por WhatsApp.</p>`,
       },
     ],
     faq: [
       {
         q: '¿Cuál es el valor hora de una retroexcavadora en 2026?',
-        a: 'En 2026, en Chile central, el valor hora de una retroexcavadora va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador (valores netos). La mayoría de los arriendos exige un mínimo de 4 horas y el traslado se coordina según la ubicación de la obra.',
+        a: 'En 2026, en Chile central, el valor hora de una retroexcavadora va de $25.000 a $35.000 con operador y de $18.000 a $25.000 sin operador (valores netos, mercado general). En JURMAQ el valor hora siempre incluye operador certificado. La mayoría de los arriendos exige un mínimo de 4 horas y el traslado se coordina según la ubicación de la obra.',
       },
       {
         q: '¿Hay un mínimo de horas para arrendar?',
@@ -230,10 +230,10 @@ export const RECURSOS: RecursoSEO[] = [
     slug: 'arriendo-miniexcavadora-xcmg-xe35u',
     titulo: 'Arriendo Miniexcavadora XCMG XE35U en Curicó y Maule',
     descripcionMeta:
-      'Arriendo de miniexcavadora XCMG XE35U (3,5 ton) en Curicó, Molina, Talca y la Región del Maule. Excava 3,1 m, entra por pasajes angostos. Con o sin operador. Cotiza por WhatsApp.',
+      'Arriendo de miniexcavadora XCMG XE35U (3,5 ton) en Curicó, Molina, Talca y el Maule. Excava 3,1 m. Operador incluido en la tarifa. Cotiza por WhatsApp.',
     h1: 'Arriendo de Miniexcavadora XCMG XE35U en la Región del Maule',
     resumen:
-      'La miniexcavadora XCMG XE35U es un equipo de 3,5 toneladas que excava hasta ~3,1 m de profundidad y entra por pasajes angostos donde una retroexcavadora no cabe. JURMAQ la arrienda con o sin operador en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule.',
+      'La miniexcavadora XCMG XE35U es un equipo de 3,5 toneladas que excava hasta ~3,1 m de profundidad y entra por pasajes angostos donde una retroexcavadora no cabe. JURMAQ la arrienda con operador incluido en la tarifa en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule.',
     categoria: 'maquinaria',
     keywordsObjetivo: [
       'arriendo excavadora xcmg',
@@ -276,8 +276,8 @@ export const RECURSOS: RecursoSEO[] = [
         <p>Si tu obra es grande y con espacio, compara con la retroexcavadora en nuestra guía <a href="/recursos/diferencia-retroexcavadora-miniexcavadora">retroexcavadora vs miniexcavadora</a>.</p>`,
       },
       {
-        h2: 'Arriendo en el Maule: con o sin operador',
-        html: `<p>JURMAQ arrienda la miniexcavadora XCMG XE35U <strong>con o sin operador</strong>. Con operador incluimos personal certificado, seguro de responsabilidad civil y la máquina con mantención al día. Sin operador, debes aportar un operador con experiencia comprobable.</p>
+        h2: 'Arriendo en el Maule: operador incluido en la tarifa',
+        html: `<p>JURMAQ arrienda la miniexcavadora XCMG XE35U <strong>con operador incluido en la tarifa</strong>: personal certificado, seguro de responsabilidad civil y la máquina con mantención al día — no pagas extra por el operador.</p>
         <p>Despachamos desde Curicó a toda la Región del Maule — Molina, Teno, Romeral, Sagrada Familia, Talca, Linares y comunas vecinas — con traslado en camión y tarifa preferente por cercanía. Mira la flota y cotiza en la página de <a href="/arriendo/miniexcavadora">arriendo de miniexcavadoras</a>.</p>`,
       },
     ],
@@ -292,7 +292,7 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         q: '¿Dónde puedo arrendar la XCMG XE35U?',
-        a: 'JURMAQ arrienda la miniexcavadora XCMG XE35U en Curicó, Molina, Teno, Romeral, Sagrada Familia, Talca, Linares y toda la Región del Maule, con o sin operador y respuesta de cotización en menos de 2 horas por WhatsApp.',
+        a: 'JURMAQ arrienda la miniexcavadora XCMG XE35U en Curicó, Molina, Teno, Romeral, Sagrada Familia, Talca, Linares y toda la Región del Maule, con operador incluido en la tarifa y respuesta de cotización en menos de 2 horas por WhatsApp.',
       },
     ],
     relacionados: [
@@ -599,6 +599,11 @@ export const RECURSOS: RecursoSEO[] = [
           <li>Eres una empresa con SGSST (sistema de gestión de SST) que cubre operador propio.</li>
         </ul>`,
       },
+      {
+        h2: '¿Cómo funciona en JURMAQ?',
+        html: `<p>Lo anterior describe el mercado general. En JURMAQ el modelo es simple: la maquinaria de movimiento de tierra —retroexcavadora, miniexcavadora y minicargador— y el camión tolva se arriendan <strong>siempre con operador incluido en la tarifa</strong>. El operador certificado, su EPP y sus leyes sociales ya están dentro del precio publicado: no pagas extra ni existe modalidad sin operador para esas máquinas.</p>
+        <p>Las plataformas de elevación (brazo articulado, plataforma tijera y alzahombre) se entregan listas para operar por tu equipo, con curso de operación vigente. Cotiza por WhatsApp con respuesta en menos de 2 horas hábiles.</p>`,
+      },
     ],
     faq: [
       {
@@ -607,7 +612,7 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         q: '¿Cuánto más cuesta arrendar con operador?',
-        a: 'Entre $60.000 y $120.000 adicionales por día (8 horas), dependiendo del tipo de máquina y experiencia del operador. En arriendos largos (semanas o meses) el cargo unitario suele bajar.',
+        a: 'En el mercado general, entre $60.000 y $120.000 adicionales por día (8 horas), dependiendo del tipo de máquina y experiencia del operador. En JURMAQ no aplica: retroexcavadora, miniexcavadora, minicargador y camión tolva van siempre con operador/conductor incluido en la tarifa, sin cobro aparte.',
       },
       {
         q: '¿El seguro cubre al operador del cliente?',
@@ -814,7 +819,7 @@ export const RECURSOS: RecursoSEO[] = [
     faq: [
       {
         q: '¿Qué viene incluido en el arriendo del minicargador?',
-        a: 'Como base viene con balde estándar y operador (si la modalidad es con operador). Implementos adicionales (auger, horquillas, escoba) se cotizan aparte porque varían según necesidad de la obra.',
+        a: 'Como base viene con balde estándar y operador certificado incluido en la tarifa. Implementos adicionales (auger, horquillas, escoba) se cotizan aparte porque varían según necesidad de la obra.',
       },
       {
         q: '¿Cuánta carga levanta un Bobcat S650?',
@@ -859,7 +864,7 @@ export const RECURSOS: RecursoSEO[] = [
         <ul>
           <li><strong>Responsabilidad civil hacia terceros</strong> — cubre daños materiales y lesiones a personas ajenas a la obra causadas por la operación de la máquina. Cobertura típica: 1.000–3.000 UF.</li>
           <li><strong>Daños propios de la máquina por falla mecánica</strong> — si la máquina falla por mantención deficiente del arrendador, la reparación corre por su cuenta y se entrega máquina de reemplazo si la falla supera 24 horas.</li>
-          <li><strong>Mutual y seguro del operador</strong> (en arriendo con operador) — accidentes en obra del operador certificado están cubiertos por el arrendador.</li>
+          <li><strong>Mutual y seguro del operador</strong> (en maquinaria con operador incluido) — accidentes en obra del operador certificado están cubiertos por el arrendador.</li>
         </ul>`,
       },
       {

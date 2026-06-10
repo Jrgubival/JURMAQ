@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title:
     "Arriendo de Maquinaria Pesada en Curicó y Maule · JURMAQ",
   description:
-    "Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado, plataforma elevadora y camión tolva en Curicó, Teno, Molina, Romeral, Sagrada Familia, Talca y toda la Región del Maule. Con o sin operador. JURMAQ +25 años. Cotiza por WhatsApp.",
+    "Arriendo de maquinaria en Curicó y el Maule: retroexcavadora, miniexcavadora, minicargador y camión tolva con operador incluido. +25 años. Cotiza por WhatsApp.",
   keywords: [
     "arriendo maquinaria Curicó",
     "arriendo maquinaria Maule",
@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     "arriendo retroexcavadora Teno",
     "arriendo retroexcavadora Molina",
     "arriendo retroexcavadora Talca",
+    "arriendo retroexcavadora con operador Curicó",
+    "arriendo miniexcavadora con operador Curicó",
+    "arriendo maquinaria con operador Maule",
     "arriendo miniexcavadora Curicó",
     "arriendo miniexcavadora Maule",
     "arriendo miniexcavadora Molina",
@@ -65,7 +68,7 @@ export const metadata: Metadata = {
     title:
       "Arriendo de Maquinaria Pesada en Curicó y Región del Maule | JURMAQ",
     description:
-      "Flota de maquinaria pesada para arriendo: retroexcavadoras, miniexcavadoras, brazos articulados, camiones tolva y más. Con o sin operador en toda la Región del Maule.",
+      "Flota de maquinaria pesada para arriendo: retroexcavadoras, miniexcavadoras, brazos articulados, camiones tolva y más. Operador incluido en movimiento de tierra y camión tolva, en toda la Región del Maule.",
     url: "https://jurmaq.cl/maquinarias",
     // siteName + images se heredan del layout ("JURMAQ").
     locale: "es_CL",
@@ -194,7 +197,7 @@ export default async function MaquinariasPage({
     "@type": "LocalBusiness",
     name: "JURMAQ Arriendo de Maquinaria",
     description:
-      "Arriendo de maquinaria pesada: retroexcavadoras, miniexcavadoras, brazos articulados, camiones tolva, plataformas elevadoras. Con o sin operador.",
+      "Arriendo de maquinaria pesada: retroexcavadoras, miniexcavadoras, brazos articulados, camiones tolva, plataformas elevadoras. Movimiento de tierra y camión tolva con operador incluido; plataformas de elevación listas para operar por tu equipo.",
     url: "https://jurmaq.cl/maquinarias",
     telephone: "+56976673577",
     address: {
@@ -269,10 +272,11 @@ export default async function MaquinariasPage({
               maquinaria
             </span>
             <br />
-            con o sin operador.
+            con operador incluido en movimiento de tierra.
           </h1>
           <p className="text-base lg:text-lg text-white/75 max-w-2xl leading-relaxed">
             {machines.length}+ equipos en flota propia para obras de Curicó, Molina, Teno, Talca y toda la Región del Maule.
+            Movimiento de tierra y camión tolva con operador incluido; plataformas de elevación listas para operar por tu equipo.
             Cotización por escrito en menos de 2 horas hábiles.
           </p>
         </div>

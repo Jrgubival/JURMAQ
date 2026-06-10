@@ -50,12 +50,16 @@ export async function generateMetadata({
 
   return {
     title: `Arriendo de ${tipoData.nombrePlural}${marcaSuffix} en Curicó y Maule · JURMAQ`,
-    description: `Arriendo de ${tipoData.nombre.toLowerCase()}${marcaSuffix ? ` (${marcaSuffix.trim()})` : ""} con o sin operador en ${cities} y toda la Región del Maule. ${tipoData.descripcionCorta} JURMAQ +25 años. Cotiza por WhatsApp.`,
+    description: `Arriendo de ${tipoData.nombre.toLowerCase()}${marcaSuffix ? ` (${marcaSuffix.trim()})` : ""}${tipoData.operadorIncluido ? (tipoData.tipoDb === "camion" ? " con conductor incluido en la tarifa" : " con operador incluido en la tarifa") : ""} en ${cities} y toda la Región del Maule. ${tipoData.descripcionCorta} JURMAQ +25 años. Cotiza por WhatsApp.`,
     keywords: [
       `arriendo ${tipoData.nombre.toLowerCase()}`,
       ...CIUDADES.map((c) => `arriendo ${tipoData.nombre.toLowerCase()} ${c.nombre}`),
-      `${tipoData.nombre.toLowerCase()} con operador Curicó`,
-      `${tipoData.nombre.toLowerCase()} sin operador Curicó`,
+      ...(tipoData.operadorIncluido
+        ? [
+            `${tipoData.nombre.toLowerCase()} con operador Curicó`,
+            `arriendo ${tipoData.nombre.toLowerCase()} con operador`,
+          ]
+        : []),
       `${tipoData.nombre.toLowerCase()} precio Maule`,
       // Marcas en flota (refuerza búsquedas tipo "arriendo excavadora xcmg")
       ...(tipoData.slug === "miniexcavadora"

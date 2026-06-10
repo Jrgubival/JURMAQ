@@ -149,7 +149,7 @@ export default async function ArriendoEnCiudadPage({
             name: `¿Incluye operador?`,
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Sí. Todas nuestras máquinas se arriendan con operador certificado incluido. Si tienes equipo propio operativo, también podemos arrendar sin operador (consulta condiciones).",
+              text: "Depende del equipo. Retroexcavadora, miniexcavadora y minicargador se arriendan siempre con operador certificado incluido en la tarifa, y el camión tolva con conductor incluido — no pagas extra. Las plataformas de elevación (brazo articulado, plataforma tijera y alzahombre) se entregan listas para operar por tu equipo, con curso de operación vigente.",
             },
           },
           {
@@ -329,8 +329,10 @@ export default async function ArriendoEnCiudadPage({
               <div>
                 <dt className="font-semibold text-navy-950 mb-1">¿Incluye operador?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Sí. Todas nuestras máquinas se arriendan con operador certificado. Si tienes equipo propio,
-                  también podemos arrendar sin operador (consulta condiciones).
+                  Depende del equipo. Retroexcavadora, miniexcavadora y minicargador se arriendan siempre con
+                  operador certificado incluido en la tarifa, y el camión tolva con conductor incluido — no
+                  pagas extra. Las plataformas de elevación (brazo articulado, plataforma tijera y alzahombre)
+                  se entregan listas para operar por tu equipo, con curso de operación vigente.
                 </dd>
               </div>
               <div>

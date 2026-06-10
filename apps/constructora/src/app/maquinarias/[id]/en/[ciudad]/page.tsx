@@ -7,6 +7,8 @@ import {
   TIPOS_MAQUINA,
   DISTANCIAS_CONSTRUCTORA,
   LEGAL_INFO,
+  tieneOperadorIncluido,
+  operaElCliente,
 } from '@jurmaq/shared/seo';
 import { getMaquinariaDescripcion } from '@jurmaq/shared/seo/maquinaria-descripciones';
 import { formatCLP } from '@jurmaq/shared/format';
@@ -102,7 +104,7 @@ export async function generateMetadata({
   const fullTitle = `${baseTitle} · JURMAQ`;
   const title = fullTitle.length <= 60 ? fullTitle : baseTitle;
 
-  const description = `Arriendo de ${m.nombre} en ${c.nombre} (${c.region}). Despacho desde Curicó (${dist.km} km · ${dist.tiempo}). Operador certificado opcional. Cotiza por WhatsApp y respondemos en menos de 2 horas.`;
+  const description = `Arriendo de ${m.nombre} en ${c.nombre} (${c.region}). Despacho desde Curicó (${dist.km} km · ${dist.tiempo}). ${tieneOperadorIncluido(m.tipo) ? (m.tipo === 'camion' ? 'Conductor incluido en la tarifa.' : 'Operador incluido en la tarifa.') : operaElCliente(m.tipo) ? 'Equipo listo para operar por tu equipo.' : 'Equipo con mantención al día.'} Cotiza por WhatsApp y respondemos en menos de 2 horas.`;
 
   const canonical = `https://jurmaq.cl${maquinariaHref(m)}/en/${c.slug}`;
   const tipoLbl = TIPOS_MAQUINA.find((t) => t.tipoDb === m.tipo)?.nombre ?? m.tipo;
@@ -114,7 +116,7 @@ export async function generateMetadata({
       `arriendo ${m.nombre.toLowerCase()} ${c.nombre}`,
       `arriendo ${tipoLbl.toLowerCase()} ${c.nombre}`,
       `${m.nombre.toLowerCase()} ${c.nombre}`,
-      `${m.nombre.toLowerCase()} con operador ${c.nombre}`,
+      ...(tieneOperadorIncluido(m.tipo) ? [`${m.nombre.toLowerCase()} con operador ${c.nombre}`] : []),
       ...c.comunasVecinas.map((cv) => `arriendo ${tipoLbl.toLowerCase()} ${cv}`),
       'JURMAQ',
     ],
@@ -186,7 +188,7 @@ export default async function MaquinariaCiudadLanding({
   if (c.rubroLocal[0]) {
     ciudadFaqs.push({
       q: `¿Trabajan con obras del rubro ${c.rubroLocal[0]} en ${c.nombre}?`,
-      a: `Sí. Tenemos experiencia constante con ${c.rubroLocal.slice(0, 3).join(', ')} en ${c.nombre} y comunas vecinas (${c.comunasVecinas.slice(0, 3).join(', ')}). Coordinamos plazos, accesos y certificación del operador para faenas de este rubro.`,
+      a: `Sí. Tenemos experiencia constante con ${c.rubroLocal.slice(0, 3).join(', ')} en ${c.nombre} y comunas vecinas (${c.comunasVecinas.slice(0, 3).join(', ')}). ${tieneOperadorIncluido(m.tipo) ? (m.tipo === 'camion' ? 'Coordinamos plazos, accesos y la faena con nuestro conductor incluido en la tarifa.' : 'Coordinamos plazos, accesos y la faena con nuestro operador incluido en la tarifa.') : operaElCliente(m.tipo) ? 'Coordinamos plazos, accesos y la entrega del equipo listo para operar por tu equipo.' : 'Coordinamos plazos, accesos y la entrega del equipo.'}`,
     });
   }
   const faqs = [...tipoFaqs, ...ciudadFaqs];
@@ -610,8 +612,15 @@ export default async function MaquinariaCiudadLanding({
             ¿Necesitas {m.nombre} en {c.nombre} esta semana?
           </h2>
           <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-            Despacho en {dist.tiempo} desde Curicó. Operador certificado opcional. Cotiza
-            ahora y respondemos en menos de 2 horas hábiles.
+            Despacho en {dist.tiempo} desde Curicó.{' '}
+            {tieneOperadorIncluido(m.tipo)
+              ? m.tipo === 'camion'
+                ? 'Conductor incluido en la tarifa.'
+                : 'Operador incluido en la tarifa.'
+              : operaElCliente(m.tipo)
+                ? 'Equipo listo para operar por tu equipo.'
+                : 'Equipo con mantención al día.'}{' '}
+            Cotiza ahora y respondemos en menos de 2 horas hábiles.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a

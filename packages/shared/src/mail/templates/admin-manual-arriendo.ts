@@ -198,7 +198,7 @@ function renderTemplate(args: SendAdminManualEmailArgs): RenderedTemplate {
             '<strong>Tipo de proyecto:</strong> obra civil, terreno particular, demolición, etc.',
             '<strong>Duración estimada del trabajo:</strong> ¿1 día? ¿una semana?',
             '<strong>Dirección o sector exacto</strong> donde se haría el trabajo',
-            '<strong>¿Necesitas operador?</strong> o tienes uno con experiencia',
+            '<strong>Tipo de máquina que necesitas</strong> — retroexcavadora, miniexcavadora, minicargador y camión tolva van siempre con operador/conductor incluido en la tarifa',
           ],
           customMessage,
           ctaLabel: 'Responder por WhatsApp',
@@ -226,7 +226,7 @@ function renderTemplate(args: SendAdminManualEmailArgs): RenderedTemplate {
             '<strong>Fecha exacta de inicio</strong> y duración estimada',
             '<strong>Dirección con ciudad/comuna</strong> (afecta traslado)',
             '<strong>Acceso a la obra:</strong> ¿calle pavimentada? ¿pendiente?',
-            '<strong>Operador y combustible:</strong> ¿lo incluimos nosotros o lo manejas tú?',
+            '<strong>Combustible:</strong> ¿lo incluimos nosotros o lo manejas tú? (el operador/conductor ya va incluido en la tarifa de retroexcavadora, miniexcavadora, minicargador y camión tolva)',
           ],
           customMessage,
           ctaLabel: 'Responder por WhatsApp',
@@ -251,9 +251,8 @@ function renderTemplate(args: SendAdminManualEmailArgs): RenderedTemplate {
               resolver cualquier duda antes de avanzar.
             </p>
             <p style="margin:0 0 12px;">
-              Si necesitas <strong>ajustar fechas, agregar operador, o conversar
-              el precio</strong>, escribinos. Tenemos flexibilidad para que el
-              trabajo te calce.
+              Si necesitas <strong>ajustar fechas o conversar el precio</strong>,
+              escríbenos. Tenemos flexibilidad para que el trabajo te calce.
             </p>
           `,
           customMessage,
@@ -466,7 +465,7 @@ export const ADMIN_MANUAL_EMAIL_KINDS: KindMeta[] = [
   {
     kind: 'need_info',
     label: 'ℹ️ Necesitamos más info',
-    description: 'Pide fecha exacta, dirección, acceso, operador, combustible.',
+    description: 'Pide fecha exacta, dirección, acceso y combustible (el operador va incluido en retro/mini/minicargador/camión).',
     requires: ['nombre'],
     optional: ['numero_cotizacion', 'maquinaria'],
     customMessageRequired: false,

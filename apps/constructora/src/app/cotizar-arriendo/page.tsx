@@ -92,7 +92,7 @@ export default async function CotizarArriendoPage({
             Cotiza tu arriendo en 4 pasos
           </h1>
           <p className="text-gray-600">
-            Tarifas transparentes. Valores netos con desglose claro y traslado incluido. Sin sorpresas.
+            Tarifas transparentes. Valores netos con desglose claro y operador incluido en maquinaria de movimiento de tierra. Sin sorpresas.
           </p>
         </header>
 
@@ -116,7 +116,7 @@ export default async function CotizarArriendoPage({
         <section className="mt-14 border-y border-[#EAEAEA] divide-y divide-[#EAEAEA] sm:divide-y-0 sm:divide-x sm:grid sm:grid-cols-4">
           {[
             { title: 'Cotización al instante', d: 'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2' },
-            { title: 'Traslado incluido', d: 'M3 17V7a2 2 0 0 1 2-2h11v12M16 7h3l3 4v6h-6M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0M15 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0' },
+            { title: 'Traslado coordinado a tu obra', d: 'M3 17V7a2 2 0 0 1 2-2h11v12M16 7h3l3 4v6h-6M5 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0M15 17a2 2 0 1 0 4 0 2 2 0 0 0-4 0' },
             { title: 'Factura con IVA', d: 'M9 12h6M9 16h6M9 8h6M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-3-2-2 2-2-2-2 2-2-2-3 2z' },
             { title: 'Confirmación por email', d: 'M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2c2.474 0 4.732.896 6.477 2.382M22 4 12 14l-3-3' },
           ].map((it) => (

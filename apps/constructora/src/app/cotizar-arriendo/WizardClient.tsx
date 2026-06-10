@@ -2,7 +2,17 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { formatCLP } from '@jurmaq/shared/format';
+import { tieneOperadorIncluido } from '@jurmaq/shared/seo/operador';
 import { trackEvents } from '@/lib/analytics';
+
+// Verdad de negocio (jun-2026): retro/miniexcavadora/minicargador/camión van
+// SIEMPRE con operador/conductor de JURMAQ incluido en la tarifa. Plataformas,
+// brazo y alzahombre se entregan listas para operar por el cliente — para esos
+// NO mostramos nada extra. Etiqueta especial para camión: "conductor".
+function etiquetaOperador(tipo: string, capitalizada = false): string {
+  const base = tipo === 'camion' ? 'conductor incluido' : 'operador incluido';
+  return capitalizada ? base.charAt(0).toUpperCase() + base.slice(1) : base;
+}
 
 interface MaquinariaCatalog {
   id: number;
@@ -275,6 +285,11 @@ export default function WizardClient({
                       {m.minimo_unidades !== 1 ? 's' : ''})
                     </span>
                   </p>
+                  {tieneOperadorIncluido(m.tipo) && (
+                    <span className="inline-block mt-1.5 text-xs font-semibold bg-[#EDF3EC] text-[#346538] px-2 py-0.5 rounded">
+                      {etiquetaOperador(m.tipo, true)}
+                    </span>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">Valor neto · sin IVA</p>
                 </button>
               ))}
@@ -287,6 +302,9 @@ export default function WizardClient({
             <h2 className="text-xl font-bold mb-4 text-navy-950">Detalles del servicio</h2>
             <div className="bg-blue-50 border border-blue-200 p-3 rounded text-sm">
               <strong>{selectedMaq.nombre}</strong> · {formatCLP(selectedMaq.tarifa_neta)}/{selectedMaq.unidad_tarifa} (mín {selectedMaq.minimo_unidades})
+              {tieneOperadorIncluido(selectedMaq.tipo) && (
+                <span className="text-[#346538] font-semibold"> · {etiquetaOperador(selectedMaq.tipo)}</span>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">

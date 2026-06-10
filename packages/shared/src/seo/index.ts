@@ -7,6 +7,8 @@
  * them as doorway pages.
  */
 
+import { TIPOS_DB_CON_OPERADOR } from "./operador";
+
 // Re-export del lookup table de distancias auto-generado.
 // Para regenerar: `node scripts/calc-distancias.mjs`
 export {
@@ -223,6 +225,14 @@ export interface TipoMaquinaSEO {
   nombre: string;
   nombrePlural: string;
   tipoDb: string; // valor en columna "tipo" de tabla maquinarias
+  /**
+   * true = la tarifa publicada incluye operador/conductor de JURMAQ.
+   * false = NO afirmamos operador incluido; para afirmar que lo opera el
+   * cliente usar operaElCliente() de ./operador — rodillo/placa_compactadora
+   * quedan sin afirmación alguna. El valor se deriva de TIPOS_DB_CON_OPERADOR
+   * (fuente de verdad única en ./operador).
+   */
+  operadorIncluido: boolean;
   descripcionCorta: string;
   descripcionLarga: string;
   casosDeUso: string[];
@@ -236,6 +246,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Retroexcavadora",
     nombrePlural: "Retroexcavadoras",
     tipoDb: "retroexcavadora",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("retroexcavadora"),
     descripcionCorta:
       "Movimiento de tierras pesado, zanjas, fundaciones, carga de camiones.",
     descripcionLarga:
@@ -256,11 +267,11 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     preguntasFrecuentes: [
       {
         q: "¿Cuánto cuesta arrendar una retroexcavadora en Curicó?",
-        a: "El valor diario depende de la duración del arriendo y de si va con o sin operador. Cotiza por WhatsApp y te pasamos el valor exacto con disponibilidad inmediata.",
+        a: "La tarifa es por hora (con mínimo de horas) e incluye operador certificado — no pagas el operador aparte. Cotiza por WhatsApp y te pasamos el valor exacto con disponibilidad inmediata.",
       },
       {
         q: "¿La retroexcavadora viene con operador?",
-        a: "Sí, ofrecemos arriendo con operador certificado y experiencia en obra (incluido en valor con operador) o sin operador si tu empresa cuenta con uno propio acreditado.",
+        a: "Sí, siempre. El arriendo incluye operador certificado con experiencia en obra, y su costo ya está dentro de la tarifa.",
       },
       {
         q: "¿Hay traslado al sitio de obra?",
@@ -273,6 +284,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Miniexcavadora",
     nombrePlural: "Miniexcavadoras",
     tipoDb: "miniexcavadora",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("miniexcavadora"),
     descripcionCorta:
       "Excavación en espacios reducidos, jardines y pasajes estrechos. Modelos XCMG XE35U y similares.",
     descripcionLarga:
@@ -301,7 +313,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
       },
       {
         q: "¿Necesito operador especializado?",
-        a: "Sí, requiere operador con experiencia. Nosotros incluimos operador certificado en el arriendo o coordinamos con tu equipo.",
+        a: "No necesitas conseguir uno: el arriendo incluye operador certificado de JURMAQ y su costo ya viene dentro de la tarifa.",
       },
     ],
   },
@@ -310,6 +322,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Minicargador",
     nombrePlural: "Minicargadores",
     tipoDb: "minicargador",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("minicargador"),
     descripcionCorta:
       "Carga, transporte de áridos y multi-implementos en obra.",
     descripcionLarga:
@@ -340,6 +353,10 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
         q: "¿Sirve para trabajos agrícolas?",
         a: "Sí. En viñas y huertos lo usan para limpieza de canales, traslado de cajas y mantención de caminos internos. Disponemos de modelos compactos para hileras estrechas.",
       },
+      {
+        q: "¿El minicargador incluye operador?",
+        a: "Sí. La tarifa por hora incluye operador certificado de JURMAQ — no necesitas personal propio para operarlo.",
+      },
     ],
   },
   {
@@ -347,6 +364,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Brazo articulado",
     nombrePlural: "Brazos articulados",
     tipoDb: "brazo_articulado",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("brazo_articulado"),
     descripcionCorta:
       "Trabajos en altura con plataforma móvil para mantención industrial.",
     descripcionLarga:
@@ -371,7 +389,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
       },
       {
         q: "¿Necesito operador certificado?",
-        a: "Sí, el operador debe tener curso de operación de plataforma elevadora vigente (Sernageomin o entidad equivalente). Lo incluimos en el arriendo con operador.",
+        a: "Sí. El brazo articulado lo opera tu propio personal, que debe contar con curso de operación de plataforma elevadora vigente (Sernageomin o entidad equivalente). El equipo se entrega listo para operar.",
       },
       {
         q: "¿Sirve para trabajo en interior?",
@@ -384,6 +402,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Plataforma elevadora",
     nombrePlural: "Plataformas elevadoras",
     tipoDb: "plataforma_elevadora",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("plataforma_elevadora"),
     descripcionCorta:
       "Plataforma tijera o vertical para trabajos en altura con superficie amplia.",
     descripcionLarga:
@@ -409,6 +428,10 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
         q: "¿Cabe en una puerta industrial estándar?",
         a: "Sí, el ancho típico es 1,2 – 1,5 m, pasa por portones de 1,8 m sin problema.",
       },
+      {
+        q: "¿La plataforma elevadora incluye operador?",
+        a: "No — se entrega lista para que la opere tu propio personal, que debe contar con curso de operación de plataforma elevadora vigente.",
+      },
     ],
   },
   {
@@ -416,10 +439,11 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Camión tolva",
     nombrePlural: "Camiones tolva",
     tipoDb: "camion",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("camion"),
     descripcionCorta:
       "Transporte de áridos, escombros y materiales a granel.",
     descripcionLarga:
-      "Camión tolva para transporte de áridos (gravilla, arena, ripio), escombros, tierra de excavación y materiales a granel. Servicio con operador y capacidad acorde al volumen de la obra.",
+      "Camión tolva para transporte de áridos (gravilla, arena, ripio), escombros, tierra de excavación y materiales a granel. Servicio con conductor incluido en la tarifa y capacidad acorde al volumen de la obra.",
     casosDeUso: [
       "Transporte de áridos desde planta a obra",
       "Retiro de escombros y tierra excedente",
@@ -440,6 +464,10 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
         q: "¿Cobran por viaje o por día?",
         a: "Ambas modalidades: por viaje con cubicaje fijo si es traslado puntual, por día si la obra requiere camión a disposición.",
       },
+      {
+        q: "¿El camión tolva incluye conductor?",
+        a: "Sí. El servicio siempre incluye conductor con licencia A4/A5 vigente — su costo ya está dentro de la tarifa.",
+      },
     ],
   },
   {
@@ -447,6 +475,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Alzahombre",
     nombrePlural: "Alzahombres",
     tipoDb: "alzahombre",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("alzahombre"),
     descripcionCorta:
       "Plataforma compacta para mantención eléctrica y trabajo en altura puntual.",
     descripcionLarga:
@@ -472,6 +501,10 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
         q: "¿Sirve para uso interior?",
         a: "Sí, los alzahombres eléctricos están diseñados para interior — no emiten gases.",
       },
+      {
+        q: "¿El alzahombre incluye operador?",
+        a: "No — se entrega listo para que lo opere tu propio personal con curso de operación vigente. Es un equipo simple de operar.",
+      },
     ],
   },
   {
@@ -479,6 +512,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Rodillo compactador",
     nombrePlural: "Rodillos compactadores",
     tipoDb: "rodillo",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("rodillo"),
     descripcionCorta:
       "Compactación de bases para radieres, pavimentos y caminos.",
     descripcionLarga:
@@ -510,6 +544,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     nombre: "Placa compactadora",
     nombrePlural: "Placas compactadoras",
     tipoDb: "placa_compactadora",
+    operadorIncluido: TIPOS_DB_CON_OPERADOR.has("placa_compactadora"),
     descripcionCorta:
       "Compactación de áreas pequeñas y bases de adoquines.",
     descripcionLarga:
@@ -537,6 +572,16 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
     ],
   },
 ];
+
+// Quién opera cada tipo: vive en ./operador (módulo liviano, client-safe,
+// importable sin arrastrar este dataset al bundle). Se re-exporta acá por
+// conveniencia para código server-side.
+export {
+  TIPOS_DB_CON_OPERADOR,
+  TIPOS_DB_OPERA_CLIENTE,
+  tieneOperadorIncluido,
+  operaElCliente,
+} from "./operador";
 
 export interface ProductoBarracaSEO {
   slug: string;

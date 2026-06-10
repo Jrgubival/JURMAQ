@@ -86,7 +86,7 @@ export default function CategoriasShowcase({
   counts = {},
   variant = 'light',
   title = 'Nuestras máquinas',
-  subtitle = 'Flota propia con mantención al día — disponibles para arriendo con o sin operador en toda la Región del Maule.',
+  subtitle = 'Flota propia con mantención al día — disponibles para arriendo en toda la Región del Maule, con operador incluido en maquinaria de movimiento de tierra.',
   showHeader = true,
   compact = false,
 }: Props) {

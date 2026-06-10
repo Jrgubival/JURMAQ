@@ -95,22 +95,34 @@ export function calcularCotizacion(input: CotizacionInput): CotizacionDesglose {
 export function validarInput(input: Partial<CotizacionInput>): string | null {
   if (!input.maquinaria) return 'maquinaria es requerida';
   if (!input.tarifas) return 'tarifas es requerida';
-  if (input.unidades_solicitadas === undefined || input.unidades_solicitadas <= 0) {
+  // Number.isFinite descarta también NaN, que evade toda comparación (<, >, <=)
+  // y venía de Number(campo) con strings no numéricos en el POST público.
+  if (
+    input.unidades_solicitadas === undefined ||
+    !Number.isFinite(input.unidades_solicitadas) ||
+    input.unidades_solicitadas <= 0
+  ) {
     return 'unidades_solicitadas debe ser > 0';
   }
-  if (input.distancia_km !== undefined && input.distancia_km < 0) {
+  if (input.distancia_km !== undefined && (!Number.isFinite(input.distancia_km) || input.distancia_km < 0)) {
     return 'distancia_km no puede ser negativa';
   }
-  if (input.peajes !== undefined && input.peajes < 0) {
+  if (input.peajes !== undefined && (!Number.isFinite(input.peajes) || input.peajes < 0)) {
     return 'peajes no puede ser negativo';
   }
   if (input.peajes !== undefined && input.peajes > 1_000_000) {
     return 'peajes superior a $1.000.000 — verificar manualmente con cliente';
   }
-  if (input.operarios !== undefined && (input.operarios < 1 || input.operarios > 10)) {
+  if (
+    input.operarios !== undefined &&
+    (!Number.isInteger(input.operarios) || input.operarios < 1 || input.operarios > 10)
+  ) {
     return 'operarios debe estar entre 1 y 10';
   }
-  if (input.horas_operario_estimadas !== undefined && input.horas_operario_estimadas < 0) {
+  if (
+    input.horas_operario_estimadas !== undefined &&
+    (!Number.isFinite(input.horas_operario_estimadas) || input.horas_operario_estimadas < 0)
+  ) {
     return 'horas_operario_estimadas no puede ser negativa';
   }
   if (input.maquinaria.tarifa_neta === undefined || input.maquinaria.tarifa_neta <= 0) {

@@ -41,7 +41,7 @@ const FALLBACKS: Record<Tipo, DescripcionRich> = {
       "Demolición de obras civiles menores",
     ],
     caracteristicas: [
-      "Operador certificado opcional (cobro por jornada)",
+      "Operador certificado incluido en la tarifa",
       "Profundidad de excavación 4-6 m según modelo",
       "Capacidad balde frontal 0.9-1.2 m³",
       "Sistema hidráulico revisado cada 250 hrs",
@@ -69,7 +69,7 @@ const FALLBACKS: Record<Tipo, DescripcionRich> = {
     ],
     incluye: [
       "Mantención preventiva al día",
-      "Operador con certificación opcional",
+      "Operador certificado incluido en la tarifa",
       "Coordinación de despacho dentro del Maule",
     ],
   },
@@ -131,6 +131,7 @@ const FALLBACKS: Record<Tipo, DescripcionRich> = {
       "Bajo perfil para acceder a puertas industriales estándar",
     ],
     incluye: [
+      "Operador certificado incluido en la tarifa",
       "Balde estándar incluido en arriendo",
       "Accesorios extra cotizados por separado",
       "Mantención preventiva al día",
@@ -149,7 +150,7 @@ const FALLBACKS: Record<Tipo, DescripcionRich> = {
       "Capacidad de 7-15 m³ según modelo",
       "Carrocería de tolva con descarga hidráulica",
       "Disponibilidad de tracción 4×2 y 6×4",
-      "Conductor profesional con licencia A5 vigente",
+      "Conductor profesional con licencia A4/A5 vigente",
     ],
     incluye: [
       "Conductor incluido en la tarifa",
@@ -166,7 +167,7 @@ const FALLBACKS: Record<Tipo, DescripcionRich> = {
     ],
     caracteristicas: [
       "Especificaciones bajo demanda",
-      "Operador certificado disponible",
+      "Soporte técnico de JURMAQ durante el arriendo",
     ],
     incluye: ["Mantención preventiva al día", "Seguro de daños a terceros"],
   },

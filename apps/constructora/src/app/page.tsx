@@ -91,7 +91,7 @@ const divisions = [
   {
     title: "Arriendo de Maquinaria",
     description:
-      "Flota de maquinaria pesada disponible para arriendo: retroexcavadoras, miniexcavadoras, brazos articulados y más, con operador o sin operador.",
+      "Flota de maquinaria pesada disponible para arriendo: retroexcavadoras, miniexcavadoras, brazos articulados y más. Operador incluido en maquinaria de movimiento de tierra.",
     number: "02",
     href: "/maquinarias",
     cta: "Ver equipos",
@@ -726,7 +726,7 @@ export default async function HomePage() {
                     "@type": "Service",
                     name: "Arriendo de Maquinaria Pesada",
                     description:
-                      "Retroexcavadoras, miniexcavadoras, brazos articulados y más equipos con o sin operador.",
+                      "Retroexcavadoras, miniexcavadoras, minicargadores y camión tolva con operador incluido; plataformas elevadoras y brazos articulados listos para operar por tu equipo.",
                   },
                 },
                 {
