@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import NextAuth from 'next-auth';
 import { authConfig } from '@jurmaq/shared/auth/config';
 
-const authMiddleware = NextAuth(authConfig).auth;
+const authMiddleware = NextAuth({
+  ...authConfig,
+  pages: {
+    ...authConfig.pages,
+    // Login admin propio con SSO Google (+ fallback a credenciales en
+    // /cuenta/login). Sin esto, /admin rebotaba al login de clientes.
+    signIn: '/login',
+  },
+}).auth;
 
 export default async function middleware(request: NextRequest) {
   // En apps/barraca el dominio canónico es barraca.jurmaq.cl directo.
