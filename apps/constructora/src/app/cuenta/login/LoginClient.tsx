@@ -250,6 +250,12 @@ export default function LoginClient() {
           </button>
         )}
       </div>
+      <p className="text-center text-xs text-gray-400 mt-4">
+        ¿Eres del equipo JURMAQ?{' '}
+        <a href="/login" className="underline underline-offset-2 hover:text-navy-950">
+          Acceso administración con Google
+        </a>
+      </p>
     </div>
   );
 }

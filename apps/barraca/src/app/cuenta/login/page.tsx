@@ -181,6 +181,13 @@ export default function LoginPage() {
             Crear una cuenta
           </Link>
         </p>
+
+        <p className="text-center text-xs text-gray-400 mt-4">
+          ¿Eres del equipo JURMAQ?{" "}
+          <Link href="/login" className="underline underline-offset-2 hover:text-navy-950">
+            Acceso administración con Google
+          </Link>
+        </p>
       </div>
     </div>
   );
