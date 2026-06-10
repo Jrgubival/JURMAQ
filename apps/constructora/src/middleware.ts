@@ -6,7 +6,9 @@ const authMiddleware = NextAuth({
   ...authConfig,
   pages: {
     ...authConfig.pages,
-    signIn: '/barraca/cuenta/login',
+    // Login admin propio de jurmaq.cl (SSO Google + fallback a credenciales).
+    // Antes rebotaba a barraca.jurmaq.cl/cuenta/login cruzando dominios.
+    signIn: '/login',
   },
 }).auth;
 

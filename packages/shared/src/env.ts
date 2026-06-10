@@ -82,6 +82,14 @@ const serverEnvSchema = z.object({
   /** URL base de NextAuth para callbacks. */
   NEXTAUTH_URL: z.string().url().optional(),
 
+  /**
+   * SSO Google para admins (allowlist contra public.users). Opcionales:
+   * si faltan, el provider Google no se monta y el login cae al flujo
+   * de credenciales de siempre.
+   */
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+
   /** Service role key de Supabase — bypassa RLS. CRÍTICO. NUNCA exponer al cliente. */
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY es requerida'),
 
