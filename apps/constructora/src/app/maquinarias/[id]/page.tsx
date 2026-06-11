@@ -511,8 +511,11 @@ export default async function MaquinariaDetailPage({
               {(() => {
                 const badge = tieneOperadorIncluido(machine.tipo)
                   ? {
-                      titulo: machine.tipo === "camion" ? "Conductor incluido" : "Operador incluido",
-                      detalle: "en la tarifa — no pagas extra",
+                      titulo: machine.tipo === "camion" ? "Siempre con conductor" : "Siempre con operador",
+                      detalle:
+                        machine.tipo === "camion"
+                          ? "incluido en la tarifa — lo conduce personal de JURMAQ, no se arrienda solo"
+                          : "incluido en la tarifa — la opera personal de JURMAQ, no se arrienda sola",
                     }
                   : TIPOS_OPERA_CLIENTE.has(machine.tipo)
                     ? { titulo: "La opera tu equipo", detalle: "(curso de operación vigente)" }

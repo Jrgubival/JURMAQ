@@ -87,7 +87,7 @@ function buildEmailHtml(data: CotizacionArriendoEmailData): string {
             <td style="padding:8px 0;color:#6b7280;font-size:13px;border-bottom:1px solid #f3f4f6;">Máquina</td>
             <td style="padding:8px 0;color:#1f2937;font-size:13px;text-align:right;font-weight:600;border-bottom:1px solid #f3f4f6;">${escapeHtml(data.maquinaria_nombre)}${
               tieneOperadorIncluido(data.maquinaria_tipo)
-                ? `<br><span style="font-size:12px;font-weight:600;color:#346538;">${data.maquinaria_tipo === "camion" ? "Conductor incluido en la tarifa" : "Operador incluido en la tarifa"}</span>`
+                ? `<br><span style="font-size:12px;font-weight:600;color:#346538;">${data.maquinaria_tipo === "camion" ? "Siempre con conductor de JURMAQ — incluido en la tarifa" : "Siempre con operador de JURMAQ — incluido en la tarifa"}</span>`
                 : ""
             }</td>
           </tr>

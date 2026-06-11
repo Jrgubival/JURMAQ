@@ -10,7 +10,7 @@ import { trackEvents } from '@/lib/analytics';
 // brazo y alzahombre se entregan listas para operar por el cliente — para esos
 // NO mostramos nada extra. Etiqueta especial para camión: "conductor".
 function etiquetaOperador(tipo: string, capitalizada = false): string {
-  const base = tipo === 'camion' ? 'conductor incluido' : 'operador incluido';
+  const base = tipo === 'camion' ? 'siempre con conductor incluido' : 'siempre con operador incluido';
   return capitalizada ? base.charAt(0).toUpperCase() + base.slice(1) : base;
 }
 

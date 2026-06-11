@@ -132,7 +132,7 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         q: '¿Es más barato sin operador?',
-        a: 'En el mercado general, arrendar sin operador puede salir entre 25% y 35% más barato, pero exige aportar un operador propio con licencia Clase D vigente y curso Sernageomin de operación de equipos. En JURMAQ la retroexcavadora se arrienda siempre con operador certificado incluido en la tarifa — no existe modalidad sin operador ni cobro aparte por él.',
+        a: 'En el mercado general, arrendar sin operador puede salir entre 25% y 35% más barato, pero exige aportar un operador propio con licencia Clase D vigente y curso Sernageomin de operación de equipos. En JURMAQ la retroexcavadora se arrienda siempre con operador certificado incluido en la tarifa — no existe modalidad sin operador ni cobro aparte por él, y la máquina la opera únicamente personal de JURMAQ.',
       },
       {
         q: '¿Cobran traslado al sitio de obra?',
@@ -601,7 +601,7 @@ export const RECURSOS: RecursoSEO[] = [
       },
       {
         h2: '¿Cómo funciona en JURMAQ?',
-        html: `<p>Lo anterior describe el mercado general. En JURMAQ el modelo es simple: la maquinaria de movimiento de tierra —retroexcavadora, miniexcavadora y minicargador— y el camión tolva se arriendan <strong>siempre con operador incluido en la tarifa</strong>. El operador certificado, su EPP y sus leyes sociales ya están dentro del precio publicado: no pagas extra ni existe modalidad sin operador para esas máquinas.</p>
+        html: `<p>Lo anterior describe el mercado general. En JURMAQ el modelo es simple: la maquinaria de movimiento de tierra —retroexcavadora, miniexcavadora y minicargador— y el camión tolva se arriendan <strong>siempre con operador incluido en la tarifa</strong>. El operador certificado, su EPP y sus leyes sociales ya están dentro del precio publicado: no pagas extra ni existe modalidad sin operador para esas máquinas — las opera únicamente personal de JURMAQ y no es posible arrendarlas para operarlas con personal propio.</p>
         <p>Las plataformas de elevación (brazo articulado, plataforma tijera y alzahombre) se entregan listas para operar por tu equipo, con curso de operación vigente. Cotiza por WhatsApp con respuesta en menos de 2 horas hábiles.</p>`,
       },
     ],

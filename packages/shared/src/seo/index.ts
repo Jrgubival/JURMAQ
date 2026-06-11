@@ -271,7 +271,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
       },
       {
         q: "¿La retroexcavadora viene con operador?",
-        a: "Sí, siempre. El arriendo incluye operador certificado con experiencia en obra, y su costo ya está dentro de la tarifa.",
+        a: "Sí, siempre. El arriendo incluye operador certificado con experiencia en obra, y su costo ya está dentro de la tarifa. La retroexcavadora la opera únicamente personal de JURMAQ — no se arrienda sola ni es posible operarla con personal propio.",
       },
       {
         q: "¿Hay traslado al sitio de obra?",
@@ -313,7 +313,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
       },
       {
         q: "¿Necesito operador especializado?",
-        a: "No necesitas conseguir uno: el arriendo incluye operador certificado de JURMAQ y su costo ya viene dentro de la tarifa.",
+        a: "No necesitas conseguir uno: el arriendo incluye operador certificado de JURMAQ y su costo ya viene dentro de la tarifa. La miniexcavadora la opera únicamente nuestro operador — no se arrienda para operarla tú mismo.",
       },
     ],
   },
@@ -355,7 +355,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
       },
       {
         q: "¿El minicargador incluye operador?",
-        a: "Sí. La tarifa por hora incluye operador certificado de JURMAQ — no necesitas personal propio para operarlo.",
+        a: "Sí, siempre. La tarifa por hora incluye operador certificado de JURMAQ. El minicargador no se arrienda sin operador: lo opera únicamente nuestro personal.",
       },
     ],
   },
@@ -466,7 +466,7 @@ export const TIPOS_MAQUINA: TipoMaquinaSEO[] = [
       },
       {
         q: "¿El camión tolva incluye conductor?",
-        a: "Sí. El servicio siempre incluye conductor con licencia A4/A5 vigente — su costo ya está dentro de la tarifa.",
+        a: "Sí, siempre. El servicio incluye conductor con licencia A4/A5 vigente y su costo ya está dentro de la tarifa. El camión no se arrienda solo ni lo puede conducir personal del cliente.",
       },
     ],
   },

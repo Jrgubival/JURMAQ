@@ -56,7 +56,7 @@ const FAQ = [
   },
   {
     q: "¿Incluyen operador?",
-    a: "Depende del equipo. La retroexcavadora, la miniexcavadora, los minicargadores y el camión tolva incluyen operador certificado en la tarifa: no pagas extra. Las plataformas elevadoras y el brazo articulado se entregan listos para que los opere tu equipo, con curso de operación vigente.",
+    a: "Depende del equipo. La retroexcavadora, la miniexcavadora, los minicargadores y el camión tolva incluyen operador certificado en la tarifa: no pagas extra. Estas máquinas las opera únicamente personal de JURMAQ — no se arriendan solas ni es posible operarlas con personal propio. Las plataformas elevadoras y el brazo articulado, en cambio, se entregan listos para que los opere tu equipo, con curso de operación vigente.",
   },
   {
     q: "¿Qué pasa si la máquina se daña en obra?",
