@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
     await initializeDatabase();
     return NextResponse.json({ success: true, message: 'Base de datos inicializada' });
   } catch (error) {
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    // SECURITY (audit jun-2026): no exponer el error interno al cliente.
+    console.error('[seed] error:', error);
+    return NextResponse.json({ success: false, error: 'Error al inicializar la base de datos' }, { status: 500 });
   }
 }

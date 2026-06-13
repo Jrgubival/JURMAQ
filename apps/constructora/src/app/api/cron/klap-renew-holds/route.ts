@@ -6,6 +6,7 @@ import { logContratoEvent } from '@/lib/contratos-audit';
 import { sendGarantiaRenovadaEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-renovada';
 import { sendGarantiaFalloRenovacionEmail } from '@jurmaq/shared/mail/templates/cliente-garantia-fallo-renovacion';
 import { env } from '@jurmaq/shared/env';
+import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
 
 /**
  * POST /api/cron/klap-renew-holds
@@ -38,7 +39,7 @@ function isAuthorized(request: NextRequest): boolean {
   const provided =
     request.headers.get('x-cron-secret') ||
     request.headers.get('authorization')?.replace('Bearer ', '');
-  return provided === secret;
+  return safeSecretEquals(provided, secret);
 }
 
 // Vercel Cron invoca con GET; aceptamos ambos métodos. La autenticación real

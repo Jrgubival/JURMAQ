@@ -2,7 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { sendCotizacionEmail, sendCotizacionAdminEmail } from '@jurmaq/shared/mail/email';
 import { NextRequest, NextResponse } from 'next/server';
-import { sanitizeString, isValidEmail, escapeLikePattern, isValidOrigin } from '@jurmaq/shared/sanitize';
+import { sanitizeString, isValidEmail, escapeOrFilter, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (buscar) {
-      const safeBuscar = escapeLikePattern(buscar.trim());
+      const safeBuscar = escapeOrFilter(buscar.trim());
       query = query.or(
         `nombre.ilike.%${safeBuscar}%,empresa.ilike.%${safeBuscar}%,email.ilike.%${safeBuscar}%,numero.ilike.%${safeBuscar}%`
       );

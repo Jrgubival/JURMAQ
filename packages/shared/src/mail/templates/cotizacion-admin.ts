@@ -1,5 +1,5 @@
 import { transporter } from "../transport";
-import { formatCLP } from "../utils";
+import { formatCLP, escapeHtml } from "../utils";
 import { env } from "@jurmaq/shared/env";
 
 /**
@@ -46,15 +46,15 @@ export async function sendCotizacionAdminEmail(cotizacion: {
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
                 <tr>
                   <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 120px;">Cliente:</td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${cotizacion.nombre}</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${escapeHtml(cotizacion.nombre)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Email:</td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;"><a href="mailto:${cotizacion.email}" style="color: #ea580c;">${cotizacion.email}</a></td>
+                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;"><a href="mailto:${encodeURIComponent(cotizacion.email)}" style="color: #ea580c;">${escapeHtml(cotizacion.email)}</a></td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Telefono:</td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${cotizacion.telefono || "No proporcionado"}</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;">${cotizacion.telefono ? escapeHtml(cotizacion.telefono) : "No proporcionado"}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Productos:</td>

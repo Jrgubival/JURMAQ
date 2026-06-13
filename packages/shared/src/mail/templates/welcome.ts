@@ -1,4 +1,5 @@
 import { transporter } from "../transport";
+import { escapeHtml } from "../utils";
 import { env } from "@jurmaq/shared/env";
 
 /**
@@ -27,7 +28,7 @@ export async function sendWelcomeEmail(to: string, nombre: string) {
               </div>
               <h2 style="margin: 0 0 12px; color: #0c1d3a; font-size: 22px;">Bienvenido a JURMAQ Barraca</h2>
               <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
-                Hola <strong>${nombre}</strong>,<br>
+                Hola <strong>${escapeHtml(nombre)}</strong>,<br>
                 Nos alegra tenerte con nosotros. Tu cuenta ha sido creada exitosamente y ya puedes comenzar a cotizar materiales de construccion con los mejores precios de la Region del Maule.
               </p>
 

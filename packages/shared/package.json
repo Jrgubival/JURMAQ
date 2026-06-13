@@ -25,6 +25,8 @@
     "./whatsapp": "./src/whatsapp/index.ts",
     "./notifications/admin": "./src/notifications/admin.ts",
     "./sms": "./src/sms/index.ts",
+    "./crypto/secret": "./src/crypto/secret.ts",
+    "./validation": "./src/validation/index.ts",
     "./seo": "./src/seo/index.ts",
     "./seo/operador": "./src/seo/operador.ts",
     "./seo/prerender-rules": "./src/seo/prerender-rules.ts",

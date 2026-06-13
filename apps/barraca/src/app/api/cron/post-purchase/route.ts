@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { sendReviewRequestEmail } from '@jurmaq/shared/mail/templates/review-request';
 import { sendReplenishmentEmail } from '@jurmaq/shared/mail/templates/replenishment';
 import { env } from '@jurmaq/shared/env';
+import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
 
 /**
  * POST /api/cron/post-purchase
@@ -31,7 +32,7 @@ function isAuthorized(request: NextRequest): boolean {
   const provided =
     request.headers.get('x-cron-secret') ||
     request.headers.get('authorization')?.replace('Bearer ', '');
-  return provided === secret;
+  return safeSecretEquals(provided, secret);
 }
 
 interface CotizacionRow {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { transporter } from '@jurmaq/shared/mail/transport';
 import { env } from '@jurmaq/shared/env';
+import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
 
 /**
  * POST /api/cron/iec-notif
@@ -32,7 +33,7 @@ function isAuthorized(request: NextRequest): boolean {
   const provided =
     request.headers.get('x-cron-secret') ||
     request.headers.get('authorization')?.replace('Bearer ', '');
-  return provided === secret;
+  return safeSecretEquals(provided, secret);
 }
 
 // Vercel Cron invoca con GET; aceptamos ambos métodos. La autenticación real

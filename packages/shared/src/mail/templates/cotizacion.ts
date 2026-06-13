@@ -1,5 +1,5 @@
 import { transporter } from "../transport";
-import { formatCLP } from "../utils";
+import { formatCLP, escapeHtml } from "../utils";
 
 /**
  * Email "cotización recibida" al cliente final tras submit del formulario
@@ -18,7 +18,7 @@ export async function sendCotizacionEmail(
     .map(
       (item) => `
     <tr>
-      <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px;">${item.nombre}</td>
+      <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px;">${escapeHtml(item.nombre)}</td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px; text-align: center;">${item.cantidad}</td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px; text-align: right;">${formatCLP(item.precio)}</td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px; text-align: right; font-weight: 600;">${formatCLP(item.subtotal)}</td>
@@ -51,11 +51,11 @@ export async function sendCotizacionEmail(
                   <span style="font-size: 24px;">&#9989;</span>
                 </div>
                 <h2 style="margin: 0; color: #0c1d3a; font-size: 22px; font-weight: 700;">Cotizacion Recibida</h2>
-                <p style="margin: 8px 0 0; color: #ea580c; font-size: 16px; font-weight: 600;">#${cotizacion.numero}</p>
+                <p style="margin: 8px 0 0; color: #ea580c; font-size: 16px; font-weight: 600;">#${escapeHtml(cotizacion.numero)}</p>
               </div>
 
               <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">
-                Hola <strong>${cotizacion.nombre}</strong>,<br>
+                Hola <strong>${escapeHtml(cotizacion.nombre)}</strong>,<br>
                 Gracias por confiar en nosotros. Hemos recibido tu solicitud de cotización y ya estamos trabajando en ella. A continuacion el detalle de los productos solicitados:
               </p>
 
@@ -92,7 +92,7 @@ export async function sendCotizacionEmail(
               </div>
 
               <div style="text-align: center; margin-bottom: 24px;">
-                <a href="https://wa.me/56976673577?text=Hola%2C%20consulto%20por%20mi%20cotizacion%20%23${cotizacion.numero}" style="display: inline-block; background-color: #25D366; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
+                <a href="https://wa.me/56976673577?text=Hola%2C%20consulto%20por%20mi%20cotizacion%20%23${encodeURIComponent(cotizacion.numero)}" style="display: inline-block; background-color: #25D366; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
                   Escribenos por WhatsApp
                 </a>
               </div>

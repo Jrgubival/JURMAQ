@@ -1,5 +1,5 @@
 import { transporter } from "../transport";
-import { formatCLP } from "../utils";
+import { formatCLP, escapeHtml } from "../utils";
 import { env } from "@jurmaq/shared/env";
 
 /**
@@ -25,7 +25,7 @@ export async function sendPaymentLinkEmail(
     .map(
       (item) => `
     <tr>
-      <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px;">${item.nombre}</td>
+      <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px;">${escapeHtml(item.nombre)}</td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px; text-align: center;">${item.cantidad}</td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px; text-align: right;">${formatCLP(item.precio)}</td>
       <td style="padding: 10px 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-size: 14px; text-align: right; font-weight: 600;">${formatCLP(item.subtotal)}</td>
@@ -87,12 +87,12 @@ export async function sendPaymentLinkEmail(
             </tr>
             <tr>
               <td style="padding: 6px 0; color: #6b7280; font-size: 14px;">Asunto:</td>
-              <td style="padding: 6px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${cotizacion.numero}</td>
+              <td style="padding: 6px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${escapeHtml(cotizacion.numero)}</td>
             </tr>
           </table>
         </div>
         <p style="margin: 12px 0 0; color: #9a3412; font-size: 13px; font-weight: 500;">
-          Importante: Incluye el numero de cotización (${cotizacion.numero}) en el asunto de la transferencia para identificar tu pago.
+          Importante: Incluye el numero de cotización (${escapeHtml(cotizacion.numero)}) en el asunto de la transferencia para identificar tu pago.
         </p>
       </div>
     `;
@@ -122,11 +122,11 @@ export async function sendPaymentLinkEmail(
                   <span style="font-size: 24px;">&#128179;</span>
                 </div>
                 <h2 style="margin: 0; color: #0c1d3a; font-size: 22px; font-weight: 700;">Cotizacion Aprobada - Link de Pago</h2>
-                <p style="margin: 8px 0 0; color: #ea580c; font-size: 16px; font-weight: 600;">#${cotizacion.numero}</p>
+                <p style="margin: 8px 0 0; color: #ea580c; font-size: 16px; font-weight: 600;">#${escapeHtml(cotizacion.numero)}</p>
               </div>
 
               <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">
-                Hola <strong>${cotizacion.nombre}</strong>,
+                Hola <strong>${escapeHtml(cotizacion.nombre)}</strong>,
               </p>
 
               ${paymentSection}

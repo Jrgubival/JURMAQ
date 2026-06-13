@@ -112,14 +112,13 @@ async function handleLogin(body: AuthBody, ip: string): Promise<NextResponse> {
   }
 
   if (!cliente.password_hash) {
-    // Cliente histórico sin password — disparar flow de "configura tu contraseña".
-    return NextResponse.json(
-      {
-        error: 'configurar_password',
-        message: 'Tu cuenta existe pero no tiene contraseña configurada. Te enviamos un correo para configurarla.',
-      },
-      { status: 412 }, // Precondition Failed
-    );
+    // SECURITY (audit jun-2026, L-3): NO devolver una respuesta distinguible
+    // (412 'configurar_password') — revelaba qué emails existen sin contraseña
+    // (oráculo de enumeración para phishing dirigido). Respondemos el MISMO 401
+    // genérico que credenciales inválidas. Los clientes legacy sin contraseña
+    // usan "¿Olvidaste tu contraseña?" (handleForgot), que les envía el correo
+    // de configuración igual — no hay callejón sin salida.
+    return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
   }
 
   const ok = await bcrypt.compare(password, cliente.password_hash);

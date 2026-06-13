@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { sendSms, isValidChileanPhone } from '@jurmaq/shared/sms';
 import { env } from '@jurmaq/shared/env';
+import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
 
 /**
  * POST /api/cron/sms-recovery
@@ -35,7 +36,7 @@ function isAuthorized(request: NextRequest): boolean {
   const provided =
     request.headers.get('x-cron-secret') ||
     request.headers.get('authorization')?.replace('Bearer ', '');
-  return provided === secret;
+  return safeSecretEquals(provided, secret);
 }
 
 interface CarritoAbandonadoSms {

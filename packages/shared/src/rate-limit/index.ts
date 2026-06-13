@@ -27,6 +27,13 @@ interface RateLimitOptions {
   maxAttempts: number;
   /** Window duration in seconds */
   windowSeconds: number;
+  /**
+   * Si un error de DB inesperado impide contar, ¿denegar (fail-closed) en vez
+   * de permitir (fail-open)? Default false (fail-open, mejor UX en endpoints
+   * no sensibles). Poner true SOLO en paths críticos como el login admin, donde
+   * permitir intentos ilimitados durante un incidente de DB es peor que negar.
+   */
+  failClosedOnError?: boolean;
 }
 
 interface RateLimitResult {
@@ -134,7 +141,12 @@ export async function rateLimitPersistent(
         console.warn('[rate-limit] funcion DB no existe, fallback a limiter en memoria. Ejecuta migrate-rate-limit-persistente.sql');
         return rateLimit(key, options);
       }
-      // Otros errores DB: fail-open (mejor permitir que bloquear todo) pero log.
+      // Otros errores DB inesperados. En paths críticos (failClosedOnError)
+      // denegamos; en el resto fail-open (mejor permitir que bloquear todo).
+      if (options.failClosedOnError) {
+        console.error('[rate-limit] error DB, FAIL-CLOSED (path crítico):', error);
+        return { success: false, remaining: 0, resetAt: Date.now() + options.windowSeconds * 1000 };
+      }
       console.error('[rate-limit] error DB, fail-open:', error);
       return { success: true, remaining: options.maxAttempts, resetAt: Date.now() + options.windowSeconds * 1000 };
     }

@@ -1,4 +1,5 @@
 import { BARRACA_URL, buildPostPurchaseHtml, sendPostPurchaseEmail } from './post-purchase-shared';
+import { escapeHtml } from "../utils";
 
 /**
  * Email "Gracias por tu compra" — disparado inmediatamente cuando una
@@ -13,7 +14,7 @@ export async function sendPurchaseThankYouEmail(args: {
   total: number;
 }) {
   const totalFmt = `$${Number(args.total).toLocaleString('es-CL')}`;
-  const cotUrl = `${BARRACA_URL}/cuenta/cotizaciones/${args.numero}`;
+  const cotUrl = `${BARRACA_URL}/cuenta/cotizaciones/${encodeURIComponent(args.numero)}`;
   const html = buildPostPurchaseHtml({
     to: args.to,
     subject: `¡Recibimos tu compra ${args.numero}!`,
@@ -22,10 +23,10 @@ export async function sendPurchaseThankYouEmail(args: {
     title: '¡Gracias por tu compra!',
     bodyHtml: `
       <p style="margin:0 0 14px;">
-        Hola <strong>${args.nombre.split(' ')[0] || 'Cliente'}</strong>,
+        Hola <strong>${escapeHtml(args.nombre.split(' ')[0] || 'Cliente')}</strong>,
       </p>
       <p style="margin:0 0 14px;">
-        Tu pedido <strong>${args.numero}</strong> fue recibido correctamente.
+        Tu pedido <strong>${escapeHtml(args.numero)}</strong> fue recibido correctamente.
         Ya está en preparación y en breve te avisamos por email cuando salga
         para entrega.
       </p>

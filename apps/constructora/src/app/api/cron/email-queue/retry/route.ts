@@ -4,6 +4,7 @@ import { transporter } from '@jurmaq/shared/mail/email';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { sendSignedContractEmailAsync } from '@/lib/signed-contract-email';
 import { env } from '@jurmaq/shared/env';
+import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
 
 /**
  * POST /api/cron/email-queue/retry
@@ -33,7 +34,7 @@ function isAuthorized(request: NextRequest): boolean {
   const secret = env.CRON_SECRET;
   if (!secret) return false;
   const provided = request.headers.get('x-cron-secret') || request.headers.get('authorization')?.replace('Bearer ', '');
-  return provided === secret;
+  return safeSecretEquals(provided, secret);
 }
 
 // Vercel Cron invoca con GET; aceptamos ambos métodos. La autenticación real

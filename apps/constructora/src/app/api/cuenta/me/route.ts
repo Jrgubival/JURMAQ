@@ -25,9 +25,12 @@ export async function GET(request: NextRequest) {
   }
 
   // Perfil completo desde DB (los datos en la sesión son un subset).
+  // SECURITY (audit jun-2026, L-NOTAS): NO seleccionar `notas` — es un campo
+  // interno editable solo por admins (flags de riesgo/morosidad) que no debe
+  // viajar al propio cliente vía fetch('/api/cuenta/me').
   const { data: perfilFull } = await supabaseAdmin
     .from('clientes')
-    .select('id, email, nombre, rut, empresa, telefono, direccion, notas, email_verificado_at, ultimo_login_at, created_at')
+    .select('id, email, nombre, rut, empresa, telefono, direccion, email_verificado_at, ultimo_login_at, created_at')
     .eq('id', cliente.id)
     .single();
 

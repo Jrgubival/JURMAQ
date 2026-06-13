@@ -80,6 +80,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             const { success } = await rateLimitPersistent(supabaseAdmin, limitKey, {
               maxAttempts: 5,
               windowSeconds: 900,
+              // Login admin: si la DB del rate-limit falla, denegar (no permitir
+              // intentos ilimitados de fuerza bruta durante un incidente).
+              failClosedOnError: true,
             });
             if (!success) {
               console.warn('admin-login rate-limited:', limitKey);

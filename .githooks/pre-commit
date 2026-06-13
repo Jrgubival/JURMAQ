@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#
+# SECURITY (audit jun-2026, capa preventiva): bloquea commits que contengan
+# secretos o archivos .env. Activar una vez por clon con:
+#   git config core.hooksPath .githooks
+#
+set -euo pipefail
+
+# Archivos staged (solo añadidos/modificados, no borrados)
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+fail=0
+
+# 1. Nunca commitear archivos de entorno (salvo .env.example)
+while IFS= read -r f; do
+  case "$f" in
+    *.env|*.env.*|.env|.env.*)
+      case "$f" in
+        *.env.example|*.env.sample) ;;
+        *) echo "❌ Bloqueado: archivo de entorno staged: $f"; fail=1 ;;
+      esac ;;
+  esac
+done <<< "$staged"
+
+# 2. Patrones de secretos en el contenido staged
+patterns='(sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJhbGciOiJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|SUPABASE_SERVICE_ROLE_KEY\s*=\s*[A-Za-z0-9])'
+while IFS= read -r f; do
+  # solo archivos de texto de código/config
+  case "$f" in
+    *.ts|*.tsx|*.js|*.jsx|*.json|*.sql|*.yml|*.yaml|*.sh|*.md|*.txt)
+      if git show ":$f" 2>/dev/null | grep -nEq "$patterns"; then
+        echo "❌ Bloqueado: posible secreto en $f"
+        git show ":$f" | grep -nE "$patterns" | head -3 | sed 's/^/     /'
+        fail=1
+      fi ;;
+  esac
+done <<< "$staged"
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "Commit abortado por el hook de seguridad. Si es un falso positivo, revisa"
+  echo "el contenido; en última instancia puedes saltarlo con --no-verify (NO recomendado)."
+  exit 1
+fi
+exit 0

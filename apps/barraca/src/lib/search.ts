@@ -1,7 +1,10 @@
 import 'server-only';
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import type { Database } from "@jurmaq/shared/db-types";
-import { escapeLikePattern } from "@jurmaq/shared/sanitize";
+// SECURITY (audit jun-2026, L-OR): escapeOrFilter neutraliza `,()` además de
+// `%_\` — los valores se splicean dentro de filtros PostgREST `.or(...)`, donde
+// una coma o paréntesis del usuario inyectaría cláusulas extra.
+import { escapeOrFilter } from "@jurmaq/shared/sanitize";
 import { applyDailyPromosToProducts } from './promotions';
 
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
@@ -68,7 +71,7 @@ export async function searchProducts(q: string, limit: number = 48) {
   const words = q.trim().split(/\s+/).map(normalizeWord).filter(w => w.length >= 2);
   if (words.length === 0) return [];
 
-  const fullPattern = `%${escapeLikePattern(q.trim())}%`;
+  const fullPattern = `%${escapeOrFilter(q.trim())}%`;
 
   // Strategy 1: exact substring match
   const { data: exactResults } = await supabasePublic
@@ -91,7 +94,7 @@ export async function searchProducts(q: string, limit: number = 48) {
   // Strategy 2: word-by-word with synonym expansion
   const wordFilters = words.map(word => {
     const variants = expandWord(word);
-    return variants.map(v => `nombre.ilike.%${escapeLikePattern(v)}%`);
+    return variants.map(v => `nombre.ilike.%${escapeOrFilter(v)}%`);
   });
 
   // Try AND logic (all words must match via any synonym)
