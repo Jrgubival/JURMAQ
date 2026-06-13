@@ -115,13 +115,13 @@ export default function NewsletterPopup() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-sm font-medium text-navy-950">
-              ¡Listo! Revisa tu email para tu código de 10% de descuento.
+              ¡Listo! Revisa tu email para tu código de 5% de descuento.
             </p>
           </div>
         ) : (
           <>
             <div className="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded mb-1.5">
-              10% OFF en tu primera compra
+              5% OFF en tu primera compra
             </div>
             <h3 className="text-sm font-bold text-navy-950 mb-1 pr-6">
               Suscríbete y recibe tu descuento
