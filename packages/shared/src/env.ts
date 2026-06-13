@@ -192,11 +192,18 @@ const serverEnvSchema = z.object({
   /** Scope de autenticación legacy (cuenta vs constructora vs admin). */
   AUTH_SCOPE: z.string().optional(),
 
-  /** Feature flag: habilita sesiones de NextAuth. */
+  /**
+   * Feature flag: habilita sesiones firmadas (JWT HMAC) para el portal de
+   * clientes. CRÍTICO: con el flag apagado, los tokens caen al formato legacy
+   * base64 FORJABLE. Se hace `.trim()` a propósito — un valor pegado en Vercel
+   * como "true\n" (con salto de línea) rompía el `=== 'true'` estricto y
+   * desactivaba silenciosamente este control de seguridad. Nunca dejar que un
+   * espacio en blanco apague una protección.
+   */
   AUTH_SESSIONS_ENABLED: z
     .string()
     .optional()
-    .transform((v) => v === 'true'),
+    .transform((v) => v?.trim() === 'true'),
 
   /** Estandar NODE_ENV — Next.js lo setea automáticamente. */
   NODE_ENV: z.enum(['development', 'test', 'production']).optional(),
