@@ -177,6 +177,13 @@ const serverEnvSchema = z.object({
   /** API key de Groq (AI features alternativas). */
   GROQ_API_KEY: z.string().optional(),
 
+  /**
+   * API key de Cerebras (inferencia IA gratis de alto throughput: ~60-100k
+   * tokens/min, 1M tokens/día). Primario de ADIA cuando está presente, porque
+   * el free tier de Groq (~6k tokens/min) se agota con pocos mensajes.
+   */
+  CEREBRAS_API_KEY: z.string().optional(),
+
   /** API key de OpenRouteService (cálculo de fletes). */
   ORS_API_KEY: z.string().optional(),
 

@@ -58,7 +58,7 @@ export interface AiCallResult {
   text: string;
   /** Si el último tool call devolvió un `meta.ui` lo exponemos acá */
   ui?: unknown;
-  provider: "gemini" | "groq" | "canned";
+  provider: "gemini" | "groq" | "cerebras" | "canned";
 }
 
 // ---------------------------------------------------------------------------
@@ -225,9 +225,24 @@ async function callGemini(
 const GROQ_MODEL = "llama-3.1-8b-instant";
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
-async function callGroq(
+// Cerebras: inferencia gratis de alto throughput (~60-100k tokens/min vs los
+// ~6k de Groq), 1M tokens/día, API OpenAI-compatible (mismo formato que Groq).
+// Modelo con tool calling confirmado y buen español. Si Cerebras renombra el
+// modelo, cambiar solo esta constante.
+const CEREBRAS_MODEL = "llama-3.3-70b";
+const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1";
+
+/** Config de un proveedor OpenAI-compatible (Groq, Cerebras). */
+interface OpenAICompatConfig {
+  baseUrl: string;
+  model: string;
+  label: "groq" | "cerebras";
+}
+
+async function callOpenAICompatible(
   opts: AiCallOptions,
   apiKey: string,
+  cfg: OpenAICompatConfig,
 ): Promise<AiCallResult> {
   // Convert to OpenAI format
   const messages = [
@@ -248,7 +263,7 @@ async function callGroq(
   }));
 
   const body = {
-    model: GROQ_MODEL,
+    model: cfg.model,
     messages,
     tools,
     tool_choice: "auto" as const,
@@ -256,7 +271,7 @@ async function callGroq(
     temperature: opts.temperature ?? 0.3,
   };
 
-  const res = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+  const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -270,9 +285,9 @@ async function callGroq(
     const status = res.status;
     // 429/5xx → ProviderError para que callAI pueda intentar fallback.
     if (status === 429 || status >= 500) {
-      throw new ProviderError("groq", status, errText.slice(0, 200));
+      throw new ProviderError(cfg.label, status, errText.slice(0, 200));
     }
-    throw new Error(`groq ${status}: ${errText.slice(0, 200)}`);
+    throw new Error(`${cfg.label} ${status}: ${errText.slice(0, 200)}`);
   }
 
   const data = await res.json();
@@ -281,14 +296,14 @@ async function callGroq(
   // Robustez: si Groq devuelve estructura inválida (sin choices), no
   // queremos 500 al user. Retornamos respuesta amable + log para debug.
   if (!choice) {
-    logSafeError("[ai-provider/groq] response sin choice", {
+    logSafeError(`[ai-provider/${cfg.label}] response sin choice`, {
       data: JSON.stringify(data).slice(0, 200),
     });
     return {
       text:
         "Tuve un problema procesando tu consulta. ¿Podés probar con otra pregunta? " +
         "Por ejemplo: 'precio del fierro estriado 10mm' o 'cuánto cemento para un radier de 4x5 metros'.",
-      provider: "groq",
+      provider: cfg.label,
     };
   }
 
@@ -343,7 +358,7 @@ async function callGroq(
       ],
       tool_choice: "none" as const,
     };
-    const res2 = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+    const res2 = await fetch(`${cfg.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -355,7 +370,7 @@ async function callGroq(
     // ejecutar el tool), NO tiramos 500. El tool ya corrió y tenemos data
     // útil — armamos respuesta human-readable desde el toolResult.
     if (!res2.ok) {
-      logSafeError("[ai-provider/groq] follow-up failed", {
+      logSafeError(`[ai-provider/${cfg.label}] follow-up failed`, {
         status: res2.status,
         tool: name,
       });
@@ -363,7 +378,7 @@ async function callGroq(
       const fallbackText = formatToolResultAsText(name, parsed);
       return {
         text: fallbackText,
-        provider: "groq",
+        provider: cfg.label,
         ui: parsed && typeof parsed === "object" && "meta" in parsed
           ? (parsed as { meta?: unknown }).meta
           : undefined,
@@ -374,7 +389,7 @@ async function callGroq(
       data2.choices?.[0]?.message?.content ?? formatToolResultAsText(name, parsed);
     return {
       text,
-      provider: "groq",
+      provider: cfg.label,
       ui: parsed && typeof parsed === "object" && "meta" in parsed
         ? (parsed as { meta?: unknown }).meta
         : undefined,
@@ -384,7 +399,7 @@ async function callGroq(
   // Sin tool call. Si hay content, OK. Si no, respuesta canned amable.
   const text = choice.message?.content;
   if (!text || text.trim().length === 0) {
-    logSafeError("[ai-provider/groq] empty content + no tool call", {
+    logSafeError(`[ai-provider/${cfg.label}] empty content + no tool call`, {
       finish_reason: choice.finish_reason,
     });
     return {
@@ -392,10 +407,27 @@ async function callGroq(
         "No te entendí bien. ¿Podés contarme qué material necesitás o qué cálculo " +
         "querés hacer? Por ejemplo: 'precio del cemento Polpaico' o 'cuánto fierro " +
         "necesito para un radier de 20 m²'.",
-      provider: "groq",
+      provider: cfg.label,
     };
   }
-  return { text, provider: "groq" };
+  return { text, provider: cfg.label };
+}
+
+// Wrappers finos sobre el caller OpenAI-compatible.
+function callGroq(opts: AiCallOptions, apiKey: string): Promise<AiCallResult> {
+  return callOpenAICompatible(opts, apiKey, {
+    baseUrl: GROQ_BASE_URL,
+    model: GROQ_MODEL,
+    label: "groq",
+  });
+}
+
+function callCerebras(opts: AiCallOptions, apiKey: string): Promise<AiCallResult> {
+  return callOpenAICompatible(opts, apiKey, {
+    baseUrl: CEREBRAS_BASE_URL,
+    model: CEREBRAS_MODEL,
+    label: "cerebras",
+  });
 }
 
 /**
@@ -457,63 +489,50 @@ function isCapacityError(e: unknown): e is ProviderError {
 }
 
 /**
- * Llama AI con fallback automático. Gemini primario, Groq fallback. Ante
- * saturación (429/5xx) de los proveedores disponibles, degrada con un mensaje
- * amable en vez de propagar un 500 — el endpoint nunca debe romperle al cliente.
+ * Llama AI probando los proveedores disponibles EN ORDEN DE PRIORIDAD, cayendo
+ * al siguiente ante saturación (429/5xx). Prioridad por capacidad del free tier:
+ *   1. Cerebras  (~60-100k tokens/min, 1M/día) — el de mayor headroom.
+ *   2. Gemini    (1.500 req/día, contexto enorme).
+ *   3. Groq      (~6k tokens/min) — se agota rápido, queda de último respaldo.
+ * Si todos están saturados/ausentes, degrada con un mensaje amable: el endpoint
+ * NUNCA debe romperle al cliente con un 500.
  */
 export async function callAI(opts: AiCallOptions): Promise<AiCallResult> {
+  const cerebrasKey = env.CEREBRAS_API_KEY;
   const geminiKey = env.GEMINI_API_KEY;
   const groqKey = env.GROQ_API_KEY;
 
-  // Caso 1: ambas keys ausentes → canned
-  if (!geminiKey && !groqKey) {
+  const chain: Array<{ name: string; run: () => Promise<AiCallResult> }> = [];
+  if (cerebrasKey) chain.push({ name: "cerebras", run: () => callCerebras(opts, cerebrasKey) });
+  if (geminiKey) chain.push({ name: "gemini", run: () => callGemini(opts, geminiKey) });
+  if (groqKey) chain.push({ name: "groq", run: () => callGroq(opts, groqKey) });
+
+  if (chain.length === 0) {
     return {
       text: "Aún no tengo IA configurada. Mientras tanto, contáctanos por WhatsApp +56 9 7667 3577.",
       provider: "canned",
     };
   }
 
-  // Caso 2: solo Gemini
-  if (geminiKey && !groqKey) {
+  for (let i = 0; i < chain.length; i++) {
+    const isLast = i === chain.length - 1;
     try {
-      return await callGemini(opts, geminiKey);
+      return await chain[i].run();
     } catch (e) {
-      if (isCapacityError(e)) {
-        logSafeError("[ai-provider] gemini saturado (solo gemini)", { status: e.status });
-        return { text: BUSY_MESSAGE, provider: "canned" };
+      // Errores de capacidad (429/5xx): intentar el siguiente proveedor.
+      if (isCapacityError(e) && !isLast) {
+        logSafeError(`[ai-provider] ${chain[i].name} saturado → fallback`, { status: e.status });
+        continue;
       }
-      throw e;
+      // Último proveedor (o error de capacidad sin más opciones): degradar con
+      // gracia en vez de propagar un 500. Logueamos el error real para debug.
+      logSafeError(`[ai-provider] ${chain[i].name} falló (sin más fallback)`, {
+        err: String(e).slice(0, 150),
+      });
+      return { text: BUSY_MESSAGE, provider: "canned" };
     }
   }
 
-  // Caso 3: solo Groq. El free tier de Groq tiene un límite bajo de tokens/min;
-  // ante 429/5xx degradamos con gracia en vez de tirar 500.
-  if (!geminiKey && groqKey) {
-    try {
-      return await callGroq(opts, groqKey);
-    } catch (e) {
-      if (isCapacityError(e)) {
-        logSafeError("[ai-provider] groq saturado (solo groq, sin fallback Gemini)", { status: e.status });
-        return { text: BUSY_MESSAGE, provider: "canned" };
-      }
-      throw e;
-    }
-  }
-
-  // Caso 4: ambas → Gemini primero, Groq fallback en 429/5xx
-  try {
-    return await callGemini(opts, geminiKey!);
-  } catch (e) {
-    if (isCapacityError(e)) {
-      logSafeError("[ai-provider] gemini fallback → groq", { status: e.status });
-      try {
-        return await callGroq(opts, groqKey!);
-      } catch (e2) {
-        // Ambos saturados → degradar con gracia, nunca 500.
-        logSafeError("[ai-provider] ambos proveedores saturados", { err: String(e2).slice(0, 120) });
-        return { text: BUSY_MESSAGE, provider: "canned" };
-      }
-    }
-    throw e;
-  }
+  // Inalcanzable (el loop siempre retorna), pero satisface el control de flujo.
+  return { text: BUSY_MESSAGE, provider: "canned" };
 }
