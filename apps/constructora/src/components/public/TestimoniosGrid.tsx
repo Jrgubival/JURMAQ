@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ConstructoraTestimonio } from "@/lib/testimonios-data";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * Grid público de testimonios B2B.
@@ -102,7 +103,7 @@ export default function TestimoniosGrid({
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

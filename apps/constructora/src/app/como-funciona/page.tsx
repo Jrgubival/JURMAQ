@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { whatsappCtaHome } from "@jurmaq/shared/whatsapp";
 import { IconWhatsapp } from "@jurmaq/shared/icons";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 export const metadata: Metadata = {
   title: "Cómo Funciona el Arriendo de Maquinaria · JURMAQ",
@@ -87,7 +88,7 @@ export default function ComoFuncionaPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }}
       />
 
       {/* Hero — editorial */}

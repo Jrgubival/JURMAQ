@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CalculadoraFierroClient from "./CalculadoraFierroClient";
 import RelatedCalculadoras from "@/components/barraca/RelatedCalculadoras";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * pSEO landing — calculadora de quintales de fierro para losa, sobrelosa,
@@ -200,7 +201,7 @@ export default function CalculadoraFierroPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">

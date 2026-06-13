@@ -13,6 +13,7 @@ import { applyDailyPromosToProducts, getDailyPromotions, getPromotedProducts } f
 import { titleCase } from "@jurmaq/shared/format";
 import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
 import type { ProductoPromocionado } from "@/lib/promotions";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 type BarracaCategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
@@ -289,7 +290,7 @@ export default async function BarracaHomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [

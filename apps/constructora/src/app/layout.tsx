@@ -10,6 +10,7 @@ import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
 // Side-effect import: valida env vars al startup. Si falta una required en
 // prod, Zod tira un error explícito en lugar de propagar `undefined`.
 import "@jurmaq/shared/env";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 // Skill-driven typography (frontend-design + design-taste + minimalist-ui + web-typography):
 // - Inter banned across all design skills → replaced with Geist (sans body/UI)
@@ -263,7 +264,7 @@ export default function RootLayout({
         <script
           type="speculationrules"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(buildPrerenderRules(CONSTRUCTORA_PRERENDER_EXCLUDES)),
+            __html: safeJsonLd(buildPrerenderRules(CONSTRUCTORA_PRERENDER_EXCLUDES)),
           }}
         />
         {/* Organization + LocalBusiness + WebSite JSON-LD — shared helper
@@ -271,7 +272,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(buildJsonLdGraph('constructora')),
+            __html: safeJsonLd(buildJsonLdGraph('constructora')),
           }}
         />
       </head>

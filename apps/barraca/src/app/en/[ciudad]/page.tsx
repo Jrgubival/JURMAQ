@@ -7,6 +7,7 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ, DISTANCIAS_BARRACA } from "@jurmaq/shared/seo";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 interface Categoria {
   id: number;
@@ -178,7 +179,7 @@ export default async function BarracaEnCiudadPage({
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">

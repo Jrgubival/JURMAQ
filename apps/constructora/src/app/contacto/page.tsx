@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { ContactForm } from "@/components/public/ContactForm";
 import { whatsappCtaContacto } from "@jurmaq/shared/whatsapp";
 import { LEGAL_INFO, buildPageMetadata } from "@jurmaq/shared/seo";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 // Ejemplo de uso de `buildPageMetadata` con keywords. El helper sigue
 // generando canonical, siteName, OG image y twitter card automáticamente.
@@ -236,7 +237,7 @@ export default function ContactoPage() {
           </div>
         </div>
       </section>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd({
         "@context": "https://schema.org",
         "@type": "ContactPage",
         "name": "Contacto JURMAQ",
@@ -249,7 +250,7 @@ export default function ContactoPage() {
           "address": { "@type": "PostalAddress", "streetAddress": LEGAL_INFO.brands.constructora.streetAddress, "addressLocality": LEGAL_INFO.brands.constructora.addressLocality, "addressRegion": LEGAL_INFO.brands.constructora.addressRegion, "addressCountry": LEGAL_INFO.brands.constructora.addressCountry }
         }
       })}} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd({
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [

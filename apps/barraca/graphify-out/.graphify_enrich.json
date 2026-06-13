@@ -1,0 +1,735 @@
+{
+  "all_tables": [
+    "account_erasure_log",
+    "admin_notifications",
+    "admin_notifications_reads",
+    "barraca_carrito",
+    "barraca_carrito_abandonado",
+    "barraca_carritos_abandonados",
+    "barraca_categorias",
+    "barraca_cotizaciones",
+    "barraca_cupones",
+    "barraca_cupones_usos",
+    "barraca_productos",
+    "barraca_productos_public",
+    "barraca_productos_rating",
+    "barraca_promociones",
+    "barraca_reviews",
+    "barraca_reviews_likes",
+    "barraca_suscriptores",
+    "barraca_usuarios",
+    "barraca_wishlist",
+    "comisiones_maestro",
+    "cotizaciones",
+    "maestros",
+    "pagos_eventos",
+    "users"
+  ],
+  "all_routes": [],
+  "table_uses": {
+    "src/app/sitemap.ts": [
+      "barraca_categorias",
+      "barraca_productos_public",
+      "maestros"
+    ],
+    "src/lib/search.ts": [
+      "barraca_productos"
+    ],
+    "src/lib/import-barraca-smart.ts": [
+      "barraca_productos"
+    ],
+    "src/lib/promotions.ts": [
+      "barraca_categorias",
+      "barraca_productos",
+      "barraca_promociones"
+    ],
+    "src/app/api/auth/route.ts": [
+      "barraca_cotizaciones",
+      "barraca_usuarios",
+      "users"
+    ],
+    "src/app/api/promociones/route.ts": [
+      "barraca_promociones"
+    ],
+    "src/app/api/setup/route.ts": [
+      "barraca_categorias",
+      "barraca_promociones"
+    ],
+    "src/app/api/cotizaciones/route.ts": [
+      "barraca_carrito",
+      "barraca_cotizaciones",
+      "barraca_usuarios",
+      "maestros"
+    ],
+    "src/app/api/categorias/route.ts": [
+      "barraca_categorias",
+      "barraca_productos"
+    ],
+    "src/app/api/suscriptores/route.ts": [
+      "barraca_suscriptores"
+    ],
+    "src/app/api/productos/route.ts": [
+      "barraca_productos"
+    ],
+    "src/app/api/carrito/route.ts": [
+      "barraca_carrito",
+      "barraca_productos",
+      "barraca_promociones"
+    ],
+    "src/app/api/pagos/route.ts": [
+      "barraca_cotizaciones"
+    ],
+    "src/app/api/upload/route.ts": [
+      "cotizaciones"
+    ],
+    "src/app/api/cron/sms-recovery/route.ts": [
+      "barraca_carrito_abandonado"
+    ],
+    "src/app/api/cron/post-purchase/route.ts": [
+      "barraca_cotizaciones",
+      "barraca_productos"
+    ],
+    "src/app/api/cron/carrito-recovery/route.ts": [
+      "barraca_carrito_abandonado",
+      "barraca_cupones"
+    ],
+    "src/app/api/pagos/webhook/route.ts": [
+      "barraca_cotizaciones",
+      "pagos_eventos"
+    ],
+    "src/app/api/productos/bulk-price/route.ts": [
+      "barraca_categorias",
+      "barraca_productos"
+    ],
+    "src/app/api/productos/bulk-image/route.ts": [
+      "barraca_productos"
+    ],
+    "src/app/api/productos/export/route.ts": [
+      "barraca_productos"
+    ],
+    "src/app/api/productos/[slug]/route.ts": [
+      "barraca_categorias",
+      "barraca_productos"
+    ],
+    "src/app/api/suscriptores/[id]/route.ts": [
+      "barraca_suscriptores"
+    ],
+    "src/app/api/asistente/chat/route.ts": [
+      "barraca_productos_public"
+    ],
+    "src/app/api/imagenes/similar/route.ts": [
+      "barraca_productos"
+    ],
+    "src/app/api/imagenes/assign/route.ts": [
+      "barraca_productos"
+    ],
+    "src/app/api/cuenta/eliminar/route.ts": [
+      "account_erasure_log",
+      "barraca_carrito",
+      "barraca_cotizaciones",
+      "barraca_suscriptores",
+      "barraca_usuarios"
+    ],
+    "src/app/api/cuenta/exportar/route.ts": [
+      "barraca_carrito",
+      "barraca_cotizaciones",
+      "barraca_suscriptores",
+      "barraca_usuarios"
+    ],
+    "src/app/api/cuenta/wishlist/route.ts": [
+      "barraca_usuarios",
+      "barraca_wishlist"
+    ],
+    "src/app/api/cuenta/reviews/route.ts": [
+      "barraca_cotizaciones",
+      "barraca_productos",
+      "barraca_reviews",
+      "barraca_usuarios"
+    ],
+    "src/app/api/cuenta/reviews/[id]/like/route.ts": [
+      "barraca_reviews_likes",
+      "barraca_usuarios"
+    ],
+    "src/app/api/public/productos/[id]/reviews/route.ts": [
+      "barraca_productos_rating",
+      "barraca_reviews"
+    ],
+    "src/app/api/public/cupones/validar/route.ts": [
+      "barraca_cupones",
+      "barraca_cupones_usos"
+    ],
+    "src/app/api/public/carrito-abandonado/track/route.ts": [
+      "barraca_carrito_abandonado"
+    ],
+    "src/app/api/public/maestros/validar/route.ts": [
+      "maestros"
+    ],
+    "src/app/api/public/maestros/[codigo]/route.ts": [
+      "comisiones_maestro",
+      "maestros"
+    ],
+    "src/app/api/cotizaciones/contraoferta-email/route.ts": [
+      "barraca_cotizaciones"
+    ],
+    "src/app/api/cotizaciones/[id]/route.ts": [
+      "barraca_cotizaciones"
+    ],
+    "src/app/api/cotizaciones/[id]/accept/route.ts": [
+      "barraca_cotizaciones"
+    ],
+    "src/app/api/cotizaciones/[id]/pdf/route.ts": [
+      "barraca_cotizaciones"
+    ],
+    "src/app/api/cotizaciones/[id]/message/route.ts": [
+      "barraca_cotizaciones"
+    ],
+    "src/app/api/cotizaciones/by-numero/[numero]/route.ts": [
+      "barraca_cotizaciones"
+    ],
+    "src/app/api/admin/maestros/route.ts": [
+      "maestros"
+    ],
+    "src/app/api/admin/comisiones/route.ts": [
+      "comisiones_maestro"
+    ],
+    "src/app/api/admin/stock-alerts/route.ts": [
+      "barraca_productos"
+    ],
+    "src/app/api/admin/dashboard/route.ts": [
+      "barraca_carrito_abandonado",
+      "barraca_cotizaciones"
+    ],
+    "src/app/api/admin/cupones/route.ts": [
+      "barraca_cupones"
+    ],
+    "src/app/api/admin/clientes/route.ts": [
+      "barraca_cotizaciones",
+      "barraca_usuarios"
+    ],
+    "src/app/api/admin/notifications/route.ts": [
+      "admin_notifications",
+      "admin_notifications_reads"
+    ],
+    "src/app/api/admin/reviews/route.ts": [
+      "barraca_reviews"
+    ],
+    "src/app/api/admin/reviews/[id]/route.ts": [
+      "barraca_reviews"
+    ],
+    "src/app/api/admin/notifications/read-all/route.ts": [
+      "admin_notifications",
+      "admin_notifications_reads"
+    ],
+    "src/app/api/admin/notifications/[id]/read/route.ts": [
+      "admin_notifications_reads"
+    ],
+    "src/app/api/admin/clientes/[id]/route.ts": [
+      "barraca_carritos_abandonados",
+      "barraca_cotizaciones",
+      "barraca_productos",
+      "barraca_reviews",
+      "barraca_usuarios",
+      "barraca_wishlist"
+    ],
+    "src/app/api/admin/productos/bulk-action/route.ts": [
+      "barraca_categorias",
+      "barraca_productos"
+    ],
+    "src/app/api/admin/cupones/[id]/route.ts": [
+      "barraca_cupones"
+    ],
+    "src/app/api/admin/comisiones/[id]/route.ts": [
+      "comisiones_maestro"
+    ],
+    "src/app/api/admin/comisiones/[id]/pagar/route.ts": [
+      "comisiones_maestro"
+    ],
+    "src/app/api/admin/maestros/[id]/route.ts": [
+      "comisiones_maestro",
+      "maestros"
+    ],
+    "src/app/api/promociones/import/route.ts": [
+      "barraca_productos"
+    ],
+    "src/app/page.tsx": [
+      "barraca_categorias",
+      "barraca_productos"
+    ],
+    "src/app/categorias/page.tsx": [
+      "barraca_categorias",
+      "barraca_productos"
+    ],
+    "src/app/buscar/page.tsx": [
+      "barraca_categorias"
+    ],
+    "src/app/material/[slug]/page.tsx": [
+      "barraca_categorias",
+      "barraca_productos"
+    ],
+    "src/app/en/[ciudad]/page.tsx": [
+      "barraca_categorias"
+    ],
+    "src/app/categorias/[slug]/page.tsx": [
+      "barraca_categorias",
+      "barraca_productos"
+    ],
+    "src/app/producto/[slug]/page.tsx": [
+      "barraca_categorias",
+      "barraca_productos",
+      "barraca_promociones"
+    ]
+  },
+  "route_uses": {},
+  "pages": [
+    [
+      "/",
+      "src/app/page.tsx"
+    ],
+    [
+      "/guias",
+      "src/app/guias/page.tsx"
+    ],
+    [
+      "/calculadoras",
+      "src/app/calculadoras/page.tsx"
+    ],
+    [
+      "/calculadora-pintura",
+      "src/app/calculadora-pintura/page.tsx"
+    ],
+    [
+      "/cotizar",
+      "src/app/cotizar/page.tsx"
+    ],
+    [
+      "/admin",
+      "src/app/admin/page.tsx"
+    ],
+    [
+      "/calculadora-fierro",
+      "src/app/calculadora-fierro/page.tsx"
+    ],
+    [
+      "/alternativa",
+      "src/app/alternativa/page.tsx"
+    ],
+    [
+      "/categorias",
+      "src/app/categorias/page.tsx"
+    ],
+    [
+      "/cuenta",
+      "src/app/cuenta/page.tsx"
+    ],
+    [
+      "/te-mejoramos-el-precio",
+      "src/app/te-mejoramos-el-precio/page.tsx"
+    ],
+    [
+      "/calculadora-cemento",
+      "src/app/calculadora-cemento/page.tsx"
+    ],
+    [
+      "/calculadora-zincalum",
+      "src/app/calculadora-zincalum/page.tsx"
+    ],
+    [
+      "/carrito",
+      "src/app/carrito/page.tsx"
+    ],
+    [
+      "/buscar",
+      "src/app/buscar/page.tsx"
+    ],
+    [
+      "/calculadora-hormigon",
+      "src/app/calculadora-hormigon/page.tsx"
+    ],
+    [
+      "/material/[slug]",
+      "src/app/material/[slug]/page.tsx"
+    ],
+    [
+      "/en/[ciudad]",
+      "src/app/en/[ciudad]/page.tsx"
+    ],
+    [
+      "/pago/pendiente",
+      "src/app/pago/pendiente/page.tsx"
+    ],
+    [
+      "/pago/error",
+      "src/app/pago/error/page.tsx"
+    ],
+    [
+      "/pago/exito",
+      "src/app/pago/exito/page.tsx"
+    ],
+    [
+      "/cuenta/registro",
+      "src/app/cuenta/registro/page.tsx"
+    ],
+    [
+      "/cuenta/login",
+      "src/app/cuenta/login/page.tsx"
+    ],
+    [
+      "/cuenta/wishlist",
+      "src/app/cuenta/wishlist/page.tsx"
+    ],
+    [
+      "/categorias/[slug]",
+      "src/app/categorias/[slug]/page.tsx"
+    ],
+    [
+      "/alternativa/[competidor]",
+      "src/app/alternativa/[competidor]/page.tsx"
+    ],
+    [
+      "/admin/notificaciones",
+      "src/app/admin/notificaciones/page.tsx"
+    ],
+    [
+      "/admin/maestros",
+      "src/app/admin/maestros/page.tsx"
+    ],
+    [
+      "/admin/promociones",
+      "src/app/admin/promociones/page.tsx"
+    ],
+    [
+      "/admin/importar",
+      "src/app/admin/importar/page.tsx"
+    ],
+    [
+      "/admin/comisiones",
+      "src/app/admin/comisiones/page.tsx"
+    ],
+    [
+      "/admin/dashboard",
+      "src/app/admin/dashboard/page.tsx"
+    ],
+    [
+      "/admin/cotizaciones",
+      "src/app/admin/cotizaciones/page.tsx"
+    ],
+    [
+      "/admin/categorias",
+      "src/app/admin/categorias/page.tsx"
+    ],
+    [
+      "/admin/cupones",
+      "src/app/admin/cupones/page.tsx"
+    ],
+    [
+      "/admin/imagenes-masivas",
+      "src/app/admin/imagenes-masivas/page.tsx"
+    ],
+    [
+      "/admin/imagenes",
+      "src/app/admin/imagenes/page.tsx"
+    ],
+    [
+      "/admin/suscriptores",
+      "src/app/admin/suscriptores/page.tsx"
+    ],
+    [
+      "/admin/productos",
+      "src/app/admin/productos/page.tsx"
+    ],
+    [
+      "/admin/clientes",
+      "src/app/admin/clientes/page.tsx"
+    ],
+    [
+      "/admin/reviews",
+      "src/app/admin/reviews/page.tsx"
+    ],
+    [
+      "/admin/precios",
+      "src/app/admin/precios/page.tsx"
+    ],
+    [
+      "/admin/clientes/[id]",
+      "src/app/admin/clientes/[id]/page.tsx"
+    ],
+    [
+      "/admin/maestros/[id]",
+      "src/app/admin/maestros/[id]/page.tsx"
+    ],
+    [
+      "/cotizacion/[numero]",
+      "src/app/cotizacion/[numero]/page.tsx"
+    ],
+    [
+      "/maestros/[codigo]",
+      "src/app/maestros/[codigo]/page.tsx"
+    ],
+    [
+      "/producto/[slug]",
+      "src/app/producto/[slug]/page.tsx"
+    ],
+    [
+      "/guias/[slug]",
+      "src/app/guias/[slug]/page.tsx"
+    ]
+  ],
+  "api_routes": [
+    [
+      "/api/auth",
+      "src/app/api/auth/route.ts"
+    ],
+    [
+      "/api/promociones",
+      "src/app/api/promociones/route.ts"
+    ],
+    [
+      "/api/importar",
+      "src/app/api/importar/route.ts"
+    ],
+    [
+      "/api/setup",
+      "src/app/api/setup/route.ts"
+    ],
+    [
+      "/api/cotizaciones",
+      "src/app/api/cotizaciones/route.ts"
+    ],
+    [
+      "/api/categorias",
+      "src/app/api/categorias/route.ts"
+    ],
+    [
+      "/api/suscriptores",
+      "src/app/api/suscriptores/route.ts"
+    ],
+    [
+      "/api/productos",
+      "src/app/api/productos/route.ts"
+    ],
+    [
+      "/api/carrito",
+      "src/app/api/carrito/route.ts"
+    ],
+    [
+      "/api/buscar",
+      "src/app/api/buscar/route.ts"
+    ],
+    [
+      "/api/pagos",
+      "src/app/api/pagos/route.ts"
+    ],
+    [
+      "/api/email",
+      "src/app/api/email/route.ts"
+    ],
+    [
+      "/api/upload",
+      "src/app/api/upload/route.ts"
+    ],
+    [
+      "/api/cron/sms-recovery",
+      "src/app/api/cron/sms-recovery/route.ts"
+    ],
+    [
+      "/api/cron/post-purchase",
+      "src/app/api/cron/post-purchase/route.ts"
+    ],
+    [
+      "/api/cron/carrito-recovery",
+      "src/app/api/cron/carrito-recovery/route.ts"
+    ],
+    [
+      "/api/pagos/webhook",
+      "src/app/api/pagos/webhook/route.ts"
+    ],
+    [
+      "/api/productos/bulk-price",
+      "src/app/api/productos/bulk-price/route.ts"
+    ],
+    [
+      "/api/productos/bulk-image",
+      "src/app/api/productos/bulk-image/route.ts"
+    ],
+    [
+      "/api/productos/export",
+      "src/app/api/productos/export/route.ts"
+    ],
+    [
+      "/api/productos/[slug]",
+      "src/app/api/productos/[slug]/route.ts"
+    ],
+    [
+      "/api/suscriptores/[id]",
+      "src/app/api/suscriptores/[id]/route.ts"
+    ],
+    [
+      "/api/asistente/chat",
+      "src/app/api/asistente/chat/route.ts"
+    ],
+    [
+      "/api/imagenes/similar",
+      "src/app/api/imagenes/similar/route.ts"
+    ],
+    [
+      "/api/imagenes/search",
+      "src/app/api/imagenes/search/route.ts"
+    ],
+    [
+      "/api/imagenes/assign",
+      "src/app/api/imagenes/assign/route.ts"
+    ],
+    [
+      "/api/cuenta/eliminar",
+      "src/app/api/cuenta/eliminar/route.ts"
+    ],
+    [
+      "/api/cuenta/exportar",
+      "src/app/api/cuenta/exportar/route.ts"
+    ],
+    [
+      "/api/cuenta/wishlist",
+      "src/app/api/cuenta/wishlist/route.ts"
+    ],
+    [
+      "/api/cuenta/reviews",
+      "src/app/api/cuenta/reviews/route.ts"
+    ],
+    [
+      "/api/cuenta/reviews/[id]/like",
+      "src/app/api/cuenta/reviews/[id]/like/route.ts"
+    ],
+    [
+      "/api/public/productos/[id]/reviews",
+      "src/app/api/public/productos/[id]/reviews/route.ts"
+    ],
+    [
+      "/api/public/cupones/validar",
+      "src/app/api/public/cupones/validar/route.ts"
+    ],
+    [
+      "/api/public/carrito-abandonado/track",
+      "src/app/api/public/carrito-abandonado/track/route.ts"
+    ],
+    [
+      "/api/public/maestros/validar",
+      "src/app/api/public/maestros/validar/route.ts"
+    ],
+    [
+      "/api/public/maestros/[codigo]",
+      "src/app/api/public/maestros/[codigo]/route.ts"
+    ],
+    [
+      "/api/cotizaciones/contraoferta-email",
+      "src/app/api/cotizaciones/contraoferta-email/route.ts"
+    ],
+    [
+      "/api/cotizaciones/[id]",
+      "src/app/api/cotizaciones/[id]/route.ts"
+    ],
+    [
+      "/api/cotizaciones/[id]/accept",
+      "src/app/api/cotizaciones/[id]/accept/route.ts"
+    ],
+    [
+      "/api/cotizaciones/[id]/pdf",
+      "src/app/api/cotizaciones/[id]/pdf/route.ts"
+    ],
+    [
+      "/api/cotizaciones/[id]/message",
+      "src/app/api/cotizaciones/[id]/message/route.ts"
+    ],
+    [
+      "/api/cotizaciones/by-numero/[numero]",
+      "src/app/api/cotizaciones/by-numero/[numero]/route.ts"
+    ],
+    [
+      "/api/admin/maestros",
+      "src/app/api/admin/maestros/route.ts"
+    ],
+    [
+      "/api/admin/comisiones",
+      "src/app/api/admin/comisiones/route.ts"
+    ],
+    [
+      "/api/admin/stock-alerts",
+      "src/app/api/admin/stock-alerts/route.ts"
+    ],
+    [
+      "/api/admin/dashboard",
+      "src/app/api/admin/dashboard/route.ts"
+    ],
+    [
+      "/api/admin/cupones",
+      "src/app/api/admin/cupones/route.ts"
+    ],
+    [
+      "/api/admin/clientes",
+      "src/app/api/admin/clientes/route.ts"
+    ],
+    [
+      "/api/admin/notifications",
+      "src/app/api/admin/notifications/route.ts"
+    ],
+    [
+      "/api/admin/reviews",
+      "src/app/api/admin/reviews/route.ts"
+    ],
+    [
+      "/api/admin/reviews/[id]",
+      "src/app/api/admin/reviews/[id]/route.ts"
+    ],
+    [
+      "/api/admin/notifications/read-all",
+      "src/app/api/admin/notifications/read-all/route.ts"
+    ],
+    [
+      "/api/admin/notifications/[id]/read",
+      "src/app/api/admin/notifications/[id]/read/route.ts"
+    ],
+    [
+      "/api/admin/clientes/[id]",
+      "src/app/api/admin/clientes/[id]/route.ts"
+    ],
+    [
+      "/api/admin/productos/bulk-action",
+      "src/app/api/admin/productos/bulk-action/route.ts"
+    ],
+    [
+      "/api/admin/cupones/[id]",
+      "src/app/api/admin/cupones/[id]/route.ts"
+    ],
+    [
+      "/api/admin/comisiones/[id]",
+      "src/app/api/admin/comisiones/[id]/route.ts"
+    ],
+    [
+      "/api/admin/comisiones/[id]/pagar",
+      "src/app/api/admin/comisiones/[id]/pagar/route.ts"
+    ],
+    [
+      "/api/admin/maestros/[id]",
+      "src/app/api/admin/maestros/[id]/route.ts"
+    ],
+    [
+      "/api/importar/parse",
+      "src/app/api/importar/parse/route.ts"
+    ],
+    [
+      "/api/importar/preview",
+      "src/app/api/importar/preview/route.ts"
+    ],
+    [
+      "/api/importar/execute",
+      "src/app/api/importar/execute/route.ts"
+    ],
+    [
+      "/api/promociones/import",
+      "src/app/api/promociones/import/route.ts"
+    ],
+    [
+      "/api/auth/[...nextauth]",
+      "src/app/api/auth/[...nextauth]/route.ts"
+    ]
+  ]
+}

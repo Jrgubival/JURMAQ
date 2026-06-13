@@ -6,7 +6,6 @@ import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 import { transporter } from '@jurmaq/shared/mail/transport';
 import { env } from '@jurmaq/shared/env';
 import {
-  generateClienteToken,
   generateClienteTokenAsync,
   setClienteSessionCookie,
   clearClienteSessionCookie,

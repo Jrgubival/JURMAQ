@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RECURSOS, CATEGORIA_LABEL, type RecursoCategoria } from "@/lib/recursos-data";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * Hub /recursos — index de guías informacionales para constructora.
@@ -78,7 +79,7 @@ export default function RecursosIndexPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-12 lg:py-16">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">

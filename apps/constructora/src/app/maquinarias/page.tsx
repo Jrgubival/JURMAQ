@@ -9,6 +9,7 @@ import MaquinariaSort from "@/components/public/MaquinariaSort";
 import { maquinariaHref } from "@/lib/maquinaria-slug";
 import { LEGAL_INFO } from "@jurmaq/shared/seo";
 import type { Database } from "@jurmaq/shared/db-types";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 type MaquinariaRow = Database['public']['Tables']['maquinarias']['Row'];
 
@@ -240,12 +241,12 @@ export default async function MaquinariasPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
       />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(machineryBusinessJsonLd),
+          __html: safeJsonLd(machineryBusinessJsonLd),
         }}
       />
       {/* Hero Header — editorial */}
@@ -484,7 +485,7 @@ export default async function MaquinariasPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [

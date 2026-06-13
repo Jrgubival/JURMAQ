@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { whatsappCtaSucursal } from '@jurmaq/shared/whatsapp';
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * /sucursales — Página pública con 4 sucursales JURMAQ.
@@ -131,7 +132,7 @@ export default function SucursalesPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(sucursalesData) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(sucursalesData) }}
       />
 
       {/* Hero */}

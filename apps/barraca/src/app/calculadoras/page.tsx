@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 export const metadata: Metadata = {
   title: "Calculadoras de Materiales · Fierro, Cemento, Hormigón, Pintura, Zincalum · JURMAQ",
@@ -92,7 +93,7 @@ export default function CalculadorasIndexPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">

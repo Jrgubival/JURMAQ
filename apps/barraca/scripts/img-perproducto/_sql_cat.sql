@@ -1,0 +1,21 @@
+UPDATE barraca_categorias c SET imagen=m.url FROM (VALUES
+(1,'https://http2.mlstatic.com/D_Q_NP_2X_920724-MLC91552235710_092025-E.webp'),
+(2,'https://http2.mlstatic.com/D_Q_NP_2X_955652-MLC93298427518_092025-E.webp'),
+(3,'https://http2.mlstatic.com/D_Q_NP_2X_790297-CBT109812139562_042026-E.webp'),
+(4,'https://http2.mlstatic.com/D_Q_NP_2X_863527-MLA100033539615_122025-E.webp'),
+(5,'https://http2.mlstatic.com/D_Q_NP_2X_619563-MLA107292817117_022026-E.webp'),
+(6,'https://http2.mlstatic.com/D_Q_NP_2X_752334-MLA99938470451_112025-E.webp'),
+(7,'https://http2.mlstatic.com/D_Q_NP_2X_803260-MLA99927334253_112025-E.webp'),
+(8,'https://http2.mlstatic.com/D_Q_NP_2X_842612-MLC111645760085_052026-E.webp'),
+(16,'https://http2.mlstatic.com/D_Q_NP_2X_905417-MLC51426017101_092022-E.webp'),
+(17,'https://http2.mlstatic.com/D_Q_NP_2X_636044-MLC96658187474_112025-E.webp'),
+(18,'https://http2.mlstatic.com/D_Q_NP_2X_781947-MLA109745490458_042026-E.webp'),
+(19,'https://http2.mlstatic.com/D_Q_NP_2X_888184-MLA102163995941_122025-E.webp'),
+(20,'https://http2.mlstatic.com/D_Q_NP_2X_624658-MLU79762958636_102024-E.webp'),
+(21,'https://http2.mlstatic.com/D_Q_NP_2X_847441-MLC109909910178_042026-E.webp'),
+(22,'https://http2.mlstatic.com/D_Q_NP_2X_667404-MLU70898426497_082023-E.webp'),
+(24,'https://http2.mlstatic.com/D_Q_NP_2X_956205-MLC74702915174_022024-E.webp'),
+(25,'https://http2.mlstatic.com/D_Q_NP_2X_778530-MLC80919970960_122024-E.webp'),
+(27,'https://http2.mlstatic.com/D_Q_NP_2X_688194-MLC107750028590_032026-E.webp'),
+(29,'https://http2.mlstatic.com/D_Q_NP_2X_785136-MLC89109680134_082025-E.webp')
+) AS m(id,url) WHERE c.id=m.id;

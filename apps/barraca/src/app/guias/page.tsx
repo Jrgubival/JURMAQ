@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GUIAS } from "@/lib/guias-seo-data";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * Hub /barraca/guias — index de las guías programáticas. Internal linking
@@ -43,7 +44,7 @@ export default function GuiasIndexPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

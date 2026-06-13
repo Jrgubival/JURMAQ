@@ -7,18 +7,14 @@ import { env } from '@jurmaq/shared/env';
 import { NextRequest } from 'next/server';
 
 /**
- * SECURITY MIGRATION (audit fase 2A.1):
- * El sistema histórico de tokens era base64("clienteId:randomHex") — sin firma,
- * forjable por cualquiera que pueda enumerar IDs. Lo reemplazamos por JWT
- * firmados HMAC-SHA256 con revocación contra `user_sessions`.
- *
- * Activación dual-mode:
- *   - Default (sin env var): tokens nuevos seguen siendo base64 LEGACY.
- *   - Si AUTH_SESSIONS_ENABLED=true + migrate-user-sessions.sql aplicada:
- *     tokens nuevos son JWT firmados.
- * `parseClienteTokenAsync` siempre acepta AMBOS formatos durante la transición.
+ * SECURITY (audit jun-2026, hallazgo C-1):
+ * Los tokens del portal cliente son SIEMPRE JWT firmados HMAC-SHA256 con
+ * revocación contra `user_sessions`. El sistema histórico base64("id:randomHex")
+ * era FORJABLE (cualquiera que enumerara IDs podía impersonar a un cliente) y
+ * se ELIMINÓ por completo: ni la emisión ni el parseo aceptan ya el formato
+ * legacy. Fail-closed — un flag apagado o un error de DB no pueden reabrir el
+ * vector (la firma falla ruidosamente en vez de emitir un token débil).
  */
-const USE_SIGNED_TOKENS = env.AUTH_SESSIONS_ENABLED;
 
 /**
  * Auth helpers para el portal cliente arriendo (constructora).
@@ -57,89 +53,39 @@ export interface ClienteSession {
 }
 
 /**
- * Sync emisor LEGACY. Mantenido para retrocompatibilidad. Si quieres usar
- * el sistema nuevo firmado, usa `generateClienteTokenAsync`.
- */
-export function generateClienteToken(clienteId: number): string {
-  const random = crypto.randomBytes(32).toString('hex');
-  return Buffer.from(`${clienteId}:${random}`).toString('base64');
-}
-
-/**
- * Async emisor que elige el sistema según AUTH_SESSIONS_ENABLED:
- *   - true + user_sessions table presente → JWT firmado HMAC + DB-tracked
- *   - false (default) → base64 legacy (forjable, pero compatible con código viejo)
+ * Emisor del token del portal cliente: SIEMPRE JWT firmado. Si la firma falla,
+ * lanza (no se emite token forjable). La rama legacy base64 se eliminó.
  */
 export async function generateClienteTokenAsync(
   clienteId: number,
   opts?: { ip?: string; userAgent?: string },
 ): Promise<string> {
-  if (USE_SIGNED_TOKENS) {
-    try {
-      return await signSessionJWT({
-        userId: String(clienteId),
-        scope: 'constructora',
-        role: 'cliente',
-        ttlSeconds: COOKIE_MAX_AGE,
-        ip: opts?.ip,
-        userAgent: opts?.userAgent,
-      });
-    } catch (e) {
-      console.error('[cuenta-auth] signSessionJWT falló, fallback a legacy', e);
-      // No bloquea el flow — si user_sessions table aún no se aplicó, caemos al legacy.
-      return generateClienteToken(clienteId);
-    }
-  }
-  return generateClienteToken(clienteId);
+  return signSessionJWT({
+    userId: String(clienteId),
+    scope: 'constructora',
+    role: 'cliente',
+    ttlSeconds: COOKIE_MAX_AGE,
+    ip: opts?.ip,
+    userAgent: opts?.userAgent,
+  });
 }
 
 /**
- * Sync parser legacy — solo acepta el formato base64 viejo.
- * Para uso en código que no puede await. Si el token es JWT, retorna null.
- */
-export function parseClienteToken(token: string): number | null {
-  // Si parece JWT (3 partes con dots), NO es nuestro formato legacy
-  if (token.split('.').length === 3) return null;
-  try {
-    const decoded = Buffer.from(token, 'base64').toString('utf8');
-    const colonIdx = decoded.indexOf(':');
-    if (colonIdx === -1) return null;
-    const idStr = decoded.substring(0, colonIdx);
-    const random = decoded.substring(colonIdx + 1);
-    if (random.length < 32) return null;
-    const id = parseInt(idStr, 10);
-    return Number.isNaN(id) ? null : id;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Async parser dual-mode. Acepta tanto JWT firmado nuevo como base64 legacy.
- * Es el path que usan los endpoints durante la transición.
+ * Parser del token del portal cliente: SOLO JWT firmado con sesión vigente en
+ * `user_sessions` (scope 'constructora'). La rama legacy base64 forjable se
+ * eliminó (audit jun-2026, hallazgo C-1) — fail-closed.
  */
 export async function parseClienteTokenAsync(token: string): Promise<number | null> {
-  // 1. Intento JWT firmado (3 segmentos delimitados por ".")
-  if (token.split('.').length === 3) {
-    try {
-      const session = await verifySessionJWT(token, 'constructora');
-      if (!session) return null;
-      const id = parseInt(session.userId, 10);
-      return Number.isNaN(id) ? null : id;
-    } catch (e) {
-      console.error('[cuenta-auth] verifySessionJWT exception', e);
-      return null;
-    }
+  if (token.split('.').length !== 3) return null;
+  try {
+    const session = await verifySessionJWT(token, 'constructora');
+    if (!session) return null;
+    const id = parseInt(session.userId, 10);
+    return Number.isNaN(id) ? null : id;
+  } catch (e) {
+    console.error('[cuenta-auth] verifySessionJWT exception', e);
+    return null;
   }
-  // 2. Fallback legacy (base64 sin firma → FORJABLE).
-  //    Audit 1.2: solo se acepta mientras AUTH_SESSIONS_ENABLED esté APAGADO
-  //    (transición). Con el flag encendido (tras aplicar migrate-user-sessions
-  //    y emitir JWT firmado), los tokens legacy se RECHAZAN → cierra el vector
-  //    de impersonación. El cambio es atómico y fail-safe: la emisión también
-  //    pasa a firmada con el mismo flag, así que desplegar con el flag apagado
-  //    NO altera el comportamiento actual.
-  if (USE_SIGNED_TOKENS) return null;
-  return parseClienteToken(token);
 }
 
 /** Setea la cookie de sesión del cliente. Usar en /api/cuenta/auth. */

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CalculadoraHormigonClient from "./CalculadoraHormigonClient";
 import RelatedCalculadoras from "@/components/barraca/RelatedCalculadoras";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 export const metadata: Metadata = {
   title: "Calculadora de Hormigón H20 / H25 / H30 · Cemento, Arena, Gravilla por m³ · JURMAQ",
@@ -150,7 +151,7 @@ export default function CalculadoraHormigonPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">

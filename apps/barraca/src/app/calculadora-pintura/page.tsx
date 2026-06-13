@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CalculadoraPinturaClient from "./CalculadoraPinturaClient";
 import RelatedCalculadoras from "@/components/barraca/RelatedCalculadoras";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 export const metadata: Metadata = {
   title: "Calculadora de Pintura · Litros y Galones por m² · JURMAQ Barraca",
@@ -133,7 +134,7 @@ export default function CalculadoraPinturaPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">

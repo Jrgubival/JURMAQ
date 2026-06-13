@@ -9,6 +9,7 @@ import {
   PROVEEDOR_JSONLD,
 } from "@/lib/proyectos-data";
 import { LEGAL_INFO } from "@jurmaq/shared/seo";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * Detail page de un case study de obra.
@@ -140,7 +141,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdGraph) }}
       />
 
       {/* ===== HERO ===== */}

@@ -2,84 +2,45 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { sendWelcomeEmail } from '@jurmaq/shared/mail/email';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { sanitizeString, isValidEmail, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { logSafe, maskEmail, logSafeError } from '@jurmaq/shared/logging';
 import { signToken as signSessionJWT, verifyToken as verifySessionJWT } from '@jurmaq/shared/auth/session-token';
-import { env } from '@jurmaq/shared/env';
 
 /**
- * SECURITY (audit fase 2A.1):
- * Dual-mode auth. Default sigue siendo base64 legacy ("id:random"). Cuando
- * AUTH_SESSIONS_ENABLED=true + migrate-user-sessions.sql aplicada, emite
- * JWT firmados HMAC-SHA256 con revocación contra `user_sessions`.
- * parseToken acepta AMBOS formatos durante la transición.
+ * SECURITY (audit jun-2026, hallazgo C-1): los tokens del portal de clientes
+ * son SIEMPRE JWT firmados HMAC con revocación contra `user_sessions`. Se
+ * eliminó por completo la rama legacy base64("id:random"), que era FORJABLE
+ * (cualquiera podía impersonar a un cliente por su id). Ahora es fail-closed:
+ * ni un flag apagado ni un error de DB pueden reabrir el vector — si la firma
+ * falla, NO se emite token y NO se acepta nada que no sea un JWT válido.
  */
-const USE_SIGNED_TOKENS = env.AUTH_SESSIONS_ENABLED;
 const TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 días
 
-// Sync emisor LEGACY (forjable, mantenido para compat con código existente).
-function generateToken(userId: number): string {
-  const random = crypto.randomBytes(32).toString('hex');
-  return Buffer.from(`${userId}:${random}`).toString('base64');
-}
-
-// Async issuer dual-mode. JWT firmado si activado, sino legacy.
+// Emisor: SIEMPRE firmado. Si la firma falla, lanza (no se emite token forjable).
 async function generateTokenAsync(userId: number, opts?: { ip?: string; userAgent?: string }): Promise<string> {
-  if (USE_SIGNED_TOKENS) {
-    try {
-      return await signSessionJWT({
-        userId: String(userId),
-        scope: 'barraca',
-        role: 'cliente',
-        ttlSeconds: TOKEN_TTL_SECONDS,
-        ip: opts?.ip,
-        userAgent: opts?.userAgent,
-      });
-    } catch (e) {
-      console.error('[barraca-auth] signSessionJWT failed, fallback legacy', e);
-      return generateToken(userId);
-    }
-  }
-  return generateToken(userId);
+  return signSessionJWT({
+    userId: String(userId),
+    scope: 'barraca',
+    role: 'cliente',
+    ttlSeconds: TOKEN_TTL_SECONDS,
+    ip: opts?.ip,
+    userAgent: opts?.userAgent,
+  });
 }
 
-// Sync parser legacy. Si parece JWT (3 partes con .), retorna null;
-// la verificación firmada va por parseTokenAsync.
-function parseToken(token: string): number | null {
-  if (token.split('.').length === 3) return null;
+// Parser: SOLO acepta JWT firmado (3 segmentos). Todo lo demás → null.
+async function parseTokenAsync(token: string): Promise<number | null> {
+  if (token.split('.').length !== 3) return null;
   try {
-    const decoded = Buffer.from(token, 'base64').toString('utf8');
-    const colonIdx = decoded.indexOf(':');
-    if (colonIdx === -1) return null;
-    const idStr = decoded.substring(0, colonIdx);
-    const random = decoded.substring(colonIdx + 1);
-    if (random.length < 32) return null;
-    const id = parseInt(idStr, 10);
-    return isNaN(id) ? null : id;
-  } catch {
+    const session = await verifySessionJWT(token, 'barraca');
+    if (!session) return null;
+    const id = parseInt(session.userId, 10);
+    return Number.isNaN(id) ? null : id;
+  } catch (e) {
+    console.error('[barraca-auth] verifySessionJWT exception', e);
     return null;
   }
-}
-
-// Async dual-mode parser. Acepta JWT firmado o base64 legacy.
-async function parseTokenAsync(token: string): Promise<number | null> {
-  if (token.split('.').length === 3) {
-    try {
-      const session = await verifySessionJWT(token, 'barraca');
-      if (!session) return null;
-      const id = parseInt(session.userId, 10);
-      return Number.isNaN(id) ? null : id;
-    } catch (e) {
-      console.error('[barraca-auth] verifySessionJWT exception', e);
-      return null;
-    }
-  }
-  // Legacy base64 → FORJABLE. Audit 1.2: rechazar cuando el flag está encendido
-  // (emisión ya firmada); fail-safe con el flag apagado (comportamiento actual).
-  if (USE_SIGNED_TOKENS) return null;
-  return parseToken(token);
 }
 
 function extractToken(request: NextRequest): string | null {

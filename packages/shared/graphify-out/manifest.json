@@ -1,0 +1,282 @@
+{
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/messages.ts": {
+    "mtime": 1779837680.2565491,
+    "hash": "6799e524cbbeaa86a3cda4850cceb605"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/db-types.ts": {
+    "mtime": 1779897065.2206771,
+    "hash": "1cecf9f6f5555f0ce2a50c3b07d8f67d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/next-auth.d.ts": {
+    "mtime": 1779147935.1777673,
+    "hash": "3427193bcff4d3933043ff8fc6a74a1d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/env.ts": {
+    "mtime": 1781105361.9677057,
+    "hash": "070ebbbdeda6f81091eff75dc7160b25"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/ui/ConfirmDialog.tsx": {
+    "mtime": 1779136222.6038127,
+    "hash": "2c9969f5e911621b170d41368738a132"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/ui/CommandPalette.tsx": {
+    "mtime": 1778772686.6756837,
+    "hash": "05c7a20a5d3b40eaeb381b4e9c7080e2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/ui/CookieBanner.tsx": {
+    "mtime": 1779759158.3707883,
+    "hash": "451f45b67c7e6048c7c18c9a90d9451b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/ui/Breadcrumbs.tsx": {
+    "mtime": 1779899931.4373522,
+    "hash": "b56121a5391e6455a77a212046e12c0a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/ui/Analytics.tsx": {
+    "mtime": 1779836589.0057416,
+    "hash": "1df21832e13af45b2ab0c8a770a12aeb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/ui/ViewItemTracker.tsx": {
+    "mtime": 1779759389.007274,
+    "hash": "2c6954f6f915448dbdd911735d3537a4"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/ui/CrossLinksGrid.tsx": {
+    "mtime": 1779899952.9625165,
+    "hash": "4628b851a15a011276c6d1980b78cf73"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/ui/useConfirmDialog.tsx": {
+    "mtime": 1779148379.459441,
+    "hash": "4e4b9003c38805e1fc882de84a4341fb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/sms/index.ts": {
+    "mtime": 1779482056.4353502,
+    "hash": "35bedb8da79fbb889b0c24050fd93e9f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/auth/guard.ts": {
+    "mtime": 1778642604.9029398,
+    "hash": "a8fd975f870b70be871cbed3a3cc2935"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/auth/index.ts": {
+    "mtime": 1781105389.632371,
+    "hash": "e405e67c1f8bc0ddb0dfa4e5b94f2d58"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/auth/config.ts": {
+    "mtime": 1779839186.9198153,
+    "hash": "99928e3f9f2bf92a99ab8d558c647837"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/templates.ts": {
+    "mtime": 1779195538.504158,
+    "hash": "be2e9f7de70cbad727b4c5454b9fec7c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/types.ts": {
+    "mtime": 1779195791.5767663,
+    "hash": "8f4a13789cba962cb4177cf432b6313f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/codigo.ts": {
+    "mtime": 1779195705.2278051,
+    "hash": "5e5453a2d8cdcfa1b16e319f8644748d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/index.ts": {
+    "mtime": 1779195957.9822228,
+    "hash": "12464df525b07cc18b8a860ecc3e1118"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/dispatcher.ts": {
+    "mtime": 1780161241.7059047,
+    "hash": "84e747937983f000aa702a7003d66acb"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/providers/cloud-api-provider.ts": {
+    "mtime": 1779839186.9210145,
+    "hash": "f367d2ef77e929c7d76591e77063118d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/providers/email-provider.ts": {
+    "mtime": 1779839186.921084,
+    "hash": "36848271bcadcb3b790a76b455216c0a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/providers/twilio-sms-provider.ts": {
+    "mtime": 1779839186.9212387,
+    "hash": "c76b1621ec2b0245938d42a518ced6d7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/otp/providers/openwa-provider.ts": {
+    "mtime": 1779839186.9211667,
+    "hash": "a19ca3a5d5791cee09df72322abecd0d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/sanitize/index.ts": {
+    "mtime": 1778642499.6734338,
+    "hash": "ab606f044b65ac85ed545bfb6958950f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/email.ts": {
+    "mtime": 1779455962.5133717,
+    "hash": "27a7222fd3d039c8f4a0e5ecad707314"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/utils.ts": {
+    "mtime": 1778821660.9412477,
+    "hash": "1f159e59e35844d60dc38ad8feb38bac"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/transport.ts": {
+    "mtime": 1779839186.9209313,
+    "hash": "41d2c83cbd0923af147632c583848214"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cotizacion.ts": {
+    "mtime": 1779839186.9203997,
+    "hash": "1deb3aaca68bf778ed85293e8edcd3f3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/admin-manual-arriendo.ts": {
+    "mtime": 1781096580.3100536,
+    "hash": "4060673316f6e1e13ba5dd4dad9451da"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cliente-garantia-renovada.ts": {
+    "mtime": 1779290315.3803437,
+    "hash": "4f03251489312bc88ccc9d8fee047a9e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cliente-garantia-fallo-renovacion.ts": {
+    "mtime": 1779290322.55648,
+    "hash": "a350548a722d2eeafaee2a0708a2073a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/signed-contract.ts": {
+    "mtime": 1779839186.9207664,
+    "hash": "e4370c031efb2cbb761a12a4ba04c3a7"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/purchase-thank-you.ts": {
+    "mtime": 1779453266.9655912,
+    "hash": "843eee84341afc67c7719395350c6236"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/welcome.ts": {
+    "mtime": 1779839186.920849,
+    "hash": "1865ade78e71f212cd2a3c085e357bde"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/post-purchase-shared.ts": {
+    "mtime": 1779839186.9206858,
+    "hash": "cd83f63e1d5e64133cbb379eb92d48c4"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cotizacion-arriendo.ts": {
+    "mtime": 1781066832.3579676,
+    "hash": "3b8d121fe92d18eaeb244ffcc799e37a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/payment-link.ts": {
+    "mtime": 1779839186.9204836,
+    "hash": "7a8920c5c78319a6c8a5cde4af39b1a2"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cliente-cargo-aplicado.ts": {
+    "mtime": 1779290339.485329,
+    "hash": "175cef03cfad0d1b9da08f3234ed0b9b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/contraoferta.ts": {
+    "mtime": 1779839186.920151,
+    "hash": "a11538a53d216169278d2f66b7be1adc"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/review-request.ts": {
+    "mtime": 1779453285.5072665,
+    "hash": "e0c9fa202bb91920df0dd007252cc1ff"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/otp.ts": {
+    "mtime": 1778642499.6907783,
+    "hash": "474b40b4efa57c588529d93f777f2e9b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cliente-garantia-liberada.ts": {
+    "mtime": 1779290332.8256788,
+    "hash": "362fbbba6de263b3d6d2adc3d779f2ca"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/klap-shared.ts": {
+    "mtime": 1779290300.005206,
+    "hash": "bc944c6ebc37e1c4954d3f8c126ff84b"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cotizacion-admin.ts": {
+    "mtime": 1779839186.9202404,
+    "hash": "db898c5d40b9923b8acf0f1561b41a0a"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/replenishment.ts": {
+    "mtime": 1779453300.1313636,
+    "hash": "b4b8804f4b4b99488d65d666a6f3be84"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cliente-garantia-autorizada.ts": {
+    "mtime": 1779290308.8343966,
+    "hash": "02063dbcbfa77eb741056e8a51df976f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/mail/templates/cliente-cargo-tardio.ts": {
+    "mtime": 1779290346.1241093,
+    "hash": "f397d652c77163fc56836d090134a672"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/roles/index.ts": {
+    "mtime": 1779455476.284826,
+    "hash": "cfb96f750a88863edc67b5db9bfa9835"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/supabase/index.ts": {
+    "mtime": 1779839332.4191787,
+    "hash": "b58d0d897dc36ae5bb7af5a360094401"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/icons/index.tsx": {
+    "mtime": 1779595922.8224359,
+    "hash": "5ea67cfc2abb0989b4d1ebaa6a444ba3"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/format/index.ts": {
+    "mtime": 1778642499.6815462,
+    "hash": "e43a068008ad59a22592096d6f3b9601"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/a11y/use-prefers-reduced-motion.ts": {
+    "mtime": 1778647117.080221,
+    "hash": "128bd09859d432fde8a4865ecaef4138"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/a11y/SkipLink.tsx": {
+    "mtime": 1779654179.5948508,
+    "hash": "4ab9c16a3a7d256c45ec75d9efe7be72"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/a11y/useEscapeKey.ts": {
+    "mtime": 1779654222.4382787,
+    "hash": "c3c8efb162a1893215dbb2aa40fef70e"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/a11y/index.ts": {
+    "mtime": 1779654234.0219095,
+    "hash": "34f68c32f430ce26c6d15afc49d92ef9"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/a11y/Modal.tsx": {
+    "mtime": 1779654216.6582057,
+    "hash": "3feb869a770b2ac9cf86ddf79ede7435"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/a11y/useFocusTrap.ts": {
+    "mtime": 1779654194.5002544,
+    "hash": "7a416e4c123d7e1ba0060f61d5656f1d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/seo/operador.ts": {
+    "mtime": 1781066821.8869777,
+    "hash": "72b513c8c7cb57f3372e24ac597c8e2d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/seo/maquinaria-descripciones.ts": {
+    "mtime": 1781096613.7873003,
+    "hash": "7974fbf0cbd42572ff975f9c0eebd61d"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/seo/prerender-rules.ts": {
+    "mtime": 1778645729.092952,
+    "hash": "74bbedb70a6afe14e1180b23b395ef86"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/seo/jsonld.ts": {
+    "mtime": 1779803199.30611,
+    "hash": "6e757905f030dcf70209a16288ce2a96"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/seo/index.ts": {
+    "mtime": 1781096654.6388822,
+    "hash": "82689fd091c49d4954b52f45ddc4f94c"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/seo/metadata.ts": {
+    "mtime": 1779900047.04311,
+    "hash": "61dd457a4129cd427b14d7b5c66ebf9f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/seo/distancias.generated.ts": {
+    "mtime": 1779759494.3162148,
+    "hash": "2531b9abd5e84f6e25f1ff7273b33f3f"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/logging/index.ts": {
+    "mtime": 1778819264.4408689,
+    "hash": "c651eea3d1c7a34c9fb0cc4c4d913c28"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/notifications/admin.ts": {
+    "mtime": 1779472649.7635467,
+    "hash": "9c56f41f99a8ee515c346291e15e6495"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/rate-limit/index.ts": {
+    "mtime": 1779839186.921325,
+    "hash": "a15044eb8b3f860387f53e5f9b31b362"
+  },
+  "/Users/jorgeubilla/Documents/Proyectos/JURMAQ.CL/packages/shared/src/whatsapp/index.ts": {
+    "mtime": 1779839186.921562,
+    "hash": "4ef3ea5c5b7b4eca2ae414872ec00953"
+  }
+}

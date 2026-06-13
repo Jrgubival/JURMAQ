@@ -23,6 +23,29 @@
 
 import { LEGAL_INFO } from './index';
 
+/**
+ * Serializa un objeto a JSON seguro para inyectar dentro de un
+ * `<script type="application/ld+json" dangerouslySetInnerHTML>`.
+ *
+ * SECURITY (audit jun-2026, hallazgo M-2): `JSON.stringify` escapa comillas y
+ * backslashes, pero NO escapa `<`, `>` ni `&`. Si un campo dinámico de la DB
+ * (nombre/descripción de producto o máquina, editable por un vendedor) contiene
+ * `</script><script>…</script>`, cierra el bloque y ejecuta JS arbitrario para
+ * TODO visitante anónimo de la página (XSS almacenado de segundo orden). Escapar
+ * esos tres caracteres a su forma `\\uXXXX` neutraliza el breakout sin romper el
+ * JSON (los parsers de Google lo interpretan idéntico).
+ *
+ * Uso:
+ *   <script type="application/ld+json"
+ *     dangerouslySetInnerHTML={{ __html: safeJsonLd(obj) }} />
+ */
+export function safeJsonLd(obj: unknown): string {
+  return JSON.stringify(obj)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026');
+}
+
 export type JsonLdBrand = 'constructora' | 'barraca';
 
 interface BrandConfig {

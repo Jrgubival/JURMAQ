@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GUIAS, getGuia } from "@/lib/guias-seo-data";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * pSEO landing — guías informacionales (qué es X, diferencia X vs Y, etc.).
@@ -97,7 +98,7 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-12">

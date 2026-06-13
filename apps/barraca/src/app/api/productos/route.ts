@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { isValidOrigin, escapeOrFilter } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, escapeOrFilter, stripHtml } from '@jurmaq/shared/sanitize';
 import { applyDailyPromosToProducts } from '@/lib/promotions';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
@@ -140,9 +140,11 @@ export async function POST(request: NextRequest) {
       .from('barraca_productos')
       .insert({
         codigo: body.codigo || null,
-        nombre: body.nombre,
+        // SECURITY (M-2): stripHtml en campos que luego se inyectan en JSON-LD
+        // de páginas públicas — defensa en profundidad sobre safeJsonLd.
+        nombre: stripHtml(body.nombre),
         slug: body.slug,
-        descripcion: body.descripcion || null,
+        descripcion: body.descripcion ? stripHtml(body.descripcion) : null,
         precio: body.precio || 0,
         costo: body.costo || 0,
         stock: body.stock || 0,

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { PROYECTOS, getProyectosStats } from "@/lib/proyectos-data";
 import { getTestimoniosDestacados } from "@/lib/testimonios-data";
 import TestimoniosGrid from "@/components/public/TestimoniosGrid";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * /proyectos — Hub público de case studies B2B.
@@ -55,7 +56,7 @@ export default function ProyectosPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       {/* ===== HERO ===== */}

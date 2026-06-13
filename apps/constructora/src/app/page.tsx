@@ -13,6 +13,7 @@ import HeroSearch from "@/components/public/HeroSearch";
 import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
 import TestimoniosGrid from "@/components/public/TestimoniosGrid";
 import { getTestimoniosDestacados } from "@/lib/testimonios-data";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 
 export const metadata: Metadata = {
@@ -648,7 +649,7 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "LocalBusiness",
             name: "Constructora Jorge Ubilla Rivera E.I.R.L.",

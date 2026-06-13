@@ -19,6 +19,7 @@ import {
   tieneOperadorIncluido,
   TIPOS_DB_OPERA_CLIENTE as TIPOS_OPERA_CLIENTE,
 } from "@jurmaq/shared/seo/operador";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 interface Maquinaria {
   id: number;
@@ -612,14 +613,14 @@ export default async function MaquinariaDetailPage({
       {/* JSON-LD */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       {/* Breadcrumb JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [

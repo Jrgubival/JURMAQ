@@ -12,6 +12,7 @@ import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs"
 import { getActiveCategoryDiscountMap, getDailyPromotions } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 // ISR: la ficha de producto es pública (precio/stock). Revalida cada 10 min en
 // vez de renderizar por request (antes la página no declaraba caché → dinámica).
@@ -323,8 +324,8 @@ export default async function ProductoPage({
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbLd) }} />
       <ViewItemTracker
         id={producto.id}
         nombre={producto.nombre}

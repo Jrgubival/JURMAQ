@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidOrigin, isValidEmail, sanitizeString, escapeLikePattern } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
+import { parseBarracaUserToken, extractBearerToken } from '@/lib/barraca-auth';
 
 /**
  * POST /api/public/carrito-abandonado/track
@@ -30,9 +31,11 @@ interface Body {
   /** Tier 4 D7: teléfono para SMS recovery @ 15 min. */
   telefono?: string;
   session_id?: string;
-  usuario_id?: number;
   items?: Item[];
   total?: number;
+  // NOTA (audit jun-2026, IDOR): `usuario_id` NO se acepta del body — un
+  // anónimo podía asociar su carrito a la cuenta de otro. Se deriva del token
+  // de sesión si está presente.
 }
 
 export async function POST(request: NextRequest) {
@@ -47,6 +50,9 @@ export async function POST(request: NextRequest) {
   }
 
   const body = (await request.json().catch(() => ({}))) as Body;
+  // usuario_id se deriva del token de sesión, NUNCA del body (anti-IDOR).
+  const token = extractBearerToken(request);
+  const usuarioId = token ? await parseBarracaUserToken(token) : null;
   const email = sanitizeString(body.email)?.toLowerCase();
   const telefono = sanitizeString(body.telefono)?.trim();
   const sessionId = sanitizeString(body.session_id);
@@ -107,7 +113,7 @@ export async function POST(request: NextRequest) {
       email: email || '',
       telefono: telefono || null,
       session_id: sessionId,
-      usuario_id: body.usuario_id ?? null,
+      usuario_id: usuarioId,
       items,
       total,
       last_activity: new Date().toISOString(),

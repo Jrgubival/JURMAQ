@@ -1,0 +1,38 @@
+1684~Fierros~Malla Acma C92 5x2 (15x15)
+1685~Fierros~Malla Acma C139 5x2
+1740~Gasfiteria~Tubo PVC 110mm 6mt
+1741~Gasfiteria~Tubo PVC 75mm 6mt
+1742~Gasfiteria~Tubo PVC 50mm 6mt
+1743~Gasfiteria~Codo PVC 110mm
+1744~Gasfiteria~Codo PVC 75mm
+1745~Gasfiteria~Tubo Cobre 1/2 Tira
+1733~Maderas~Pino Cepillado 2x2
+1734~Maderas~Pino Cepillado 2x3
+1735~Maderas~Pino Cepillado 2x4
+1736~Maderas~Pino Dimensionado 1x4
+1737~Maderas~Pino Dimensionado 1x6
+1738~Maderas~Terciado Estructural 15mm
+1739~Maderas~Terciado Ranurado 18mm
+1746~Otros~Carbon 3kg
+1747~Otros~Carbon 5kg
+1748~Otros~Fosforos Largos Pack
+1726~Techumbres~Plancha Zinc 0.35 x 3.6mt
+1727~Techumbres~Plancha Zinc 0.40 x 3.6mt
+1728~Techumbres~Plancha OSB 11.1mm
+1729~Techumbres~Plancha OSB 9.5mm
+1730~Techumbres~Teja Asfaltica Bulto
+1731~Techumbres~Fieltro 15 Libras Rollo
+1732~Techumbres~Fieltro 10 Libras Rollo
+1693~Cementos y Aridos~Cemento Bio Bio Especial 25kg
+1694~Cementos y Aridos~Cemento Bio Bio Alta Resistencia 25kg
+1695~Cementos y Aridos~Cemento Melon Extra 25kg
+1696~Cementos y Aridos~Gravilla 25kg
+1697~Cementos y Aridos~Arena Fina 25kg
+1698~Cementos y Aridos~Arena Gruesa 25kg
+1699~Cementos y Aridos~Ripio 25kg
+1700~Cementos y Aridos~Confort Polvo 25kg
+1701~Cementos y Aridos~Estuco Listo 25kg
+1702~Cementos y Aridos~Hormigon Listo 25kg
+1703~Cementos y Aridos~Polvo Ladrillo 25kg
+1704~Cementos y Aridos~Cemento Tecpro 25kg
+1705~Cementos y Aridos~Cal Hidratada 25kg

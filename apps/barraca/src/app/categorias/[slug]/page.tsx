@@ -8,6 +8,7 @@ import type { Database } from "@jurmaq/shared/db-types";
 import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import { CIUDADES } from "@jurmaq/shared/seo";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 type BarracaCategoriaRow = Pick<
   Database['public']['Tables']['barraca_categorias']['Row'],
@@ -351,16 +352,16 @@ export default async function CategoriaPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       {aggregateOfferJsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(aggregateOfferJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(aggregateOfferJsonLd) }}
         />
       )}
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">

@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, stripHtml } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 export async function GET(
@@ -105,6 +105,9 @@ export async function PUT(
         updateData[field] = body[field];
       }
     }
+    // SECURITY (M-2): stripHtml en campos inyectados en JSON-LD público.
+    if (typeof updateData.nombre === 'string') updateData.nombre = stripHtml(updateData.nombre);
+    if (typeof updateData.descripcion === 'string') updateData.descripcion = stripHtml(updateData.descripcion);
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: 'No se proporcionaron campos para actualizar' }, { status: 400 });

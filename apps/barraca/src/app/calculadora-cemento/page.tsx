@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CalculadoraCementoClient from "./CalculadoraCementoClient";
 import RelatedCalculadoras from "@/components/barraca/RelatedCalculadoras";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 export const metadata: Metadata = {
   title: "Calculadora de Cemento por m² · Sacos para Radier, Contrapiso, Estuco · JURMAQ",
@@ -147,7 +148,7 @@ export default function CalculadoraCementoPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">

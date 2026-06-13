@@ -7,6 +7,7 @@ import { applyDailyPromosToProducts } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 // ISR: landing pSEO público, cambia rara vez → revalida diariamente.
 export const revalidate = 86400;
@@ -214,7 +215,7 @@ export default async function MaterialEnCiudadPage({
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">

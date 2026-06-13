@@ -5,6 +5,7 @@ import { whatsappCtaHome } from "@jurmaq/shared/whatsapp";
 import { IconWhatsapp } from "@jurmaq/shared/icons";
 import WhatsappLink from "@/components/public/WhatsappLink";
 import { RECURSOS, getRecurso, CATEGORIA_LABEL } from "@/lib/recursos-data";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * pSEO landing — recursos informacionales para constructora.
@@ -108,7 +109,7 @@ export default async function RecursoPage({ params }: { params: Promise<{ slug: 
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-12 lg:py-16">

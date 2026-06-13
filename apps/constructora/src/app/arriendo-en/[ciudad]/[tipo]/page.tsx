@@ -8,6 +8,7 @@ import { precioPublicoDesde } from '@/lib/pricing-arriendo';
 import { whatsappCtaCiudadTipo } from '@jurmaq/shared/whatsapp';
 import { maquinariaHref } from '@/lib/maquinaria-slug';
 import Breadcrumbs from '@jurmaq/shared/ui/Breadcrumbs';
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * Tier 7 G1: Cross landings programáticas [ciudad] × [tipo].
@@ -206,7 +207,7 @@ export default async function CiudadTipoLanding({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <main className="bg-gradient-to-br from-gray-50 to-white min-h-screen">
         <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">

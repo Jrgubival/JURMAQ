@@ -5,6 +5,7 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, DISTANCIAS_BARRACA, HQ } from "@jurmaq/shared/seo";
 import ProductCard from "@/components/barraca/ProductCard";
 import { applyDailyPromosToProducts } from "@/lib/promotions";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * Programmatic SEO landing for `[categoría] en [ciudad]` queries.
@@ -404,16 +405,16 @@ export default async function CategoriaEnCiudadPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(collectionPageJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       {aggregateOfferJsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(aggregateOfferJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(aggregateOfferJsonLd) }}
         />
       )}
 

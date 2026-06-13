@@ -20,6 +20,7 @@ import {
   slugifyMaquinaria,
 } from '@/lib/maquinaria-slug';
 import CrossLinksGrid from '@jurmaq/shared/ui/CrossLinksGrid';
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * pSEO: máquina específica × ciudad servida.
@@ -281,7 +282,7 @@ export default async function MaquinariaCiudadLanding({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       {/* Hero */}

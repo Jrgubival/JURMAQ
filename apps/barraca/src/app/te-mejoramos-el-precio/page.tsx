@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ } from "@jurmaq/shared/seo";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * Te mejoramos el precio — Editorial Luxury retrofit.
@@ -208,7 +209,7 @@ export default function PriceMatchPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-[#FBFBFA]">
         {/* Hero — editorial, navy background con hairlines */}

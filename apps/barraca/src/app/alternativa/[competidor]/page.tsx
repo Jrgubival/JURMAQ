@@ -7,6 +7,7 @@ import {
   getAllCompetidorSlugs,
 } from "@/lib/competidores-data";
 import TrustSignals, { COMPARACION_KPIS } from "@/components/TrustSignals";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * Comparison landing programática: /barraca/alternativa/[competidor].
@@ -96,7 +97,7 @@ export default async function AlternativaPage({
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <article className="bg-white">
         <header className="bg-navy-950 text-white py-16">

@@ -10,6 +10,7 @@ import { buildPrerenderRules, BARRACA_PRERENDER_EXCLUDES } from "@jurmaq/shared/
 // prod, Zod tira un error explícito en lugar de propagar `undefined`.
 import "@jurmaq/shared/env";
 import "./globals.css";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 // Skill-driven typography swap (Inter banned by frontend-design, design-taste,
 // minimalist-ui, web-typography, redesign-existing-projects, high-end-visual-design).
@@ -197,7 +198,7 @@ export default function BarracaLayout({
         <script
           type="speculationrules"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(buildPrerenderRules(BARRACA_PRERENDER_EXCLUDES)),
+            __html: safeJsonLd(buildPrerenderRules(BARRACA_PRERENDER_EXCLUDES)),
           }}
         />
         {/* Organization + LocalBusiness (HardwareStore) + WebSite JSON-LD
@@ -205,7 +206,7 @@ export default function BarracaLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(buildJsonLdGraph('barraca')),
+            __html: safeJsonLd(buildJsonLdGraph('barraca')),
           }}
         />
       </head>

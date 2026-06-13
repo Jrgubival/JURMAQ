@@ -11,6 +11,7 @@ import WhatsappLink from "@/components/public/WhatsappLink";
 import { maquinariaHref } from "@/lib/maquinaria-slug";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 interface Maquinaria {
   id: number;
@@ -176,7 +177,7 @@ export default async function ArriendoEnCiudadPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       <article className="bg-white">

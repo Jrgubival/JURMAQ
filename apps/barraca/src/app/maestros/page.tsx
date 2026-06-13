@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { supabasePublic } from '@jurmaq/shared/supabase';
 import { whatsappCtaMaestro } from '@jurmaq/shared/whatsapp';
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
  * /maestros — Ranking público de Maestros JURMAQ.
@@ -162,7 +163,7 @@ export default async function MaestrosIndexPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       {/* HERO — Split-screen asymmetric (design-taste rule 3: anti-center bias).
