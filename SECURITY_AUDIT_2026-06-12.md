@@ -198,3 +198,22 @@ Se auditaron **7 dimensiones**: (1) authn-authz, (2) public-api-idor, (3) supaba
 - **Deps/config:** Next.js 16.2.6 (parchado contra CVE-2025-29927). Los 9 crons fail-closed con `CRON_SECRET`. `images.remotePatterns` acotado (sin `**` → sin SSRF por el optimizador). Defaults seguros en Zod env.
 
 **Conclusión de cobertura:** el codebase está bien construido en lo fundamental. El hallazgo crítico C-1 es una **mala configuración de una variable en un proyecto Vercel** (no un defecto de diseño profundo), y la prueba de que constructora **sí** está protegida confirma que el mecanismo seguro existe y funciona — solo falta encenderlo en barraca. Atendido eso, JURMAQ queda en una postura de seguridad robusta.
+---
+
+## ESTADO DE REMEDIACIÓN (actualizado jun-2026)
+
+Plan ejecutado en 3 fases (commits `847a941`, `fb32f3f`, `647d529`).
+
+**Fase 1 — explotables (cerrados y verificados en vivo):**
+- C-1 token forjable barraca → corregido (`.trim()` en env + variable Vercel limpia) y **endurecido permanentemente**: eliminada toda la rama de tokens legacy base64 en barraca y constructora (fail-closed). Token forjado → 401 confirmado en vivo.
+- M-1 cupón vs MercadoPago → ítem consolidado `unit_price=total` cuando hay descuento.
+- M-2 XSS JSON-LD → helper `safeJsonLd()` aplicado en 34 sitios + `stripHtml` al guardar productos.
+- IDOR carrito-abandonado → `usuario_id` derivado de la sesión, no del body.
+
+**Fase 2 — hardening (cerrados):**
+- Timing-safe en 9 crons (`safeSecretEquals`). L-NOTAS (sin `notas` en /cuenta/me). L-OR (`escapeOrFilter`). L-MAIL (`escapeHtml` en 6 plantillas). Fuga de error en /seed → genérico. Rate-limit admin fail-closed. Enumeración 412 → 401 genérico. xlsx 0.18.5 → 0.20.3 (CVEs). SQL: REVOKE INSERT anon en cotizaciones_arriendo (verificado 401) + `search_path=''` en 2 triggers SECURITY DEFINER.
+
+**Fase 3 — capa preventiva:**
+- `CLAUDE.md` con reglas de seguridad + checklist de PR. `@jurmaq/shared/validation` (Zod). `.githooks/pre-commit` (anti-secretos). `.github/workflows/ci.yml` (typecheck + audit + gitleaks) — **pendiente: agregar por la web de GitHub** (el token CLI no tiene scope `workflow`).
+
+**Pendiente menor (INFO, no explotable):** I-2 bucket `cotizaciones` público — se documenta que jamás debe recibir PII (hoy solo fotos de precios de competencia); migrar a privado con signed URLs es opcional y podría romper URLs ya guardadas.
