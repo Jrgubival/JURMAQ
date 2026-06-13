@@ -444,9 +444,22 @@ function formatToolResultAsText(toolName: string, parsed: unknown): string {
 // esas funciones lo throw). Class declarations NO se hoistean — moverlas
 // abajo causaba ReferenceError al run-time.
 
+// Respuesta amable cuando los proveedores están saturados (429) o caídos
+// (5xx). Mejor degradar con gracia que mostrar un error 500 genérico: el
+// cliente entiende que es momentáneo y tiene un canal alternativo.
+const BUSY_MESSAGE =
+  "Estoy recibiendo muchas consultas en este momento 🙏. Probá de nuevo en " +
+  "unos segundos, o escribinos directo por WhatsApp +56 9 7667 3577 y te " +
+  "ayudamos al toque.";
+
+function isCapacityError(e: unknown): e is ProviderError {
+  return e instanceof ProviderError && (e.status === 429 || e.status >= 500);
+}
+
 /**
- * Llama AI con fallback automático. Si Gemini falla con 429 o 5xx,
- * intenta con Groq. Si ambos fallan, throw.
+ * Llama AI con fallback automático. Gemini primario, Groq fallback. Ante
+ * saturación (429/5xx) de los proveedores disponibles, degrada con un mensaje
+ * amable en vez de propagar un 500 — el endpoint nunca debe romperle al cliente.
  */
 export async function callAI(opts: AiCallOptions): Promise<AiCallResult> {
   const geminiKey = env.GEMINI_API_KEY;
@@ -462,25 +475,43 @@ export async function callAI(opts: AiCallOptions): Promise<AiCallResult> {
 
   // Caso 2: solo Gemini
   if (geminiKey && !groqKey) {
-    return callGemini(opts, geminiKey);
+    try {
+      return await callGemini(opts, geminiKey);
+    } catch (e) {
+      if (isCapacityError(e)) {
+        logSafeError("[ai-provider] gemini saturado (solo gemini)", { status: e.status });
+        return { text: BUSY_MESSAGE, provider: "canned" };
+      }
+      throw e;
+    }
   }
 
-  // Caso 3: solo Groq
+  // Caso 3: solo Groq. El free tier de Groq tiene un límite bajo de tokens/min;
+  // ante 429/5xx degradamos con gracia en vez de tirar 500.
   if (!geminiKey && groqKey) {
-    return callGroq(opts, groqKey);
+    try {
+      return await callGroq(opts, groqKey);
+    } catch (e) {
+      if (isCapacityError(e)) {
+        logSafeError("[ai-provider] groq saturado (solo groq, sin fallback Gemini)", { status: e.status });
+        return { text: BUSY_MESSAGE, provider: "canned" };
+      }
+      throw e;
+    }
   }
 
   // Caso 4: ambas → Gemini primero, Groq fallback en 429/5xx
   try {
     return await callGemini(opts, geminiKey!);
   } catch (e) {
-    if (e instanceof ProviderError && (e.status === 429 || e.status >= 500)) {
+    if (isCapacityError(e)) {
       logSafeError("[ai-provider] gemini fallback → groq", { status: e.status });
       try {
         return await callGroq(opts, groqKey!);
       } catch (e2) {
-        logSafeError("[ai-provider] groq también falló", { err: String(e2).slice(0, 150) });
-        throw e2;
+        // Ambos saturados → degradar con gracia, nunca 500.
+        logSafeError("[ai-provider] ambos proveedores saturados", { err: String(e2).slice(0, 120) });
+        return { text: BUSY_MESSAGE, provider: "canned" };
       }
     }
     throw e;
