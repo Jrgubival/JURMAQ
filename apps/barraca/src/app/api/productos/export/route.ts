@@ -46,7 +46,9 @@ export async function GET() {
       Nombre: p.nombre || '',
       Medida: p.medida || '',
       Categoria: p.barraca_categorias?.nombre || '',
-      'Precio Normal': p.en_oferta && p.precio_original ? p.precio_original : p.precio,
+      // "Precio" = lo que se cobra (mapea al campo `precio` al re-importar).
+      // "Precio Tachado" = el precio "antes" (solo si está en oferta real).
+      Precio: p.en_oferta && p.precio_original ? p.precio_original : p.precio,
       'Precio Tachado': p.en_oferta ? p.precio : '',
       'En Oferta': p.en_oferta ? 'Si' : 'No',
       Costo: p.costo || '',
