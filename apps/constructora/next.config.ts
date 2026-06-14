@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname, '../../'),
   },
   images: {
+    // FIX (jun-2026): el optimizador de imágenes de Vercel devuelve HTTP 402
+    // (límite del plan agotado) → /_next/image falla para todas las fuentes y las
+    // fotos no cargan en el sitio. Servimos el src directo (ya optimizado en origen).
+    // Reactivar: unoptimized:false + subir plan / habilitar Image Optimization en Vercel.
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
     remotePatterns: [

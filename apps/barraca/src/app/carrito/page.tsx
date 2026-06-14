@@ -13,6 +13,7 @@ interface CartItem {
   precio: number;
   cantidad: number;
   imagen: string | null;
+  slug: string | null;
   medida: string | null;
   unidad: string | null;
 }
@@ -289,14 +290,20 @@ export default function CarritoPage() {
 
               {items.map((item) => (
                 <div key={item.id} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 last:border-0 items-center">
-                  <div className="col-span-5 flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
-                      <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} fill sizes="64px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{item.nombre}</p>
-                      {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
-                    </div>
+                  <div className="col-span-5">
+                    <Link
+                      href={item.slug ? `/producto/${item.slug}` : '#'}
+                      className="flex items-center gap-4 group"
+                      aria-label={`Ver ${item.nombre}`}
+                    >
+                      <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
+                        <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} fill sizes="64px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 group-hover:text-orange-600 transition-colors">{item.nombre}</p>
+                        {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
+                      </div>
+                    </Link>
                   </div>
                   <div className="col-span-2 text-center text-sm font-medium text-gray-900">
                     {formatCLP(item.precio)}
@@ -327,15 +334,15 @@ export default function CarritoPage() {
               {items.map((item) => (
                 <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-4">
                   <div className="flex gap-3">
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
+                    <Link href={item.slug ? `/producto/${item.slug}` : '#'} className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative" aria-label={`Ver ${item.nombre}`}>
                       <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} fill sizes="80px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
-                    </div>
+                    </Link>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{item.nombre}</p>
+                        <Link href={item.slug ? `/producto/${item.slug}` : '#'} className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 hover:text-orange-600 transition-colors">{item.nombre}</p>
                           {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
-                        </div>
+                        </Link>
                         <button onClick={() => removeItem(item.id)} aria-label={`Eliminar ${item.nombre} del carrito`} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
