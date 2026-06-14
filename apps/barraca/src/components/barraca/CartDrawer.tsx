@@ -20,6 +20,7 @@ interface CartItem {
   producto_id: number;
   nombre: string;
   precio: number;
+  precio_tachado?: number | null;
   cantidad: number;
   imagen: string | null;
   medida: string | null;
@@ -248,7 +249,10 @@ export default function CartDrawer({
                       <p className="text-xs text-gray-500">{item.medida}</p>
                     )}
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {formatCLP(item.precio)} c/u
+                      {item.precio_tachado && item.precio_tachado > item.precio && (
+                        <span className="line-through text-gray-400 mr-1">{formatCLP(item.precio_tachado)}</span>
+                      )}
+                      <span className={item.precio_tachado && item.precio_tachado > item.precio ? "text-orange-600 font-semibold" : ""}>{formatCLP(item.precio)}</span> c/u
                     </p>
                     {/* Inline quantity controls */}
                     <div className="flex items-center justify-between mt-2">

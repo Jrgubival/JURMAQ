@@ -114,6 +114,10 @@ export async function GET(request: NextRequest) {
         promoDescuento: p.categoria_id != null ? promoMap.get(p.categoria_id) : undefined,
       });
 
+      // FIX (audit jun-2026): exponer el precio NORMAL tachado + % de descuento
+      // para que el carrito y el CartDrawer muestren la oferta como el resto del
+      // sitio (precio = efectivo de cobro; precio_tachado = normal cuando hay promo).
+      const precioTachado = p.precio > precioReal ? p.precio : null;
       return {
         id: item.id,
         producto_id: item.producto_id,
@@ -121,6 +125,8 @@ export async function GET(request: NextRequest) {
         created_at: item.created_at,
         nombre: p.nombre,
         precio: precioReal,
+        precio_tachado: precioTachado,
+        porcentaje_descuento: precioTachado ? Math.round((1 - precioReal / p.precio) * 100) : null,
         imagen: p.imagen,
         slug: p.slug,
         medida: p.medida,

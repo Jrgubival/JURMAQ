@@ -9,6 +9,9 @@ interface SearchResult {
   nombre: string;
   slug: string;
   precio: number;
+  // FIX (audit jun-2026): el dropdown mostraba precio crudo, ignorando la oferta.
+  precio_original?: number | null;
+  en_oferta?: boolean;
 }
 
 export default function SearchBar({
@@ -139,8 +142,21 @@ export default function SearchBar({
               <span className="text-sm text-gray-900 truncate">
                 {product.nombre}
               </span>
-              <span className="text-sm font-semibold text-orange-600 shrink-0 ml-3">
-                {formatCLP(product.precio)}
+              <span className="text-sm shrink-0 ml-3 text-right">
+                {product.en_oferta && product.precio_original && product.precio_original > 0 ? (
+                  <>
+                    <span className="block text-xs text-gray-400 line-through leading-none tabular-nums">
+                      {formatCLP(product.precio)}
+                    </span>
+                    <span className="block font-semibold text-orange-600 tabular-nums">
+                      {formatCLP(product.precio_original)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="font-semibold text-orange-600 tabular-nums">
+                    {formatCLP(product.precio)}
+                  </span>
+                )}
               </span>
             </button>
           ))}

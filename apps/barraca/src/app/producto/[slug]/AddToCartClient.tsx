@@ -56,6 +56,12 @@ export default function AddToCartClient({
   const activeId = selectedVariant ? selectedVariant.id : producto.id;
   const activeStock = activeProduct.stock;
   const activePrecio = activeProduct.precio;
+  // FIX (audit jun-2026): junto al botón mostrábamos el precio NORMAL aunque
+  // hubiera oferta (precioPromo, que es lo que se cobra). Mostramos la oferta
+  // tachando el normal. precioPromo aplica al producto base, no a variantes.
+  const showPromo = !selectedVariant && !!precioPromo && precioPromo > 0 && precioPromo < producto.precio;
+  const displayPrecio = showPromo ? (precioPromo as number) : activePrecio;
+  const displayTachado = showPromo ? producto.precio : null;
 
   async function handleAdd() {
     setAdding(true);
@@ -166,7 +172,10 @@ export default function AddToCartClient({
         <div className="flex items-baseline justify-between gap-3 lg:hidden border-b border-gray-200 pb-3 -mx-1 px-1">
           <div className="min-w-0">
             <p className="text-2xl font-extrabold text-navy-950 tabular-nums leading-none">
-              {formatCLP(activePrecio)}
+              {displayTachado && (
+                <span className="text-base text-gray-400 line-through font-bold mr-2">{formatCLP(displayTachado)}</span>
+              )}
+              <span className={displayTachado ? "text-orange-600" : ""}>{formatCLP(displayPrecio)}</span>
             </p>
             <p className="mt-1 text-[10px] uppercase tracking-wider text-gray-500">
               IVA incl.{selectedVariant?.medida ? ` · ${selectedVariant.medida}` : ""}

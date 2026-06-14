@@ -9,7 +9,7 @@ import ReviewsList from "@/components/barraca/ReviewsList";
 import ProductDetailImage from "@/components/barraca/ProductDetailImage";
 import ViewItemTracker from "@jurmaq/shared/ui/ViewItemTracker";
 import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs";
-import { getActiveCategoryDiscountMap, getDailyPromotions } from "@/lib/promotions";
+import { getActiveCategoryDiscountMap, getDailyPromotions, applyDailyPromosToProducts } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
@@ -218,11 +218,15 @@ export default async function ProductoPage({
   // Related products (random order via Supabase -- not natively supported, so we just get recent)
   const { data: relacionados } = await supabasePublic
     .from('barraca_productos')
-    .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida')
+    .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
     .eq('categoria_id', producto.categoria_id)
     .eq('activo', true)
     .neq('id', producto.id)
     .limit(4);
+  // FIX (audit jun-2026): aplicar la promo de categoría a los relacionados para
+  // que muestren el MISMO precio normal+oferta que la ficha (antes mostraban el
+  // precio lleno → inconsistencia $3.990 vs $3.791 de tu captura).
+  const relacionadosConPromo = await applyDailyPromosToProducts(relacionados || []);
 
   // AggregateRating REAL (no fabricado): agregado de reviews moderadas
   // ('aprobada') desde la vista barraca_productos_rating. Solo se inyecta en el
@@ -538,7 +542,7 @@ export default async function ProductoPage({
               También te puede <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>interesar</span>.
             </h2>
             <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
-              {(relacionados || []).map((p) => (
+              {relacionadosConPromo.map((p) => (
                 <ProductCard key={p.id} id={p.id} nombre={p.nombre} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={categoria?.slug || ''} />
               ))}
             </div>

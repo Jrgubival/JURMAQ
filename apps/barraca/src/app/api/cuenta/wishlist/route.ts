@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { parseBarracaUserToken, extractBearerToken } from '@/lib/barraca-auth';
+import { resolvePrice } from '@/lib/pricing';
+import { getActiveCategoryDiscountMap } from '@/lib/promotions';
 
 /**
  * Wishlist barraca (D3 Tier 4).
@@ -38,12 +40,38 @@ export async function GET(request: NextRequest) {
   const { data } = await supabaseAdmin
     .from('barraca_wishlist')
     .select(
-      'id, producto_id, created_at, barraca_productos!inner(id, nombre, slug, precio, imagen, stock)',
+      'id, producto_id, created_at, barraca_productos!inner(id, nombre, slug, precio, precio_original, en_oferta, categoria_id, imagen, stock)',
     )
     .eq('usuario_id', uid)
     .order('created_at', { ascending: false });
 
-  return NextResponse.json({ items: data ?? [] });
+  // FIX (audit jun-2026): la wishlist mostraba el precio normal aunque el
+  // producto estuviera en oferta. Enriquecemos con resolvePrice (mismo motor que
+  // la ficha) para exponer precio_final (oferta) + precio_tachado (normal).
+  type WlRow = {
+    barraca_productos: {
+      precio: number; precio_original: number | null; en_oferta: boolean | null; categoria_id: number | null;
+    };
+  };
+  const promoMap = await getActiveCategoryDiscountMap();
+  const items = ((data ?? []) as unknown as WlRow[]).map((it) => {
+    const p = it.barraca_productos;
+    const pr = resolvePrice(
+      { precio: p.precio, precio_original: p.precio_original, en_oferta: p.en_oferta ?? undefined },
+      p.categoria_id != null ? promoMap.get(p.categoria_id) ?? null : null,
+    );
+    return {
+      ...it,
+      barraca_productos: {
+        ...p,
+        precio_final: pr.precioFinal,
+        precio_tachado: pr.precioTachado,
+        porcentaje_descuento: pr.porcentajeDescuento,
+      },
+    };
+  });
+
+  return NextResponse.json({ items });
 }
 
 export async function POST(request: NextRequest) {

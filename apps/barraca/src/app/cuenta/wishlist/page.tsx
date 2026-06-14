@@ -14,6 +14,8 @@ interface WishlistItem {
     nombre: string;
     slug: string | null;
     precio: number;
+    precio_final?: number;
+    precio_tachado?: number | null;
     imagen: string | null;
     stock: number;
   };
@@ -143,7 +145,14 @@ export default function WishlistPage() {
                     {it.barraca_productos.nombre}
                   </p>
                   <p className="font-bold text-navy-950 tabular-nums">
-                    {formatCLP(it.barraca_productos.precio)}
+                    {it.barraca_productos.precio_tachado && it.barraca_productos.precio_tachado > (it.barraca_productos.precio_final ?? it.barraca_productos.precio) ? (
+                      <>
+                        <span className="block text-xs text-gray-400 line-through font-normal">{formatCLP(it.barraca_productos.precio_tachado)}</span>
+                        <span className="text-orange-600">{formatCLP(it.barraca_productos.precio_final ?? it.barraca_productos.precio)}</span>
+                      </>
+                    ) : (
+                      formatCLP(it.barraca_productos.precio_final ?? it.barraca_productos.precio)
+                    )}
                   </p>
                   {it.barraca_productos.stock === 0 && (
                     <p className="text-xs text-red-600 mt-1">Sin stock</p>

@@ -11,6 +11,8 @@ interface CartItem {
   producto_id: number;
   nombre: string;
   precio: number;
+  precio_tachado?: number | null;
+  porcentaje_descuento?: number | null;
   cantidad: number;
   imagen: string | null;
   slug: string | null;
@@ -306,7 +308,14 @@ export default function CarritoPage() {
                     </Link>
                   </div>
                   <div className="col-span-2 text-center text-sm font-medium text-gray-900">
-                    {formatCLP(item.precio)}
+                    {item.precio_tachado && item.precio_tachado > item.precio ? (
+                      <>
+                        <span className="block text-xs text-gray-400 line-through tabular-nums">{formatCLP(item.precio_tachado)}</span>
+                        <span className="block text-orange-600 tabular-nums">{formatCLP(item.precio)}</span>
+                      </>
+                    ) : (
+                      formatCLP(item.precio)
+                    )}
                   </div>
                   <div className="col-span-2 flex justify-center">
                     <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
@@ -349,7 +358,12 @@ export default function CarritoPage() {
                           </svg>
                         </button>
                       </div>
-                      <p className="text-sm font-semibold text-navy-950 mt-1">{formatCLP(item.precio)}</p>
+                      <p className="text-sm font-semibold text-navy-950 mt-1">
+                        {item.precio_tachado && item.precio_tachado > item.precio && (
+                          <span className="text-xs text-gray-400 line-through tabular-nums mr-1.5 font-normal">{formatCLP(item.precio_tachado)}</span>
+                        )}
+                        <span className={item.precio_tachado && item.precio_tachado > item.precio ? "text-orange-600" : ""}>{formatCLP(item.precio)}</span>
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
