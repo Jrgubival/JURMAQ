@@ -386,8 +386,11 @@ async function callOpenAICompatible(
       };
     }
     const data2 = await res2.json();
+    // cleanModelReply quita ecos JSON del content; si queda vacío, armamos el
+    // texto desde el tool result.
     const text =
-      data2.choices?.[0]?.message?.content ?? formatToolResultAsText(name, parsed);
+      cleanModelReply(data2.choices?.[0]?.message?.content) ||
+      formatToolResultAsText(name, parsed);
     return {
       text,
       provider: cfg.label,
@@ -398,7 +401,7 @@ async function callOpenAICompatible(
   }
 
   // Sin tool call. Si hay content, OK. Si no, respuesta canned amable.
-  const text = choice.message?.content;
+  const text = cleanModelReply(choice.message?.content);
   if (!text || text.trim().length === 0) {
     logSafeError(`[ai-provider/${cfg.label}] empty content + no tool call`, {
       finish_reason: choice.finish_reason,
@@ -429,6 +432,25 @@ function callCerebras(opts: AiCallOptions, apiKey: string): Promise<AiCallResult
     model: CEREBRAS_MODEL,
     label: "cerebras",
   });
+}
+
+/**
+ * Limpia el reply del modelo de ecos JSON que algunos LLMs (sobre todo los
+ * chicos, ej. llama-3.1-8b) filtran al `content`: el echo de los argumentos del
+ * tool y/o un pseudo-resultado pegado antes del texto natural, p. ej.
+ * `{"producto_id":377,"cantidad":1}{"result":"agregado"}Listo, agregué...`.
+ * Quita SOLO bloques JSON-objeto (no anidados) AL INICIO — no toca llaves que
+ * aparezcan dentro del texto legítimo. Si todo era JSON, devuelve "".
+ */
+function cleanModelReply(raw: string | null | undefined): string {
+  if (!raw) return "";
+  let t = raw.trim();
+  let prev: string;
+  do {
+    prev = t;
+    t = t.replace(/^\s*\{[^{}]*\}\s*/, "").trimStart();
+  } while (t !== prev && t.length > 0);
+  return t.trim();
 }
 
 /**

@@ -250,36 +250,49 @@ async function tool_agregar_al_carrito(
     });
   }
 
-  // Upsert en carrito (busca item existente, suma cantidad si ya está)
+  // Upsert en carrito (busca item existente, suma cantidad si ya está).
+  // BUG (jun-2026): la tabla real es `barraca_carrito` con columna `session_id`.
+  // Antes apuntaba a `barraca_carrito_items`/`sesion_id` (no existen) → el insert
+  // fallaba EN SILENCIO y ADIA decía "agregado" con el carrito vacío. Ahora usa
+  // la tabla correcta Y valida el error para no volver a mentir.
   const { data: existente } = await supabaseAdmin
-    .from('barraca_carrito_items')
+    .from('barraca_carrito')
     .select('id, cantidad')
-    .eq('sesion_id', sessionId)
+    .eq('session_id', sessionId)
     .eq('producto_id', productoId)
     .maybeSingle();
 
+  let writeError: { message: string } | null = null;
   if (existente) {
     const nuevaCantidad = Number(existente.cantidad) + cantidad;
-    await supabaseAdmin
-      .from('barraca_carrito_items')
+    const { error } = await supabaseAdmin
+      .from('barraca_carrito')
       .update({ cantidad: nuevaCantidad })
       .eq('id', existente.id);
+    writeError = error;
   } else {
-    await supabaseAdmin
-      .from('barraca_carrito_items')
+    const { error } = await supabaseAdmin
+      .from('barraca_carrito')
       .insert({
-        sesion_id: sessionId,
+        session_id: sessionId,
         producto_id: productoId,
         cantidad,
         precio_unitario: Number(producto.precio),
       });
+    writeError = error;
+  }
+  if (writeError) {
+    console.error('[asistente] error agregando al carrito:', writeError.message);
+    return JSON.stringify({
+      error: 'No pude agregarlo al carrito. Probá de nuevo o agregalo desde la ficha del producto.',
+    });
   }
 
   // Total carrito post-add
   const { data: totalItems } = await supabaseAdmin
-    .from('barraca_carrito_items')
+    .from('barraca_carrito')
     .select('cantidad, precio_unitario')
-    .eq('sesion_id', sessionId);
+    .eq('session_id', sessionId);
   const totalCarrito = (totalItems ?? []).reduce(
     (s, it) => s + Number(it.cantidad) * Number(it.precio_unitario),
     0,
