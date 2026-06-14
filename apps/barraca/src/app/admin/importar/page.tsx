@@ -35,7 +35,7 @@ export default function BarracaImportarPage() {
   const [columnMapping, setColumnMapping] = useState<Record<string, string | null>>({});
 
   // Step 3
-  const [matchBy, setMatchBy] = useState<'codigo' | 'nombre'>('codigo');
+  const [matchBy, setMatchBy] = useState<'id' | 'codigo' | 'nombre'>('id');
   const [fieldsToUpdate, setFieldsToUpdate] = useState<string[]>(['precio', 'costo', 'stock']);
   const [createNew, setCreateNew] = useState(false);
   const [createPromotionalPrices, setCreatePromotionalPrices] = useState(false);
@@ -517,6 +517,16 @@ export default function BarracaImportarPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Buscar por</label>
             <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="matchBy"
+                  checked={matchBy === 'id'}
+                  onChange={() => setMatchBy('id')}
+                  className="w-4 h-4 accent-yellow-500"
+                />
+                <span className="text-sm text-gray-700">Id (recomendado)</span>
+              </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"

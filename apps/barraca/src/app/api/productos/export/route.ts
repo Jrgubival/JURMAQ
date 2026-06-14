@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextResponse } from 'next/server';
 import XLSX from 'xlsx';
 import type { Database } from '@jurmaq/shared/db-types';
@@ -7,17 +7,18 @@ import type { Database } from '@jurmaq/shared/db-types';
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
 type ProductoExportRow = Pick<
   BarracaProductoRow,
-  'codigo' | 'nombre' | 'slug' | 'medida' | 'precio' | 'precio_original' | 'en_oferta' | 'costo' | 'stock' | 'unidad' | 'peso' | 'activo' | 'solo_cotizar' | 'imagen'
+  'id' | 'codigo' | 'nombre' | 'slug' | 'medida' | 'precio' | 'precio_original' | 'en_oferta' | 'costo' | 'stock' | 'unidad' | 'peso' | 'activo' | 'solo_cotizar' | 'imagen'
 > & {
   barraca_categorias: { nombre: string | null } | null;
 };
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
+    // SECURITY (audit jun-2026): antes usaba auth() suelto → cualquier sesión
+    // (incluido rol de bajo privilegio) podía bajar TODO el inventario con la
+    // columna Costo. Ahora exige el permiso de importar/exportar.
+    const session = await requirePermission('barraca_importar', 'create');
+    if (!session) return forbiddenResponse('No tienes permiso para exportar el inventario');
 
     // Fetch ALL products with category names, paginated to bypass Supabase 1000-row limit
     let allProducts: ProductoExportRow[] = [];
@@ -27,7 +28,7 @@ export async function GET() {
       const { data } = await supabaseAdmin
         .from('barraca_productos')
         .select(
-          'codigo, nombre, slug, medida, precio, precio_original, en_oferta, costo, stock, unidad, peso, activo, solo_cotizar, imagen, barraca_categorias!left(nombre)'
+          'id, codigo, nombre, slug, medida, precio, precio_original, en_oferta, costo, stock, unidad, peso, activo, solo_cotizar, imagen, barraca_categorias!left(nombre)'
         )
         // Exporta TODO el inventario (activos e inactivos) — el round-trip
         // incluye la columna "Activo" para re-importar el estado.
@@ -42,6 +43,8 @@ export async function GET() {
 
     // Map to export format
     const rows = allProducts.map((p) => ({
+      // Id = clave única para re-importar (NO la edites). Match recomendado.
+      Id: p.id,
       Codigo: p.codigo || '',
       Nombre: p.nombre || '',
       Medida: p.medida || '',
@@ -64,6 +67,7 @@ export async function GET() {
     // Generate workbook
     const ws = XLSX.utils.json_to_sheet(rows);
     ws['!cols'] = [
+      { wch: 8 },
       { wch: 12 },
       { wch: 45 },
       { wch: 20 },

@@ -42,6 +42,8 @@ export interface ImportResult {
 // ---------------------------------------------------------------------------
 
 const COLUMN_SYNONYMS: Record<string, string[]> = {
+  // id = clave PRIMARIA única. Match preferido (codigo tiene 628 duplicados).
+  id: ['id', 'id producto', 'product id', 'product_id'],
   codigo: ['codigo', 'código', 'sku', 'code', 'cod', 'cod.'],
   nombre: ['nombre', 'descripcion', 'descripción', 'producto', 'detalle'],
   precio: [
@@ -211,17 +213,20 @@ export function detectColumnMapping(headers: string[]): Record<string, string | 
 export async function matchProducts(
   rows: any[],
   columnMapping: Record<string, string | null>,
-  matchBy: 'codigo' | 'nombre',
+  matchBy: 'codigo' | 'nombre' | 'id',
   fieldsToUpdate: string[],
   createPromotionalPrices: boolean
 ): Promise<MatchResult[]> {
   // Fetch all existing products from DB
   const existingProducts = await fetchAllProducts();
 
-  // Build lookup map keyed by the match field (normalized)
+  // Build lookup map keyed by the match field (normalized).
+  // `id` es la clave única recomendada (codigo tiene duplicados → colisiones).
   const lookupMap = new Map<string, BarracaProductoRow>();
   for (const product of existingProducts) {
-    const key = matchBy === 'codigo'
+    const key = matchBy === 'id'
+      ? normalize(String(product.id ?? ''))
+      : matchBy === 'codigo'
       ? normalize(String(product.codigo || ''))
       : normalize(String(product.nombre || ''));
     if (key) {
@@ -266,7 +271,10 @@ export async function matchProducts(
           newValue = toNumber(excelValue);
         } else if (field === 'activo') {
           dbField = 'activo';
-          newValue = parseBool(excelValue);
+          const sa = normalize(String(excelValue));
+          if (['si', 'sí', 'true', '1', 'activo', 'x', 'verdadero'].includes(sa)) newValue = true;
+          else if (['no', 'false', '0', 'inactivo'].includes(sa)) newValue = false;
+          else continue; // valor no reconocido → NO cambia el estado (evita apagar por typo)
         }
         // `imagen` (y otros strings) caen al path genérico: dbField = field,
         // newValue = excelValue (la URL tal cual).
@@ -281,12 +289,18 @@ export async function matchProducts(
         }
       }
 
-      // Handle promotional price logic (strike-through based on historic price)
-      if (createPromotionalPrices) {
-        const precioTachado = getValueFromRow(row, columnMapping, 'precio_tachado');
+      // Oferta + round-trip seguro (jun-2026): aplicamos la lógica de oferta si
+      // el usuario la pidió (createPromotionalPrices) O si la fila trae "Precio
+      // Tachado" con valor. Esto evita que re-importar un export pise el precio
+      // de LISTA de un producto en oferta (antes "Precio" sobrescribía precio
+      // con el precio_original y se perdía el tachado).
+      const precioTachadoCol = getValueFromRow(row, columnMapping, 'precio_tachado');
+      const hasTachado = precioTachadoCol !== undefined && precioTachadoCol !== null && precioTachadoCol !== '';
+      if (createPromotionalPrices || hasTachado) {
+        const precioTachado = precioTachadoCol;
         const precioReal = getValueFromRow(row, columnMapping, 'precio');
 
-        if (precioTachado !== undefined && precioTachado !== null && precioTachado !== '') {
+        if (hasTachado) {
           const tachNum = toNumber(precioTachado);
           const realNum = toNumber(precioReal);
 
@@ -468,9 +482,10 @@ export async function importBarracaFromXLSX(filePath: string): Promise<{
   const buffer = await readFile(filePath);
   const parsed = parseExcelFile(buffer);
   const mapping = detectColumnMapping(parsed.headers);
-  const matchBy = mapping.codigo ? 'codigo' : 'nombre';
+  const matchBy: 'id' | 'codigo' | 'nombre' = mapping.id ? 'id' : mapping.codigo ? 'codigo' : 'nombre';
   const fieldsToUpdate = Object.keys(mapping).filter(
-    (field) => Boolean(mapping[field]) && field !== 'categoria' && field !== 'subcategoria'
+    (field) =>
+      Boolean(mapping[field]) && field !== 'categoria' && field !== 'subcategoria' && field !== 'id'
   );
   const matches = await matchProducts(
     parsed.rows,
