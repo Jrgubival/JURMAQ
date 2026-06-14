@@ -112,11 +112,11 @@ export async function sendContraofertaEmail(
               </table>
 
               <div style="text-align: center; margin-bottom: 24px;">
-                <a href="${baseUrl}/barraca/cotizacion/${encodeURIComponent(cotizacion.numero)}?action=accept${cotizacion.acceptToken ? `&token=${encodeURIComponent(cotizacion.acceptToken)}` : ""}" style="display: inline-block; background-color: #16a34a; color: #ffffff; padding: 16px 48px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px; margin-bottom: 12px;">
+                <a href="${baseUrl}/cotizacion/${encodeURIComponent(cotizacion.numero)}?action=accept${cotizacion.acceptToken ? `&token=${encodeURIComponent(cotizacion.acceptToken)}` : ""}" style="display: inline-block; background-color: #16a34a; color: #ffffff; padding: 16px 48px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 16px; margin-bottom: 12px;">
                   Aceptar Contraoferta
                 </a>
                 <br>
-                <a href="${baseUrl}/barraca/cotizacion/${encodeURIComponent(cotizacion.numero)}?action=reject${cotizacion.acceptToken ? `&token=${encodeURIComponent(cotizacion.acceptToken)}` : ""}" style="color: #6b7280; font-size: 13px; text-decoration: underline;">
+                <a href="${baseUrl}/cotizacion/${encodeURIComponent(cotizacion.numero)}?action=reject${cotizacion.acceptToken ? `&token=${encodeURIComponent(cotizacion.acceptToken)}` : ""}" style="color: #6b7280; font-size: 13px; text-decoration: underline;">
                   No, gracias. Rechazar contraoferta.
                 </a>
               </div>

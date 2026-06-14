@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
+import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
@@ -80,8 +81,13 @@ export async function PUT(
   }
 
   try {
-    const session = await auth();
-    if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    // SECURITY (audit jun-2026): este PUT muta total/items/payment_url/estado.
+    // Antes usaba auth() desnudo → CUALQUIER sesión (incluido un rol read-only
+    // como 'contador') podía marcar 'pagada', editar montos y setear un
+    // payment_url arbitrario que se le muestra al cliente. Ahora exige el permiso
+    // de update, igual que sus rutas hermanas (POST, /api/pagos, contraoferta).
+    const session = await requirePermission('barraca_cotizaciones', 'update');
+    if (!session) return forbiddenResponse();
 
     const { id } = await params;
     const body = await request.json();
@@ -132,8 +138,11 @@ export async function PUT(
       }
       updateData.items = JSON.stringify(itemsArr);
     }
-    if (body.total !== undefined && typeof body.total === 'number') {
-      updateData.total = Math.max(0, Math.round(body.total));
+    // Defensa de monto (audit jun-2026): Number.isFinite (NaN evade < >) + cap.
+    // NOTA: el recálculo autoritativo del total desde el catálogo (anti
+    // sub/sobre-facturación del vendedor) queda como hardening Fase 2.
+    if (body.total !== undefined && Number.isFinite(body.total)) {
+      updateData.total = Math.min(Math.max(0, Math.round(body.total)), 50_000_000);
     }
 
     if (Object.keys(updateData).length === 0) {
