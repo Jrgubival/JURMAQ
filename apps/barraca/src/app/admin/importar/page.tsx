@@ -17,6 +17,8 @@ const FIELD_OPTIONS = [
   { value: 'categoria', label: 'Categoria' },
   { value: 'subcategoria', label: 'Subcategoria' },
   { value: 'precio_tachado', label: 'Precio Tachado' },
+  { value: 'imagen', label: 'Imagen (URL foto)' },
+  { value: 'activo', label: 'Activo (Si/No)' },
   { value: '__ignore__', label: '(ignorar)' },
 ];
 
@@ -549,6 +551,8 @@ export default function BarracaImportarPage() {
                 { key: 'nombre', label: 'Nombre', default: false },
                 { key: 'peso', label: 'Peso', default: false },
                 { key: 'unidad', label: 'Unidad', default: false },
+                { key: 'imagen', label: 'Imagen (foto)', default: false },
+                { key: 'activo', label: 'Activo', default: false },
               ].map((f) => (
                 <label key={f.key} className="flex items-center gap-2 cursor-pointer">
                   <input

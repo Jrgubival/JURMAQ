@@ -80,6 +80,11 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
     'precio de referencia',
     'precio normal',
   ],
+  // Round-trip de imágenes (jun-2026): permite editar la URL de la foto en el
+  // Excel exportado y re-importarla. La columna del export se llama "Imagen".
+  imagen: ['imagen', 'image', 'img', 'foto', 'url imagen', 'imagen url', 'url de imagen'],
+  // Estado activo/inactivo, para exportar e importar TODO el inventario.
+  activo: ['activo', 'activa', 'active', 'habilitado', 'visible'],
 };
 
 // ---------------------------------------------------------------------------
@@ -88,6 +93,12 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
 
 function normalize(str: string): string {
   return str.toLowerCase().trim();
+}
+
+/** Parsea valores de verdad típicos del Excel ("Si"/"No"/1/0/true) a boolean. */
+function parseBool(v: unknown): boolean {
+  const s = normalize(String(v ?? ''));
+  return s === 'si' || s === 'sí' || s === 'true' || s === '1' || s === 'x' || s === 'verdadero' || s === 'activo';
 }
 
 function slugify(text: string): string {
@@ -253,7 +264,12 @@ export async function matchProducts(
         } else if (field === 'peso') {
           dbField = 'peso';
           newValue = toNumber(excelValue);
+        } else if (field === 'activo') {
+          dbField = 'activo';
+          newValue = parseBool(excelValue);
         }
+        // `imagen` (y otros strings) caen al path genérico: dbField = field,
+        // newValue = excelValue (la URL tal cual).
 
         if (newValue === null) continue;
 
@@ -398,6 +414,10 @@ export async function executeImport(
               insertObj.unidad = String(value);
             } else if (COLUMN_SYNONYMS.medida?.some((s) => normalize(s) === normalizedKey)) {
               insertObj.medida = String(value);
+            } else if (COLUMN_SYNONYMS.imagen?.some((s) => normalize(s) === normalizedKey)) {
+              if (value) insertObj.imagen = String(value);
+            } else if (COLUMN_SYNONYMS.activo?.some((s) => normalize(s) === normalizedKey)) {
+              insertObj.activo = parseBool(value);
             }
           }
 

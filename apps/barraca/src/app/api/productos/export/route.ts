@@ -7,7 +7,7 @@ import type { Database } from '@jurmaq/shared/db-types';
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
 type ProductoExportRow = Pick<
   BarracaProductoRow,
-  'codigo' | 'nombre' | 'medida' | 'precio' | 'precio_original' | 'en_oferta' | 'costo' | 'stock' | 'unidad' | 'peso' | 'activo' | 'solo_cotizar'
+  'codigo' | 'nombre' | 'slug' | 'medida' | 'precio' | 'precio_original' | 'en_oferta' | 'costo' | 'stock' | 'unidad' | 'peso' | 'activo' | 'solo_cotizar' | 'imagen'
 > & {
   barraca_categorias: { nombre: string | null } | null;
 };
@@ -27,9 +27,10 @@ export async function GET() {
       const { data } = await supabaseAdmin
         .from('barraca_productos')
         .select(
-          'codigo, nombre, medida, precio, precio_original, en_oferta, costo, stock, unidad, peso, activo, solo_cotizar, barraca_categorias!left(nombre)'
+          'codigo, nombre, slug, medida, precio, precio_original, en_oferta, costo, stock, unidad, peso, activo, solo_cotizar, imagen, barraca_categorias!left(nombre)'
         )
-        .eq('activo', true)
+        // Exporta TODO el inventario (activos e inactivos) — el round-trip
+        // incluye la columna "Activo" para re-importar el estado.
         .order('nombre')
         .range(offset, offset + 999);
 
@@ -53,6 +54,9 @@ export async function GET() {
       Unidad: p.unidad || 'UN',
       Peso: p.peso || '',
       'Solo Cotizar': p.solo_cotizar ? 'Si' : 'No',
+      Activo: p.activo ? 'Si' : 'No',
+      // URL de la foto — editable: pegá una URL nueva y re-importá con "Imagen" tildado.
+      Imagen: p.imagen || '',
     }));
 
     // Generate workbook
@@ -70,6 +74,8 @@ export async function GET() {
       { wch: 8 },
       { wch: 8 },
       { wch: 12 },
+      { wch: 8 },
+      { wch: 60 },
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Productos');
