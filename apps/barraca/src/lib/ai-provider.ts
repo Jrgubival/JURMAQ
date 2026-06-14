@@ -467,6 +467,11 @@ function formatToolResultAsText(toolName: string, parsed: unknown): string {
   if (typeof p.error === "string") {
     return p.error;
   }
+  // Si el tool ya trae un mensaje listo (ej. agregar_al_carrito devuelve
+  // `mensaje: "Listo, agregué 6 sacos de..."`), usalo en vez del genérico.
+  if (p.ok === true && typeof p.mensaje === "string" && p.mensaje.trim()) {
+    return String(p.mensaje);
+  }
   if (toolName === "buscar_producto" && Array.isArray(p.productos)) {
     const items = p.productos as Array<{
       nombre?: string;
