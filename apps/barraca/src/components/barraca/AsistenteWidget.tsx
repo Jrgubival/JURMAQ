@@ -50,6 +50,7 @@ export default function AsistenteWidget() {
   const [error, setError] = useState<string | null>(null);
   const [consentGiven, setConsentGiven] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hydratedRef = useRef(false);
 
   // Auto-scroll a último mensaje
   useEffect(() => {
@@ -61,6 +62,33 @@ export default function AsistenteWidget() {
     if (typeof window === "undefined") return;
     setConsentGiven(localStorage.getItem("asistente_consent") === "true");
   }, []);
+
+  // Persistencia de la conversación: el widget se re-monta al navegar entre
+  // páginas, así que sin esto el chat se borraba. sessionStorage sobrevive la
+  // navegación dentro de la pestaña y se limpia al cerrarla.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = sessionStorage.getItem("adia_chat");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) setMessages(parsed);
+      }
+    } catch {
+      /* no-op */
+    }
+    hydratedRef.current = true;
+  }, []);
+
+  useEffect(() => {
+    // No guardar antes de hidratar ni pisar lo guardado con un array vacío.
+    if (typeof window === "undefined" || !hydratedRef.current || messages.length === 0) return;
+    try {
+      sessionStorage.setItem("adia_chat", JSON.stringify(messages.slice(-30)));
+    } catch {
+      /* quota / no-op */
+    }
+  }, [messages]);
 
   function acceptConsent() {
     setConsentGiven(true);
