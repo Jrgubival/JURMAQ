@@ -26,6 +26,8 @@ export interface CartAddedUi {
     slug: string;
     nombre: string;
     precio: number;
+    /** Precio "antes" tachado si el producto está en promo/oferta (null si no). */
+    precio_normal?: number | null;
     imagen: string | null;
     unidad: string | null;
   };
@@ -85,6 +87,11 @@ export default function CartAddedCard({ ui }: { ui: CartAddedUi }) {
           </h4>
           <p className="text-xs text-[#787774] mt-1">
             {cantidad} × {formatCLP(producto.precio)}
+            {producto.precio_normal && producto.precio_normal > producto.precio && (
+              <span className="text-[#A8A29E] line-through ml-1.5">
+                {formatCLP(producto.precio_normal)}
+              </span>
+            )}
             {producto.unidad && ` / ${producto.unidad}`}
           </p>
           <p className="text-sm font-medium text-[#111111] tabular-nums mt-0.5">

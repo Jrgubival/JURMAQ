@@ -24,6 +24,8 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { isValidOrigin, sanitizeString, escapeOrFilter } from '@jurmaq/shared/sanitize';
 import { callAI, type AiToolDef, type AiToolHandler } from '@/lib/ai-provider';
+import { resolvePrice } from '@/lib/pricing';
+import { getActiveCategoryDiscountMap } from '@/lib/promotions';
 
 /**
  * SECURITY (jun-2026): quita caracteres invisibles que pueden esconder
@@ -139,9 +141,20 @@ SEGURIDAD (no negociable):
   WhatsApp oficial (+56 9 7667 3577). Tu respuesta se renderiza como
   texto plano — no formatees con tags.
 
+PRECIOS Y PROMOCIONES (CRÍTICO — consistencia con la tienda):
+- El campo precio que devuelve buscar_producto es el precio EFECTIVO, el que el
+  cliente paga en el carrito (ya trae la promo aplicada). Cotizá SIEMPRE ese.
+- Si en_promo es true, el producto está en oferta: precio_normal es el precio
+  "antes" y descuento_pct el % de rebaja. Mencionalo así: "Cemento Bio Bio 25kg
+  está en promo: antes $3.990, ahora $3.791 (-5%)." Hace sentir la oferta.
+- Si en_promo es false, mostrá solo el precio. NUNCA muestres precio_normal si no
+  hay promo. NUNCA inventes un descuento ni un precio "antes".
+- El precio del carrito y el que vos decís deben ser SIEMPRE el mismo número.
+
 TOOLS DISPONIBLES:
 - buscar_producto(query): busca productos por nombre o tipo. Retorna id, slug,
-  precio, unidad, medida y en_stock. SIEMPRE necesitás llamarla antes de
+  precio (efectivo, con promo), precio_normal (tachado si hay promo), descuento_pct,
+  en_promo, unidad, medida y en_stock. SIEMPRE necesitás llamarla antes de
   agregar_al_carrito (porque necesitás el id).
 - agregar_al_carrito({nombre, cantidad}): AGREGA producto al carrito del
   cliente. SOLO usar después de:
@@ -201,7 +214,7 @@ async function tool_buscar_producto(query: string): Promise<string> {
 
   const { data, error } = await supabaseAdmin
     .from('barraca_productos_public')
-    .select('id, nombre, slug, precio, precio_original, en_oferta, unidad, medida, stock')
+    .select('id, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, categoria_id, unidad, medida, stock')
     .or(`nombre.ilike.%${safeQuery}%,descripcion.ilike.%${safeQuery}%`)
     .eq('activo', true)
     .limit(3);
@@ -215,19 +228,38 @@ async function tool_buscar_producto(query: string): Promise<string> {
     return JSON.stringify({ error: 'No encontré productos que coincidan con esa búsqueda.' });
   }
 
+  // CONSISTENCIA DE PRECIOS (jun-2026): ADIA DEBE cotizar el mismo precio que
+  // cobra el carrito/tienda. Antes devolvía el `precio` base pelado e ignoraba
+  // las promos del día (ej. "Áridos y Morteros -5%" sobre cemento) → ADIA decía
+  // $3.990 y el carrito cobraba $3.791. Ahora pasa por `resolvePrice` con el
+  // descuento de categoría activo (misma fuente que el storefront): el precio
+  // que ve el cliente en el chat = el precio que paga.
+  const promoMap = await getActiveCategoryDiscountMap();
+
   // IMPORTANTE: incluimos `id` y `slug` ahora — ADIA los usa para invocar
   // agregar_al_carrito({producto_id: N}) cuando el cliente confirma compra.
   return JSON.stringify({
-    productos: data.map((p) => ({
-      id: p.id,
-      slug: p.slug,
-      nombre: p.nombre,
-      precio: p.precio,
-      precio_oferta: p.en_oferta ? p.precio_original : null,
-      unidad: p.unidad,
-      medida: p.medida,
-      en_stock: (p.stock ?? 0) > 0,
-    })),
+    productos: data.map((p) => {
+      const pr = resolvePrice(
+        p,
+        p.categoria_id != null ? promoMap.get(p.categoria_id) ?? null : null,
+      );
+      return {
+        id: p.id,
+        slug: p.slug,
+        nombre: p.nombre,
+        // precio = el que SE COBRA (con promo aplicada). precio_normal = el
+        // tachado "antes" si hay promo/oferta. ADIA debe mostrar ambos.
+        precio: pr.precioFinal,
+        precio_normal: pr.precioTachado,
+        descuento_pct: pr.porcentajeDescuento,
+        en_promo: pr.tipo === 'oferta_real' || pr.tipo === 'promo_dia',
+        solo_cotizar: pr.tipo === 'cotizar',
+        unidad: p.unidad,
+        medida: p.medida,
+        en_stock: (p.stock ?? 0) > 0,
+      };
+    }),
   });
 }
 
@@ -276,7 +308,7 @@ async function tool_agregar_al_carrito(
   const safeNombre = escapeOrFilter(nombre.slice(0, 80));
   const { data: candidatos, error: sErr } = await supabaseAdmin
     .from('barraca_productos_public')
-    .select('id, nombre, slug, precio, imagen, unidad, stock')
+    .select('id, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, categoria_id, imagen, unidad, stock')
     .or(`nombre.ilike.%${safeNombre}%`)
     .eq('activo', true)
     .limit(5);
@@ -302,6 +334,24 @@ async function tool_agregar_al_carrito(
       error: `Solo tenemos ${producto.stock} unidades de "${producto.nombre}". ¿Querés que agregue esa cantidad?`,
     });
   }
+
+  // CONSISTENCIA DE PRECIOS (jun-2026): congelamos el MISMO precio efectivo que
+  // cobra el carrito/tienda (oferta real > promo del día > precio base), no el
+  // `precio` base pelado. Si no, la card del chat mostraba $3.990 y el carrito
+  // cobraba $3.791. Productos "solo cotizar" no se agregan por chat.
+  const promoMap = await getActiveCategoryDiscountMap();
+  const precioResuelto = resolvePrice(
+    producto,
+    producto.categoria_id != null ? promoMap.get(producto.categoria_id) ?? null : null,
+  );
+  if (precioResuelto.tipo === 'cotizar') {
+    return JSON.stringify({
+      error: `"${producto.nombre}" se cotiza según el proyecto. Te paso con un humano para darte el precio exacto.`,
+    });
+  }
+  const precioEfectivo = precioResuelto.precioFinal > 0
+    ? precioResuelto.precioFinal
+    : Number(producto.precio);
 
   // Upsert en carrito (busca item existente, suma cantidad si ya está).
   // BUG (jun-2026): la tabla real es `barraca_carrito` con columna `session_id`.
@@ -330,7 +380,7 @@ async function tool_agregar_al_carrito(
         session_id: sessionId,
         producto_id: producto.id,
         cantidad,
-        precio_unitario: Number(producto.precio),
+        precio_unitario: precioEfectivo,
       });
     writeError = error;
   }
@@ -367,7 +417,9 @@ async function tool_agregar_al_carrito(
           id: producto.id,
           slug: producto.slug,
           nombre: producto.nombre,
-          precio: Number(producto.precio),
+          // precio efectivo (con promo) = el que se cobra; precio_normal = tachado
+          precio: precioEfectivo,
+          precio_normal: precioResuelto.precioTachado,
           imagen: producto.imagen,
           unidad: producto.unidad,
         },
@@ -431,7 +483,7 @@ const TOOL_DEFS: AiToolDef[] = [
   {
     name: 'buscar_producto',
     description:
-      'Busca productos en la barraca por nombre o tipo. Retorna hasta 3 productos con id, slug, nombre, precio, unidad, medida y en_stock. El id es necesario para llamar agregar_al_carrito después.',
+      'Busca productos en la barraca por nombre o tipo. Retorna hasta 3 productos con id, slug, nombre, precio (EFECTIVO con promo ya aplicada — cotizá este), precio_normal (precio "antes" tachado si en_promo), descuento_pct, en_promo, unidad, medida y en_stock. El id es necesario para llamar agregar_al_carrito después.',
     parameters: {
       type: 'object',
       properties: {
