@@ -227,9 +227,10 @@ const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
 // Cerebras: inferencia gratis de alto throughput (~60-100k tokens/min vs los
 // ~6k de Groq), 1M tokens/día, API OpenAI-compatible (mismo formato que Groq).
-// Modelo con tool calling confirmado y buen español. Si Cerebras renombra el
-// modelo, cambiar solo esta constante.
-const CEREBRAS_MODEL = "llama-3.3-70b";
+// gpt-oss-120b: verificado en vivo (jun-2026) con tool calling correcto y buen
+// español chileno. Modelos disponibles: gpt-oss-120b, zai-glm-4.7. Si Cerebras
+// renombra el modelo, cambiar solo esta constante.
+const CEREBRAS_MODEL = "gpt-oss-120b";
 const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1";
 
 /** Config de un proveedor OpenAI-compatible (Groq, Cerebras). */
