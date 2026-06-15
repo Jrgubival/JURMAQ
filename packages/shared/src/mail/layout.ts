@@ -127,7 +127,7 @@ ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacit
       <tr><td style="background:${BRAND.navyDark};padding:26px 32px;border-radius:0 0 14px 14px;">
         <p style="margin:0 0 8px;color:#cbd5e1;font-family:${FONT};font-size:13px;line-height:1.7;">
           <strong style="color:#ffffff;">JURMAQ Barraca</strong> — Fierros y materiales de construcción<br>
-          Curicó (Av. Camino a Los Niches) · Molina (Av. Poniente 2157), Región del Maule<br>
+          Av. Poniente 2157, Molina · Región del Maule<br>
           WhatsApp <a href="https://wa.me/${WA}" style="color:${BRAND.orange};text-decoration:none;">+56 9 7667 3577</a> &nbsp;·&nbsp; <a href="mailto:contacto@jurmaq.cl" style="color:${BRAND.orange};text-decoration:none;">contacto@jurmaq.cl</a>
         </p>
         <p style="margin:12px 0 0;color:#64748b;font-family:${FONT};font-size:11px;line-height:1.5;">

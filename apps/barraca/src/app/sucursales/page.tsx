@@ -42,7 +42,7 @@ const SUCURSALES: Sucursal[] = [
     slug: 'curico',
     nombre: 'JURMAQ Curicó',
     ciudad: 'Curicó',
-    direccion: 'Av. Camino a Los Niches, Curicó',
+    direccion: 'Lt 3 del Lt A, Hj 11, Maquehua, Curicó',
     telefono: '+56976673577',
     whatsapp: '56976673577',
     email: 'curico@jurmaq.cl',
