@@ -26,6 +26,7 @@ export default function robots(): MetadataRoute.Robots {
     ],
     sitemap: [
       "https://jurmaq.cl/sitemap.xml",
+      "https://constructora.jurmaq.cl/sitemap.xml",
       "https://barraca.jurmaq.cl/sitemap.xml",
     ],
     host: "https://jurmaq.cl",

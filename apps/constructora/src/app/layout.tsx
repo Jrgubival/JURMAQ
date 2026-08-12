@@ -3,8 +3,12 @@ import { Geist, Geist_Mono, Newsreader, Bebas_Neue, Oswald } from "next/font/goo
 import "./globals.css";
 import Analytics from "@jurmaq/shared/ui/Analytics";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
-import Navbar from "@/components/public/Navbar";
-import Footer from "@/components/public/Footer";
+// Navbar y Footer NO se renderizan acá: cada vertical tiene su propio layout
+// de route group —`(hub)/layout.tsx` para jurmaq.cl y `constructora/layout.tsx`
+// para constructora.jurmaq.cl— y así el navbar sabe en qué marca está sin
+// tener que inferirlo del pathname (que bajo el rewrite del subdominio no es
+// confiable). Las rutas privadas (admin, cuenta, login, contrato) quedan sin
+// navbar público, que es justo lo que necesitan.
 import { buildPrerenderRules, CONSTRUCTORA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
 import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
 // Side-effect import: valida env vars al startup. Si falta una required en
@@ -279,9 +283,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-[var(--font-sans)] bg-[#FBFBFA] text-[#111111]">
         {/* GA4 — solo carga si NEXT_PUBLIC_GA_MEASUREMENT_ID está en env */}
         <Analytics />
-        <Navbar />
         {children}
-        <Footer />
         <CookieBanner productLabel="máquinas" />
       </body>
     </html>

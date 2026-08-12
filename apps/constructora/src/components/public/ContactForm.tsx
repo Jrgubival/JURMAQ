@@ -21,14 +21,26 @@ interface FormData {
   mensaje: string;
 }
 
-export function ContactForm() {
+interface ContactFormProps {
+  /**
+   * Preselecciona el servicio. Lo usa `/cotizar-obra` en
+   * constructora.jurmaq.cl, donde el visitante ya llegó buscando obra civil y
+   * pedirle que lo elija de nuevo es fricción pura. El query param `?servicio=`
+   * sigue mandando por sobre esto (ver useEffect).
+   */
+  servicioInicial?: string;
+  /** Placeholder del textarea, para adaptar la pregunta al contexto. */
+  mensajePlaceholder?: string;
+}
+
+export function ContactForm({ servicioInicial = "", mensajePlaceholder }: ContactFormProps = {}) {
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState<FormData>({
     nombre: "",
     empresa: "",
     email: "",
     telefono: "",
-    servicio: "",
+    servicio: servicioInicial,
     mensaje: "",
   });
   const [status, setStatus] = useState<
@@ -271,7 +283,7 @@ export function ContactForm() {
           value={formData.mensaje}
           onChange={handleChange}
           rows={5}
-          placeholder="Describe brevemente tu necesidad o proyecto…"
+          placeholder={mensajePlaceholder ?? "Describe brevemente tu necesidad o proyecto…"}
           className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-shadow resize-none"
         />
       </div>

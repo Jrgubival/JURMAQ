@@ -358,9 +358,14 @@ export function getProyectosStats() {
 
 /**
  * URL canonical de un case study — usado en JSON-LD Article y sitemap.
+ *
+ * Vive en constructora.jurmaq.cl, no en el hub: los case studies son el activo
+ * de conversión B2B del subdominio de obras civiles. jurmaq.cl/proyectos/* hace
+ * 301 hacia acá (ver middleware), así que no hay contenido duplicado y el
+ * posicionamiento que tenía el hub se traspasa al subdominio.
  */
 export function getProyectoUrl(slug: string): string {
-  return `https://jurmaq.cl/proyectos/${slug}`;
+  return `https://constructora.jurmaq.cl/proyectos/${slug}`;
 }
 
 /**

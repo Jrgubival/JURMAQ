@@ -21,12 +21,12 @@ export const metadata: Metadata = {
   title: "Proyectos JURMAQ · 27 años construyendo en el Maule",
   description:
     "Casos reales: silos Nestlé Teno, bodega de cubas Miguel Torres, mantención industrial Iansagro, bodega refrigerada Surfrut, modernización CBB. Mira las máquinas usadas, materiales aplicados y testimonios del cliente en cada obra.",
-  alternates: { canonical: "https://jurmaq.cl/proyectos" },
+  alternates: { canonical: "https://constructora.jurmaq.cl/proyectos" },
   openGraph: {
     title: "Proyectos JURMAQ · Obras reales en el Maule",
     description:
       "Casos reales documentados: Nestlé, Miguel Torres, Iansagro, Surfrut, CBB. Maquinaria + materiales en cada obra.",
-    url: "https://jurmaq.cl/proyectos",
+    url: "https://constructora.jurmaq.cl/proyectos",
     type: "website",
   },
 };
@@ -47,7 +47,7 @@ export default function ProyectosPage() {
     itemListElement: PROYECTOS.map((p, i) => ({
       "@type": "ListItem",
       position: i + 1,
-      url: `https://jurmaq.cl/proyectos/${p.slug}`,
+      url: `https://constructora.jurmaq.cl/proyectos/${p.slug}`,
       name: p.titulo,
     })),
   };
@@ -332,7 +332,7 @@ export default function ProyectosPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              href="/contacto?servicio=constructora"
+              href="/cotizar-obra"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#111111] text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-white/90 transition-colors"
             >
               Cotizar mi obra
@@ -350,7 +350,7 @@ export default function ProyectosPage() {
               </svg>
             </Link>
             <Link
-              href="/maquinarias"
+              href="https://jurmaq.cl/maquinarias"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-white/25 text-white text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-white/10 transition-colors"
             >
               Ver flota de máquinas

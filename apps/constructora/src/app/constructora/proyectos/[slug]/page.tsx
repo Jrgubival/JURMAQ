@@ -81,7 +81,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
       publisher: PROVEEDOR_JSONLD,
       url,
       ...(proyecto.imagenHero
-        ? { image: `https://jurmaq.cl${proyecto.imagenHero}` }
+        ? { image: `https://constructora.jurmaq.cl${proyecto.imagenHero}` }
         : {}),
       about: {
         "@type": "Organization",
@@ -97,13 +97,13 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
           "@type": "ListItem",
           position: 1,
           name: "Inicio",
-          item: "https://jurmaq.cl",
+          item: "https://constructora.jurmaq.cl",
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "Proyectos",
-          item: "https://jurmaq.cl/proyectos",
+          item: "https://constructora.jurmaq.cl/proyectos",
         },
         {
           "@type": "ListItem",
@@ -376,7 +376,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
 
                 <div className="mt-7 pt-6 border-t border-white/10">
                   <Link
-                    href="/contacto?servicio=constructora"
+                    href="/cotizar-obra"
                     className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 bg-gold-500 hover:bg-gold-400 text-navy-950 font-semibold text-sm rounded-lg transition-colors"
                   >
                     Cotizar una obra similar
@@ -631,7 +631,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
                   return (
                     <li key={i}>
                       {m.tipoSlug ? (
-                        <Link href={`/arriendo/${m.tipoSlug}`}>{inner}</Link>
+                        <Link href={`https://jurmaq.cl/arriendo/${m.tipoSlug}`}>{inner}</Link>
                       ) : (
                         inner
                       )}
@@ -902,7 +902,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              href="/contacto?servicio=constructora"
+              href="/cotizar-obra"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#111111] text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-white/90 transition-colors"
             >
               Cotizar mi obra

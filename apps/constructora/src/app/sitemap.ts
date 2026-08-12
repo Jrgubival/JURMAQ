@@ -4,7 +4,6 @@ import { maquinariaHref } from "@/lib/maquinaria-slug";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES, TIPOS_MAQUINA } from "@jurmaq/shared/seo";
 import { RECURSOS } from "@/lib/recursos-data";
-import { PROYECTOS } from "@/lib/proyectos-data";
 
 /**
  * Sitemap de jurmaq.cl (Constructora).
@@ -122,22 +121,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // --- Proyectos (case studies B2B) ---
-  // Hub + 1 detail page por entrada en PROYECTOS. Pages estáticas, alta
-  // autoridad por contenido único (cliente identificado + maquinaria + UF).
-  const proyectosUrls: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/proyectos`,
-      lastModified: new Date(),
-      changeFrequency: "monthly" as const,
-      priority: 0.85,
-    },
-    ...PROYECTOS.map((p) => ({
-      url: `${baseUrl}/proyectos/${p.slug}`,
-      lastModified: new Date(p.fechaPublicacion),
-      changeFrequency: "yearly" as const,
-      priority: 0.7,
-    })),
-  ];
+  // YA NO van en este sitemap: se mudaron a constructora.jurmaq.cl, que es el
+  // sitio de obras civiles. jurmaq.cl/proyectos/* hace 301 hacia allá (ver
+  // middleware), y listar una URL que redirige es una señal sucia para Google.
+  // Su sitemap propio está en apps/constructora/src/app/constructora/sitemap.ts.
 
   return [
     ...staticPages,
@@ -147,6 +134,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...machineUrls,
     ...machineCityUrls,
     ...recursosUrls,
-    ...proyectosUrls,
   ];
 }
