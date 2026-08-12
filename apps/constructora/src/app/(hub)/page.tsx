@@ -13,6 +13,7 @@ import HeroSearch from "@/components/public/HeroSearch";
 import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
 import TestimoniosGrid from "@/components/public/TestimoniosGrid";
 import { getTestimoniosDestacados } from "@/lib/testimonios-data";
+import { getProyectosStats } from "@/lib/proyectos-data";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 
@@ -138,6 +139,15 @@ function getStatusLabel(estado: string): string {
 }
 
 export default async function HomePage() {
+  // UF de obras documentadas — calculado, NUNCA hardcodeado. Estuvo escrito a
+  // mano como "UF 139K" mientras los proyectos de `proyectos-data.ts` sumaban
+  // 127.000: dos cifras distintas bajo la misma etiqueta ("en proyectos
+  // documentados") entre jurmaq.cl y constructora.jurmaq.cl. Un mandante que
+  // compara los dos sitios detecta eso, y en B2B una cifra que no cuadra cuesta
+  // la licitación. Ahora ambas salen de la misma fuente y se mueven juntas
+  // cuando se agregue una obra.
+  const { totalUF } = getProyectosStats();
+
   const { data: featuredMachines } = await supabasePublic
     .from('maquinarias')
     .select('*')
@@ -242,7 +252,7 @@ export default async function HomePage() {
                   className="font-[var(--font-serif)] italic text-gold-500 tabular-nums leading-none"
                   style={{ fontSize: 'clamp(2.5rem, 4vw, 3.5rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
                 >
-                  UF 139K
+                  UF {totalUF.toLocaleString('es-CL')}
                 </dd>
                 <dt className="text-[10px] font-semibold text-white/55 uppercase tracking-[0.22em] mt-3">
                   En proyectos documentados
