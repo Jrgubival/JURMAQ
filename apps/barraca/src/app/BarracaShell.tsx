@@ -42,6 +42,59 @@ function getSessionId(): string {
   return sid;
 }
 
+/**
+ * Switcher de las tres unidades JURMAQ.
+ *
+ * Debe ser idéntico en los tres sitios (jurmaq.cl, constructora.jurmaq.cl y
+ * barraca.jurmaq.cl): jurmaq.cl es el hub y desde cualquier página se salta a
+ * cualquier vertical. El gemelo vive en
+ * `apps/constructora/src/components/public/Navbar.tsx` — si cambia uno, cambia
+ * el otro. Está duplicado y no en shared porque cada app usa su propio sistema
+ * de color (naranja acá, gold en constructora) y compartirlo obligaría a
+ * parametrizar más de lo que ahorra.
+ */
+const VERTICALES = [
+  { key: 'arriendo', label: 'Arriendo', sub: 'Maquinaria', url: 'https://jurmaq.cl' },
+  { key: 'constructora', label: 'Constructora', sub: 'Obras civiles', url: 'https://constructora.jurmaq.cl' },
+  { key: 'barraca', label: 'Barraca', sub: 'Fierros y materiales', url: '/' },
+] as const;
+
+function BrandSwitcher() {
+  return (
+    <div className="bg-navy-950 border-b border-navy-800/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* overflow-x-auto con scrollbar oculto: en macOS con "mostrar siempre"
+            pintaba una barra gris permanente cruzando el header. */}
+        <nav
+          aria-label="Unidades de negocio JURMAQ"
+          className="flex items-stretch gap-1 h-9 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {VERTICALES.map((v) => {
+            const activa = v.key === 'barraca';
+            return (
+              <Link
+                key={v.key}
+                href={v.url}
+                aria-current={activa ? 'page' : undefined}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold tracking-wide uppercase border-b-2 transition-colors ${
+                  activa
+                    ? 'border-orange-500 text-orange-400'
+                    : 'border-transparent text-white/60 hover:text-white hover:border-white/30'
+                }`}
+              >
+                {v.label}
+                <span className="hidden sm:inline font-normal normal-case tracking-normal text-white/40">
+                  {v.sub}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+    </div>
+  );
+}
+
 function TopBar() {
   return (
     <div className="bg-navy-950 border-b border-navy-800 text-gray-300 text-xs">
@@ -737,6 +790,7 @@ export default function BarracaShell({
       <a href="#main-content" className="skip-to-content">
         Ir al contenido principal
       </a>
+      <BrandSwitcher />
       <TopBar />
       <Navbar />
       <main id="main-content" className="flex-1 min-h-screen bg-gray-50">{children}</main>
