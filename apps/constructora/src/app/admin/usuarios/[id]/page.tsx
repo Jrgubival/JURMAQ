@@ -8,7 +8,7 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requireRole } from '@jurmaq/shared/auth/guard';
 import DocumentosClient from './DocumentosClient';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +26,12 @@ export default async function UsuarioDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
+  // `auth()` a secas solo comprobaba que hubiera SESIÓN, no el rol. Como el
+  // middleware tampoco filtra por rol, un vendedor/operador/contador —que ni
+  // siquiera ve el menú Usuarios— podía abrir /admin/usuarios/5 a mano y leer
+  // nombre, email y rol de cualquier trabajador. La API de documentos sí
+  // exigía permiso, pero para entonces la identidad ya se había filtrado.
+  const session = await requireRole(['admin', 'gerente']);
   if (!session) redirect('/login');
 
   const { id } = await params;

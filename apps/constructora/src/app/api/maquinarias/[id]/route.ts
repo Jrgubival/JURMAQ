@@ -10,11 +10,24 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    // Public endpoint — internal fields (garantia_monto, tipo_combustible)
-    // excluded to avoid leaking via the catalog.
+
+    // Campos internos (garantia_monto, tipo_combustible) SOLO para quien puede
+    // editar maquinarias; el catálogo público sigue recibiendo la proyección
+    // acotada de siempre.
+    //
+    // Esto existe porque el modal de edición del admin se llenaba desde la
+    // respuesta pública: `maq.garantia_monto || 0` daba `undefined || 0` = 0 y
+    // el PUT lo guardaba, poniendo la garantía en 0 en CADA guardado. Lo mismo
+    // dejaba `tipo_combustible` en null. Dar el dato real al formulario es la
+    // única forma de que no vuelva a pisar lo que no mostró.
+    const puedeEditar = await requirePermission('maquinarias', 'update');
+    const columnas = puedeEditar
+      ? 'id, nombre, tipo, descripcion, especificaciones, precio_dia, precio_semana, precio_mes, estado, imagen, garantia_monto, tipo_combustible'
+      : 'id, nombre, tipo, descripcion, especificaciones, precio_dia, precio_semana, precio_mes, estado, imagen';
+
     const { data: result, error } = await supabaseAdmin
       .from('maquinarias')
-      .select('id, nombre, tipo, descripcion, especificaciones, precio_dia, precio_semana, precio_mes, estado, imagen')
+      .select(columnas)
       .eq('id', parseInt(id))
       .single();
 
@@ -79,11 +92,19 @@ export async function PUT(
       if (body.nombre !== undefined) updateData.nombre = body.nombre;
       if (body.tipo !== undefined) updateData.tipo = body.tipo;
       if (body.descripcion !== undefined) updateData.descripcion = body.descripcion;
-      if (body.especificaciones !== undefined)
+      if (body.especificaciones !== undefined) {
+        // `JSON.stringify(null)` devuelve el string "null" —cuatro letras— y eso
+        // era lo que quedaba guardado cuando el formulario mandaba null,
+        // destruyendo marca/modelo/serie/año (los campos que salen impresos en
+        // el contrato). null tiene que llegar a la columna como NULL de verdad.
+        const espec = body.especificaciones;
         updateData.especificaciones =
-          typeof body.especificaciones === 'string'
-            ? body.especificaciones
-            : JSON.stringify(body.especificaciones);
+          espec === null || espec === undefined
+            ? null
+            : typeof espec === 'string'
+              ? espec
+              : JSON.stringify(espec);
+      }
       if (body.precioDia !== undefined) updateData.precio_dia = body.precioDia;
       if (body.precio_dia !== undefined) updateData.precio_dia = body.precio_dia;
       if (body.precioSemana !== undefined) updateData.precio_semana = body.precioSemana;

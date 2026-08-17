@@ -28,11 +28,25 @@ export async function GET(request: NextRequest) {
     const buscar = searchParams.get('buscar');
     const maquinariaId = searchParams.get('maquinaria_id');
 
-    // Join maquinarias(nombre) so the UI can show the machine without a second call.
+    // Lista de columnas EXPLÍCITA, nunca '*'.
+    //
+    // El listado del admin pinta 9 campos, pero '*' mandaba la fila entera al
+    // navegador: `firma_token` (el secreto de 64 hex que autoriza firmar el
+    // contrato), `firma_token_expira_at`, las firmas en base64 de ambas partes,
+    // `cedula_hash`, `firma_ip` y `firma_user_agent`. Cualquiera con la consola
+    // abierta —o cualquier extensión del navegador— podía leer el token y
+    // firmar un contrato a nombre del arrendatario.
+    //
+    // Si el listado necesita un campo nuevo, agrégalo acá a mano. No vuelvas a '*'.
     let query = supabaseAdmin
       .from('contratos')
-      .select('*, maquinarias(id, nombre, tipo)')
-      .order('created_at', { ascending: false });
+      // Una sola cadena literal: supabase-js infiere el tipo de la fila
+      // parseando este string en tiempo de compilación, y una concatenación
+      // con `+` lo degrada a `string` y rompe la inferencia.
+      .select('id,numero,estado,fecha_inicio,fecha_termino,arrendatario_nombre,arrendatario_razon_social,arrendatario_rut,maquinaria_id,created_at,maquinarias(id,nombre,tipo)')
+      .order('created_at', { ascending: false })
+      // Sin límite esto crecía sin techo con cada contrato firmado.
+      .limit(500);
 
     if (estado) query = query.eq('estado', estado);
     if (maquinariaId) {

@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { isValidOrigin, escapeOrFilter } from '@jurmaq/shared/sanitize';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,8 +20,12 @@ export async function GET(request: NextRequest) {
     } else if (tipo) {
       query = query.eq('tipo', tipo);
     } else if (search) {
+      // Sin escapar, una coma o un paréntesis en `search` rompe la sintaxis del
+      // filtro de PostgREST y deja inyectar condiciones extra (inyección
+      // PostgREST). `api/clientes/route.ts` ya lo hacía bien; este quedó atrás.
+      const safe = escapeOrFilter(search.trim());
       query = query.or(
-        `nombre.ilike.%${search}%,cliente.ilike.%${search}%,descripcion.ilike.%${search}%`
+        `nombre.ilike.%${safe}%,cliente.ilike.%${safe}%,descripcion.ilike.%${safe}%`
       );
     }
 

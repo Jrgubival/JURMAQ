@@ -97,27 +97,43 @@ export default function MaquinariasPage() {
     setShowModal(true);
   };
 
-  const openEdit = (maq: Maquinaria) => {
+  const openEdit = async (maq: Maquinaria) => {
     setEditing(maq);
-    const espec = parseEspec(maq.especificaciones);
+    setShowModal(true);
+
+    // La grilla se llena desde el listado público, que NO trae garantia_monto
+    // ni tipo_combustible. Si llenáramos el formulario con esa fila, esos dos
+    // campos saldrían `undefined`, el `|| 0` los volvería 0 y el PUT los
+    // guardaría así: cada edición ponía la garantía en 0 y borraba el tipo de
+    // combustible, sin que nadie lo viera. Por eso pedimos la fila completa
+    // antes de mostrar los valores.
+    let completa = maq;
+    try {
+      const res = await fetch(`/api/maquinarias/${maq.id}`);
+      if (res.ok) completa = { ...maq, ...(await res.json()) };
+    } catch {
+      // Si falla la red preferimos abrir con lo que hay que dejar al usuario
+      // sin modal; el guardado igual respeta los campos que no se tocaron.
+    }
+
+    const espec = parseEspec(completa.especificaciones);
     setForm({
-      nombre: maq.nombre,
-      tipo: maq.tipo,
-      descripcion: maq.descripcion,
-      precio_dia: maq.precio_dia || 0,
-      precio_semana: maq.precio_semana || 0,
-      precio_mes: maq.precio_mes || 0,
-      garantia_monto: maq.garantia_monto || 0,
-      tipo_combustible: (maq.tipo_combustible || '') as TipoCombustible,
-      estado: maq.estado,
-      imagen: maq.imagen,
-      especificaciones: maq.especificaciones || null,
+      nombre: completa.nombre,
+      tipo: completa.tipo,
+      descripcion: completa.descripcion,
+      precio_dia: completa.precio_dia || 0,
+      precio_semana: completa.precio_semana || 0,
+      precio_mes: completa.precio_mes || 0,
+      garantia_monto: completa.garantia_monto ?? 0,
+      tipo_combustible: (completa.tipo_combustible || '') as TipoCombustible,
+      estado: completa.estado,
+      imagen: completa.imagen,
+      especificaciones: completa.especificaciones ?? null,
       marca: String(espec.marca ?? ''),
       modelo: String(espec.modelo ?? ''),
       serie: String(espec.serie ?? espec.numero_serie ?? ''),
       anio: String(espec.anio ?? espec.ano ?? espec.year ?? ''),
     });
-    setShowModal(true);
   };
 
   const handleSave = async () => {
