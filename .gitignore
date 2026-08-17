@@ -61,3 +61,7 @@ graphify-out/archive/
 **/yarn.lock
 _tmp_docs_maquinaria/
 .vercel
+
+# Python: caché de los scripts operativos (sync de precios, auditorías)
+__pycache__/
+*.pyc

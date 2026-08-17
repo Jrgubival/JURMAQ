@@ -1,0 +1,55 @@
+name: CI
+
+# SECURITY (audit jun-2026, capa preventiva): chequeos automáticos en cada push
+# y PR — typecheck, lint, auditoría de dependencias (falla en CVEs high) y
+# escaneo de secretos. Evita que regresiones de seguridad o dependencias
+# vulnerables lleguen a producción sin que nadie se entere.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Typecheck · Lint · Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck (todos los paquetes)
+        run: pnpm -r typecheck
+
+      - name: Lint
+        run: pnpm -r lint
+        continue-on-error: true # lint no bloquea el merge; typecheck y audit sí
+
+      - name: Auditoría de dependencias (falla en CVEs high/critical)
+        run: pnpm audit --audit-level=high --prod
+
+  secret-scan:
+    name: Escaneo de secretos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
