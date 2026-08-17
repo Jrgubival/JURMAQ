@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { requireAuth, unauthorizedResponse } from '@jurmaq/shared/auth/guard';
+import { requirePermission, unauthorizedResponse } from '@jurmaq/shared/auth/guard';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 
 export const runtime = 'nodejs';
@@ -12,7 +12,9 @@ export async function POST(
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
-  const session = await requireAuth();
+  // CLAUDE.md exige requirePermission/requireRole en /api/admin/*;
+  // `requireAuth` solo comprueba que haya sesión, no es ninguno de los dos.
+  const session = await requirePermission('dashboard', 'read');
   if (!session) return unauthorizedResponse();
   const userId = (session.user as { id?: string })?.id;
   if (!userId) return unauthorizedResponse();

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { requireAuth, unauthorizedResponse } from '@jurmaq/shared/auth/guard';
+import { requirePermission, unauthorizedResponse } from '@jurmaq/shared/auth/guard';
 
 /**
  * GET /api/admin/notifications?limit=20&onlyUnread=false
@@ -32,7 +32,9 @@ interface ReadRow {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await requireAuth();
+  // CLAUDE.md exige requirePermission/requireRole en /api/admin/*;
+  // `requireAuth` solo comprueba que haya sesión, no es ninguno de los dos.
+  const session = await requirePermission('dashboard', 'read');
   if (!session) return unauthorizedResponse();
   const userId = (session.user as { id?: string })?.id;
   if (!userId) return unauthorizedResponse();

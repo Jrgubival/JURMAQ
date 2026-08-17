@@ -22,7 +22,18 @@ interface Notification {
   read_at: string | null;
 }
 
-const POLL_INTERVAL_MS = 60_000;
+/**
+ * Cada 5 min, y solo con la pestaña visible.
+ *
+ * Estaba en 60 s incondicionales, y la campana se monta en TODAS las páginas
+ * del admin: eran ~60 invocaciones por hora por pestaña abierta, se estuviera
+ * usando el panel o no. Una pestaña olvidada toda la jornada gastaba ~480
+ * invocaciones sola. Era el único setInterval del admin y su mayor costo fijo.
+ *
+ * Además se recarga al abrir el dropdown y al volver a la pestaña, que es
+ * cuando el dato realmente importa.
+ */
+const POLL_INTERVAL_MS = 300_000;
 
 const SEVERITY_ICON: Record<string, string> = {
   info: 'ℹ️',
@@ -51,8 +62,17 @@ export default function NotificationsBell() {
 
   useEffect(() => {
     void load();
-    const t = setInterval(() => void load(), POLL_INTERVAL_MS);
-    return () => clearInterval(t);
+    // Con la pestaña en segundo plano no hay nadie mirando la campana: pausamos
+    // el polling y recargamos al volver.
+    const tick = () => {
+      if (document.visibilityState === 'visible') void load();
+    };
+    const t = setInterval(tick, POLL_INTERVAL_MS);
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener('visibilitychange', tick);
+    };
   }, []);
 
   useEffect(() => {

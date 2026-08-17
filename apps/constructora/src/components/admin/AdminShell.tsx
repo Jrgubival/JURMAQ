@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import type { Module } from '@jurmaq/shared/roles';
-import { visibleModules } from '@jurmaq/shared/roles';
+import type { Module, Action } from '@jurmaq/shared/roles';
+import { can, visibleModules } from '@jurmaq/shared/roles';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
 import { env } from '@jurmaq/shared/env';
 import GlobalSearch from './GlobalSearch';
@@ -23,12 +23,30 @@ import NotificationsBell from './NotificationsBell';
  * pantalla y mezclaba responsabilidades — un vendedor de barraca no necesita
  * ver "Solicitudes de maquinaria" todo el día.
  */
-type NavGroup = 'Operaciones' | 'Catálogo' | 'Tributario' | 'Configuración';
+/**
+ * Grupos del sidebar, en el orden en que se pintan.
+ *
+ * Antes eran 'Operaciones' / 'Catálogo' / 'Tributario' / 'Configuración', con
+ * 14 entradas planas donde convivían la cotización legacy y la real, y cuatro
+ * pantallas que no aparecían en ningún menú. La agrupación nueva sigue el uso:
+ * arriba lo que se abre todas las mañanas, abajo lo que se toca una vez al mes.
+ */
+type NavGroup = 'Día a día' | 'Flota' | 'Clientes' | 'Tributario' | 'Sistema';
 
 interface NavItem {
   label: string;
   href: string;
   module: Module;
+  /**
+   * Acción que exige la API detrás de esta pantalla.
+   *
+   * El sidebar filtraba solo por módulo, así que mostraba entradas que ciertos
+   * roles no podían usar: un operador veía "Plantillas contrato" (módulo
+   * `contratos`) y al entrar recibía 403, porque la API exige
+   * `contratos:manage_templates`. Filtrando por la acción real, esas entradas
+   * simplemente no aparecen. Por defecto 'read'.
+   */
+  action?: Action;
   group: NavGroup;
   icon: React.ReactNode;
 }
@@ -38,7 +56,7 @@ const navItems: NavItem[] = [
     label: 'Dashboard',
     href: '/admin',
     module: 'dashboard',
-    group: 'Operaciones',
+    group: 'Día a día',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
@@ -49,7 +67,7 @@ const navItems: NavItem[] = [
     label: 'Maquinarias',
     href: '/admin/maquinarias',
     module: 'maquinarias',
-    group: 'Catálogo',
+    group: 'Flota',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -60,7 +78,7 @@ const navItems: NavItem[] = [
     label: 'Solicitudes',
     href: '/admin/solicitudes',
     module: 'solicitudes',
-    group: 'Operaciones',
+    group: 'Día a día',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01" />
@@ -68,21 +86,10 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    label: 'Proyectos',
-    href: '/admin/proyectos',
-    module: 'proyectos',
-    group: 'Operaciones',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-      </svg>
-    ),
-  },
-  {
     label: 'Clientes',
     href: '/admin/clientes',
     module: 'clientes',
-    group: 'Catálogo',
+    group: 'Clientes',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -91,20 +98,9 @@ const navItems: NavItem[] = [
   },
   {
     label: 'Cotizaciones',
-    href: '/admin/cotizaciones',
-    module: 'cotizaciones',
-    group: 'Operaciones',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Cotizaciones arriendo',
     href: '/admin/cotizaciones-arriendo',
     module: 'cotizaciones',
-    group: 'Operaciones',
+    group: 'Día a día',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2M9 17a4 4 0 11-4-4m4 4a4 4 0 014 4M5 13a4 4 0 100-8 4 4 0 000 8z" />
@@ -115,7 +111,7 @@ const navItems: NavItem[] = [
     label: 'Contratos',
     href: '/admin/contratos',
     module: 'contratos',
-    group: 'Operaciones',
+    group: 'Día a día',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -126,7 +122,8 @@ const navItems: NavItem[] = [
     label: 'Plantillas contrato',
     href: '/admin/contratos/templates',
     module: 'contratos',
-    group: 'Catálogo',
+    action: 'manage_templates',
+    group: 'Sistema',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -148,7 +145,7 @@ const navItems: NavItem[] = [
     label: 'Garantías Klap',
     href: '/admin/garantias',
     module: 'contratos',
-    group: 'Operaciones',
+    group: 'Clientes',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -158,8 +155,8 @@ const navItems: NavItem[] = [
   {
     label: 'Rentabilidad',
     href: '/admin/reportes/rentabilidad',
-    module: 'maquinarias',
-    group: 'Operaciones',
+    module: 'cotizaciones',
+    group: 'Flota',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -181,14 +178,62 @@ const navItems: NavItem[] = [
     label: 'Usuarios',
     href: '/admin/usuarios',
     module: 'usuarios',
-    group: 'Configuración',
+    group: 'Sistema',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     ),
   },
-];
+  // Estas cuatro pantallas existían pero no estaban en ningún menú: el
+  // diagnóstico OTP no tenía UNA sola referencia en todo el repo, y Tarifas
+  // IEC, Cola de emails y Notificaciones solo se alcanzaban por Cmd+K o por el
+  // pie del dropdown de la campana. Si están construidas, que se vean.
+  {
+    label: 'Tarifas IEC',
+    href: '/admin/combustible/tarifas',
+    module: 'combustible',
+    group: 'Tributario',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Cola de emails',
+    href: '/admin/email-queue',
+    module: 'usuarios',
+    group: 'Sistema',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Notificaciones',
+    href: '/admin/notificaciones',
+    module: 'dashboard',
+    group: 'Sistema',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+      </svg>
+    ),
+  },
+  {
+    label: 'Diagnóstico OTP',
+    href: '/admin/sistema/otp',
+    module: 'usuarios',
+    group: 'Sistema',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
+  },
+]
 
 // NOTE: el array `barracaNavItems[]` vivía aquí porque el AdminShell
 // pintaba ambos paneles según `pathname.startsWith('/admin/barraca')`.
@@ -209,7 +254,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
   const isActive = (href: string) => {
     if (href === '/admin') return pathname === '/admin';
-    return pathname.startsWith(href);
+    // `startsWith` a secas marcaba DOS ítems como activos en
+    // /admin/cotizaciones-arriendo (también matcheaba /admin/cotizaciones), y
+    // como el título del header toma el primero que encuentra, la cabecera
+    // decía "Cotizaciones" estando en "Cotizaciones arriendo". Mismo problema
+    // en /admin/contratos/templates. Exigimos separador de ruta.
+    return pathname === href || pathname.startsWith(href + '/');
   };
 
   // Si el sysadmin tiene acceso al admin de barraca también, ofrecemos un
@@ -264,18 +314,23 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <nav className="flex-1 px-3 py-4 overflow-y-auto">
             {(() => {
               const role = (session?.user as { role?: string })?.role;
-              const allowedModules = new Set(visibleModules(role));
-              const filtered = navItems.filter((it) => allowedModules.has(it.module));
+              // Filtra por la ACCIÓN que exige la API de cada pantalla, no solo
+              // por el módulo. Con el filtro por módulo el sidebar mostraba
+              // entradas que terminaban en 403: "Plantillas contrato" a un
+              // operador (la API exige contratos:manage_templates) o
+              // "Rentabilidad" a quien no tiene cotizaciones:read.
+              const filtered = navItems.filter((it) => can(role, it.module, it.action ?? 'read'));
               const accentBg = '#e6b422';
               const accentFg = '#0c1d3a';
 
-              // Orden de grupos: Operaciones primero (lo más usado),
-              // Configuración al final.
+              // De lo que se abre todas las mañanas a lo que se toca una vez
+              // al mes.
               const groupOrder: NavGroup[] = [
-                'Operaciones',
-                'Catálogo',
+                'Día a día',
+                'Flota',
+                'Clientes',
                 'Tributario',
-                'Configuración',
+                'Sistema',
               ];
 
               // Agrupar items por group field, preservando el orden de items
@@ -410,28 +465,17 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">{children}</main>
       </div>
 
-      {/* Command Palette (Cmd+K) — navegación rápida por todas las secciones admin */}
+      {/* Command Palette (Cmd+K).
+          Se arma desde el MISMO `navItems` que el sidebar y con el mismo filtro
+          por rol. Antes era una lista fija y sin filtrar: un contador u operador
+          veía "Usuarios" en Cmd+K y recibía 403 al entrar. Además incluía la
+          cotización legacy y Proyectos, que ya no van en el menú. Al derivarla
+          de navItems, agregar una sección nueva la deja disponible en los dos
+          lugares sin poder olvidarse de uno. */}
       <CommandPalette
-        items={[
-          // Operaciones
-          { label: 'Dashboard', href: '/admin', group: 'Operaciones' },
-          { label: 'Cotizaciones arriendo', href: '/admin/cotizaciones-arriendo', group: 'Operaciones', keywords: ['cotizar', 'arriendo', 'cot-ar'] },
-          { label: 'Cotizaciones (legacy)', href: '/admin/cotizaciones', group: 'Operaciones' },
-          { label: 'Contratos', href: '/admin/contratos', group: 'Operaciones', keywords: ['firma', 'contrato'] },
-          { label: 'Solicitudes', href: '/admin/solicitudes', group: 'Operaciones' },
-          { label: 'Proyectos', href: '/admin/proyectos', group: 'Operaciones' },
-          // Catálogo
-          { label: 'Maquinarias', href: '/admin/maquinarias', group: 'Catálogo' },
-          { label: 'Clientes', href: '/admin/clientes', group: 'Catálogo' },
-          { label: 'Plantillas contrato', href: '/admin/contratos/templates', group: 'Catálogo' },
-          // Tributario
-          { label: 'SII / F29', href: '/admin/sii', group: 'Tributario', keywords: ['iva', 'tributario', 'export'] },
-          { label: 'Combustible', href: '/admin/combustible', group: 'Tributario', keywords: ['iec', 'f29'] },
-          { label: 'Tarifas IEC', href: '/admin/combustible/tarifas', group: 'Tributario' },
-          // Configuración
-          { label: 'Usuarios', href: '/admin/usuarios', group: 'Configuración' },
-          { label: 'Email queue', href: '/admin/email-queue', group: 'Configuración' },
-        ]}
+        items={navItems
+          .filter((it) => can((session?.user as { role?: string })?.role, it.module, it.action ?? 'read'))
+          .map((it) => ({ label: it.label, href: it.href, group: it.group }))}
       />
     </div>
   );
