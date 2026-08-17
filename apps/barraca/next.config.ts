@@ -58,6 +58,27 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Estáticos de /public: caché larga en el navegador.
+        //
+        // Next les pone `max-age=0, must-revalidate` por defecto, así que cada
+        // visita mandaba una revalidación por CADA imagen, ícono y fuente.
+        // Vercel factura eso como Edge Request aunque devuelva 304, y era una
+        // de las razones de 1.4M/1M requests. La CDN ya los cacheaba (HIT); el
+        // que faltaba era el navegador.
+        //
+        // 1 día en el navegador + 30 días en la CDN con `stale-while-revalidate`:
+        // si reemplazas una imagen con el mismo nombre, la CDN la sirve vieja
+        // como mucho un día y se actualiza sola. NO se usa `immutable` a
+        // propósito, justamente para que ese reemplazo llegue solo.
+        source: "/:path*.(png|jpg|jpeg|gif|webp|avif|svg|ico|woff|woff2|ttf|otf|pdf|mp4)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, s-maxage=2592000, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: [
           {
