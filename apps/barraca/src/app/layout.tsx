@@ -53,7 +53,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://barraca.jurmaq.cl"),
   title: {
-    default: "Barraca JURMAQ · Fierros y Materiales en Curicó y Molina",
+    default: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y el Maule",
     // Sin template — las páginas ya incluyen la marca en sus title individuales.
     // El template duplicaba "Barraca JURMAQ" en muchas URLs (audit fase 4.8).
     template: "%s",
@@ -126,7 +126,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "Barraca JURMAQ · Fierros y Materiales en Curicó y Molina",
+    title: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y el Maule",
     description:
       "Fierros, perfiles, planchas, tubos, mallas, pinturas y materiales de construcción con despacho en Curicó, Molina y toda la Región del Maule.",
     url: "https://barraca.jurmaq.cl",

@@ -590,7 +590,7 @@ function Footer() {
               <span className="text-lg font-semibold text-orange-500 ml-1">Barraca</span>
             </Link>
             <p className="text-sm text-gray-300 mb-4 leading-relaxed">
-              Barraca de fierros y materiales de construcción en Curicó y Molina.
+              Barraca de fierros y materiales de construcción en Molina. Despachamos a Curicó, Talca, Linares y toda la Región del Maule.
               Más de 1.600 productos: fierros, perfiles, planchas, tubos, mallas,
               pinturas y herramientas. <strong className="text-orange-400">Súbenos tu
               cotización y en menos de 2 horas te mejoramos el precio</strong> de Sodimac,
@@ -661,15 +661,25 @@ function Footer() {
                 <svg className="w-3.5 h-3.5 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                Despacho en Curicó y alrededores
+                Despacho a toda la Región del Maule
               </li>
               <li className="flex items-center gap-2">
                 <svg className="w-3.5 h-3.5 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                Retiro en planta
+                Retiro en la barraca, Molina
               </li>
             </ul>
+            {/* /sucursales existía pero no estaba enlazada desde ningún lado.
+                Ahora que dice la verdad —un local en Molina— es justo lo que
+                busca el cliente que quiere retirar o saber si le despachamos. */}
+            <Link
+              href="/sucursales"
+              className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+            >
+              Dónde estamos y hasta dónde llegamos
+              <IconArrowRight className="w-3 h-3" />
+            </Link>
           </div>
         </div>
 

@@ -99,8 +99,11 @@ const AREA_SERVED = [
  * Notar:
  * - Address/geo/telefono salen de `LEGAL_INFO.brands[brand]` — single source of truth.
  * - El logo siempre es `/icon-512.png` (asset deployado en cada dominio).
- * - `openingHoursSpecification` está hardcoded acá (lunes-viernes 08:30-18:00,
+ * - `openingHoursSpecification` está hardcoded acá (lunes-viernes 08:30-18:30,
  *   sábado 09:00-14:00). Si cambian los horarios, editar solo este archivo.
+ *   OJO: decía 18:00 mientras la barra superior del sitio y la página de
+ *   ubicación mostraban 18:30. Se alineó al horario que ve el cliente en
+ *   pantalla; si el correcto fuera 18:00, hay que cambiar los tres lugares.
  */
 export function buildJsonLdGraph(brand: JsonLdBrand): Record<string, unknown> {
   const config = BRAND_CONFIG[brand];
@@ -152,7 +155,7 @@ export function buildJsonLdGraph(brand: JsonLdBrand): Record<string, unknown> {
             '@type': 'OpeningHoursSpecification',
             dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
             opens: '08:30',
-            closes: '18:00',
+            closes: '18:30',
           },
           {
             '@type': 'OpeningHoursSpecification',

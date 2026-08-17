@@ -121,7 +121,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title:
-      "Barraca de Fierros JURMAQ · Materiales en Curicó y Molina · Te mejoramos el precio en 2h",
+      "Barraca de Fierros JURMAQ · Molina · Despacho a Curicó y todo el Maule · Te mejoramos el precio en 2h",
     description:
       "+1.600 productos: fierros, perfiles, planchas, tubos, mallas, pinturas. Despacho a toda la Región del Maule. Súbenos tu cotización de la competencia y en menos de 2 horas te llega contraoferta JURMAQ por correo.",
     url: "https://barraca.jurmaq.cl",
@@ -145,7 +145,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Barraca JURMAQ · Fierros y Materiales en Curicó y Molina",
+    title: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y el Maule",
     description:
       "Súbenos tu cotización de Sodimac, Easy o Construmart y en menos de 2 horas te mejoramos el precio. Despacho a toda la Región del Maule.",
   },
@@ -313,7 +313,7 @@ export default async function BarracaHomePage() {
           any product. Mobile gets a compact version near the bottom. */}
       <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-2">
         <h1 className="text-3xl lg:text-4xl font-extrabold text-navy-950 mb-2" data-text-reveal>
-          Barraca de fierros y materiales de construcción en Curicó y Molina
+          Barraca de fierros y materiales de construcción en Molina, con despacho a Curicó y todo el Maule
         </h1>
       </div>
 

@@ -76,7 +76,7 @@ export async function generateMetadata({
 
   const lowerName = cat.nombre.toLowerCase();
   return {
-    title: `${cat.nombre} en Curicó y Molina · Barraca JURMAQ`,
+    title: `${cat.nombre} en Molina · Despacho a Curicó y el Maule · Barraca JURMAQ`,
     description: `${productCount.total} productos de ${lowerName} con precio publicado en Barraca JURMAQ Curicó · Molina. Despacho a Teno, Romeral, Talca y toda la Región del Maule. Súbenos tu cotización de la competencia y en menos de 2 horas te mejoramos el precio.`,
     keywords: [
       `${lowerName} Curicó`,
