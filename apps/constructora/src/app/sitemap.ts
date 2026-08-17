@@ -11,6 +11,10 @@ import { RECURSOS } from "@/lib/recursos-data";
  * Solo lista rutas del dominio constructora. barraca.jurmaq.cl tiene su
  * propio sitemap en `apps/barraca/src/app/sitemap.ts`.
  */
+// Cachea 24 h: se regeneraba en cada request de bot, con queries a Supabase.
+// Ver la nota equivalente en apps/barraca/src/app/sitemap.ts.
+export const revalidate = 86400;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://jurmaq.cl";
 

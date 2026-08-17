@@ -113,5 +113,16 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico).*)'],
+  matcher: [
+    // Excluye TODO lo estático, no solo _next. Ver la nota equivalente en
+    // apps/barraca/src/middleware.ts: cada ejecución del middleware es una
+    // Edge Request facturable, y con el patrón anterior corría también en las
+    // 82 imágenes de /public y en el brochure PDF de 8,5 MB.
+    //
+    // OJO: acá NO se excluyen .txt ni .xml. En esta app el middleware es
+    // justamente quien sirve `constructora.jurmaq.cl/robots.txt` y
+    // `/sitemap.xml` (los reescribe a /constructora/*); si los sacara del
+    // matcher, el subdominio devolvería el robots del hub o un 404.
+    '/((?!_next/|images/|img/|icons/|pdf/|fonts/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|pdf|woff|woff2|ttf|mp4)$).*)',
+  ],
 };

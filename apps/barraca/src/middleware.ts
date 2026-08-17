@@ -46,7 +46,15 @@ export default async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match todas excepto estáticos
-    '/((?!_next/static|_next/image|favicon\\.ico).*)',
+    // Excluye TODO lo estático, no solo _next.
+    //
+    // El patrón anterior ('/((?!_next/static|_next/image|favicon\\.ico).*)')
+    // hacía correr el middleware en cada imagen de /public, cada PDF, el
+    // robots.txt y el manifest. En Vercel cada ejecución del middleware es una
+    // Edge Request facturable, así que una sola visita con 30 imágenes gastaba
+    // 30 requests de más. Era la causa principal de 1.4M/1M Edge Requests.
+    //
+    // Si agregas una carpeta nueva de assets en /public, súmala acá.
+    '/((?!_next/|images/|img/|icons/|pdf/|fonts/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|pdf|txt|xml|json|webmanifest|woff|woff2|ttf|mp4)$).*)',
   ],
 };

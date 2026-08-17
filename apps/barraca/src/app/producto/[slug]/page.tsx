@@ -14,9 +14,19 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
-// ISR: la ficha de producto es pública (precio/stock). Revalida cada 10 min en
-// vez de renderizar por request (antes la página no declaraba caché → dinámica).
-export const revalidate = 600;
+// ISR: la ficha de producto es pública (precio/stock).
+//
+// Estuvo en 600 (10 min). Con 1.978 productos activos eso son hasta 1.978 x 144
+// regeneraciones al día, y fue la causa directa de los 355K ISR Writes contra
+// una cuota de 200K. Los precios NO cambian cada 10 minutos: se actualizan
+// cuando alguien edita en el admin o cuando se corre la carga masiva de
+// inventario, o sea unas pocas veces al mes.
+//
+// 24 h de techo + revalidación bajo demanda (`revalidatePath`) desde el admin
+// al guardar un producto: el que cambió se refresca al instante y el resto no
+// se toca. Si un precio se ve viejo en el sitio, el bug está en que falta el
+// revalidatePath en el endpoint que lo editó, no acá.
+export const revalidate = 86400;
 
 interface ProductoRow {
   id: number;

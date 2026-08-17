@@ -32,22 +32,31 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    // Get product counts for each category
+    // Conteo por categoría con `head + count`: Postgres cuenta y devuelve solo
+    // el número en un header.
+    //
+    // Antes esto traía las ~1.978 filas de productos activos (una columna, pero
+    // 1.978 filas) para contarlas con un for en JS, en CADA llamada. Y este
+    // endpoint lo llama el layout global en cada pageview, así que era una de
+    // las fuentes principales de Fluid Active CPU.
+    //
+    // Son N queries en paralelo (una por categoría, ~19) en vez de una que
+    // transfiere 1.978 filas: menos CPU, menos transferencia y menos memoria.
     const catIds = (categorias || []).map((c: CategoriaRow) => c.id);
-    let productCounts: Record<number, number> = {};
+    const productCounts: Record<number, number> = {};
 
     if (catIds.length > 0) {
-      const { data: counts } = await supabaseAdmin
-        .from('barraca_productos')
-        .select('categoria_id')
-        .eq('activo', true)
-        .in('categoria_id', catIds);
-
-      if (counts) {
-        for (const row of counts) {
-          productCounts[row.categoria_id] = (productCounts[row.categoria_id] || 0) + 1;
-        }
-      }
+      const conteos = await Promise.all(
+        catIds.map(async (id: number) => {
+          const { count } = await supabaseAdmin
+            .from('barraca_productos')
+            .select('id', { count: 'exact', head: true })
+            .eq('activo', true)
+            .eq('categoria_id', id);
+          return [id, count ?? 0] as const;
+        })
+      );
+      for (const [id, n] of conteos) productCounts[id] = n;
     }
 
     const catsWithCount = (categorias || []).map((c: CategoriaRow) => ({
@@ -64,7 +73,14 @@ export async function GET(request: NextRequest) {
       subcategorias: hijas.filter((h: CategoriaConCount) => h.padre_id === padre.id),
     }));
 
-    return NextResponse.json(resultado);
+    // El árbol de categorías cambia unas pocas veces al mes, pero el layout
+    // global lo pide en cada pageview. Con este cache la CDN responde casi
+    // todas las llamadas y la función deja de ejecutarse por visita.
+    return NextResponse.json(resultado, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     console.error('Error al obtener categorias:', error);
     return NextResponse.json(

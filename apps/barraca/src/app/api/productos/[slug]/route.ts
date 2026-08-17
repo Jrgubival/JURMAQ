@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { auth } from '@jurmaq/shared/auth';
+import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, stripHtml } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
@@ -121,6 +122,13 @@ export async function PUT(
       .single();
 
     if (error) throw error;
+
+    // La ficha pública cachea 24 h (ver producto/[slug]/page.tsx). Sin esto un
+    // cambio de precio tardaría un día en verse. Revalidamos el slug viejo y el
+    // nuevo, porque el PUT permite renombrar el slug.
+    const nuevoSlug = (updated as { slug?: string } | null)?.slug;
+    revalidatePath(`/producto/${slug}`);
+    if (nuevoSlug && nuevoSlug !== slug) revalidatePath(`/producto/${nuevoSlug}`);
 
     return NextResponse.json(updated);
   } catch (error) {

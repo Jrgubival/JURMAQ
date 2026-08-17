@@ -65,7 +65,19 @@ export function buildPrerenderRules(excludes: string[]): PrerenderRules {
             { not: { href_matches: excludes } },
           ],
         },
-        eagerness: 'moderate',
+        // `conservative` = solo al apretar el botón del mouse, cuando el
+        // usuario ya se comprometió a navegar.
+        //
+        // Estaba en `moderate`, que prerenderiza tras ~200 ms de hover. En una
+        // grilla de catálogo el usuario pasa el mouse por 10-20 fichas antes de
+        // hacer click, y cada hover traía la página COMPLETA y además disparaba
+        // su revalidación ISR. Con 1.978 productos eso era una de las fuentes
+        // principales de invocaciones y de ISR writes en Vercel.
+        //
+        // La ganancia de LCP percibido se mantiene casi igual —al apretar el
+        // botón todavía hay ~100-200 ms antes del mouseup— a una fracción del
+        // costo.
+        eagerness: 'conservative',
       },
     ],
   };
