@@ -16,6 +16,7 @@
     "./sanitize": "./src/sanitize/index.ts",
     "./rate-limit": "./src/rate-limit/index.ts",
     "./roles": "./src/roles/index.ts",
+    "./admin/nav": "./src/admin/nav.ts",
     "./format": "./src/format/index.ts",
     "./mail": "./src/mail/index.ts",
     "./mail/email": "./src/mail/email.ts",

@@ -4,236 +4,165 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import type { Module, Action } from '@jurmaq/shared/roles';
 import { can, visibleModules } from '@jurmaq/shared/roles';
+import {
+  ADMIN_NAV,
+  ADMIN_NAV_GROUPS,
+  adminHref,
+  esExterno,
+  type AdminNavGroup,
+  type AdminNavItem,
+} from '@jurmaq/shared/admin/nav';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
 import { env } from '@jurmaq/shared/env';
 import GlobalSearch from './GlobalSearch';
 import NotificationsBell from './NotificationsBell';
 
 /**
- * Admin panel se separa por dominio funcional:
- *   - "construct"  → /admin (excepto /admin/barraca/*): maquinaria, contratos,
- *                    combustible, etc. Es el panel histórico de la constructora.
- *   - "barraca"    → /admin/barraca/*: e-commerce JURMAQ Barraca (productos,
- *                    promociones, importar Excel, imágenes, etc).
+ * Íconos por ruta.
  *
- * Decisión: dos sidebars separados, mismo shell. El usuario alterna con un
- * switcher al pie. Antes ambos navs aparecían juntos lo cual saturaba la
- * pantalla y mezclaba responsabilidades — un vendedor de barraca no necesita
- * ver "Solicitudes de maquinaria" todo el día.
+ * El menú en sí vive en `@jurmaq/shared/admin/nav` para que este panel y el
+ * de barraca pinten EXACTAMENTE la misma lista. Los íconos son JSX y se
+ * quedan acá, en cada app, para no meter React en el paquete compartido.
  */
-/**
- * Grupos del sidebar, en el orden en que se pintan.
- *
- * Antes eran 'Operaciones' / 'Catálogo' / 'Tributario' / 'Configuración', con
- * 14 entradas planas donde convivían la cotización legacy y la real, y cuatro
- * pantallas que no aparecían en ningún menú. La agrupación nueva sigue el uso:
- * arriba lo que se abre todas las mañanas, abajo lo que se toca una vez al mes.
- */
-type NavGroup = 'Día a día' | 'Flota' | 'Clientes' | 'Tributario' | 'Sistema';
+const ICONOS: Record<string, React.ReactNode> = {
+  '/admin': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
+    </svg>
+  ),
+  '/admin/cotizaciones-arriendo': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" />
+    </svg>
+  ),
+  '/admin/contratos': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  ),
+  '/admin/solicitudes': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01" />
+    </svg>
+  ),
+  '/admin/maquinarias': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  ),
+  '/admin/reportes/rentabilidad': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+  ),
+  '/admin/garantias': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  ),
+  '/admin/clientes': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  '/admin/cotizaciones': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" />
+    </svg>
+  ),
+  '/admin/productos': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+    </svg>
+  ),
+  '/admin/categorias': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  ),
+  '/admin/precios': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  '/admin/promociones': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+    </svg>
+  ),
+  '/admin/cupones': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+    </svg>
+  ),
+  '/admin/imagenes': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  ),
+  '/admin/importar': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+    </svg>
+  ),
+  '/admin/reviews': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+    </svg>
+  ),
+  '/admin/suscriptores': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+  '/admin/combustible': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  ),
+  '/admin/combustible/tarifas': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  '/admin/sii': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  ),
+  '/admin/usuarios': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  ),
+  '/admin/contratos/templates': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    </svg>
+  ),
+  '/admin/email-queue': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+  '/admin/notificaciones': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+    </svg>
+  ),
+  '/admin/sistema/otp': (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+  ),
+};
 
-interface NavItem {
-  label: string;
-  href: string;
-  module: Module;
-  /**
-   * Acción que exige la API detrás de esta pantalla.
-   *
-   * El sidebar filtraba solo por módulo, así que mostraba entradas que ciertos
-   * roles no podían usar: un operador veía "Plantillas contrato" (módulo
-   * `contratos`) y al entrar recibía 403, porque la API exige
-   * `contratos:manage_templates`. Filtrando por la acción real, esas entradas
-   * simplemente no aparecen. Por defecto 'read'.
-   */
-  action?: Action;
-  group: NavGroup;
-  icon: React.ReactNode;
-}
-
-const navItems: NavItem[] = [
-  {
-    label: 'Dashboard',
-    href: '/admin',
-    module: 'dashboard',
-    group: 'Día a día',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Maquinarias',
-    href: '/admin/maquinarias',
-    module: 'maquinarias',
-    group: 'Flota',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Solicitudes',
-    href: '/admin/solicitudes',
-    module: 'solicitudes',
-    group: 'Día a día',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Clientes',
-    href: '/admin/clientes',
-    module: 'clientes',
-    group: 'Clientes',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Cotizaciones',
-    href: '/admin/cotizaciones-arriendo',
-    module: 'cotizaciones',
-    group: 'Día a día',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2a2 2 0 012-2h2a2 2 0 012 2v2M9 17a4 4 0 11-4-4m4 4a4 4 0 014 4M5 13a4 4 0 100-8 4 4 0 000 8z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Contratos',
-    href: '/admin/contratos',
-    module: 'contratos',
-    group: 'Día a día',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Plantillas contrato',
-    href: '/admin/contratos/templates',
-    module: 'contratos',
-    action: 'manage_templates',
-    group: 'Sistema',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Combustible',
-    href: '/admin/combustible',
-    module: 'combustible',
-    group: 'Tributario',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c-3 4-5 6.5-5 9.5a5 5 0 1010 0C17 9.5 15 7 12 3z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Garantías Klap',
-    href: '/admin/garantias',
-    module: 'contratos',
-    group: 'Clientes',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Rentabilidad',
-    href: '/admin/reportes/rentabilidad',
-    module: 'cotizaciones',
-    group: 'Flota',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'SII / Tributario',
-    href: '/admin/sii',
-    module: 'combustible',
-    group: 'Tributario',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Usuarios',
-    href: '/admin/usuarios',
-    module: 'usuarios',
-    group: 'Sistema',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    ),
-  },
-  // Estas cuatro pantallas existían pero no estaban en ningún menú: el
-  // diagnóstico OTP no tenía UNA sola referencia en todo el repo, y Tarifas
-  // IEC, Cola de emails y Notificaciones solo se alcanzaban por Cmd+K o por el
-  // pie del dropdown de la campana. Si están construidas, que se vean.
-  {
-    label: 'Tarifas IEC',
-    href: '/admin/combustible/tarifas',
-    module: 'combustible',
-    group: 'Tributario',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Cola de emails',
-    href: '/admin/email-queue',
-    module: 'usuarios',
-    group: 'Sistema',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Notificaciones',
-    href: '/admin/notificaciones',
-    module: 'dashboard',
-    group: 'Sistema',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Diagnóstico OTP',
-    href: '/admin/sistema/otp',
-    module: 'usuarios',
-    group: 'Sistema',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-    ),
-  },
-]
+const ICONO_DEFAULT = (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+);
 
 // NOTE: el array `barracaNavItems[]` vivía aquí porque el AdminShell
 // pintaba ambos paneles según `pathname.startsWith('/admin/barraca')`.
@@ -311,94 +240,59 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
           {/* Nav — items de constructora filtrados por permisos del rol,
               agrupados por área funcional. */}
+          {/* Nav ÚNICO: la lista completa de las dos unidades de negocio, desde
+              @jurmaq/shared/admin/nav. Los ítems que viven en la app de barraca
+              se abren en barraca.jurmaq.cl; la sesión viaja porque la cookie es
+              Domain=.jurmaq.cl. */}
           <nav className="flex-1 px-3 py-4 overflow-y-auto">
             {(() => {
               const role = (session?.user as { role?: string })?.role;
-              // Filtra por la ACCIÓN que exige la API de cada pantalla, no solo
-              // por el módulo. Con el filtro por módulo el sidebar mostraba
-              // entradas que terminaban en 403: "Plantillas contrato" a un
-              // operador (la API exige contratos:manage_templates) o
-              // "Rentabilidad" a quien no tiene cotizaciones:read.
-              const filtered = navItems.filter((it) => can(role, it.module, it.action ?? 'read'));
+              // Filtra por la ACCIÓN que exige la API, no solo por el módulo:
+              // filtrando por módulo el sidebar mostraba entradas que
+              // terminaban en 403 (ej. "Plantillas de contrato" a un operador).
+              const filtered = ADMIN_NAV.filter((it) => can(role, it.module, it.action ?? 'read'));
               const accentBg = '#e6b422';
               const accentFg = '#0c1d3a';
 
-              // De lo que se abre todas las mañanas a lo que se toca una vez
-              // al mes.
-              const groupOrder: NavGroup[] = [
-                'Día a día',
-                'Flota',
-                'Clientes',
-                'Tributario',
-                'Sistema',
-              ];
-
-              // Agrupar items por group field, preservando el orden de items
-              // dentro de cada grupo.
-              const grouped = new Map<NavGroup, NavItem[]>();
+              const grouped = new Map<AdminNavGroup, AdminNavItem[]>();
               for (const it of filtered) {
                 if (!grouped.has(it.group)) grouped.set(it.group, []);
                 grouped.get(it.group)!.push(it);
               }
 
-              return groupOrder
-                .filter((g) => grouped.has(g))
-                .map((group, idx) => (
-                  <div key={group} className={idx > 0 ? 'mt-4' : ''}>
-                    <div className="px-3 mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                      {group}
-                    </div>
-                    <div className="space-y-0.5">
-                      {grouped.get(group)!.map((item) => {
-                        const active = isActive(item.href);
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                              active
-                                ? 'text-white'
-                                : 'text-gray-500 hover:text-white hover:bg-white/5'
-                            }`}
-                            style={active ? { backgroundColor: accentBg, color: accentFg } : {}}
-                          >
-                            {item.icon}
-                            {item.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
+              return ADMIN_NAV_GROUPS.filter((g) => grouped.has(g)).map((group, idx) => (
+                <div key={group} className={idx > 0 ? 'mt-4' : ''}>
+                  <div className="px-3 mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    {group}
                   </div>
-                ));
+                  <div className="space-y-0.5">
+                    {grouped.get(group)!.map((item) => {
+                      const externo = esExterno(item, 'constructora');
+                      const href = adminHref(item, 'constructora', { barraca: barracaUrl || undefined });
+                      const active = !externo && isActive(item.path);
+                      return (
+                        <Link
+                          key={`${item.app}${item.path}`}
+                          href={href}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                            active ? 'text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'
+                          }`}
+                          style={active ? { backgroundColor: accentBg, color: accentFg } : {}}
+                        >
+                          {ICONOS[item.path] ?? ICONO_DEFAULT}
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ));
             })()}
           </nav>
 
-          {/* Cross-admin link (a barraca admin, opcional). Aparece solo si
-              NEXT_PUBLIC_BARRACA_URL está configurada Y el usuario tiene
-              permiso en al menos un módulo de barraca (rol con scope
-              barraca/both). */}
-          {barracaUrl && (() => {
-            const role = (session?.user as { role?: string })?.role;
-            const allowedModules = new Set(visibleModules(role));
-            const hasBarracaAccess = Array.from(allowedModules).some((m) =>
-              String(m).startsWith('barraca_')
-            );
-            if (!hasBarracaAccess) return null;
-            return (
-              <div className="px-3 pb-2 border-t border-white/10 pt-3">
-                <a
-                  href={`${barracaUrl}/admin`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
-                >
-                  <span aria-hidden="true">→</span>
-                  Panel Barraca
-                </a>
-              </div>
-            );
-          })()}
+          {/* El link cruzado al otro panel se eliminó: el sidebar ya lista
+              TODAS las secciones de las dos unidades. */}
 
           {/* Sign out */}
           <div className="px-3 py-4 border-t border-white/10">
@@ -436,7 +330,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               Constructora
             </span>
             <h2 className="text-lg font-semibold text-gray-800 whitespace-nowrap">
-              {navItems.find((item) => isActive(item.href))?.label || 'Admin'}
+              {ADMIN_NAV.find((item) => item.app === 'constructora' && isActive(item.path))?.label || 'Admin'}
             </h2>
             {/* F2-UI: búsqueda global cross-modulo. Cmd+K abre desde cualquier lado. */}
             <div className="ml-6 flex-1 max-w-md">
@@ -465,17 +359,18 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <main className="flex-1 p-4 lg:p-8 overflow-y-auto">{children}</main>
       </div>
 
-      {/* Command Palette (Cmd+K).
-          Se arma desde el MISMO `navItems` que el sidebar y con el mismo filtro
-          por rol. Antes era una lista fija y sin filtrar: un contador u operador
-          veía "Usuarios" en Cmd+K y recibía 403 al entrar. Además incluía la
-          cotización legacy y Proyectos, que ya no van en el menú. Al derivarla
-          de navItems, agregar una sección nueva la deja disponible en los dos
-          lugares sin poder olvidarse de uno. */}
+      {/* Command Palette (Cmd+K) — mismo menú compartido que el sidebar y mismo
+          filtro por rol, así que nunca puede desincronizarse ni ofrecer una
+          pantalla que va a devolver 403. Incluye las secciones de barraca. */}
       <CommandPalette
-        items={navItems
+        items={ADMIN_NAV
           .filter((it) => can((session?.user as { role?: string })?.role, it.module, it.action ?? 'read'))
-          .map((it) => ({ label: it.label, href: it.href, group: it.group }))}
+          .map((it) => ({
+            label: it.label,
+            href: adminHref(it, 'constructora', { barraca: barracaUrl || undefined }),
+            group: it.group,
+            keywords: it.keywords,
+          }))}
       />
     </div>
   );
