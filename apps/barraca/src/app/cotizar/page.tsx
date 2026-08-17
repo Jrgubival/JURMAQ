@@ -6,7 +6,6 @@ import { showToast } from "@/components/Toast";
 import { formatCLP } from "@jurmaq/shared/format";
 import { whatsappCtaCotizacionEnviada } from "@jurmaq/shared/whatsapp";
 import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
-import CodigoMaestroInput from "@/components/barraca/CodigoMaestroInput";
 
 interface CartItem {
   id: number;
@@ -614,13 +613,6 @@ export default function CotizarPage() {
                 {error}
               </div>
             )}
-
-            {/* Tier 2 B1: código de maestro referido */}
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <CodigoMaestroInput
-                onChange={(m) => setCodigoMaestro(m?.codigo ?? null)}
-              />
-            </div>
 
             {/* Legal: terms + optional marketing consent */}
             <div className="space-y-2 p-4 bg-gray-50 border border-gray-200 rounded-lg">

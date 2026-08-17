@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatCLP } from '@jurmaq/shared/format';
+import StockAlertsWidget from '@/components/admin/StockAlertsWidget';
 
 type Periodo = 'hoy' | '7d' | '30d' | 'mes';
 
@@ -68,6 +69,8 @@ export default function DashboardBarracaPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      {/* Venía de la landing rota que este dashboard reemplaza. */}
+      <StockAlertsWidget umbral={5} />
       <div className="mb-6 flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard ventas</h1>

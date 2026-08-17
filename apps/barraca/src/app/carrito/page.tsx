@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
-import CodigoMaestroInput from "@/components/barraca/CodigoMaestroInput";
 
 interface CartItem {
   id: number;
@@ -451,11 +450,6 @@ export default function CarritoPage() {
                       </div>
                     </details>
                   )}
-                </div>
-
-                {/* Tier 2 B1: código maestro referido */}
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <CodigoMaestroInput />
                 </div>
 
                 <div className="space-y-2 pt-4 border-t border-gray-200">

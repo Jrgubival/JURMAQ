@@ -86,7 +86,15 @@ export default function PreciosPage() {
     try {
       const [catRes, prodRes] = await Promise.all([
         fetch('/api/categorias'),
-        fetch('/api/productos'),
+        // `all=true&limit=5000` — NO quitar los parámetros.
+        //
+        // Sin ellos el endpoint devuelve su default de 24 productos (y solo
+        // activos), y sobre esos 24 se calculaba el preview "se afectarán N
+        // productos". Pero la aplicación es server-side sobre la CATEGORÍA
+        // ENTERA (bulk-price hace .eq('categoria_id', ...)), así que el
+        // preview decía 3 y el PUT reprecia cientos. En una pantalla que
+        // cambia precios de producción, eso es el peor error posible.
+        fetch('/api/productos?all=true&limit=5000'),
       ]);
       if (catRes.ok) {
         const data = await catRes.json();

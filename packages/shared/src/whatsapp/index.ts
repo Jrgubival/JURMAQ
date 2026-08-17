@@ -219,22 +219,6 @@ export function whatsappCtaCotizacionEnviada(numero: string): string {
 // Barraca — maestros y sucursales
 // ============================================================================
 
-/**
- * CTA programa maestros. Variant:
- *   - 'registro' → "quiero registrarme como maestro de JURMAQ"
- *   - 'primer'   → "quiero ser el primer maestro JURMAQ" (early-access landing)
- */
-export function whatsappCtaMaestro(variant: 'registro' | 'primer' = 'registro'): string {
-  const text =
-    variant === 'primer'
-      ? `${SALUDO}quiero ser el primer maestro JURMAQ`
-      : `${SALUDO}quiero registrarme como maestro de JURMAQ`;
-  return buildWhatsappUrl({
-    text,
-    utm_content: `maestro_${variant}`,
-    utm_campaign: 'maestros',
-  });
-}
 
 /** CTA para sucursal específica (acepta override de número si la sucursal tiene WhatsApp propio). */
 export function whatsappCtaSucursal(
@@ -253,14 +237,6 @@ export function whatsappCtaSucursal(
 // Misceláneos
 // ============================================================================
 
-/** CTA para roadmap / "tengo una idea". */
-export function whatsappCtaIdea(): string {
-  return buildWhatsappUrl({
-    text: `${SALUDO}tengo una idea para la web de JURMAQ`,
-    utm_content: 'roadmap',
-    utm_campaign: 'roadmap',
-  });
-}
 
 /**
  * Share button — wa.me sin número específico (WhatsApp pregunta al usuario

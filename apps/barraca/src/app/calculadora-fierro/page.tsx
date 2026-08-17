@@ -191,8 +191,7 @@ export default function CalculadoraFierroPage() {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Barraca JURMAQ", item: "https://barraca.jurmaq.cl" },
-          { "@type": "ListItem", position: 2, name: "Calculadoras", item: "https://barraca.jurmaq.cl/calculadoras" },
-          { "@type": "ListItem", position: 3, name: "Calculadora de fierro", item: "https://barraca.jurmaq.cl/calculadora-fierro" },
+          { "@type": "ListItem", position: 2, name: "Calculadora de fierro", item: "https://barraca.jurmaq.cl/calculadora-fierro" },
         ],
       },
     ],
@@ -207,8 +206,6 @@ export default function CalculadoraFierroPage() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav aria-label="Breadcrumb" className="text-sm text-gray-500 mb-4">
               <Link href="/" className="hover:text-white">Barraca JURMAQ</Link>
-              <span className="mx-2">›</span>
-              <Link href="/calculadoras" className="hover:text-white">Calculadoras</Link>
               <span className="mx-2">›</span>
               <span className="text-white">Calculadora de fierro</span>
             </nav>

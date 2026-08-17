@@ -5,6 +5,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, stripHtml } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
+/**
+ * Busca el producto por slug o, si el segmento es numérico, por id.
+ *
+ * El admin (`/admin/productos`) llama a `/api/productos/{id}` con el id
+ * numérico de la fila: editar un producto, activarlo y destacarlo apuntaban
+ * todos acá. Como la ruta solo filtraba por `slug`, ninguna encontraba fila y
+ * devolvía 404 — y como el cliente no chequea `res.ok`, el modal se cerraba
+ * como si hubiera guardado. Es decir: la pantalla principal del catálogo
+ * (2.338 productos) no podía editar nada y no lo decía.
+ *
+ * Se acepta id numérico además del slug en vez de cambiar el cliente, para que
+ * cualquier llamador —presente o futuro— funcione con las dos formas.
+ */
+async function buscarProducto(segmento: string) {
+  const esId = /^\d+$/.test(segmento);
+  const query = supabaseAdmin.from('barraca_productos').select('id, slug');
+  const { data } = esId
+    ? await query.eq('id', Number(segmento)).maybeSingle()
+    : await query.eq('slug', segmento).maybeSingle();
+  return data;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -88,11 +110,7 @@ export async function PUT(
     const { slug } = await params;
     const body = await request.json();
 
-    const { data: existing } = await supabaseAdmin
-      .from('barraca_productos')
-      .select('id')
-      .eq('slug', slug)
-      .single();
+    const existing = await buscarProducto(slug);
 
     if (!existing) {
       return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
@@ -124,11 +142,14 @@ export async function PUT(
     if (error) throw error;
 
     // La ficha pública cachea 24 h (ver producto/[slug]/page.tsx). Sin esto un
-    // cambio de precio tardaría un día en verse. Revalidamos el slug viejo y el
-    // nuevo, porque el PUT permite renombrar el slug.
+    // cambio de precio tardaría un día en verse. Se revalida el slug ANTERIOR
+    // y el nuevo, porque el PUT permite renombrar. Ojo: `slug` del path puede
+    // ser un id numérico (el admin llama por id), así que el slug real se toma
+    // de la fila, nunca del parámetro.
+    const slugAnterior = (existing as { slug?: string }).slug;
     const nuevoSlug = (updated as { slug?: string } | null)?.slug;
-    revalidatePath(`/producto/${slug}`);
-    if (nuevoSlug && nuevoSlug !== slug) revalidatePath(`/producto/${nuevoSlug}`);
+    if (slugAnterior) revalidatePath(`/producto/${slugAnterior}`);
+    if (nuevoSlug && nuevoSlug !== slugAnterior) revalidatePath(`/producto/${nuevoSlug}`);
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -154,11 +175,7 @@ export async function DELETE(
 
     const { slug } = await params;
 
-    const { data: existing } = await supabaseAdmin
-      .from('barraca_productos')
-      .select('id')
-      .eq('slug', slug)
-      .single();
+    const existing = await buscarProducto(slug);
 
     if (!existing) {
       return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });

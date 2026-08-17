@@ -73,7 +73,13 @@ export interface AdminNavItem {
 
 export const ADMIN_NAV: AdminNavItem[] = [
   // ── Inicio ────────────────────────────────────────────────────────────────
-  { label: 'Dashboard', path: '/admin', app: 'constructora', module: 'dashboard', group: 'Inicio' },
+  //
+  // Dos entradas y no una: cada app tiene su propia raíz `/admin`. Con una
+  // sola entrada apuntando a constructora, el botón 'Dashboard' visto desde
+  // barraca sacaba al usuario del dominio y dejaba la raíz de barraca
+  // inalcanzable.
+  { label: 'Resumen arriendo', path: '/admin', app: 'constructora', module: 'dashboard', group: 'Inicio' },
+  { label: 'Resumen barraca', path: '/admin/dashboard', app: 'barraca', module: 'barraca_cotizaciones', group: 'Inicio', keywords: ['ventas', 'kpi'] },
 
   // ── Arriendo y obras ──────────────────────────────────────────────────────
   {
@@ -102,6 +108,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: 'Importar', path: '/admin/importar', app: 'barraca', module: 'barraca_importar', group: 'Barraca', keywords: ['excel', 'carga masiva', 'inventario'] },
   { label: 'Reviews', path: '/admin/reviews', app: 'barraca', module: 'barraca_reviews', group: 'Barraca', keywords: ['resenas', 'opiniones'] },
   { label: 'Suscriptores', path: '/admin/suscriptores', app: 'barraca', module: 'barraca_suscriptores', group: 'Barraca', keywords: ['newsletter', 'correos'] },
+  { label: 'Clientes barraca', path: '/admin/clientes', app: 'barraca', module: 'barraca_cotizaciones', group: 'Barraca', keywords: ['compradores'] },
 
   // ── Tributario ────────────────────────────────────────────────────────────
   { label: 'Combustible', path: '/admin/combustible', app: 'constructora', module: 'combustible', group: 'Tributario', keywords: ['iec', 'facturas', 'petroleo'] },
