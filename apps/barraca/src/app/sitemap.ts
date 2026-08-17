@@ -6,9 +6,19 @@ import { MetadataRoute } from "next";
 // excluye `costo` (creada en harden-rls.js) ya que la tabla principal
 // tiene REVOKE de anon.
 import { supabasePublic } from "@jurmaq/shared/supabase";
-import { CIUDADES, TOP_PRODUCTOS_BARRACA } from "@jurmaq/shared/seo";
+import { CIUDADES } from "@jurmaq/shared/seo";
 import { GUIAS } from "@/lib/guias-seo-data";
-import { COMPETIDORES_DATA } from "@/lib/competidores-data";
+
+/**
+ * Cachea el sitemap 24 h.
+ *
+ * Sin esto se regeneraba en CADA request de bot: 4 queries sin límite (~4.000
+ * filas) para escupir ~2.400 URLs. Google, Bing y los crawlers de IA lo piden
+ * varias veces al día cada uno, y cada visita salía en Fluid CPU y en Fast
+ * Origin Transfer. El catálogo no cambia lo suficiente como para justificar
+ * regenerarlo más seguido que una vez al día.
+ */
+export const revalidate = 86400;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://barraca.jurmaq.cl";
@@ -27,39 +37,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.9,
     },
-    // pSEO: calculadoras (alto valor SEO informacional, intent comercial)
-    {
-      url: `${baseUrl}/calculadoras`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
+    // pSEO: calculadora de fierro (la única que se mantiene; ver commit de simplificación)
     {
       url: `${baseUrl}/calculadora-fierro`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/calculadora-cemento`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/calculadora-hormigon`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/calculadora-pintura`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.85,
-    },
-    {
-      url: `${baseUrl}/calculadora-zincalum`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.85,
@@ -70,22 +50,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.7,
     },
-    // Comparison landings (alta intención comercial)
-    {
-      url: `${baseUrl}/alternativa`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
     {
       url: `${baseUrl}/te-mejoramos-el-precio`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.85,
-    },
-    // Killer feature pages (audit fase 4.7)
-    {
-      url: `${baseUrl}/maestros`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.85,
@@ -95,12 +61,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/roadmap`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.4,
     },
   ];
 
@@ -112,27 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.75,
   }));
 
-  // pSEO material × ciudad — `/material/<material-slug>-en-<ciudad-slug>`
-  // (audit fase 4.7) — 8 materiales × 12 ciudades = 96 URLs
-  const materialUrls: MetadataRoute.Sitemap = [];
-  for (const m of TOP_PRODUCTOS_BARRACA) {
-    for (const c of CIUDADES) {
-      materialUrls.push({
-        url: `${baseUrl}/material/${m.slug}-en-${c.slug}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
-    }
-  }
 
-  // Comparison landings programáticas
-  const alternativaUrls: MetadataRoute.Sitemap = COMPETIDORES_DATA.map((c) => ({
-    url: `${baseUrl}/alternativa/${c.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.75,
-  }));
 
   // pSEO guias programaticas — una entry por guia en GUIAS
   const guiasUrls: MetadataRoute.Sitemap = GUIAS.map((g) => ({
@@ -157,37 +97,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   );
 
-  // pSEO categoría × ciudad — `/categorias/<slug>/en/<ciudad-slug>`
-  // Filtra categorías sin productos activos (incluyendo herencia desde
-  // subcategorías) para no indexar doorway pages vacías. Misma lógica que
-  // `getEligibleCategoriaIds` en la página, replicada aquí para mantener
-  // alineadas las URLs del sitemap con las que generateStaticParams produce.
-  const { data: productsForEligibility } = await supabasePublic
-    .from('barraca_productos')
-    .select('categoria_id')
-    .eq('activo', true);
-  const directHasProducts = new Set<number>();
-  for (const p of productsForEligibility || []) {
-    if (p.categoria_id != null) directHasProducts.add(p.categoria_id);
-  }
-  const eligibleCatIds = new Set<number>(directHasProducts);
-  for (const cat of categories || []) {
-    if (cat.padre_id != null && directHasProducts.has(cat.id)) {
-      eligibleCatIds.add(cat.padre_id);
-    }
-  }
-  const categoriaCiudadUrls: MetadataRoute.Sitemap = [];
-  for (const cat of categories || []) {
-    if (!eligibleCatIds.has(cat.id)) continue;
-    for (const c of CIUDADES) {
-      categoriaCiudadUrls.push({
-        url: `${baseUrl}/categorias/${cat.slug}/en/${c.slug}`,
-        lastModified: new Date(),
-        changeFrequency: "monthly",
-        priority: 0.65,
-      });
-    }
-  }
+  // Las 216 landings `categoría × ciudad` se eliminaron: eran el 59% del build,
+  // no estaban enlazadas desde ninguna parte del sitio y eran el mismo template
+  // con el nombre de la comuna cambiado. Ese patrón (doorway pages) es
+  // exactamente lo que Google penaliza, y encima era el mayor costo de build.
+  // Junto con ellas se fue la query sin límite que traía las 1.978 filas de
+  // productos solo para decidir qué categorías eran elegibles.
 
   // All active products via la vista publica (sin costo). Usamos updated_at
   // real si existe para señalar a Google qué páginas tienen contenido fresco
@@ -204,31 +119,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // Tier 2 B1: páginas públicas de maestros referidos (link share que
-  // arman maestros para sus clientes). Solo maestros activos.
-  // Security (audit fase 2B.1): leemos de maestros_public (RUT enmascarado,
-  // sin email/banco) — anon NO debe ver la tabla base.
-  const { data: maestros } = await supabasePublic
-    .from('maestros_public')
-    .select('codigo')
-    .eq('activo', true);
-
-  const maestroUrls: MetadataRoute.Sitemap = (maestros || []).map((m: { codigo: string }) => ({
-    url: `${baseUrl}/maestros/${m.codigo}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.5,
-  }));
-
   return [
     ...staticPages,
     ...ciudadUrls,
-    ...materialUrls,
-    ...alternativaUrls,
     ...guiasUrls,
     ...categoryUrls,
-    ...categoriaCiudadUrls,
     ...productUrls,
-    ...maestroUrls,
   ];
 }

@@ -7,7 +7,6 @@ import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
 import { formatCLP } from "@jurmaq/shared/format";
 import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
-import WishlistHeart from "./WishlistHeart";
 import StarRating from "./StarRating";
 
 const categoryImages: Record<string, string> = {
@@ -147,10 +146,6 @@ export default function ProductCard({
 
   return (
     <div className="bg-white border border-gray-300 rounded-md overflow-hidden group transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-navy-950 hover:shadow-[0_2px_0_0_rgb(12,29,58)] flex flex-col h-full relative">
-      {/* D3-UI Tier 4: ícono corazón para wishlist (cliente logueado) */}
-      <div className="absolute top-2 right-2 z-10">
-        <WishlistHeart productoId={id} size="sm" />
-      </div>
       <Link href={`/producto/${slug}`} className="block" aria-label={`Ver detalles de ${nombre}${medida ? ` - ${medida}` : ''}`}>
         <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
           {displayImage ? (

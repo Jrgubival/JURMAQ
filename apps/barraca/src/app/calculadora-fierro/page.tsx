@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CalculadoraFierroClient from "./CalculadoraFierroClient";
-import RelatedCalculadoras from "@/components/barraca/RelatedCalculadoras";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
@@ -305,7 +304,6 @@ export default function CalculadoraFierroPage() {
           </div>
         </section>
 
-        <RelatedCalculadoras currentSlug="calculadora-fierro" />
 
         {/* CTA final */}
         <section className="py-16 bg-orange-50 border-t border-orange-200">

@@ -19,10 +19,6 @@ const NewsletterPopup = dynamic(
   () => import("@/components/barraca/NewsletterPopup"),
   { ssr: false }
 );
-const AsistenteWidget = dynamic(
-  () => import("@/components/barraca/AsistenteWidget"),
-  { ssr: false }
-);
 
 interface Categoria {
   id: number;
@@ -709,31 +705,6 @@ function Footer() {
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Materiales más buscados en Curicó
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { slug: "fierro-estriado", name: "Fierro estriado" },
-                { slug: "cemento", name: "Cemento" },
-                { slug: "planchas-zinc", name: "Planchas zinc" },
-                { slug: "malla-acma", name: "Malla Acma" },
-                { slug: "pinturas", name: "Pinturas" },
-                { slug: "perfiles-metalicos", name: "Perfiles metálicos" },
-                { slug: "tubos", name: "Tubos" },
-                { slug: "angulos", name: "Ángulos" },
-              ].map((m) => (
-                <Link
-                  key={m.slug}
-                  href={`/material/${m.slug}-en-curico`}
-                  className="px-3 py-1.5 text-xs text-gray-300 bg-navy-800 hover:bg-orange-600 hover:text-white rounded transition-colors"
-                >
-                  {m.name} en Curicó
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
             <Link
               href="/te-mejoramos-el-precio"
               className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg text-sm font-bold text-white transition-colors"
@@ -795,7 +766,6 @@ export default function BarracaShell({
       <Navbar />
       <main id="main-content" className="flex-1 min-h-screen bg-gray-50">{children}</main>
       <Footer />
-      <AsistenteWidget />
       <WhatsAppFloat />
       <NewsletterPopup />
       <ToastContainer />
