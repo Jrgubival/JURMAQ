@@ -299,7 +299,7 @@ export function ContactForm({ servicioInicial = "", mensajePlaceholder }: Contac
         />
         <span>
           He leido y acepto la{" "}
-          <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="text-gold-700 hover:underline font-medium">Politica de Privacidad</a>{" "}
+          <a href="https://jurmaq.cl/privacidad" target="_blank" rel="noopener noreferrer" className="text-gold-700 hover:underline font-medium">Politica de Privacidad</a>{" "}
           y autorizo el tratamiento de mis datos personales para responder esta consulta, conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>
         </span>
       </label>

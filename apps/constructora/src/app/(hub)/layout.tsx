@@ -13,7 +13,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
     <>
       <Navbar vertical="arriendo" />
       {children}
-      <Footer />
+      <Footer vertical="arriendo" />
     </>
   );
 }

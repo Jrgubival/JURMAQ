@@ -21,7 +21,7 @@ export default function ConstructoraLayout({ children }: { children: React.React
     <>
       <Navbar vertical="constructora" />
       {children}
-      <Footer />
+      <Footer vertical="constructora" />
     </>
   );
 }
