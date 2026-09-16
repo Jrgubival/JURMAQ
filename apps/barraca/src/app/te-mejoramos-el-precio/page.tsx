@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     siteName: "Barraca JURMAQ",
     locale: "es_CL",
     type: "website",
-    images: [{ url: "/barraca/icon-512.png", width: 512, height: 512, alt: "Te mejoramos el precio · JURMAQ" }],
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "Te mejoramos el precio · JURMAQ" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -52,7 +52,6 @@ export const metadata: Metadata = {
       "Súbenos tu cotización de Sodimac, Easy o Construmart y te respondemos con contraoferta JURMAQ en menos de 2 horas.",
   },
   alternates: { canonical: "https://barraca.jurmaq.cl/te-mejoramos-el-precio" },
-  manifest: "/barraca/manifest.json",
 };
 
 const FAQ = [

@@ -11,10 +11,10 @@ type BarracaCategoriaRow = Pick<
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
   'fijaciones': '/images/barraca/categorias/fijaciones.jpg',
-  'herramientas-y-maq': '/images/barraca/categorias/herramientas.png',
+  'herramientas-y-maq': '/images/barraca/categorias/herramientas.webp',
   'pinturas': '/images/barraca/categorias/pinturas.webp',
   'perfiles-y-planchas': '/images/barraca/categorias/perfiles.webp',
-  'electricidad-e-iluminacion': '/images/barraca/categorias/electricidad.png',
+  'electricidad-e-iluminacion': '/images/barraca/categorias/electricidad.webp',
   'bano-cocina-y-loggia': '/images/barraca/categorias/Baño.jpg',
   'seguridad-industrial': '/images/barraca/categorias/seguridad.webp',
   'jardin': '/images/barraca/categorias/jardin.png',
@@ -23,7 +23,7 @@ const categoryImages: Record<string, string> = {
   'quincalleria': '/images/barraca/categorias/quincasilleria.webp',
   'cercos-y-mallas': '/images/barraca/categorias/mallas.jpg',
   'aridos-y-morteros': '/images/barraca/categorias/morteros.webp',
-  'tabiqueria': '/images/barraca/categorias/tabiqueria.png',
+  'tabiqueria': '/images/barraca/categorias/tabiqueria.webp',
   'techumbre': '/images/barraca/categorias/Techumbres.jpg',
   'aditivos-e-impermeabilizantes': '/images/barraca/categorias/impermeabilizante.webp',
   'aislacion': '/images/barraca/categorias/aislacion.webp',
@@ -61,16 +61,16 @@ export const metadata: Metadata = {
     locale: "es_CL",
     type: "website",
     images: [
-      { url: "/barraca/icon-512.png", width: 512, height: 512, alt: "Barraca JURMAQ Curicó · Molina" },
+      { url: "/icon-512.png", width: 512, height: 512, alt: "Barraca JURMAQ Curicó · Molina" },
     ],
   },
-  icons: {
-    icon: [
-      { url: "/barraca/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/barraca/icon-192.png", sizes: "192x192", type: "image/png" },
-    ],
-    apple: { url: "/barraca/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-  },
+  // Sin bloque `icons:` ni `manifest:` a propósito.
+  //
+  // En Next el campo `icons` NO se fusiona con el del layout: la página lo
+  // REEMPLAZA entero. Estas cuatro declaraban un subconjunto (y apuntando a
+  // /barraca/*, resto del monolito viejo), así que /categorias servía 3
+  // <link rel=icon> contra los 6 del resto del sitio. Heredando del layout
+  // hay una sola fuente de verdad.
 };
 
 interface Categoria {

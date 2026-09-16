@@ -90,7 +90,7 @@ export async function initializeDatabase() {
           descripcion: 'Plataforma elevadora tipo tijera electrica compacta, ideal para trabajos en altura en espacios interiores y exteriores. Altura de trabajo de 7.79 metros, silenciosa y sin emisiones.',
           precio_dia: 45000, precio_semana: 225000, precio_mes: 700000,
           estado: 'disponible',
-          imagen: '/images/maquinarias/plataforma-genie-gs1930.png',
+          imagen: '/images/maquinarias/plataforma-genie-gs1930.webp',
         },
         {
           nombre: 'Plataforma Elevadora AloLift 80N',

@@ -55,7 +55,7 @@ const CATEGORIAS: Categoria[] = [
     tipo: 'alzahombre',
     label: 'Plataformas elevadoras',
     subtitle: 'Trabajo en altura',
-    imagen: '/images/maquinarias/plataforma-genie-gs1930.png',
+    imagen: '/images/maquinarias/plataforma-genie-gs1930.webp',
   },
   {
     tipo: 'minicargador',

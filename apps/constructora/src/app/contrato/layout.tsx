@@ -33,7 +33,7 @@ export default function ContratoLayout({
               <span className="inline-flex items-center bg-white/95 rounded-lg px-2.5 py-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/logo-jurmaq.png"
+                  src="/images/logo-jurmaq.webp"
                   alt="JURMAQ Maestranza & Construcción"
                   width={160}
                   height={80}

@@ -221,7 +221,7 @@ export const DEFAULT_CONTRATO_TEMPLATE: string = `<!DOCTYPE html>
     <!-- ============ CABECERA / ENCABEZADO ============ -->
     <header class="header">
       <div class="brand">
-        <img src="https://jurmaq.cl/images/logo-jurmaq.png" alt="JURMAQ Constructora" width="104" height="52" />
+        <img src="https://jurmaq.cl/images/logo-jurmaq.webp" alt="JURMAQ Constructora" width="104" height="52" />
         <div>
           <div class="name">Constructora Jorge Ubilla Rivera E.I.R.L.</div>
           <div class="sub">JURMAQ &middot; Arriendo de maquinaria y materiales de construcción</div>

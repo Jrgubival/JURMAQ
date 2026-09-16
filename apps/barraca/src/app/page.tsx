@@ -21,10 +21,10 @@ type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
   'fijaciones': '/images/barraca/categorias/fijaciones.jpg',
-  'herramientas-y-maq': '/images/barraca/categorias/herramientas.png',
+  'herramientas-y-maq': '/images/barraca/categorias/herramientas.webp',
   'pinturas': '/images/barraca/categorias/pinturas.webp',
   'perfiles-y-planchas': '/images/barraca/categorias/perfiles.webp',
-  'electricidad-e-iluminacion': '/images/barraca/categorias/electricidad.png',
+  'electricidad-e-iluminacion': '/images/barraca/categorias/electricidad.webp',
   'bano-cocina-y-loggia': '/images/barraca/categorias/bano.jpg',
   'seguridad-industrial': '/images/barraca/categorias/seguridad.webp',
   'jardin': '/images/barraca/categorias/jardin.png',
@@ -33,7 +33,7 @@ const categoryImages: Record<string, string> = {
   'quincalleria': '/images/barraca/categorias/quincasilleria.webp',
   'cercos-y-mallas': '/images/barraca/categorias/mallas.jpg',
   'aridos-y-morteros': '/images/barraca/categorias/morteros.webp',
-  'tabiqueria': '/images/barraca/categorias/tabiqueria.png',
+  'tabiqueria': '/images/barraca/categorias/tabiqueria.webp',
   'techumbre': '/images/barraca/categorias/Techumbres.jpg',
   'aditivos-e-impermeabilizantes': '/images/barraca/categorias/impermeabilizante.webp',
   'aislacion': '/images/barraca/categorias/aislacion.webp',
@@ -149,21 +149,16 @@ export const metadata: Metadata = {
     description:
       "Súbenos tu cotización de Sodimac, Easy o Construmart y en menos de 2 horas te mejoramos el precio. Despacho a toda la Región del Maule.",
   },
-  icons: {
-    icon: [
-      { url: "/barraca/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/barraca/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/barraca/favicon-48x48.png", sizes: "48x48", type: "image/png" },
-      { url: "/barraca/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/barraca/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: { url: "/barraca/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    shortcut: "/barraca/favicon-32x32.png",
-  },
+  // Sin bloque `icons:` ni `manifest:` a propósito.
+  //
+  // En Next el campo `icons` NO se fusiona con el del layout: la página lo
+  // REEMPLAZA entero. Estas cuatro declaraban un subconjunto (y apuntando a
+  // /barraca/*, resto del monolito viejo), así que /categorias servía 3
+  // <link rel=icon> contra los 6 del resto del sitio. Heredando del layout
+  // hay una sola fuente de verdad.
   alternates: {
     canonical: "https://barraca.jurmaq.cl",
   },
-  manifest: "/barraca/manifest.json",
 };
 
 // Audit M10: ISR en lugar de force-dynamic. Antes cada visita disparaba

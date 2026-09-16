@@ -131,7 +131,7 @@ export async function generateMetadata({
       type: 'website',
       images: m.imagen
         ? [{ url: m.imagen, width: 1200, height: 630, alt: `${m.nombre} en arriendo · ${c.nombre}` }]
-        : [{ url: '/og-image-1200x630.png', width: 1200, height: 630, alt: 'JURMAQ' }],
+        : [{ url: '/og-image-1200x630.jpg', width: 1200, height: 630, alt: 'JURMAQ' }],
     },
     twitter: {
       card: 'summary_large_image',

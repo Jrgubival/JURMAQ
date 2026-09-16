@@ -183,7 +183,7 @@ export const metadata: Metadata = {
       // Primary OG image — 1200×630 es el aspect ratio canonical
       // (Facebook/LinkedIn/WhatsApp). Generado por scripts/og/generate-og-images.mjs.
       {
-        url: "/og-image-1200x630.png",
+        url: "/og-image-1200x630.jpg",
         width: 1200,
         height: 630,
         alt: "JURMAQ — Arriendo Maquinaria, Constructora y Barraca de Fierros en Curicó",

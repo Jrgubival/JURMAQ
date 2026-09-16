@@ -214,7 +214,7 @@ export async function generateMetadata({
           ]
         : [
             // Fallback al OG default de constructora cuando no hay foto de la máquina.
-            { url: "/og-image-1200x630.png", width: 1200, height: 630, alt: "JURMAQ" },
+            { url: "/og-image-1200x630.jpg", width: 1200, height: 630, alt: "JURMAQ" },
             { url: "/icon-512.png", width: 512, height: 512, alt: "JURMAQ" },
           ],
     },

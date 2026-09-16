@@ -59,20 +59,15 @@ export async function generateMetadata({
       locale: "es_CL",
       type: "website",
       images: [
-        { url: "/barraca/icon-512.png", width: 512, height: 512, alt: `Barraca JURMAQ en ${c.nombre}` },
+        { url: "/icon-512.png", width: 512, height: 512, alt: `Barraca JURMAQ en ${c.nombre}` },
       ],
     },
-    icons: {
-      icon: [
-        { url: "/barraca/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-        { url: "/barraca/icon-192.png", sizes: "192x192", type: "image/png" },
-      ],
-      apple: { url: "/barraca/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    },
+    // Sin bloque `icons:`: en Next la página REEMPLAZA el del layout en vez
+    // de fusionarse, y este declaraba solo 2 de los 6 iconos, apuntando
+    // además a /barraca/*, resto del monolito viejo.
     alternates: {
       canonical: `https://barraca.jurmaq.cl/en/${c.slug}`,
     },
-    manifest: "/barraca/manifest.json",
   };
 }
 
