@@ -738,7 +738,7 @@ export default function BarracaImportarPage() {
             </button>
             <button
               onClick={() => setStep(5)}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition hover:bg-orange-700"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-white font-semibold text-sm transition hover:bg-marca-700"
               style={{ backgroundColor: '#ea580c' }}
             >
               Ejecutar Importacion
@@ -754,7 +754,7 @@ export default function BarracaImportarPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-8">
           {loading && !importResult && (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-orange-500 mb-4" />
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-marca-500 mb-4" />
               <p className="text-lg font-semibold text-gray-700">Importando productos...</p>
               <p className="text-sm text-gray-500 mt-1">Esto puede tomar unos segundos</p>
             </div>

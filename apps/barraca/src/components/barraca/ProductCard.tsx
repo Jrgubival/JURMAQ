@@ -176,56 +176,32 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Badges - top left. Estilo "etiqueta de barraca": rectangular,
-              tipografía wide-tracking, border-l acento. Diferencia clara
-              del "rounded-md shadow-sm" del badge web genérico. */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {isNew && (
-              <span className="px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-blue-600 text-white border-l-2 border-white">
-                Nuevo
-              </span>
-            )}
-            {en_oferta && precio_original && precio_original > 0 && (
-              <span className="px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-red-600 text-white border-l-2 border-white">
-                Oferta
-              </span>
-            )}
-            {en_oferta && precio_original && precio_original > 0 && precio > precio_original && (
-              <span className="px-2 py-0.5 text-[10px] font-extrabold tabular-nums bg-red-500 text-white border-l-2 border-white">
-                −{Math.round((1 - precio_original / precio) * 100)}%
-              </span>
-            )}
-          </div>
+          {/* Etiqueta única, arriba a la izquierda.
+              Antes había hasta SEIS colores saturados en una tarjeta de 250 px:
+              azul "Nuevo", rojo "Oferta", rojo claro "−X%", verde "En stock",
+              ámbar "Pocas unid." con un punto parpadeando, y gris "Cotizable".
+              Ninguna barraca real imprime etiquetas de seis colores; eso es lo
+              que hacía que el catálogo se leyera como plantilla.
 
-          {/* Imagen referencial note */}
-          <span className="absolute bottom-1 right-1 text-[10px] text-white/70 bg-black/30 px-1.5 py-0.5 rounded">
-            Imagen referencial
-          </span>
-
-          {/* Stock badge - top right. Estilo dato técnico (puntito + label uppercase). */}
-          <div className="absolute top-2 right-2">
-            {stock > 10 ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-green-600 text-white">
-                <span className="w-1.5 h-1.5 bg-white" />
-                En stock
-              </span>
-            ) : stock > 0 ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-amber-500 text-white">
-                <span className="w-1.5 h-1.5 bg-white animate-pulse" />
-                Pocas unid.
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-gray-700 text-white">
-                Cotizable
-              </span>
-            )}
-          </div>
+              Ahora una sola, y el rojo queda reservado EXCLUSIVAMENTE para
+              oferta: si todo es rojo, nada destaca. El stock baja a dato
+              tipográfico junto al precio, que es donde el comprador lo busca. */}
+          {en_oferta && precio_original && precio_original > 0 && precio < precio_original && (
+            <span className="absolute top-0 left-0 px-2 py-1 text-[10px] font-bold tracking-wider uppercase bg-marca-600 text-white tabular-nums">
+              −{Math.round((1 - precio / precio_original) * 100)}%
+            </span>
+          )}
+          {!en_oferta && isNew && (
+            <span className="absolute top-0 left-0 px-2 py-1 text-[10px] font-bold tracking-wider uppercase bg-navy-950 text-white">
+              Nuevo
+            </span>
+          )}
         </div>
       </Link>
 
       <div className="p-4 flex flex-col flex-grow">
         <Link href={`/producto/${slug}`} className="block flex-grow min-h-0">
-          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-orange-600 transition-colors leading-tight">
+          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-marca-600 transition-colors leading-tight">
             {titleCase(nombre)}
           </h3>
           {medida && (
@@ -239,18 +215,15 @@ export default function ProductCard({
           )}
         </Link>
 
-        {/* Low stock warning with urgency */}
-        {stock > 0 && stock <= 5 && (
-          <p className="text-xs text-red-600 font-semibold mb-2 flex items-center gap-1">
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            Quedan {stock} unid.
-          </p>
-        )}
-        {stock > 5 && stock < 10 && (
-          <p className="text-xs text-amber-600 font-medium mb-2">
-            Quedan {stock} unidades
+        {/* Stock como DATO, no como alarma.
+            Antes eran dos bloques de urgencia —rojo con ícono de triángulo
+            para ≤5, ámbar para <10— más el badge verde/ámbar/gris sobre la
+            foto. Tres formas de decir lo mismo, dos de ellas gritando. Un
+            comprador de fierros lee "12 un." igual de bien, y el rojo queda
+            libre para lo único que de verdad debe destacar: la oferta. */}
+        {!solo_cotizar && (
+          <p className="text-xs text-gray-500 mb-2 tabular-nums">
+            {stock > 0 ? `En stock · ${stock} un.` : 'Sobre pedido'}
           </p>
         )}
 
@@ -259,7 +232,7 @@ export default function ProductCard({
         <div className="mt-auto pt-3 border-t border-gray-200">
           <div className="mb-3">
             {solo_cotizar ? (
-              <p className="text-base font-bold text-indigo-700">
+              <p className="text-base font-bold text-navy-950">
                 Consultar precio
               </p>
             ) : en_oferta && precio_original && precio_original > 0 ? (
@@ -267,7 +240,7 @@ export default function ProductCard({
                 <p className="text-xs text-gray-500 line-through leading-none tabular-nums">
                   {formatCLP(precio)}{unitLabel}
                 </p>
-                <p className="text-xl font-extrabold text-red-600 leading-tight tabular-nums">
+                <p className="text-xl font-extrabold text-marca-600 leading-tight tabular-nums">
                   {formatCLP(precio_original)}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
@@ -298,7 +271,7 @@ export default function ProductCard({
                 ? "bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]"
                 : stock <= 0
                 ? "bg-amber-600 text-white hover:bg-amber-700 active:scale-[0.98]"
-                : "bg-orange-600 text-white hover:bg-orange-700 active:scale-[0.98] shadow-sm shadow-orange-200"
+                : "bg-marca-600 text-white hover:bg-marca-700 active:scale-[0.98] shadow-sm shadow-marca-200"
             }`}
           >
             {adding ? (

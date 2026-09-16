@@ -142,7 +142,7 @@ export default function NotificationsBell() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                className="text-xs text-orange-600 hover:underline"
+                className="text-xs text-marca-600 hover:underline"
               >
                 Marcar todas leídas
               </button>
@@ -163,7 +163,7 @@ export default function NotificationsBell() {
                   const content = (
                     <div
                       className={`px-4 py-3 flex items-start gap-3 ${
-                        isUnread ? 'bg-orange-50/40' : ''
+                        isUnread ? 'bg-marca-50/40' : ''
                       } ${SEVERITY_COLOR[n.severity] ?? ''} border-l-4 border-l-transparent ${
                         isUnread
                           ? n.severity === 'warning'
@@ -189,7 +189,7 @@ export default function NotificationsBell() {
                         <p className="text-[10px] text-gray-500 mt-1">{timeAgo(n.created_at)}</p>
                       </div>
                       {isUnread && (
-                        <span className="w-2 h-2 rounded-full bg-orange-500 mt-1.5 shrink-0" />
+                        <span className="w-2 h-2 rounded-full bg-marca-500 mt-1.5 shrink-0" />
                       )}
                     </div>
                   );
@@ -226,7 +226,7 @@ export default function NotificationsBell() {
             <Link
               href="/admin/notificaciones"
               onClick={() => setOpen(false)}
-              className="text-xs text-orange-600 hover:underline"
+              className="text-xs text-marca-600 hover:underline"
             >
               Ver todas →
             </Link>

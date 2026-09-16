@@ -954,7 +954,7 @@ export default function BarracaCotizacionesPage() {
                               <td className="px-3 py-2 text-center text-gray-600">{item.cantidad}</td>
                               <td className="px-3 py-2 text-right text-gray-600">{formatCLP(item.precio)}</td>
                               {hasAnyDiscount && (
-                                <td className="px-3 py-2 text-center text-orange-600 font-medium">
+                                <td className="px-3 py-2 text-center text-marca-600 font-medium">
                                   {item.descuento > 0 ? `${item.descuento}%` : '—'}
                                 </td>
                               )}

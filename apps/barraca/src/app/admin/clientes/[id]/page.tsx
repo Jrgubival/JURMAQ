@@ -117,7 +117,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <Link href="/admin/clientes" className="text-sm text-orange-600 hover:underline">
+      <Link href="/admin/clientes" className="text-sm text-marca-600 hover:underline">
         ← Volver al listado
       </Link>
 
@@ -205,11 +205,11 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
 
       {/* Referidos por maestro */}
       {stats.referidos_por_maestros.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
-          <p className="text-sm text-orange-900">
+        <div className="bg-marca-50 border border-marca-200 rounded-xl p-4 mb-6">
+          <p className="text-sm text-marca-900">
             👷 <strong>Referido por maestro{stats.referidos_por_maestros.length > 1 ? 's' : ''}:</strong>{' '}
             {stats.referidos_por_maestros.map((c) => (
-              <code key={c} className="ml-1 px-2 py-0.5 bg-white border border-orange-200 rounded font-mono text-xs">
+              <code key={c} className="ml-1 px-2 py-0.5 bg-white border border-marca-200 rounded font-mono text-xs">
                 {c}
               </code>
             ))}
@@ -247,14 +247,14 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
                       <td className="px-4 py-2">
                         <Link
                           href={`/admin/cotizaciones/${c.id}`}
-                          className="font-mono text-xs text-orange-600 hover:underline"
+                          className="font-mono text-xs text-marca-600 hover:underline"
                         >
                           {c.numero}
                         </Link>
                         <div className="text-[10px] text-gray-500">
                           {new Date(c.created_at).toLocaleDateString('es-CL')}
                           {c.codigo_maestro && (
-                            <span className="ml-1 text-orange-600">· {c.codigo_maestro}</span>
+                            <span className="ml-1 text-marca-600">· {c.codigo_maestro}</span>
                           )}
                         </div>
                       </td>
@@ -294,7 +294,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
                       <Link
                         href={`/producto/${p.slug}`}
                         target="_blank"
-                        className="text-sm font-medium text-gray-900 hover:text-orange-600 truncate"
+                        className="text-sm font-medium text-gray-900 hover:text-marca-600 truncate"
                       >
                         {p.nombre}
                       </Link>
@@ -305,7 +305,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
                       Última: {new Date(p.ultima_compra).toLocaleDateString('es-CL')}
                     </p>
                   </div>
-                  <span className="text-sm font-bold text-orange-600">×{p.cantidad_total}</span>
+                  <span className="text-sm font-bold text-marca-600">×{p.cantidad_total}</span>
                 </li>
               ))}
             </ul>
@@ -368,7 +368,7 @@ export default function ClienteDetalle({ params }: { params: Promise<{ id: strin
                       <Link
                         href={`/producto/${w.barraca_productos.slug}`}
                         target="_blank"
-                        className="text-sm font-medium text-gray-900 hover:text-orange-600 truncate"
+                        className="text-sm font-medium text-gray-900 hover:text-marca-600 truncate"
                       >
                         {w.barraca_productos.nombre}
                       </Link>

@@ -103,7 +103,7 @@ export default function RegistroPage() {
             <span className="text-3xl font-extrabold text-navy-950 tracking-tight">
               JURMAQ
             </span>
-            <span className="text-xl font-semibold text-orange-600 ml-1">
+            <span className="text-xl font-semibold text-marca-600 ml-1">
               Barraca
             </span>
           </Link>
@@ -131,7 +131,7 @@ export default function RegistroPage() {
               value={form.nombre}
               onChange={handleChange}
               required
-              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
             />
           </div>
 
@@ -148,7 +148,7 @@ export default function RegistroPage() {
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
               placeholder="tu@email.com"
             />
           </div>
@@ -167,7 +167,7 @@ export default function RegistroPage() {
                 onChange={handleChange}
                 required
                 minLength={6}
-                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
               />
             </div>
             <div>
@@ -182,7 +182,7 @@ export default function RegistroPage() {
                 value={form.confirmPassword}
                 onChange={handleChange}
                 required
-                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
               />
             </div>
           </div>
@@ -199,7 +199,7 @@ export default function RegistroPage() {
               autoComplete="tel"
               value={form.telefono}
               onChange={handleChange}
-              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
               placeholder="+56 9 1234 5678"
             />
           </div>
@@ -216,7 +216,7 @@ export default function RegistroPage() {
                 autoComplete="organization"
                 value={form.empresa}
                 onChange={handleChange}
-                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
               />
             </div>
             <div>
@@ -230,7 +230,7 @@ export default function RegistroPage() {
                 value={form.rut}
                 onChange={handleChange}
                 placeholder="12.345.678-9"
-                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
               />
             </div>
           </div>
@@ -247,15 +247,15 @@ export default function RegistroPage() {
               required
               checked={aceptaTerminos}
               onChange={(e) => setAceptaTerminos(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+              className="mt-1 w-4 h-4 rounded border-gray-300 text-marca-600 focus:ring-marca-500"
             />
             <span>
               He leido y acepto los{" "}
-              <Link href="https://jurmaq.cl/terminos" target="_blank" className="text-orange-600 hover:underline font-medium">
+              <Link href="https://jurmaq.cl/terminos" target="_blank" className="text-marca-600 hover:underline font-medium">
                 Terminos y Condiciones
               </Link>{" "}
               y la{" "}
-              <Link href="https://jurmaq.cl/privacidad" target="_blank" className="text-orange-600 hover:underline font-medium">
+              <Link href="https://jurmaq.cl/privacidad" target="_blank" className="text-marca-600 hover:underline font-medium">
                 Politica de Privacidad
               </Link>
               , y autorizo el tratamiento de mis datos personales conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>
@@ -265,7 +265,7 @@ export default function RegistroPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-12 min-h-[48px] bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg text-base transition-colors disabled:opacity-50"
+            className="w-full h-12 min-h-[48px] bg-marca-600 hover:bg-marca-700 text-white font-semibold rounded-lg text-base transition-colors disabled:opacity-50"
           >
             {loading ? "Creando cuenta..." : "Crear mi cuenta gratis"}
           </button>
@@ -278,7 +278,7 @@ export default function RegistroPage() {
           ¿Ya tienes cuenta?{" "}
           <Link
             href="/cuenta/login"
-            className="font-semibold text-orange-600 hover:text-orange-700"
+            className="font-semibold text-marca-600 hover:text-marca-700"
           >
             Iniciar sesión
           </Link>

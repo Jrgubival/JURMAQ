@@ -28,10 +28,10 @@ export default function MobileHero() {
             className="text-white leading-[1.1]"
             style={{ fontSize: 'clamp(1.5rem, 6vw, 1.875rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
           >
-            Fierros y materiales
+            Fierro y perfiles
             <br />
             <span className="font-[var(--font-serif)] italic text-white/90" style={{ fontWeight: 400 }}>
-              a precio justo
+              con precio en pantalla
             </span>
           </h1>
           <p className="text-xs text-white/65 mt-3 inline-flex items-center gap-1.5">
@@ -42,12 +42,15 @@ export default function MobileHero() {
           </p>
         </div>
 
-        {/* Image side: cement bags / construction materials */}
+        {/* Foto propia del local. Antes era /categorias/morteros.webp: un packshot
+            de catálogo de proveedor (un saco de CBB recortado sobre fondo blanco)
+            haciéndose pasar por foto ambiental, y encima un saco de cemento en la
+            portada de una barraca de FIERROS. */}
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/barraca/categorias/morteros.webp"
-            alt="Cementos, morteros y materiales de construcción en Barraca JURMAQ Molina"
+            src="/images/barraca/hero/barraca-perfiles-tubos.jpg"
+            alt="Perfiles y tubos de acero en la Barraca JURMAQ de Molina"
             width={400}
             height={300}
             loading="eager"
@@ -56,7 +59,7 @@ export default function MobileHero() {
             className="absolute inset-0 w-full h-full object-cover"
           />
           {/* Soft dark gradient on the left edge so text stays readable */}
-          <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/55 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/40 to-transparent" />
         </div>
       </div>
     </Link>

@@ -210,7 +210,7 @@ export default function CarritoPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center">
-        <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-marca-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -301,7 +301,7 @@ export default function CarritoPage() {
                         <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} fill sizes="64px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 group-hover:text-orange-600 transition-colors">{item.nombre}</p>
+                        <p className="text-sm font-medium text-gray-900 group-hover:text-marca-600 transition-colors">{item.nombre}</p>
                         {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
                       </div>
                     </Link>
@@ -310,7 +310,7 @@ export default function CarritoPage() {
                     {item.precio_tachado && item.precio_tachado > item.precio ? (
                       <>
                         <span className="block text-xs text-gray-400 line-through tabular-nums">{formatCLP(item.precio_tachado)}</span>
-                        <span className="block text-orange-600 tabular-nums">{formatCLP(item.precio)}</span>
+                        <span className="block text-marca-600 tabular-nums">{formatCLP(item.precio)}</span>
                       </>
                     ) : (
                       formatCLP(item.precio)
@@ -348,7 +348,7 @@ export default function CarritoPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
                         <Link href={item.slug ? `/producto/${item.slug}` : '#'} className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 hover:text-orange-600 transition-colors">{item.nombre}</p>
+                          <p className="text-sm font-medium text-gray-900 hover:text-marca-600 transition-colors">{item.nombre}</p>
                           {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
                         </Link>
                         <button onClick={() => removeItem(item.id)} aria-label={`Eliminar ${item.nombre} del carrito`} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500">
@@ -361,7 +361,7 @@ export default function CarritoPage() {
                         {item.precio_tachado && item.precio_tachado > item.precio && (
                           <span className="text-xs text-gray-400 line-through tabular-nums mr-1.5 font-normal">{formatCLP(item.precio_tachado)}</span>
                         )}
-                        <span className={item.precio_tachado && item.precio_tachado > item.precio ? "text-orange-600" : ""}>{formatCLP(item.precio)}</span>
+                        <span className={item.precio_tachado && item.precio_tachado > item.precio ? "text-marca-600" : ""}>{formatCLP(item.precio)}</span>
                       </p>
                     </div>
                   </div>
@@ -473,15 +473,15 @@ export default function CarritoPage() {
                   </div>
                   <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
                     <span>Total (IVA incluido)</span>
-                    <span className="text-orange-600">{formatCLP(totalFinal)}</span>
+                    <span className="text-marca-600">{formatCLP(totalFinal)}</span>
                   </div>
                 </div>
               </div>
               <p className="text-xs text-gray-500 mb-5">* Precios referenciales. Se confirmarán en la cotización.</p>
-              <Link href="/cotizar" className="block w-full py-3.5 text-center text-base font-bold bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-md shadow-orange-200 transition-colors">
+              <Link href="/cotizar" className="block w-full py-3.5 text-center text-base font-bold bg-marca-600 text-white rounded-lg hover:bg-marca-700 shadow-md shadow-marca-200 transition-colors">
                 Solicitar cotización
               </Link>
-              <Link href="/categorias" className="block w-full py-3 mt-3 text-center text-sm font-semibold border-2 border-orange-600 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors">
+              <Link href="/categorias" className="block w-full py-3 mt-3 text-center text-sm font-semibold border-2 border-marca-600 text-marca-600 hover:bg-marca-50 rounded-lg transition-colors">
                 Seguir comprando
               </Link>
             </div>

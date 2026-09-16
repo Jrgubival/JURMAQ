@@ -176,7 +176,7 @@ export default function PromocionesAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-marca-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -199,7 +199,7 @@ export default function PromocionesAdminPage() {
           </button>
           <button
             onClick={openCreate}
-            className="px-4 py-2 text-sm font-medium bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors"
+            className="px-4 py-2 text-sm font-medium bg-marca-600 text-white rounded-xl hover:bg-marca-700 transition-colors"
           >
             + Nueva Promocion
           </button>
@@ -238,7 +238,7 @@ export default function PromocionesAdminPage() {
                 <div className="text-xs text-gray-500 mt-1">
                   {p.barraca_categorias?.nombre || 'Sin categoria'}
                 </div>
-                <div className="text-lg font-bold text-orange-600 mt-1">
+                <div className="text-lg font-bold text-marca-600 mt-1">
                   -{p.descuento_porcentaje}%
                 </div>
               </div>
@@ -336,7 +336,7 @@ export default function PromocionesAdminPage() {
                   required
                   value={form.titulo}
                   onChange={e => setForm({ ...form, titulo: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
                   placeholder="Ej: Fierros de Construccion -15%"
                 />
               </div>
@@ -345,7 +345,7 @@ export default function PromocionesAdminPage() {
                 <textarea
                   value={form.descripcion}
                   onChange={e => setForm({ ...form, descripcion: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
                   rows={2}
                   placeholder="Descripcion de la promocion"
                 />
@@ -360,7 +360,7 @@ export default function PromocionesAdminPage() {
                     max={90}
                     value={form.descuento_porcentaje}
                     onChange={e => setForm({ ...form, descuento_porcentaje: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
                   />
                 </div>
                 <div>
@@ -369,7 +369,7 @@ export default function PromocionesAdminPage() {
                     required
                     value={form.categoria_id}
                     onChange={e => setForm({ ...form, categoria_id: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
                   >
                     <option value={0}>Seleccionar...</option>
                     {categorias.map(cat => (
@@ -384,7 +384,7 @@ export default function PromocionesAdminPage() {
                   id="activa"
                   checked={form.activa}
                   onChange={e => setForm({ ...form, activa: e.target.checked })}
-                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-marca-600 focus:ring-marca-500 border-gray-300 rounded"
                 />
                 <label htmlFor="activa" className="text-sm text-gray-700">Activa</label>
               </div>
@@ -398,7 +398,7 @@ export default function PromocionesAdminPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-xl hover:bg-orange-700"
+                  className="px-4 py-2 text-sm font-medium text-white bg-marca-600 rounded-xl hover:bg-marca-700"
                 >
                   {editPromo ? 'Guardar' : 'Crear'}
                 </button>

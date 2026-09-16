@@ -124,10 +124,10 @@ export default function AddToCartClient({
                 }}
                 className={`px-4 py-2.5 text-sm font-semibold rounded-full border-2 transition-all ${
                   selectedVariant?.id === v.id
-                    ? "bg-orange-600 text-white border-orange-600 shadow-md shadow-orange-200"
+                    ? "bg-marca-600 text-white border-marca-600 shadow-md shadow-marca-200"
                     : v.stock <= 0
                     ? "bg-amber-50 text-amber-700 border-amber-300 hover:border-amber-400"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-orange-400 hover:text-orange-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-marca-400 hover:text-marca-600"
                 }`}
               >
                 {v.medida || v.nombre}
@@ -175,7 +175,7 @@ export default function AddToCartClient({
               {displayTachado && (
                 <span className="text-base text-gray-400 line-through font-bold mr-2">{formatCLP(displayTachado)}</span>
               )}
-              <span className={displayTachado ? "text-orange-600" : ""}>{formatCLP(displayPrecio)}</span>
+              <span className={displayTachado ? "text-marca-600" : ""}>{formatCLP(displayPrecio)}</span>
             </p>
             <p className="mt-1 text-[10px] uppercase tracking-wider text-gray-500">
               IVA incl.{selectedVariant?.medida ? ` · ${selectedVariant.medida}` : ""}
@@ -233,7 +233,7 @@ export default function AddToCartClient({
               ? "bg-green-500 text-white"
               : activeStock <= 0
               ? "bg-amber-600 text-white hover:bg-amber-700 shadow-lg shadow-amber-200"
-              : "bg-orange-600 text-white hover:bg-orange-700 shadow-lg shadow-orange-200"
+              : "bg-marca-600 text-white hover:bg-marca-700 shadow-lg shadow-marca-200"
           }`}
         >
           {adding ? (

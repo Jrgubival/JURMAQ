@@ -159,7 +159,7 @@ export default function ClientesAdminPage() {
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/clientes/${c.id}`}
-                      className="text-xs text-orange-600 hover:underline whitespace-nowrap"
+                      className="text-xs text-marca-600 hover:underline whitespace-nowrap"
                     >
                       Ver 360 →
                     </Link>

@@ -40,7 +40,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                 currentStep >= step.num
-                  ? "bg-orange-600 text-white"
+                  ? "bg-marca-600 text-white"
                   : "bg-gray-200 text-gray-500"
               }`}
             >
@@ -52,12 +52,12 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
                 step.num
               )}
             </div>
-            <span className={`text-xs mt-1.5 font-medium ${currentStep >= step.num ? "text-orange-600" : "text-gray-500"}`}>
+            <span className={`text-xs mt-1.5 font-medium ${currentStep >= step.num ? "text-marca-600" : "text-gray-500"}`}>
               {step.label}
             </span>
           </div>
           {i < steps.length - 1 && (
-            <div className={`w-16 sm:w-24 h-0.5 mx-2 mb-5 transition-colors ${currentStep > step.num ? "bg-orange-600" : "bg-gray-200"}`} />
+            <div className={`w-16 sm:w-24 h-0.5 mx-2 mb-5 transition-colors ${currentStep > step.num ? "bg-marca-600" : "bg-gray-200"}`} />
           )}
         </div>
       ))}
@@ -291,7 +291,7 @@ export default function CotizarPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center">
-        <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-marca-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -305,7 +305,7 @@ export default function CotizarPage() {
           </svg>
           <h1 className="text-xl font-bold text-navy-950 mb-2">Tu carrito está vacío</h1>
           <p className="text-gray-500 mb-6">Agrega productos antes de solicitar una cotización.</p>
-          <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors">
+          <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 bg-marca-600 hover:bg-marca-700 text-white font-semibold rounded-lg transition-colors">
             Explorar categorías
           </Link>
         </div>
@@ -324,7 +324,7 @@ export default function CotizarPage() {
             </svg>
           </div>
           <h1 className="text-2xl lg:text-3xl font-bold text-navy-950 mb-2">Cotización enviada</h1>
-          <div className="inline-block px-4 py-2 bg-orange-100 text-orange-700 font-bold text-lg rounded-lg mb-4">
+          <div className="inline-block px-4 py-2 bg-marca-100 text-marca-700 font-bold text-lg rounded-lg mb-4">
             #{success.numero}
           </div>
 
@@ -352,7 +352,7 @@ export default function CotizarPage() {
           <div className="border-t border-gray-200 pt-6 mb-6">
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 text-left space-y-3">
               <h2 className="text-sm font-semibold text-navy-950 flex items-center gap-2">
-                <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-marca-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
                 Métodos de pago disponibles
@@ -409,11 +409,11 @@ export default function CotizarPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       {/* Breadcrumb */}
       <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-sm text-gray-500 mb-8">
-        <Link href="/" className="hover:text-orange-600 transition-colors">Inicio</Link>
+        <Link href="/" className="hover:text-marca-600 transition-colors">Inicio</Link>
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        <Link href="/carrito" className="hover:text-orange-600 transition-colors">Carrito</Link>
+        <Link href="/carrito" className="hover:text-marca-600 transition-colors">Carrito</Link>
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
@@ -477,23 +477,23 @@ export default function CotizarPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="floating-label-group">
-                <input type="text" id="cot-nombre" name="nombre" autoComplete="name" value={form.nombre} onChange={handleChange} required placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 peer" />
+                <input type="text" id="cot-nombre" name="nombre" autoComplete="name" value={form.nombre} onChange={handleChange} required placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 peer" />
                 <label htmlFor="cot-nombre">Nombre completo *</label>
               </div>
               <div className="floating-label-group">
-                <input type="text" id="cot-empresa" name="empresa" autoComplete="organization" value={form.empresa} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 peer" />
+                <input type="text" id="cot-empresa" name="empresa" autoComplete="organization" value={form.empresa} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 peer" />
                 <label htmlFor="cot-empresa">Empresa</label>
               </div>
               <div className="floating-label-group">
-                <input type="email" id="cot-email" name="email" inputMode="email" autoComplete="email" value={form.email} onChange={handleChange} required placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 peer" />
+                <input type="email" id="cot-email" name="email" inputMode="email" autoComplete="email" value={form.email} onChange={handleChange} required placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 peer" />
                 <label htmlFor="cot-email">Email *</label>
               </div>
               <div className="floating-label-group">
-                <input type="tel" id="cot-telefono" name="telefono" inputMode="tel" autoComplete="tel" value={form.telefono} onChange={handleChange} required placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 peer" />
+                <input type="tel" id="cot-telefono" name="telefono" inputMode="tel" autoComplete="tel" value={form.telefono} onChange={handleChange} required placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 peer" />
                 <label htmlFor="cot-telefono">Teléfono *</label>
               </div>
               <div className="floating-label-group md:col-span-2">
-                <input type="text" id="cot-rut" name="rut" value={form.rut} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 peer" />
+                <input type="text" id="cot-rut" name="rut" value={form.rut} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 peer" />
                 <label htmlFor="cot-rut">RUT (ej: 12.345.678-9)</label>
               </div>
             </div>
@@ -501,7 +501,7 @@ export default function CotizarPage() {
             {/* Datos de factura (opcionales) */}
             <div className="mt-4">
               <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-600">
-                <input type="checkbox" checked={quiereFactura} onChange={(e) => setQuiereFactura(e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                <input type="checkbox" checked={quiereFactura} onChange={(e) => setQuiereFactura(e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-marca-600 focus:ring-marca-500" />
                 Necesito factura
               </label>
             </div>
@@ -510,36 +510,36 @@ export default function CotizarPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
                     <p className="md:col-span-2 text-xs text-gray-500 mb-1">Datos para facturación (opcionales)</p>
                 <div className="floating-label-group">
-                  <input type="text" id="cot-razon" name="razon_social" value={form.razon_social} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 peer bg-white" />
+                  <input type="text" id="cot-razon" name="razon_social" value={form.razon_social} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 peer bg-white" />
                   <label htmlFor="cot-razon">Razón Social</label>
                 </div>
                 <div className="floating-label-group">
-                  <input type="text" id="cot-giro" name="giro" value={form.giro} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 peer bg-white" />
+                  <input type="text" id="cot-giro" name="giro" value={form.giro} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 peer bg-white" />
                   <label htmlFor="cot-giro">Giro</label>
                 </div>
                 <div className="floating-label-group md:col-span-2">
-                  <input type="text" id="cot-dir-factura" name="direccion_factura" value={form.direccion_factura} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 peer bg-white" />
+                  <input type="text" id="cot-dir-factura" name="direccion_factura" value={form.direccion_factura} onChange={handleChange} placeholder=" " className="w-full h-12 px-4 pt-2 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 peer bg-white" />
                   <label htmlFor="cot-dir-factura">Dirección de facturación</label>
                 </div>
               </div>
             )}
 
             <div className="floating-label-group mt-4">
-              <textarea id="cot-notas" name="notas" value={form.notas} onChange={handleChange} rows={3} placeholder=" " className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 resize-none text-gray-900 peer" />
+              <textarea id="cot-notas" name="notas" value={form.notas} onChange={handleChange} rows={3} placeholder=" " className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 resize-none text-gray-900 peer" />
               <label htmlFor="cot-notas">Notas adicionales (despacho, plazos...)</label>
             </div>
 
             {/* Competitor Quote Section */}
             <div className="border-t border-gray-200 pt-6">
               <div className="flex items-start gap-3 mb-4">
-                <div className="bg-orange-50 rounded-lg p-3 flex-1">
+                <div className="bg-marca-50 rounded-lg p-3 flex-1">
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       id="tieneCompetencia"
                       checked={tieneCompetencia}
                       onChange={(e) => setTieneCompetencia(e.target.checked)}
-                      className="w-5 h-5 rounded border-gray-300 text-orange-600 focus:ring-orange-500 shrink-0"
+                      className="w-5 h-5 rounded border-gray-300 text-marca-600 focus:ring-marca-500 shrink-0"
                     />
                     <label htmlFor="tieneCompetencia" className="cursor-pointer">
                       <span className="font-semibold text-gray-900 text-sm block">Tengo una cotización de otro lugar</span>
@@ -557,7 +557,7 @@ export default function CotizarPage() {
                       id="cot-competencia-origen"
                       value={nombreCompetencia}
                       onChange={(e) => setNombreCompetencia(e.target.value)}
-                      className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 text-gray-900 bg-white"
+                      className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 text-gray-900 bg-white"
                     >
                       <option value="">Seleccionar...</option>
                       <option value="Sodimac">Sodimac</option>
@@ -576,7 +576,7 @@ export default function CotizarPage() {
                         type="file"
                         accept=".pdf,.jpg,.jpeg,.png"
                         onChange={(e) => setArchivoCompetencia(e.target.files?.[0] || null)}
-                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 cursor-pointer"
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-marca-50 file:text-marca-700 hover:file:bg-marca-100 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-marca-500 cursor-pointer"
                       />
                       {archivoCompetencia && (
                         <p className="mt-1.5 text-xs text-green-600 flex items-center gap-1">
@@ -598,7 +598,7 @@ export default function CotizarPage() {
                       onChange={(e) => setNotasCompetencia(e.target.value)}
                       rows={2}
                       placeholder="Ej: Necesito mejorar el precio de las tablas de pino y los clavos..."
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-orange-500 resize-none text-gray-900"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-0 focus:border-marca-500 resize-none text-gray-900"
                     />
                   </div>
                 </div>
@@ -622,12 +622,12 @@ export default function CotizarPage() {
                   required
                   checked={aceptaTerminos}
                   onChange={(e) => setAceptaTerminos(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 shrink-0"
+                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-marca-600 focus:ring-marca-500 shrink-0"
                 />
                 <span>
                   He leido y acepto los{" "}
-                  <a href="https://jurmaq.cl/terminos" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline font-medium">Terminos y Condiciones</a>{" "}y la{" "}
-                  <a href="https://jurmaq.cl/privacidad" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline font-medium">Politica de Privacidad</a>, y autorizo el tratamiento de mis datos personales conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>
+                  <a href="https://jurmaq.cl/terminos" target="_blank" rel="noopener noreferrer" className="text-marca-600 hover:underline font-medium">Terminos y Condiciones</a>{" "}y la{" "}
+                  <a href="https://jurmaq.cl/privacidad" target="_blank" rel="noopener noreferrer" className="text-marca-600 hover:underline font-medium">Politica de Privacidad</a>, y autorizo el tratamiento de mis datos personales conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>
                 </span>
               </label>
               <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
@@ -635,14 +635,14 @@ export default function CotizarPage() {
                   type="checkbox"
                   checked={aceptaMarketing}
                   onChange={(e) => setAceptaMarketing(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 shrink-0"
+                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-marca-600 focus:ring-marca-500 shrink-0"
                 />
                 <span>Deseo recibir ofertas, novedades y promociones por correo (opcional).</span>
               </label>
             </div>
 
             <div>
-              <button type="submit" disabled={submitting} className="w-full py-3.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 text-base">
+              <button type="submit" disabled={submitting} className="w-full py-3.5 bg-marca-600 hover:bg-marca-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 text-base">
                 {submitting ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -689,15 +689,15 @@ export default function CotizarPage() {
               </div>
               <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
                 <span>Total (IVA incluido)</span>
-                <span className="text-orange-600">{formatCLP(total)}</span>
+                <span className="text-marca-600">{formatCLP(total)}</span>
               </div>
             </div>
             <p className="text-xs text-gray-500 mt-4">* Los precios son referenciales y pueden variar. Te confirmamos el valor final.</p>
             <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
               Al enviar esta cotización aceptas los terminos del servicio. Consulta nuestras{" "}
-              <a href="https://jurmaq.cl/terminos#garantia" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">politicas de garantia y devolucion</a>.
+              <a href="https://jurmaq.cl/terminos#garantia" target="_blank" rel="noopener noreferrer" className="text-marca-600 hover:underline">politicas de garantia y devolucion</a>.
             </p>
-            <Link href="/carrito" className="block text-center text-sm text-orange-600 font-medium hover:text-orange-700 mt-4 transition-colors">
+            <Link href="/carrito" className="block text-center text-sm text-marca-600 font-medium hover:text-marca-700 mt-4 transition-colors">
               Modificar carrito
             </Link>
           </div>

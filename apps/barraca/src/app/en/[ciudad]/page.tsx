@@ -187,14 +187,14 @@ export default async function BarracaEnCiudadPage({
                 { label: `Despacho a ${c.nombre}` },
               ]}
             />
-            <div className="inline-block px-3 py-1 mb-4 bg-orange-600 text-white text-xs font-bold uppercase tracking-wider rounded">
+            <div className="inline-block px-3 py-1 mb-4 bg-marca-600 text-white text-xs font-bold uppercase tracking-wider rounded">
               ✓ Despacho a {c.nombre} · {DISTANCIAS_BARRACA[c.slug].tiempo}
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
               Barraca de Fierros y Materiales de Construcción en {c.nombre}
             </h1>
             <p className="text-lg text-gray-200 max-w-3xl mb-2">
-              <strong className="text-orange-400">Súbenos tu cotización de Sodimac, Easy o Construmart</strong> y
+              <strong className="text-marca-400">Súbenos tu cotización de Sodimac, Easy o Construmart</strong> y
               en menos de 2 horas te mejoramos el precio. Despacho desde Molina a {c.nombre}{" "}
               en {DISTANCIAS_BARRACA[c.slug].tiempo} ({DISTANCIAS_BARRACA[c.slug].km} km).
             </p>
@@ -202,7 +202,7 @@ export default async function BarracaEnCiudadPage({
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/cotizar"
-                className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg font-semibold transition-colors"
+                className="inline-flex items-center gap-2 bg-marca-600 hover:bg-marca-700 px-6 py-3 rounded-lg font-semibold transition-colors"
               >
                 Súbenos tu cotización
               </Link>
@@ -217,7 +217,7 @@ export default async function BarracaEnCiudadPage({
         </header>
 
         {/* Cómo funciona el price-match */}
-        <section className="py-16 bg-orange-50">
+        <section className="py-16 bg-marca-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-2">
               Te mejoramos el precio en menos de 2 horas
@@ -227,18 +227,18 @@ export default async function BarracaEnCiudadPage({
               con contraoferta JURMAQ por correo.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-xl border border-orange-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">1</div>
+              <div className="bg-white p-6 rounded-xl border border-marca-200">
+                <div className="text-3xl font-bold text-marca-600 mb-2">1</div>
                 <h3 className="font-bold text-navy-950 mb-2">Saca foto/PDF de tu cotización</h3>
                 <p className="text-sm text-gray-700">Cualquier barraca o homecenter — Sodimac, Easy, Construmart, otra ferretería.</p>
               </div>
-              <div className="bg-white p-6 rounded-xl border border-orange-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">2</div>
+              <div className="bg-white p-6 rounded-xl border border-marca-200">
+                <div className="text-3xl font-bold text-marca-600 mb-2">2</div>
                 <h3 className="font-bold text-navy-950 mb-2">Súbela en barraca.jurmaq.cl</h3>
                 <p className="text-sm text-gray-700">En la sección &quot;Sube tu cotización&quot; — toma 30 segundos.</p>
               </div>
-              <div className="bg-white p-6 rounded-xl border border-orange-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">3</div>
+              <div className="bg-white p-6 rounded-xl border border-marca-200">
+                <div className="text-3xl font-bold text-marca-600 mb-2">3</div>
                 <h3 className="font-bold text-navy-950 mb-2">Recibe contraoferta en 2h</h3>
                 <p className="text-sm text-gray-700">Te llega al correo con cuánto ahorras. Si te conviene, aceptas. Si no, no pasa nada.</p>
               </div>
@@ -260,7 +260,7 @@ export default async function BarracaEnCiudadPage({
                 <Link
                   key={cat.id}
                   href={`/categorias/${cat.slug}`}
-                  className="block bg-white border border-gray-200 hover:border-orange-500 rounded-xl p-4 transition-colors text-center"
+                  className="block bg-white border border-gray-200 hover:border-marca-500 rounded-xl p-4 transition-colors text-center"
                 >
                   <h3 className="font-semibold text-navy-950 text-sm">{cat.nombre}</h3>
                 </Link>
@@ -280,13 +280,13 @@ export default async function BarracaEnCiudadPage({
                 <Link
                   key={p.slug}
                   href={`/categorias/${p.categoriaSlug}`}
-                  className="block bg-white border border-gray-200 hover:border-orange-500 rounded-xl p-5 transition-colors"
+                  className="block bg-white border border-gray-200 hover:border-marca-500 rounded-xl p-5 transition-colors"
                 >
                   <h3 className="text-lg font-bold text-navy-950 mb-2">{p.nombre}</h3>
                   <p className="text-sm text-gray-600 mb-3">
                     {p.searchKeywords.slice(0, 3).join(" · ")}
                   </p>
-                  <span className="text-sm text-orange-600 font-semibold">Ver categoría →</span>
+                  <span className="text-sm text-marca-600 font-semibold">Ver categoría →</span>
                 </Link>
               ))}
             </div>
@@ -301,11 +301,11 @@ export default async function BarracaEnCiudadPage({
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">{DISTANCIAS_BARRACA[c.slug].km} km</div>
+                <div className="text-3xl font-bold text-marca-600 mb-2">{DISTANCIAS_BARRACA[c.slug].km} km</div>
                 <p className="text-gray-700">Distancia desde la barraca</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-orange-600 mb-2">{DISTANCIAS_BARRACA[c.slug].tiempo}</div>
+                <div className="text-3xl font-bold text-marca-600 mb-2">{DISTANCIAS_BARRACA[c.slug].tiempo}</div>
                 <p className="text-gray-700">Tiempo de despacho típico</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
@@ -370,7 +370,7 @@ export default async function BarracaEnCiudadPage({
                   <Link
                     key={v.slug}
                     href={`/en/${v.slug}`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:border-orange-500 rounded-full text-sm font-medium text-navy-950 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:border-marca-500 rounded-full text-sm font-medium text-navy-950 transition-colors"
                   >
                     Barraca en {v.nombre}
                     <span className="text-xs text-gray-500">{DISTANCIAS_BARRACA[v.slug].km} km</span>
@@ -393,7 +393,7 @@ export default async function BarracaEnCiudadPage({
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
                 href="/cotizar"
-                className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
+                className="inline-flex items-center gap-2 bg-marca-600 hover:bg-marca-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
               >
                 Sube tu cotización
               </Link>

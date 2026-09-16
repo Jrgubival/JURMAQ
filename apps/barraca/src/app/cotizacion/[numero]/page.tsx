@@ -136,7 +136,7 @@ export default function CotizacionPublicPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-marca-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -150,7 +150,7 @@ export default function CotizacionPublicPage() {
           </svg>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Cotización no encontrada</h1>
           <p className="text-gray-500 mb-6">El enlace puede estar incorrecto o la cotización ya no existe.</p>
-          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-marca-600 hover:bg-marca-700 text-white font-semibold rounded-lg transition-colors">
             Ir al Inicio
           </Link>
         </div>
@@ -177,7 +177,7 @@ export default function CotizacionPublicPage() {
       <div className="bg-[#0c1d3a] text-white py-6">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h1 className="text-2xl font-bold">JURMAQ</h1>
-          <p className="text-orange-500 text-sm font-semibold uppercase tracking-widest mt-1">Barraca</p>
+          <p className="text-marca-500 text-sm font-semibold uppercase tracking-widest mt-1">Barraca</p>
         </div>
       </div>
 
@@ -371,7 +371,7 @@ export default function CotizacionPublicPage() {
                   <tfoot>
                     <tr className="bg-gray-50">
                       <td colSpan={3} className="px-4 py-3 text-right font-semibold text-gray-900">Total</td>
-                      <td className="px-4 py-3 text-right font-bold text-lg text-orange-600">{formatCLP(cotizacion.total)}</td>
+                      <td className="px-4 py-3 text-right font-bold text-lg text-marca-600">{formatCLP(cotizacion.total)}</td>
                     </tr>
                   </tfoot>
                 </table>

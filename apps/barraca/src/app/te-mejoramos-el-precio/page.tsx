@@ -10,8 +10,8 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
  * minimalist-ui, high-end-visual-design, redesign-existing-projects):
  * - Sin font-extrabold hero-metric (impeccable ban: ✗ "$25.000 / Sodimac / 6%")
  * - Sin emojis (✓) — IconCheck SVG primitive
- * - Sin bg-orange-50/bg-gradient-to-br (warm orange wash baneado)
- * - Headlines clamp() + Newsreader italic accents (no text-orange-400 chillón)
+ * - Sin bg-marca-50/bg-gradient-to-br (warm orange wash baneado)
+ * - Headlines clamp() + Newsreader italic accents (no text-marca-400 chillón)
  * - Hairline dividers (border-t / border-l) en vez de cards rounded-xl
  * - py-24 lg:py-32 generous spacing
  * - Single accent color: amber #956400 sparingly

@@ -100,7 +100,7 @@ export default function SearchBar({
           onChange={(e) => setQuery(e.target.value)}
           placeholder="¿Qué necesitas?"
           aria-label="Buscar productos en la barraca"
-          className={`w-full ${sizeClasses[size]} pl-12 pr-24 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-base text-gray-900 placeholder-gray-400 shadow-sm`}
+          className={`w-full ${sizeClasses[size]} pl-12 pr-24 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500 text-base text-gray-900 placeholder-gray-400 shadow-sm`}
         />
         <svg
           className={`absolute left-4 top-1/2 -translate-y-1/2 ${iconSize[size]} text-gray-500`}
@@ -117,13 +117,13 @@ export default function SearchBar({
         </svg>
         <button
           type="submit"
-          className={`absolute right-1.5 top-1/2 -translate-y-1/2 px-4 ${size === "lg" ? "h-10" : "h-8"} bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-lg transition-colors`}
+          className={`absolute right-1.5 top-1/2 -translate-y-1/2 px-4 ${size === "lg" ? "h-10" : "h-8"} bg-marca-600 hover:bg-marca-700 text-white text-sm font-semibold rounded-lg transition-colors`}
         >
           Buscar
         </button>
         {loading && (
           <div className="absolute right-20 top-1/2 -translate-y-1/2">
-            <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-marca-500 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </form>
@@ -137,7 +137,7 @@ export default function SearchBar({
                 setShowDropdown(false);
                 router.push(`/producto/${product.slug}`);
               }}
-              className="w-full px-4 py-3 text-left hover:bg-orange-50 flex items-center justify-between border-b border-gray-100 last:border-0 transition-colors"
+              className="w-full px-4 py-3 text-left hover:bg-marca-50 flex items-center justify-between border-b border-gray-100 last:border-0 transition-colors"
             >
               <span className="text-sm text-gray-900 truncate">
                 {product.nombre}
@@ -148,12 +148,12 @@ export default function SearchBar({
                     <span className="block text-xs text-gray-400 line-through leading-none tabular-nums">
                       {formatCLP(product.precio)}
                     </span>
-                    <span className="block font-semibold text-orange-600 tabular-nums">
+                    <span className="block font-semibold text-marca-600 tabular-nums">
                       {formatCLP(product.precio_original)}
                     </span>
                   </>
                 ) : (
-                  <span className="font-semibold text-orange-600 tabular-nums">
+                  <span className="font-semibold text-marca-600 tabular-nums">
                     {formatCLP(product.precio)}
                   </span>
                 )}
@@ -162,7 +162,7 @@ export default function SearchBar({
           ))}
           <button
             onClick={handleSubmit}
-            className="w-full px-4 py-3 text-sm text-orange-600 font-semibold hover:bg-orange-50 text-center transition-colors border-t border-gray-100"
+            className="w-full px-4 py-3 text-sm text-marca-600 font-semibold hover:bg-marca-50 text-center transition-colors border-t border-gray-100"
           >
             Ver todos los resultados
           </button>

@@ -188,7 +188,7 @@ export default function CuentaPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center">
-        <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-marca-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -197,7 +197,7 @@ export default function CuentaPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8">
-        <Link href="/" className="hover:text-orange-600 transition-colors">
+        <Link href="/" className="hover:text-marca-600 transition-colors">
           Inicio
         </Link>
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,7 +246,7 @@ export default function CuentaPage() {
                 </p>
                 <Link
                   href="/categorias"
-                  className="text-sm font-semibold text-orange-600 hover:text-orange-700"
+                  className="text-sm font-semibold text-marca-600 hover:text-marca-700"
                 >
                   Explorar productos
                 </Link>
@@ -308,7 +308,7 @@ export default function CuentaPage() {
               {!editing && (
                 <button
                   onClick={() => setEditing(true)}
-                  className="text-sm font-medium text-orange-600 hover:text-orange-700"
+                  className="text-sm font-medium text-marca-600 hover:text-marca-700"
                 >
                   Editar
                 </button>
@@ -333,7 +333,7 @@ export default function CuentaPage() {
                     onChange={(e) =>
                       setForm({ ...form, nombre: e.target.value })
                     }
-                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-marca-500"
                   />
                 </div>
                 <div>
@@ -346,7 +346,7 @@ export default function CuentaPage() {
                     onChange={(e) =>
                       setForm({ ...form, telefono: e.target.value })
                     }
-                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-marca-500"
                   />
                 </div>
                 <div>
@@ -359,7 +359,7 @@ export default function CuentaPage() {
                     onChange={(e) =>
                       setForm({ ...form, empresa: e.target.value })
                     }
-                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-marca-500"
                   />
                 </div>
                 <div>
@@ -372,13 +372,13 @@ export default function CuentaPage() {
                     onChange={(e) =>
                       setForm({ ...form, rut: e.target.value })
                     }
-                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-marca-500"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="flex-1 h-10 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-lg transition-colors"
+                    className="flex-1 h-10 bg-marca-600 hover:bg-marca-700 text-white text-sm font-semibold rounded-lg transition-colors"
                   >
                     Guardar
                   </button>

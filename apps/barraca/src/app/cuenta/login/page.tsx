@@ -106,7 +106,7 @@ export default function LoginPage() {
             <span className="text-3xl font-extrabold text-navy-950 tracking-tight">
               JURMAQ
             </span>
-            <span className="text-xl font-semibold text-orange-600 ml-1">
+            <span className="text-xl font-semibold text-marca-600 ml-1">
               Barraca
             </span>
           </Link>
@@ -134,7 +134,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
               placeholder="tu@email.com"
             />
           </div>
@@ -149,7 +149,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full h-12 px-4 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
               placeholder="Tu contraseña"
             />
           </div>
@@ -163,7 +163,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-12 min-h-[48px] bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg text-base transition-colors disabled:opacity-50"
+            className="w-full h-12 min-h-[48px] bg-marca-600 hover:bg-marca-700 text-white font-semibold rounded-lg text-base transition-colors disabled:opacity-50"
           >
             {loading ? "Ingresando..." : "Ingresar a mi cuenta"}
           </button>
@@ -176,7 +176,7 @@ export default function LoginPage() {
           ¿No tienes cuenta?{" "}
           <Link
             href="/cuenta/registro"
-            className="font-semibold text-orange-600 hover:text-orange-700"
+            className="font-semibold text-marca-600 hover:text-marca-700"
           >
             Crear una cuenta
           </Link>

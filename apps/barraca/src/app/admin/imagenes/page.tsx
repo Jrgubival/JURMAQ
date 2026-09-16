@@ -264,7 +264,7 @@ export default function ImagenesBarracaPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-12 h-12 border-4 border-marca-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600 text-lg">Cargando productos...</p>
         </div>
       </div>
@@ -289,7 +289,7 @@ export default function ImagenesBarracaPage() {
               setProductos([]);
               fetchProducts(1);
             }}
-            className="mt-6 px-6 py-3 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors"
+            className="mt-6 px-6 py-3 bg-marca-500 text-white rounded-xl font-semibold hover:bg-marca-600 transition-colors"
           >
             Recargar productos
           </button>
@@ -361,7 +361,7 @@ export default function ImagenesBarracaPage() {
         <div className="mb-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-orange-500 mb-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-marca-500 mb-1">
                 Producto actual
               </p>
               <h2 className="text-xl font-bold text-gray-800 leading-tight">
@@ -440,7 +440,7 @@ export default function ImagenesBarracaPage() {
                 }
               }}
               placeholder="Buscar manualmente..."
-              className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+              className="flex-1 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-marca-400 focus:border-transparent"
             />
             <button
               onClick={() => {
@@ -638,7 +638,7 @@ export default function ImagenesBarracaPage() {
                     <p className="text-xs text-gray-500">
                       {sp.codigo || 'Sin codigo'}
                       {sp.needsImage && (
-                        <span className="ml-2 text-orange-500">
+                        <span className="ml-2 text-marca-500">
                           Sin imagen
                         </span>
                       )}

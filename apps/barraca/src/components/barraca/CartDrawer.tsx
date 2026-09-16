@@ -209,7 +209,7 @@ export default function CartDrawer({
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-3 border-marca-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-12">
@@ -220,7 +220,7 @@ export default function CartDrawer({
               <Link
                 href="/categorias"
                 onClick={onClose}
-                className="inline-block mt-4 text-sm font-semibold text-orange-600 hover:text-orange-700"
+                className="inline-block mt-4 text-sm font-semibold text-marca-600 hover:text-marca-700"
               >
                 Explorar productos
               </Link>
@@ -252,7 +252,7 @@ export default function CartDrawer({
                       {item.precio_tachado && item.precio_tachado > item.precio && (
                         <span className="line-through text-gray-400 mr-1">{formatCLP(item.precio_tachado)}</span>
                       )}
-                      <span className={item.precio_tachado && item.precio_tachado > item.precio ? "text-orange-600 font-semibold" : ""}>{formatCLP(item.precio)}</span> c/u
+                      <span className={item.precio_tachado && item.precio_tachado > item.precio ? "text-marca-600 font-semibold" : ""}>{formatCLP(item.precio)}</span> c/u
                     </p>
                     {/* Inline quantity controls */}
                     <div className="flex items-center justify-between mt-2">
@@ -321,7 +321,7 @@ export default function CartDrawer({
             <Link
               href="/cotizar"
               onClick={onClose}
-              className="block w-full py-3 text-center text-xs font-bold uppercase tracking-wider bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+              className="block w-full py-3 text-center text-xs font-bold uppercase tracking-wider bg-marca-600 text-white rounded-md hover:bg-marca-700 transition-colors"
             >
               Solicitar Cotización
             </Link>

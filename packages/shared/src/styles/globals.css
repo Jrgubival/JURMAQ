@@ -61,6 +61,29 @@
   --color-gold-700: #96700c;
   --color-gold-800: #745708;
   --color-gold-900: #524005;
+
+  /* ===== Rojo de marca JURMAQ Barraca =====
+     Muestreado del logo real (public/icon-512.png): "JURMAQ" en rojo sobre
+     tubos de acero. El letrero físico de Avda. Poniente 2157, Molina, es el
+     mismo rojo sobre blanco.
+
+     El sitio usaba `orange-600` de Tailwind como acento, que no salió de la
+     marca sino del default de "sitio de ferretería". Era el tell de fondo de
+     por qué la web no se parecía al negocio.
+
+     Se nombra `marca` y no `orange` a propósito: una clase que se llama
+     naranja y pinta rojo confunde a quien la lea después. */
+  --color-marca-50: #fef2f3;
+  --color-marca-100: #fde3e5;
+  --color-marca-200: #fbcbd0;
+  --color-marca-300: #f5a2ab;
+  --color-marca-400: #ec6e7e;
+  --color-marca-500: #de3f55;
+  --color-marca-600: #c90319;
+  --color-marca-700: #a80418;
+  --color-marca-800: #8b0817;
+  --color-marca-900: #760c18;
+  --color-marca-950: #410308;
 }
 
 /* ========== ACCESSIBILITY ========== */

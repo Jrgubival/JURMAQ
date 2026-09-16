@@ -20,13 +20,22 @@ import SearchBar from "@/components/barraca/SearchBar";
  */
 const slides = [
   {
-    eyebrow: "BARRACA · CURICÓ · MOLINA",
-    title: "Fierros, herramientas y materiales",
-    titleAccent: "a precio justo",
-    subtitle: "Stock real con despacho propio en Curicó, Molina y toda la Región del Maule.",
+    // La fachada real de Avda. Poniente 2157. Es lo único de esta página que
+    // ningún competidor puede copiar, y estaba tapada al 95% por un degradado
+    // navy parejo (from-navy-950/95 via-/75 to-/55).
+    //
+    // El scrim nuevo es DIRECCIONAL: sólido a la izquierda, donde va el texto,
+    // y casi transparente a la derecha, que es justo donde está el letrero
+    // "JURMAQ · BARRACA DE FIERROS" en la foto. Así el titular se lee y el
+    // local se ve. Un scrim parejo obliga a elegir entre las dos cosas.
+    eyebrow: "BARRACA DE FIERROS · MOLINA",
+    title: "Avda. Poniente 2157",
+    titleAccent: "Molina",
+    subtitle:
+      "Fierro, perfiles, planchas y herramientas con precio en pantalla. Retiro en el local o despacho propio a toda la Región del Maule.",
     cta: { label: "Ver catálogo", href: "/categorias" },
     showSearch: true,
-    bg: "from-navy-950/95 via-navy-950/75 to-navy-900/55",
+    bg: "from-navy-950 from-15% via-navy-950/80 via-55% to-navy-950/15",
     image: "/images/barraca/hero/hero-fachada.webp",
   },
   {
@@ -36,18 +45,24 @@ const slides = [
     subtitle: "Estriados, lisos y trefilados. Todos los diámetros, despacho desde 1 barra.",
     cta: { label: "Ver fierros", href: "/categorias/fierros-construccion" },
     showSearch: false,
-    bg: "from-navy-950/95 via-navy-950/70 to-navy-900/45",
+    bg: "from-navy-950 from-15% via-navy-950/80 via-55% to-navy-950/15",
     image: "/images/barraca/hero/hero-fierros.webp",
   },
   {
-    eyebrow: "OFERTAS DEL MES",
-    title: "Precios especiales",
-    titleAccent: "en productos seleccionados",
-    subtitle: "Stock limitado, despacho mismo día. Revisá antes que se acaben.",
-    cta: { label: "Ver ofertas", href: "/categorias" },
+    // Antes: "Precios especiales en productos seleccionados · Stock limitado,
+    // despacho mismo día. Revisá antes que se acaben" sobre una foto de
+    // terciado, en una barraca de FIERROS. Tres muletillas de urgencia
+    // encadenadas, cero datos, y un voseo que no es de acá.
+    // Ahora: perfiles y ángulos, que es lo que efectivamente se vende, con la
+    // foto real del galpón.
+    eyebrow: "PERFILES Y ESTRUCTURA",
+    title: "Perfiles, tubos",
+    titleAccent: "y ángulos",
+    subtitle: "Cortados a medida en el local. Consulta por largos y espesores disponibles.",
+    cta: { label: "Ver perfiles", href: "/categorias" },
     showSearch: false,
-    bg: "from-navy-950/95 via-navy-950/72 to-navy-900/50",
-    image: "/images/barraca/hero/hero-maderas.webp",
+    bg: "from-navy-950 from-15% via-navy-950/80 via-55% to-navy-950/15",
+    image: "/images/barraca/hero/barraca-galpon.jpg",
   },
 ];
 
@@ -81,14 +96,34 @@ export default function HeroSlider() {
       aria-label="Categorías destacadas"
       aria-roledescription="carrusel"
     >
-      {/* Foto del slide (visible 50%) */}
+      {/* Foto del slide.
+          `transition-[background-image]` NO existe: background-image no es una
+          propiedad animable, así que la foto cambiaba de golpe. El scrim, en
+          cambio, sí tenía `transition-colors duration-1000`. Resultado: durante
+          un segundo entero en cada cambio de slide el titular quedaba sobre la
+          foto nueva con el degradado todavía en transición, y se volvía
+          ilegible. Ambas transiciones fuera: el cruce es instantáneo y el texto
+          se lee siempre. */}
       <div
-        className="absolute inset-0 bg-cover bg-center transition-[background-image] duration-700"
+        className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${slide.image})` }}
         aria-hidden="true"
       />
-      {/* Overlay navy editorial — gradiente que mantiene legibilidad del texto */}
-      <div className={`absolute inset-0 bg-gradient-to-r ${slide.bg} transition-colors duration-1000`} />
+      {/* Scrim direccional: sólido donde va el texto, casi transparente a la
+          derecha, que es donde está el letrero del local en la foto.
+
+          En rgba explícito y no con las clases `from-/via-/to-` de Tailwind:
+          la v4 interpola los degradados en espacio lab, y al hacerlo hacia un
+          color con alfa el resultado sale bastante más claro de lo que sugiere
+          el porcentaje. El titular quedaba lavado sobre la parte brillante de
+          la foto. Con rgba en sRGB el resultado es el que se calcula. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, rgba(8,20,40,0.97) 0%, rgba(8,20,40,0.92) 30%, rgba(8,20,40,0.55) 62%, rgba(8,20,40,0.15) 100%)',
+        }}
+      />
       {/* hairline divider top — Editorial frame */}
       <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
 

@@ -51,7 +51,7 @@ export default async function AdminLoginPage({
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <span className="text-3xl font-extrabold text-navy-950 tracking-tight">
-            JURMAQ<span className="text-xl font-semibold text-orange-600 ml-1 align-baseline">Barraca</span>
+            JURMAQ<span className="text-xl font-semibold text-marca-600 ml-1 align-baseline">Barraca</span>
           </span>
           <p className="text-sm text-gray-500 mt-2">Panel de administración</p>
         </div>

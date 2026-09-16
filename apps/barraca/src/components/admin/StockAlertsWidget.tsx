@@ -102,7 +102,7 @@ export default function StockAlertsWidget({ umbral = 5 }: { umbral?: number }) {
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/admin/productos`}
-                    className="text-sm font-medium text-gray-900 hover:text-orange-600 truncate block"
+                    className="text-sm font-medium text-gray-900 hover:text-marca-600 truncate block"
                   >
                     {p.nombre}
                   </Link>
@@ -122,7 +122,7 @@ export default function StockAlertsWidget({ umbral = 5 }: { umbral?: number }) {
           </ul>
           {data.items.length > 20 && (
             <div className="px-4 py-2 text-xs text-gray-500 text-center border-t border-gray-100">
-              +{data.items.length - 20} más. <Link href="/admin/productos" className="text-orange-600 hover:underline">Ver todos</Link>
+              +{data.items.length - 20} más. <Link href="/admin/productos" className="text-marca-600 hover:underline">Ver todos</Link>
             </div>
           )}
         </div>

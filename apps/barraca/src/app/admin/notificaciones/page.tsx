@@ -104,7 +104,7 @@ export default function NotificacionesPage() {
         {unreadCount > 0 && (
           <button
             onClick={markAllRead}
-            className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg"
+            className="px-3 py-2 bg-marca-600 hover:bg-marca-700 text-white text-sm font-medium rounded-lg"
           >
             Marcar todas leídas
           </button>
@@ -141,7 +141,7 @@ export default function NotificacionesPage() {
             {items.map((n) => {
               const isUnread = !n.read_at;
               return (
-                <li key={n.id} className={isUnread ? 'bg-orange-50/30' : ''}>
+                <li key={n.id} className={isUnread ? 'bg-marca-50/30' : ''}>
                   <div className="px-4 py-4 flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -154,7 +154,7 @@ export default function NotificacionesPage() {
                         </span>
                         <span className="text-xs text-gray-500">{timeAgo(n.created_at)}</span>
                         {isUnread && (
-                          <span className="text-xs text-orange-600 font-semibold">● nuevo</span>
+                          <span className="text-xs text-marca-600 font-semibold">● nuevo</span>
                         )}
                       </div>
                       <p className={`text-sm ${isUnread ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
@@ -167,7 +167,7 @@ export default function NotificacionesPage() {
                         <Link
                           href={n.link}
                           onClick={() => void markRead(n)}
-                          className="text-xs text-orange-600 hover:underline whitespace-nowrap"
+                          className="text-xs text-marca-600 hover:underline whitespace-nowrap"
                         >
                           Ver detalle →
                         </Link>

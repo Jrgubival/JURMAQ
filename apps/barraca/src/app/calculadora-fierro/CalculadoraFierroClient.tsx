@@ -34,7 +34,7 @@ export default function CalculadoraFierroClient({
   return (
     <section className="py-12 bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 sm:p-8">
+        <div className="bg-marca-50 border border-marca-200 rounded-xl p-6 sm:p-8">
           <h2 className="text-xl font-bold text-navy-950 mb-6">Calcula tu pedido</h2>
 
           <div className="space-y-5">
@@ -46,7 +46,7 @@ export default function CalculadoraFierroClient({
                 id="elemento"
                 value={elementoSlug}
                 onChange={(e) => setElementoSlug(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-marca-500 focus:border-transparent"
               >
                 {elementos.map((e) => (
                   <option key={e.slug} value={e.slug}>
@@ -72,7 +72,7 @@ export default function CalculadoraFierroClient({
                 value={areaInput}
                 onChange={(e) => setAreaInput(e.target.value)}
                 placeholder="100"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-base focus:ring-2 focus:ring-marca-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function CalculadoraFierroClient({
                   {Math.round(kgConPerdida).toLocaleString("es-CL")} kg
                 </div>
               </div>
-              <div className="bg-orange-600 rounded-lg p-4 text-center text-white">
+              <div className="bg-marca-600 rounded-lg p-4 text-center text-white">
                 <div className="text-xs uppercase tracking-wider opacity-90 mb-1">
                   Quintales a pedir
                 </div>

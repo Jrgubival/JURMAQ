@@ -70,11 +70,11 @@ export default function GuiasIndexPage() {
                 <li key={g.slug}>
                   <Link
                     href={`/guias/${g.slug}`}
-                    className="block p-6 bg-white border border-gray-200 hover:border-orange-500 rounded-xl transition-colors"
+                    className="block p-6 bg-white border border-gray-200 hover:border-marca-500 rounded-xl transition-colors"
                   >
                     <h2 className="text-lg font-bold text-navy-950 mb-2">{g.titulo}</h2>
                     <p className="text-sm text-gray-600 line-clamp-3">{g.descripcionMeta}</p>
-                    <span className="inline-block mt-3 text-sm font-semibold text-orange-600">
+                    <span className="inline-block mt-3 text-sm font-semibold text-marca-600">
                       Leer guía →
                     </span>
                   </Link>

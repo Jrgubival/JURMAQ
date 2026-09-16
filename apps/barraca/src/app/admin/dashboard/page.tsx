@@ -125,7 +125,7 @@ export default function DashboardBarracaPage() {
             <KpiCard
               label="Ticket promedio (AOV)"
               value={formatCLP(data.kpis.aov)}
-              accent="text-orange-700"
+              accent="text-marca-700"
             />
             <KpiCard
               label="Conversión"
@@ -181,7 +181,7 @@ export default function DashboardBarracaPage() {
               <h2 className="font-semibold text-gray-900">Top 5 cupones usados</h2>
               <Link
                 href="/admin/cupones"
-                className="text-xs text-orange-600 hover:underline"
+                className="text-xs text-marca-600 hover:underline"
               >
                 Gestionar cupones →
               </Link>

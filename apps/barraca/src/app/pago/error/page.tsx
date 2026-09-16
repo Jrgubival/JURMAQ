@@ -31,7 +31,7 @@ function ErrorContent() {
           Hubo un Problema con tu Pago
         </h1>
         {externalReference && (
-          <p className="text-lg font-semibold text-orange-600 mb-4">
+          <p className="text-lg font-semibold text-marca-600 mb-4">
             Cotización #{externalReference}
           </p>
         )}
@@ -43,7 +43,7 @@ function ErrorContent() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-marca-600 hover:bg-marca-700 text-white font-semibold rounded-lg transition-colors"
           >
             Volver al Inicio
           </Link>
@@ -60,14 +60,14 @@ function ErrorContent() {
             Si el problema persiste, contactanos al{" "}
             <a
               href={`tel:${HQ.telefono}`}
-              className="text-orange-600 font-semibold hover:underline"
+              className="text-marca-600 font-semibold hover:underline"
             >
               {HQ.telefonoDisplay}
             </a>{" "}
             o a{" "}
             <a
               href="mailto:contacto@jurmaq.cl"
-              className="text-orange-600 font-semibold hover:underline"
+              className="text-marca-600 font-semibold hover:underline"
             >
               contacto@jurmaq.cl
             </a>
@@ -83,7 +83,7 @@ export default function PagoErrorPage() {
     <Suspense
       fallback={
         <div className="max-w-2xl mx-auto px-4 py-16 flex items-center justify-center">
-          <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-3 border-marca-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

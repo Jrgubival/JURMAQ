@@ -159,7 +159,7 @@ export default function SucursalesPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="rounded-xl border border-gray-300 bg-white overflow-hidden">
             <div className="bg-navy-950 px-6 py-4">
-              <p className="text-[11px] uppercase tracking-widest text-orange-400 font-semibold">
+              <p className="text-[11px] uppercase tracking-widest text-marca-400 font-semibold">
                 Nuestro local
               </p>
               <h2 className="mt-1 text-xl font-bold text-white">{BARRACA.nombre}</h2>
@@ -187,14 +187,14 @@ export default function SucursalesPage() {
                     <dd className="mt-0.5 text-navy-950">
                       <a
                         href={`tel:${BARRACA.telefono}`}
-                        className="font-medium hover:text-orange-600 transition-colors"
+                        className="font-medium hover:text-marca-600 transition-colors"
                       >
                         {BARRACA.telefonoDisplay}
                       </a>
                       <br />
                       <a
                         href="mailto:contacto@jurmaq.cl"
-                        className="hover:text-orange-600 transition-colors"
+                        className="hover:text-marca-600 transition-colors"
                       >
                         contacto@jurmaq.cl
                       </a>

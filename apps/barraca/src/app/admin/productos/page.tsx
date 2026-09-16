@@ -321,8 +321,8 @@ export default function BarracaProductosPage() {
 
       {/* Bulk action bar (Tier 6 F5) — solo visible si hay selección */}
       {selectedIds.size > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 flex flex-col md:flex-row items-start md:items-center gap-3 sticky top-2 z-10 shadow-sm">
-          <p className="text-sm font-semibold text-orange-900">
+        <div className="bg-marca-50 border border-marca-200 rounded-xl p-3 flex flex-col md:flex-row items-start md:items-center gap-3 sticky top-2 z-10 shadow-sm">
+          <p className="text-sm font-semibold text-marca-900">
             {selectedIds.size} producto{selectedIds.size !== 1 ? 's' : ''} seleccionado{selectedIds.size !== 1 ? 's' : ''}
           </p>
           <div className="flex-1 flex flex-wrap items-center gap-2">
@@ -380,13 +380,13 @@ export default function BarracaProductosPage() {
             <button
               onClick={runBulkAction}
               disabled={bulkRunning || !bulkAction}
-              className="px-4 py-1.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg"
+              className="px-4 py-1.5 bg-marca-600 hover:bg-marca-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg"
             >
               {bulkRunning ? 'Aplicando…' : 'Aplicar a seleccionados'}
             </button>
             <button
               onClick={clearSelection}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:bg-orange-100 rounded-lg"
+              className="px-3 py-1.5 text-sm text-gray-600 hover:bg-marca-100 rounded-lg"
             >
               Limpiar selección
             </button>
@@ -437,7 +437,7 @@ export default function BarracaProductosPage() {
                 <tr
                   key={p.id}
                   className={`border-b border-gray-100 transition-colors ${
-                    selectedIds.has(p.id) ? 'bg-orange-50' : 'hover:bg-gray-50'
+                    selectedIds.has(p.id) ? 'bg-marca-50' : 'hover:bg-gray-50'
                   }`}
                 >
                   <td className="px-3 py-3 w-8">

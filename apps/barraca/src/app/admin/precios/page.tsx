@@ -756,11 +756,11 @@ export default function PreciosPage() {
         {/* Filtro tipo */}
         <div className="flex gap-4 mb-4">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="removeFiltro" checked={removeFiltro === 'categoria'} onChange={() => { setRemoveFiltro('categoria'); setOfertasActivas([]); }} className="text-orange-600 focus:ring-orange-500" />
+            <input type="radio" name="removeFiltro" checked={removeFiltro === 'categoria'} onChange={() => { setRemoveFiltro('categoria'); setOfertasActivas([]); }} className="text-marca-600 focus:ring-marca-500" />
             <span className="text-sm font-medium text-gray-700">Por Categoria</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="removeFiltro" checked={removeFiltro === 'codigo'} onChange={() => { setRemoveFiltro('codigo'); setOfertasActivas([]); }} className="text-orange-600 focus:ring-orange-500" />
+            <input type="radio" name="removeFiltro" checked={removeFiltro === 'codigo'} onChange={() => { setRemoveFiltro('codigo'); setOfertasActivas([]); }} className="text-marca-600 focus:ring-marca-500" />
             <span className="text-sm font-medium text-gray-700">Por Codigo (prefijo)</span>
           </label>
         </div>
@@ -798,7 +798,7 @@ export default function PreciosPage() {
         {/* Active offers table */}
         {ofertasActivas.length > 0 && (
           <div className="space-y-4">
-            <div className="bg-orange-50 rounded-xl p-3 text-sm text-orange-800 border border-orange-200">
+            <div className="bg-marca-50 rounded-xl p-3 text-sm text-marca-800 border border-marca-200">
               <p className="font-medium">{ofertasActivas.length} productos actualmente en oferta</p>
             </div>
             <div className="overflow-x-auto">

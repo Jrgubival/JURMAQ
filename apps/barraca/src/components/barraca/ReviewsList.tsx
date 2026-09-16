@@ -129,7 +129,7 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
 
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="mt-4 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-xl"
+          className="mt-4 px-4 py-2 bg-marca-600 hover:bg-marca-700 text-white text-sm font-medium rounded-xl"
         >
           {showForm ? 'Cancelar' : '✍️ Escribir review'}
         </button>
@@ -182,7 +182,7 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
                 <button
                   onClick={() => darLike(r.id)}
                   disabled={liking === r.id}
-                  className="text-gray-500 hover:text-orange-600 disabled:opacity-50"
+                  className="text-gray-500 hover:text-marca-600 disabled:opacity-50"
                 >
                   👍 Me sirvió ({r.utiles_count})
                 </button>

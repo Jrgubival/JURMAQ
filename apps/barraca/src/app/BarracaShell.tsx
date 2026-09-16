@@ -15,10 +15,19 @@ const CartDrawer = dynamic(
   () => import("@/components/barraca/CartDrawer"),
   { ssr: false }
 );
-const NewsletterPopup = dynamic(
-  () => import("@/components/barraca/NewsletterPopup"),
-  { ssr: false }
-);
+// NewsletterPopup retirado del shell.
+//
+// Aparecía en TODAS las páginas públicas ofreciendo "5% OFF en tu primera
+// compra". Es el patrón más reproducido de las plantillas de e-commerce y una
+// de las cosas que hacían que el sitio se leyera como generado.
+//
+// El dato que terminó de decidirlo: hay 18 suscriptores capturados y nunca se
+// les envió una campaña. Interrumpir a cada visitante para alimentar una lista
+// a la que no se le escribe es fricción sin contrapartida.
+//
+// La ruta /api/suscriptores y los 18 correos se conservan intactos. Si en
+// algún momento se van a mandar campañas, el lugar correcto es un campo
+// discreto en el footer, no un modal sobre el catálogo.
 
 interface Categoria {
   id: number;
@@ -74,7 +83,7 @@ function BrandSwitcher() {
                 aria-current={activa ? 'page' : undefined}
                 className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold tracking-wide uppercase border-b-2 transition-colors ${
                   activa
-                    ? 'border-orange-500 text-orange-400'
+                    ? 'border-marca-500 text-marca-400'
                     : 'border-transparent text-white/60 hover:text-white hover:border-white/30'
                 }`}
               >
@@ -99,7 +108,7 @@ function TopBar() {
           <div className="hidden sm:flex items-center gap-4">
             <Link
               href="/te-mejoramos-el-precio"
-              className="inline-flex items-center gap-1.5 font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+              className="inline-flex items-center gap-1.5 font-semibold text-marca-400 hover:text-marca-300 transition-colors"
             >
               <IconCoin className="w-3.5 h-3.5" />
               Te mejoramos el precio en 2h
@@ -127,7 +136,7 @@ function TopBar() {
               +56 9 7667 3577
             </a>
             <span className="text-navy-600 hidden sm:inline">|</span>
-            <a href="mailto:contacto@jurmaq.cl" className="hidden sm:inline hover:text-orange-400 transition-colors">
+            <a href="mailto:contacto@jurmaq.cl" className="hidden sm:inline hover:text-marca-400 transition-colors">
               contacto@jurmaq.cl
             </a>
           </div>
@@ -279,7 +288,7 @@ function Navbar() {
               <span className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
                 JURMAQ
               </span>{" "}
-              <span className="text-lg lg:text-xl font-semibold text-orange-500 ml-1">
+              <span className="text-lg lg:text-xl font-semibold text-marca-500 ml-1">
                 Barraca
               </span>
             </Link>
@@ -322,9 +331,9 @@ function Navbar() {
                         <Link
                           key={cat.id}
                           href={`/categorias/${cat.slug}`}
-                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
+                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 rounded-lg transition-colors"
                         >
-                          <svg className="w-4 h-4 text-orange-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-marca-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CATEGORY_ICON_DEFAULT} />
                           </svg>
                           {cat.nombre}
@@ -334,7 +343,7 @@ function Navbar() {
                     <div className="border-t border-gray-100 mt-4 pt-4">
                       <Link
                         href="/categorias"
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-orange-600 hover:text-orange-700 transition-colors"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors"
                       >
                         Ver todas las categorías
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -362,7 +371,7 @@ function Navbar() {
                   </svg>
                   <span className="hidden xl:inline">{user ? user.nombre : "Mi Cuenta"}</span>
                   {user?.rol === 'admin' && (
-                    <svg className="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 text-marca-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -378,10 +387,10 @@ function Navbar() {
                         <div className="px-4 py-2 border-b border-gray-100 mb-1">
                           <p className="text-sm font-semibold text-gray-900">{user.nombre}</p>
                         </div>
-                        <Link href="/cuenta" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+                        <Link href="/cuenta" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
                           Mi Cuenta
                         </Link>
-                        <Link href="/cuenta" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+                        <Link href="/cuenta" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
                           Mis Cotizaciones
                         </Link>
                         {user?.rol === 'admin' && (
@@ -420,10 +429,10 @@ function Navbar() {
                       </>
                     ) : (
                       <>
-                        <Link href="/cuenta/login" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+                        <Link href="/cuenta/login" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
                           Iniciar sesión
                         </Link>
-                        <Link href="/cuenta/registro" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+                        <Link href="/cuenta/registro" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
                           Crear cuenta
                         </Link>
                       </>
@@ -539,7 +548,7 @@ function Navbar() {
                     <Link
                       href="/cuenta/registro"
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center justify-center min-h-[48px] px-5 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors"
+                      className="flex items-center justify-center min-h-[48px] px-5 py-3 bg-marca-600 hover:bg-marca-700 text-white font-semibold rounded-lg transition-colors"
                     >
                       Crear cuenta
                     </Link>
@@ -587,12 +596,12 @@ function Footer() {
           <div>
             <Link href="/" className="inline-flex items-baseline mb-4">
               <span className="text-2xl font-extrabold text-white tracking-tight">JURMAQ</span>{" "}
-              <span className="text-lg font-semibold text-orange-500 ml-1">Barraca</span>
+              <span className="text-lg font-semibold text-marca-500 ml-1">Barraca</span>
             </Link>
             <p className="text-sm text-gray-300 mb-4 leading-relaxed">
               Barraca de fierros y materiales de construcción en Molina. Despachamos a Curicó, Talca, Linares y toda la Región del Maule.
               Más de 1.600 productos: fierros, perfiles, planchas, tubos, mallas,
-              pinturas y herramientas. <strong className="text-orange-400">Súbenos tu
+              pinturas y herramientas. <strong className="text-marca-400">Súbenos tu
               cotización y en menos de 2 horas te mejoramos el precio</strong> de Sodimac,
               Easy o Construmart.
             </p>
@@ -609,7 +618,7 @@ function Footer() {
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
               </a>
-              <a href="mailto:contacto@jurmaq.cl" className="w-9 h-9 bg-navy-800 hover:bg-orange-600 rounded-lg flex items-center justify-center transition-colors" aria-label="Email">
+              <a href="mailto:contacto@jurmaq.cl" className="w-9 h-9 bg-navy-800 hover:bg-marca-600 rounded-lg flex items-center justify-center transition-colors" aria-label="Email">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
@@ -624,7 +633,7 @@ function Footer() {
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-2.5">
-                <svg className="w-4 h-4 mt-0.5 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 mt-0.5 text-marca-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -633,10 +642,10 @@ function Footer() {
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
-                <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-marca-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <a href="tel:+56976673577" className="text-sm text-gray-500 hover:text-orange-500 transition-colors">
+                <a href="tel:+56976673577" className="text-sm text-gray-500 hover:text-marca-500 transition-colors">
                   +56 9 7667 3577
                 </a>
               </li>
@@ -658,13 +667,13 @@ function Footer() {
             </div>
             <ul className="space-y-2 text-xs text-gray-500">
               <li className="flex items-center gap-2">
-                <svg className="w-3.5 h-3.5 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-marca-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 Despacho a toda la Región del Maule
               </li>
               <li className="flex items-center gap-2">
-                <svg className="w-3.5 h-3.5 text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-marca-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 Retiro en la barraca, Molina
@@ -675,7 +684,7 @@ function Footer() {
                 busca el cliente que quiere retirar o saber si le despachamos. */}
             <Link
               href="/sucursales"
-              className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+              className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-marca-400 hover:text-marca-300 transition-colors"
             >
               Dónde estamos y hasta dónde llegamos
               <IconArrowRight className="w-3 h-3" />
@@ -707,7 +716,7 @@ function Footer() {
                 <Link
                   key={c.slug}
                   href={`/en/${c.slug}`}
-                  className="px-3 py-1.5 text-xs text-gray-300 bg-navy-800 hover:bg-orange-600 hover:text-white rounded transition-colors"
+                  className="px-3 py-1.5 text-xs text-gray-300 bg-navy-800 hover:bg-marca-600 hover:text-white rounded transition-colors"
                 >
                   Barraca en {c.name}
                 </Link>
@@ -717,7 +726,7 @@ function Footer() {
           <div>
             <Link
               href="/te-mejoramos-el-precio"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-lg text-sm font-bold text-white transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-marca-600 hover:bg-marca-700 rounded-lg text-sm font-bold text-white transition-colors"
             >
               <IconCoin className="w-4 h-4" />
               Te mejoramos el precio en 2h
@@ -735,11 +744,11 @@ function Footer() {
               {buildFooterCopyright('barraca')}
             </p>
             <div className="flex items-center gap-3 text-xs text-gray-500">
-              <a href="https://jurmaq.cl/terminos" className="hover:text-orange-500 transition-colors">Terminos y Condiciones</a>
+              <a href="https://jurmaq.cl/terminos" className="hover:text-marca-500 transition-colors">Terminos y Condiciones</a>
               <span className="text-navy-700">|</span>
-              <a href="https://jurmaq.cl/privacidad" className="hover:text-orange-500 transition-colors">Politica de Privacidad</a>
+              <a href="https://jurmaq.cl/privacidad" className="hover:text-marca-500 transition-colors">Politica de Privacidad</a>
               <span className="text-navy-700">|</span>
-              <Link href="/" className="hover:text-orange-500 transition-colors">
+              <Link href="/" className="hover:text-marca-500 transition-colors">
                 Volver a JURMAQ.cl
               </Link>
             </div>
@@ -777,7 +786,6 @@ export default function BarracaShell({
       <main id="main-content" className="flex-1 min-h-screen bg-gray-50">{children}</main>
       <Footer />
       <WhatsAppFloat />
-      <NewsletterPopup />
       <ToastContainer />
     </>
   );

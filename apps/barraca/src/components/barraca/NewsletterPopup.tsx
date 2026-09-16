@@ -120,7 +120,7 @@ export default function NewsletterPopup() {
           </div>
         ) : (
           <>
-            <div className="inline-block px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded mb-1.5">
+            <div className="inline-block px-2 py-0.5 bg-marca-100 text-marca-700 text-xs font-bold rounded mb-1.5">
               5% OFF en tu primera compra
             </div>
             <h3 className="text-sm font-bold text-navy-950 mb-1 pr-6">
@@ -141,12 +141,12 @@ export default function NewsletterPopup() {
                   placeholder="tu@email.com"
                   required
                   aria-label="Email para suscripción a ofertas"
-                  className="flex-1 h-11 min-h-[44px] px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="flex-1 h-11 min-h-[44px] px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
                 />
                 <button
                   type="submit"
                   disabled={loading || !consent}
-                  className="h-11 min-h-[44px] px-5 bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 shrink-0 touch-manipulation"
+                  className="h-11 min-h-[44px] px-5 bg-marca-600 hover:bg-marca-700 active:bg-marca-800 text-white font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 shrink-0 touch-manipulation"
                 >
                   {loading ? "..." : "OK"}
                 </button>
@@ -157,7 +157,7 @@ export default function NewsletterPopup() {
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
                   required
-                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-marca-600 focus:ring-marca-500"
                   aria-label="Acepto recibir promociones por email"
                 />
                 <span>

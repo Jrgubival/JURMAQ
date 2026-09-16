@@ -199,7 +199,7 @@ export default function CuponesAdminPage() {
         <button
           type="submit"
           disabled={creating || !form.codigo || form.valor <= 0}
-          className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-xl disabled:opacity-50"
+          className="px-5 py-2.5 bg-marca-600 hover:bg-marca-700 text-white text-sm font-medium rounded-xl disabled:opacity-50"
         >
           {creating ? 'Creando…' : 'Crear cupón'}
         </button>
@@ -254,7 +254,7 @@ export default function CuponesAdminPage() {
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => toggleActivo(c)}
-                      className="text-xs text-orange-600 hover:underline"
+                      className="text-xs text-marca-600 hover:underline"
                     >
                       {c.activo ? 'Desactivar' : 'Activar'}
                     </button>

@@ -159,7 +159,7 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
                   <li key={r.slug}>
                     <Link
                       href={`/guias/${r.slug}`}
-                      className="text-orange-600 hover:text-orange-700 hover:underline"
+                      className="text-marca-600 hover:text-marca-700 hover:underline"
                     >
                       {r.titulo}
                     </Link>
@@ -171,7 +171,7 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
         )}
 
         {/* CTA al catálogo */}
-        <section className="py-16 bg-orange-50 border-t border-orange-200">
+        <section className="py-16 bg-marca-50 border-t border-marca-200">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-4">
               ¿Necesitas {guia.categoriaNombre.toLowerCase()} para tu obra?
@@ -182,13 +182,13 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
                 href={`/categorias/${guia.categoriaSlugRelacionada}`}
-                className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-lg font-bold text-lg transition-colors"
+                className="inline-flex items-center gap-2 bg-marca-600 hover:bg-marca-700 text-white px-8 py-4 rounded-lg font-bold text-lg transition-colors"
               >
                 Ver catálogo {guia.categoriaNombre}
               </Link>
               <Link
                 href="/cotizar"
-                className="inline-flex items-center gap-2 bg-white border border-gray-300 hover:border-orange-500 text-navy-950 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
+                className="inline-flex items-center gap-2 bg-white border border-gray-300 hover:border-marca-500 text-navy-950 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
               >
                 Súbenos tu cotización
               </Link>
