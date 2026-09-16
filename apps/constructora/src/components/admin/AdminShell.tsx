@@ -172,6 +172,7 @@ const ICONO_DEFAULT = (
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [avanzadoAbierto, setAvanzadoAbierto] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { data: session } = useSession();
@@ -250,7 +251,13 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               // Filtra por la ACCIÓN que exige la API, no solo por el módulo:
               // filtrando por módulo el sidebar mostraba entradas que
               // terminaban en 403 (ej. "Plantillas de contrato" a un operador).
-              const filtered = ADMIN_NAV.filter((it) => can(role, it.module, it.action ?? 'read'));
+              const permitidos = ADMIN_NAV.filter((it) => can(role, it.module, it.action ?? 'read'));
+              // Primer nivel = lo que el conteo de filas en producción justifica.
+              // El resto vive en el desplegable 'Avanzado' (ver la nota de
+              // `avanzado` en shared/admin/nav.ts): sigue accesible por menú,
+              // por Cmd+K y por URL, solo deja de ocupar el sidebar.
+              const filtered = permitidos.filter((it) => !it.avanzado);
+              const avanzados = permitidos.filter((it) => it.avanzado);
               const accentBg = '#e6b422';
               const accentFg = '#0c1d3a';
 
@@ -288,6 +295,48 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   </div>
                 </div>
               ));
+            })()}
+
+            {(() => {
+              const role = (session?.user as { role?: string })?.role;
+              const avanzados = ADMIN_NAV
+                .filter((it) => it.avanzado && can(role, it.module, it.action ?? 'read'));
+              if (avanzados.length === 0) return null;
+              return (
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setAvanzadoAbierto((v) => !v)}
+                    aria-expanded={avanzadoAbierto}
+                    className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-white transition-colors"
+                  >
+                    Avanzado
+                    <span aria-hidden="true" className={`transition-transform ${avanzadoAbierto ? 'rotate-90' : ''}`}>›</span>
+                  </button>
+                  {avanzadoAbierto && (
+                    <div className="mt-1 space-y-0.5">
+                      {avanzados.map((item) => {
+                        const externo = esExterno(item, 'constructora');
+                        const href = adminHref(item, 'constructora', { barraca: barracaUrl || undefined });
+                        const active = !externo && isActive(item.path);
+                        return (
+                          <Link
+                            key={`${item.app}${item.path}`}
+                            href={href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors ${
+                              active ? 'text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'
+                            }`}
+                            style={active ? { backgroundColor: '#e6b422', color: '#0c1d3a' } : {}}
+                          >
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
             })()}
           </nav>
 

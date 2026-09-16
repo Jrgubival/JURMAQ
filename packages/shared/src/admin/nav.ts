@@ -69,6 +69,25 @@ export interface AdminNavItem {
   group: AdminNavGroup;
   /** Palabras extra para el buscador (Cmd+K). */
   keywords?: string[];
+  /**
+   * Fuera del menú principal, dentro del desplegable "Avanzado".
+   *
+   * El panel tenía 28 entradas y el dueño lo resumió así: "tiene muchas
+   * opciones y al final no se usa; lo ideal sería solamente para ver el tema
+   * de los materiales, como un e-commerce normal".
+   *
+   * El criterio para marcar `avanzado` NO fue la opinión sino el conteo de
+   * filas en producción. Lo que quedó visible concentra el uso real:
+   * barraca_productos 2.338, barraca_precio_historial 2.963,
+   * barraca_cotizaciones 12, solicitudes 13, cotizaciones_arriendo 12. Todo
+   * lo demás del panel suma menos de 60 filas entre todas sus tablas.
+   *
+   * IMPORTANTE: `avanzado` es solo visibilidad. La ruta sigue existiendo, se
+   * alcanza por URL y por Cmd+K, y conserva su `requirePermission`. No se
+   * esconde nada que tenga datos de clientes: Solicitudes (13) y Cotizaciones
+   * de arriendo (12) quedan en el primer nivel justamente por eso.
+   */
+  avanzado?: boolean;
 }
 
 export const ADMIN_NAV: AdminNavItem[] = [
@@ -90,37 +109,37 @@ export const ADMIN_NAV: AdminNavItem[] = [
     group: 'Arriendo y obras',
     keywords: ['cotizar', 'arriendo', 'cot-ar'],
   },
-  { label: 'Contratos', path: '/admin/contratos', app: 'constructora', module: 'contratos', group: 'Arriendo y obras', keywords: ['firma'] },
+  { label: 'Contratos', path: '/admin/contratos', app: 'constructora', module: 'contratos', group: 'Arriendo y obras', keywords: ['firma'], avanzado: true },
   { label: 'Solicitudes', path: '/admin/solicitudes', app: 'constructora', module: 'solicitudes', group: 'Arriendo y obras' },
-  { label: 'Maquinarias', path: '/admin/maquinarias', app: 'constructora', module: 'maquinarias', group: 'Arriendo y obras' },
-  { label: 'Rentabilidad', path: '/admin/reportes/rentabilidad', app: 'constructora', module: 'cotizaciones', group: 'Arriendo y obras', keywords: ['reporte', 'margen'] },
-  { label: 'Garantías', path: '/admin/garantias', app: 'constructora', module: 'contratos', group: 'Arriendo y obras', keywords: ['klap', 'deposito'] },
-  { label: 'Clientes', path: '/admin/clientes', app: 'constructora', module: 'clientes', group: 'Arriendo y obras' },
+  { label: 'Maquinarias', path: '/admin/maquinarias', app: 'constructora', module: 'maquinarias', group: 'Arriendo y obras', avanzado: true },
+  { label: 'Rentabilidad', path: '/admin/reportes/rentabilidad', app: 'constructora', module: 'cotizaciones', group: 'Arriendo y obras', keywords: ['reporte', 'margen'], avanzado: true },
+  { label: 'Garantías', path: '/admin/garantias', app: 'constructora', module: 'contratos', group: 'Arriendo y obras', keywords: ['klap', 'deposito'], avanzado: true },
+  { label: 'Clientes', path: '/admin/clientes', app: 'constructora', module: 'clientes', group: 'Arriendo y obras', avanzado: true },
 
   // ── Barraca ───────────────────────────────────────────────────────────────
   { label: 'Cotizaciones barraca', path: '/admin/cotizaciones', app: 'barraca', module: 'barraca_cotizaciones', group: 'Barraca', keywords: ['pedidos', 'ventas'] },
   { label: 'Productos', path: '/admin/productos', app: 'barraca', module: 'barraca_productos', group: 'Barraca', keywords: ['catalogo', 'sku'] },
   { label: 'Categorías', path: '/admin/categorias', app: 'barraca', module: 'barraca_categorias', group: 'Barraca' },
   { label: 'Precios', path: '/admin/precios', app: 'barraca', module: 'barraca_precios', group: 'Barraca', keywords: ['margen', 'costo'] },
-  { label: 'Promociones', path: '/admin/promociones', app: 'barraca', module: 'barraca_promociones', group: 'Barraca', keywords: ['oferta', 'descuento'] },
-  { label: 'Cupones', path: '/admin/cupones', app: 'barraca', module: 'barraca_promociones', group: 'Barraca' },
-  { label: 'Imágenes', path: '/admin/imagenes', app: 'barraca', module: 'barraca_imagenes', group: 'Barraca', keywords: ['fotos'] },
+  { label: 'Promociones', path: '/admin/promociones', app: 'barraca', module: 'barraca_promociones', group: 'Barraca', keywords: ['oferta', 'descuento'], avanzado: true },
+  { label: 'Cupones', path: '/admin/cupones', app: 'barraca', module: 'barraca_promociones', group: 'Barraca', avanzado: true },
+  { label: 'Imágenes', path: '/admin/imagenes', app: 'barraca', module: 'barraca_imagenes', group: 'Barraca', keywords: ['fotos'], avanzado: true },
   { label: 'Importar', path: '/admin/importar', app: 'barraca', module: 'barraca_importar', group: 'Barraca', keywords: ['excel', 'carga masiva', 'inventario'] },
-  { label: 'Reviews', path: '/admin/reviews', app: 'barraca', module: 'barraca_reviews', group: 'Barraca', keywords: ['resenas', 'opiniones'] },
-  { label: 'Suscriptores', path: '/admin/suscriptores', app: 'barraca', module: 'barraca_suscriptores', group: 'Barraca', keywords: ['newsletter', 'correos'] },
+  { label: 'Reviews', path: '/admin/reviews', app: 'barraca', module: 'barraca_reviews', group: 'Barraca', keywords: ['resenas', 'opiniones'], avanzado: true },
+  { label: 'Suscriptores', path: '/admin/suscriptores', app: 'barraca', module: 'barraca_suscriptores', group: 'Barraca', keywords: ['newsletter', 'correos'], avanzado: true },
   { label: 'Clientes barraca', path: '/admin/clientes', app: 'barraca', module: 'barraca_cotizaciones', group: 'Barraca', keywords: ['compradores'] },
 
   // ── Tributario ────────────────────────────────────────────────────────────
-  { label: 'Combustible', path: '/admin/combustible', app: 'constructora', module: 'combustible', group: 'Tributario', keywords: ['iec', 'facturas', 'petroleo'] },
-  { label: 'Tarifas IEC', path: '/admin/combustible/tarifas', app: 'constructora', module: 'combustible', group: 'Tributario' },
-  { label: 'SII / F29', path: '/admin/sii', app: 'constructora', module: 'combustible', group: 'Tributario', keywords: ['iva', 'tributario', 'f29'] },
+  { label: 'Combustible', path: '/admin/combustible', app: 'constructora', module: 'combustible', group: 'Tributario', keywords: ['iec', 'facturas', 'petroleo'], avanzado: true },
+  { label: 'Tarifas IEC', path: '/admin/combustible/tarifas', app: 'constructora', module: 'combustible', group: 'Tributario', avanzado: true },
+  { label: 'SII / F29', path: '/admin/sii', app: 'constructora', module: 'combustible', group: 'Tributario', keywords: ['iva', 'tributario', 'f29'], avanzado: true },
 
   // ── Sistema ───────────────────────────────────────────────────────────────
-  { label: 'Usuarios', path: '/admin/usuarios', app: 'constructora', module: 'usuarios', group: 'Sistema', keywords: ['roles', 'permisos', 'trabajadores'] },
-  { label: 'Plantillas de contrato', path: '/admin/contratos/templates', app: 'constructora', module: 'contratos', action: 'manage_templates', group: 'Sistema' },
-  { label: 'Cola de emails', path: '/admin/email-queue', app: 'constructora', module: 'usuarios', group: 'Sistema', keywords: ['correo', 'envios'] },
-  { label: 'Notificaciones', path: '/admin/notificaciones', app: 'constructora', module: 'dashboard', group: 'Sistema' },
-  { label: 'Diagnóstico OTP', path: '/admin/sistema/otp', app: 'constructora', module: 'usuarios', group: 'Sistema', keywords: ['sms', 'verificacion'] },
+  { label: 'Usuarios', path: '/admin/usuarios', app: 'constructora', module: 'usuarios', group: 'Sistema', keywords: ['roles', 'permisos', 'trabajadores'], avanzado: true },
+  { label: 'Plantillas de contrato', path: '/admin/contratos/templates', app: 'constructora', module: 'contratos', action: 'manage_templates', group: 'Sistema', avanzado: true },
+  { label: 'Cola de emails', path: '/admin/email-queue', app: 'constructora', module: 'usuarios', group: 'Sistema', keywords: ['correo', 'envios'], avanzado: true },
+  { label: 'Notificaciones', path: '/admin/notificaciones', app: 'constructora', module: 'dashboard', group: 'Sistema', avanzado: true },
+  { label: 'Diagnóstico OTP', path: '/admin/sistema/otp', app: 'constructora', module: 'usuarios', group: 'Sistema', keywords: ['sms', 'verificacion'], avanzado: true },
 ];
 
 /**

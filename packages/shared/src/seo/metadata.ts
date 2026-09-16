@@ -75,7 +75,7 @@ const BASE_URLS = {
 
 const DEFAULT_OG_IMAGES = {
   constructora: {
-    url: "/og-image-1200x630.png",
+    url: "/og-image-1200x630.jpg",
     width: 1200,
     height: 630,
     alt: "JURMAQ",
