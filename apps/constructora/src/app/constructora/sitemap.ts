@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { SERVICIOS_OBRAS } from '@/lib/servicios-obras-data';
 import { PROYECTOS } from '@/lib/proyectos-data';
-import { COMUNAS_OBRA, CONSTRUCTORA_URL } from '@/lib/constructora-site';
+import { comunasConPagina, CONSTRUCTORA_URL } from '@/lib/constructora-site';
 
 /**
  * Sitemap de constructora.jurmaq.cl.
@@ -55,7 +55,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.85,
   }));
 
-  const comunas: MetadataRoute.Sitemap = COMUNAS_OBRA.map((c) => ({
+  const comunas: MetadataRoute.Sitemap = comunasConPagina().map((c) => ({
     url: `${base}/obras-civiles-en/${c.slug}`,
     lastModified: new Date(c.actualizado),
     changeFrequency: 'monthly' as const,

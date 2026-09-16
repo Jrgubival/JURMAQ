@@ -29,6 +29,22 @@ const CONSTRUCTORA_PREFIX = '/constructora';
  */
 const CONSTRUCTORA_HOSTS = new Set([CONSTRUCTORA_HOST, 'constructora.localhost']);
 
+/**
+ * Comunas cuya landing `/obras-civiles-en/*` se retiró.
+ *
+ * Tenían 449 caracteres únicos sobre 2.798 —84% plantilla idéntica— porque no
+ * hay obra ejecutada que contar en ellas. Google las reportaba como
+ * "Descubierta: actualmente sin indexar". Se conservan en `areaServed` y en la
+ * lista de cobertura del sitio (el despacho sí es real) pero sin URL propia.
+ *
+ * 301 y no 404: algunas ya estaban en el índice, y el 301 traspasa a
+ * /servicios lo poco que hubieran acumulado. Ver `tienePagina` en
+ * lib/constructora-site.ts.
+ */
+const COMUNAS_SIN_PAGINA = new Set([
+  'molina', 'sagrada-familia', 'rauco', 'talca', 'san-javier', 'constitucion',
+]);
+
 /** Paths que nunca deben re-escribirse al prefijo del subdominio. */
 function isInfraPath(pathname: string): boolean {
   return (
@@ -66,6 +82,12 @@ export default async function middleware(request: NextRequest) {
     if (isInfraPath(pathname) || pathname.startsWith(CONSTRUCTORA_PREFIX)) {
       return NextResponse.next();
     }
+    const comuna = pathname.match(/^\/obras-civiles-en\/([a-z-]+)\/?$/)?.[1];
+    if (comuna && COMUNAS_SIN_PAGINA.has(comuna)) {
+      const destino = new URL('/servicios', request.url);
+      return NextResponse.redirect(destino, { status: 301 });
+    }
+
     const url = request.nextUrl.clone();
     url.pathname = pathname === '/' ? CONSTRUCTORA_PREFIX : `${CONSTRUCTORA_PREFIX}${pathname}`;
     return NextResponse.rewrite(url);

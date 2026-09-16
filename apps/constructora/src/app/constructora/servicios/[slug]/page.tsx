@@ -16,6 +16,7 @@ import {
   CONSTRUCTORA_URL,
   CONSTRUCTORA_INFO,
   COMUNAS_OBRA,
+  comunasConPagina,
 } from '@/lib/constructora-site';
 
 export const dynamicParams = false;
@@ -293,7 +294,7 @@ export default async function ServicioPage({
             {servicio.nombreCorto} por comuna
           </h2>
           <ul className="mt-5 flex flex-wrap gap-2">
-            {COMUNAS_OBRA.map((c) => (
+            {comunasConPagina().map((c) => (
               <li key={c.slug}>
                 <Link
                   href={`/obras-civiles-en/${c.slug}`}

@@ -65,6 +65,28 @@ export interface ComunaObra {
   geo: { lat: number; lng: number };
   /** Última edición real del texto (YYYY-MM-DD). Alimenta el lastmod del sitemap. */
   actualizado: string;
+  /**
+   * Si esta comuna tiene landing propia en `/obras-civiles-en/[slug]`.
+   *
+   * Solo las cuatro donde hay OBRA EJECUTADA que mostrar. Medido sobre el HTML
+   * ya compilado, las diez landings compartían 2.349 caracteres de plantilla
+   * idéntica y aportaban 449 caracteres únicos de media — 84% plantilla. Eso
+   * es una doorway page, y es lo que tenía a Google reportando "Descubierta:
+   * actualmente sin indexar" en 25 de 26 URLs.
+   *
+   * Se podría haber rellenado con texto genérico por comuna, pero inventar
+   * detalles de obra que no existen es exactamente lo contrario de lo que hace
+   * útil a estas páginas. Cuatro páginas con una obra real detrás pesan más
+   * que diez descartadas por el rastreador.
+   *
+   * Las seis restantes siguen en `areaServed` del JSON-LD y en la lista de
+   * cobertura del sitio —el despacho a esas comunas es real—, solo dejan de
+   * tener URL propia. El middleware las redirige 301 a /servicios.
+   *
+   * Para habilitar una nueva: conseguir la obra, documentarla en
+   * `proyectos-data.ts` y recién entonces poner `tienePagina: true`.
+   */
+  tienePagina: boolean;
 }
 
 export const COMUNAS_OBRA: ComunaObra[] = [
@@ -77,7 +99,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'centro industrial y de servicios de la provincia, con plantas de alimentos, packing de fruta, maestranzas y el mayor movimiento de obra civil privada del Maule norte',
     rubros: ['Agroindustria', 'Packing y frigoríficos', 'Maestranzas', 'Bodegas de distribución'],
     geo: { lat: -34.9833, lng: -71.2333 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: true,
   },
   {
     slug: 'teno',
@@ -88,7 +111,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'polo de plantas de alimentos de escala nacional —incluida la planta de Nestlé donde ejecutamos las fundaciones de silos— además de packing y agrícolas de exportación',
     rubros: ['Plantas de alimentos', 'Silos y almacenamiento', 'Packing de exportación'],
     geo: { lat: -34.8703, lng: -71.1636 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: true,
   },
   {
     slug: 'molina',
@@ -99,7 +123,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'zona vitivinícola y agroindustrial, con bodegas de vino, plantas de proceso y donde además está nuestra barraca de fierros',
     rubros: ['Viñas y bodegas', 'Agroindustria', 'Bodegas y galpones'],
     geo: { lat: -35.1147, lng: -71.2839 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: false,
   },
   {
     slug: 'romeral',
@@ -110,7 +135,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'concentración de deshidratado y proceso de fruta —ahí ejecutamos las obras y la cubierta de silos de Surfrut— junto a agrícolas de exportación',
     rubros: ['Deshidratado de fruta', 'Silos y cubiertas', 'Agrícolas de exportación'],
     geo: { lat: -34.9694, lng: -71.1244 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: true,
   },
   {
     slug: 'sagrada-familia',
@@ -121,7 +147,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'comuna agrícola con packing, bodegas de proceso y creciente inversión en infraestructura de riego y almacenamiento',
     rubros: ['Packing', 'Bodegas agrícolas', 'Infraestructura de riego'],
     geo: { lat: -34.9739, lng: -71.3861 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: false,
   },
   {
     slug: 'rauco',
@@ -132,7 +159,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'zona frutícola con packing y bodegas de acopio que requieren obra civil de ampliación y mantención estructural',
     rubros: ['Packing de fruta', 'Bodegas de acopio', 'Obras agrícolas'],
     geo: { lat: -34.9294, lng: -71.4139 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: false,
   },
   {
     slug: 'talca',
@@ -143,7 +171,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'capital regional y mayor concentración industrial del Maule, con plantas de alimentos, papeleras, metalmecánica y obra pública y privada de escala',
     rubros: ['Industria pesada', 'Plantas de alimentos', 'Metalmecánica', 'Obra pública'],
     geo: { lat: -35.4264, lng: -71.6554 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: false,
   },
   {
     slug: 'linares',
@@ -154,7 +183,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'polo azucarero y agroindustrial —donde hacemos la mantención industrial de Iansagro— con plantas de proceso que operan por temporada',
     rubros: ['Agroindustria azucarera', 'Plantas de proceso', 'Mantención industrial'],
     geo: { lat: -35.8464, lng: -71.5931 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: true,
   },
   {
     slug: 'san-javier',
@@ -165,7 +195,8 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'corazón vitivinícola del valle del Maule, con bodegas, salas de guarda y plantas de embotellado que demandan obra civil especializada',
     rubros: ['Viñas y bodegas', 'Embotelladoras', 'Salas de guarda'],
     geo: { lat: -35.5936, lng: -71.7331 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: false,
   },
   {
     slug: 'constitucion',
@@ -176,9 +207,15 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'polo forestal y de celulosa, con instalaciones industriales de gran escala que requieren mantención estructural y obra civil complementaria',
     rubros: ['Forestal y celulosa', 'Mantención industrial', 'Obra civil complementaria'],
     geo: { lat: -35.3332, lng: -72.4167 },
-    actualizado: '2026-08-17',
+    actualizado: '2026-09-16',
+    tienePagina: false,
   },
 ];
+
+/** Comunas con landing propia. Ver la nota de `tienePagina`. */
+export function comunasConPagina(): ComunaObra[] {
+  return COMUNAS_OBRA.filter((c) => c.tienePagina);
+}
 
 export function getComunaBySlug(slug: string): ComunaObra | undefined {
   return COMUNAS_OBRA.find((c) => c.slug === slug);

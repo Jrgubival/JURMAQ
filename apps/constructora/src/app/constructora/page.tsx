@@ -12,6 +12,7 @@ import {
   CONSTRUCTORA_URL,
   CONSTRUCTORA_INFO,
   COMUNAS_OBRA,
+  comunasConPagina,
 } from '@/lib/constructora-site';
 
 const TITLE =
@@ -388,7 +389,7 @@ export default function ConstructoraHome() {
             las obras que hemos ejecutado ahí.
           </p>
           <ul className="mt-9 flex flex-wrap gap-2.5">
-            {COMUNAS_OBRA.map((c) => (
+            {comunasConPagina().map((c) => (
               <li key={c.slug}>
                 <Link
                   href={`/obras-civiles-en/${c.slug}`}

@@ -5,7 +5,7 @@ import { whatsappCtaContacto } from '@jurmaq/shared/whatsapp';
 import { IconWhatsapp } from '@jurmaq/shared/icons';
 import WhatsappLink from '@/components/public/WhatsappLink';
 import { getServiciosOrdenados } from '@/lib/servicios-obras-data';
-import { canonical, CONSTRUCTORA_URL, COMUNAS_OBRA } from '@/lib/constructora-site';
+import { canonical, CONSTRUCTORA_URL, comunasConPagina } from '@/lib/constructora-site';
 
 const TITLE = 'Servicios de Obra Civil e Industrial en Curicó y Maule · JURMAQ';
 const DESCRIPTION =
@@ -129,7 +129,7 @@ export default function ServiciosIndex() {
               Obra civil por comuna
             </h2>
             <ul className="mt-5 flex flex-wrap gap-2">
-              {COMUNAS_OBRA.map((c) => (
+              {comunasConPagina().map((c) => (
                 <li key={c.slug}>
                   <Link
                     href={`/obras-civiles-en/${c.slug}`}

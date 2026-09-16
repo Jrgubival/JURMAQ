@@ -13,12 +13,14 @@ import {
   CONSTRUCTORA_INFO,
   COMUNAS_OBRA,
   getComunaBySlug,
+  comunasConPagina,
 } from '@/lib/constructora-site';
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return COMUNAS_OBRA.map((c) => ({ ciudad: c.slug }));
+  // Solo las comunas con obra ejecutada. Ver `tienePagina` en constructora-site.
+  return comunasConPagina().map((c) => ({ ciudad: c.slug }));
 }
 
 export async function generateMetadata({
@@ -28,7 +30,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { ciudad } = await params;
   const comuna = getComunaBySlug(ciudad);
-  if (!comuna) return {};
+  if (!comuna || !comuna.tienePagina) return {};
 
   const title = `Constructora en ${comuna.nombre} · Obras Civiles e Industriales · JURMAQ`;
   const description = `Constructora de obras civiles e industriales en ${comuna.nombre}, Región del Maule: fundaciones, estructuras metálicas, pavimentos y mantención industrial. ${
@@ -76,7 +78,7 @@ export default async function ObrasEnComunaPage({
 }) {
   const { ciudad } = await params;
   const comuna = getComunaBySlug(ciudad);
-  if (!comuna) notFound();
+  if (!comuna || !comuna.tienePagina) notFound();
 
   const servicios = getServiciosOrdenados();
   // Obras que ejecutamos EN esta comuna. `ubicacion` es texto libre
@@ -84,7 +86,7 @@ export default async function ObrasEnComunaPage({
   const proyectosLocales = PROYECTOS.filter((p) =>
     p.ubicacion.toLowerCase().includes(comuna.nombre.toLowerCase())
   );
-  const otrasComunas = COMUNAS_OBRA.filter((c) => c.slug !== comuna.slug);
+  const otrasComunas = comunasConPagina().filter((c) => c.slug !== comuna.slug);
 
   const tiempoRespuesta =
     comuna.distanciaKm === 0
