@@ -4,6 +4,7 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { whatsappCtaContacto } from '@jurmaq/shared/whatsapp';
 import { IconWhatsapp } from '@jurmaq/shared/icons';
 import WhatsappLink from '@/components/public/WhatsappLink';
+import LogosClientes from '@/components/public/LogosClientes';
 import { getServiciosOrdenados } from '@/lib/servicios-obras-data';
 import { PROYECTOS, getProyectosStats } from '@/lib/proyectos-data';
 import {
@@ -199,23 +200,7 @@ export default function ConstructoraHome() {
       </section>
 
       {/* ── Mandantes ────────────────────────────────────────────────────── */}
-      <section className="bg-white border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-500 font-semibold text-center">
-            Han confiado la obra a JURMAQ
-          </p>
-          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-            {Array.from(new Set(PROYECTOS.map((p) => p.cliente))).map((cliente) => (
-              <li
-                key={cliente}
-                className="text-base sm:text-lg font-semibold text-neutral-400 tracking-tight"
-              >
-                {cliente}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <LogosClientes />
 
       {/* ── Servicios ────────────────────────────────────────────────────── */}
       <section className="bg-[#FBFBFA]">

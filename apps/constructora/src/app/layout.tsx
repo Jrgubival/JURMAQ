@@ -10,7 +10,6 @@ import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
 // confiable). Las rutas privadas (admin, cuenta, login, contrato) quedan sin
 // navbar público, que es justo lo que necesitan.
 import { buildPrerenderRules, CONSTRUCTORA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
-import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
 // Side-effect import: valida env vars al startup. Si falta una required en
 // prod, Zod tira un error explícito en lugar de propagar `undefined`.
 import "@jurmaq/shared/env";
@@ -271,14 +270,18 @@ export default function RootLayout({
             __html: safeJsonLd(buildPrerenderRules(CONSTRUCTORA_PRERENDER_EXCLUDES)),
           }}
         />
-        {/* Organization + LocalBusiness + WebSite JSON-LD — shared helper
-            (mismo schema usado por barraca.jurmaq.cl con brand="barraca"). */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: safeJsonLd(buildJsonLdGraph('constructora')),
-          }}
-        />
+        {/* El grafo JSON-LD de la marca (Organization + LocalBusiness + WebSite)
+            YA NO va acá.
+
+            Este layout es la raíz de las DOS verticales, así que inyectaba en
+            las 26 páginas de constructora.jurmaq.cl un grafo que declara
+            `url: https://jurmaq.cl` y `@id: https://jurmaq.cl/#website`. O sea:
+            cada página del subdominio le decía a Google que pertenece al sitio
+            de arriendo, y además emitía DOS entidades WebSite por página, con
+            la del hub primero.
+
+            Ahora cada vertical emite el suyo: el hub en `(hub)/layout.tsx` y
+            el subdominio en `constructora/page.tsx`, con @id propios. */}
       </head>
       <body className="min-h-full flex flex-col font-[var(--font-sans)] bg-[#FBFBFA] text-[#111111]">
         {/* GA4 — solo carga si NEXT_PUBLIC_GA_MEASUREMENT_ID está en env */}

@@ -4,6 +4,7 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { whatsappCtaContacto } from '@jurmaq/shared/whatsapp';
 import { IconWhatsapp } from '@jurmaq/shared/icons';
 import WhatsappLink from '@/components/public/WhatsappLink';
+import LogosClientes from '@/components/public/LogosClientes';
 import { getProyectosStats, PROYECTOS } from '@/lib/proyectos-data';
 import { getServiciosOrdenados } from '@/lib/servicios-obras-data';
 import {
@@ -214,6 +215,8 @@ export default function NosotrosPage() {
           </div>
         </div>
       </section>
+
+      <LogosClientes titulo="Mandantes que nos han contratado obra" />
 
       {/* Mandantes + datos legales */}
       <section className="bg-white border-t border-neutral-200">

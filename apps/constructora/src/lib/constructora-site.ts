@@ -63,6 +63,8 @@ export interface ComunaObra {
   /** Mandantes/rubros típicos. */
   rubros: string[];
   geo: { lat: number; lng: number };
+  /** Última edición real del texto (YYYY-MM-DD). Alimenta el lastmod del sitemap. */
+  actualizado: string;
 }
 
 export const COMUNAS_OBRA: ComunaObra[] = [
@@ -75,6 +77,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'centro industrial y de servicios de la provincia, con plantas de alimentos, packing de fruta, maestranzas y el mayor movimiento de obra civil privada del Maule norte',
     rubros: ['Agroindustria', 'Packing y frigoríficos', 'Maestranzas', 'Bodegas de distribución'],
     geo: { lat: -34.9833, lng: -71.2333 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'teno',
@@ -85,6 +88,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'polo de plantas de alimentos de escala nacional —incluida la planta de Nestlé donde ejecutamos las fundaciones de silos— además de packing y agrícolas de exportación',
     rubros: ['Plantas de alimentos', 'Silos y almacenamiento', 'Packing de exportación'],
     geo: { lat: -34.8703, lng: -71.1636 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'molina',
@@ -95,6 +99,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'zona vitivinícola y agroindustrial, con bodegas de vino, plantas de proceso y donde además está nuestra barraca de fierros',
     rubros: ['Viñas y bodegas', 'Agroindustria', 'Bodegas y galpones'],
     geo: { lat: -35.1147, lng: -71.2839 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'romeral',
@@ -105,6 +110,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'concentración de deshidratado y proceso de fruta —ahí ejecutamos las obras y la cubierta de silos de Surfrut— junto a agrícolas de exportación',
     rubros: ['Deshidratado de fruta', 'Silos y cubiertas', 'Agrícolas de exportación'],
     geo: { lat: -34.9694, lng: -71.1244 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'sagrada-familia',
@@ -115,6 +121,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'comuna agrícola con packing, bodegas de proceso y creciente inversión en infraestructura de riego y almacenamiento',
     rubros: ['Packing', 'Bodegas agrícolas', 'Infraestructura de riego'],
     geo: { lat: -34.9739, lng: -71.3861 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'rauco',
@@ -125,6 +132,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'zona frutícola con packing y bodegas de acopio que requieren obra civil de ampliación y mantención estructural',
     rubros: ['Packing de fruta', 'Bodegas de acopio', 'Obras agrícolas'],
     geo: { lat: -34.9294, lng: -71.4139 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'talca',
@@ -135,6 +143,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'capital regional y mayor concentración industrial del Maule, con plantas de alimentos, papeleras, metalmecánica y obra pública y privada de escala',
     rubros: ['Industria pesada', 'Plantas de alimentos', 'Metalmecánica', 'Obra pública'],
     geo: { lat: -35.4264, lng: -71.6554 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'linares',
@@ -145,6 +154,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'polo azucarero y agroindustrial —donde hacemos la mantención industrial de Iansagro— con plantas de proceso que operan por temporada',
     rubros: ['Agroindustria azucarera', 'Plantas de proceso', 'Mantención industrial'],
     geo: { lat: -35.8464, lng: -71.5931 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'san-javier',
@@ -155,6 +165,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'corazón vitivinícola del valle del Maule, con bodegas, salas de guarda y plantas de embotellado que demandan obra civil especializada',
     rubros: ['Viñas y bodegas', 'Embotelladoras', 'Salas de guarda'],
     geo: { lat: -35.5936, lng: -71.7331 },
+    actualizado: '2026-08-17',
   },
   {
     slug: 'constitucion',
@@ -165,6 +176,7 @@ export const COMUNAS_OBRA: ComunaObra[] = [
       'polo forestal y de celulosa, con instalaciones industriales de gran escala que requieren mantención estructural y obra civil complementaria',
     rubros: ['Forestal y celulosa', 'Mantención industrial', 'Obra civil complementaria'],
     geo: { lat: -35.3332, lng: -72.4167 },
+    actualizado: '2026-08-17',
   },
 ];
 

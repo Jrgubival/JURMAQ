@@ -15,31 +15,34 @@ import { COMUNAS_OBRA, CONSTRUCTORA_URL } from '@/lib/constructora-site';
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = CONSTRUCTORA_URL;
-  const now = new Date();
+  // Fecha de referencia para las páginas estáticas (índices), que cambian
+  // cuando cambia lo que listan. Servicios, comunas y proyectos traen su
+  // propia fecha real: ver la nota de `actualizado` en servicios-obras-data.
+  const indices = new Date('2026-09-16');
 
   const estaticas: MetadataRoute.Sitemap = [
-    { url: base, lastModified: now, changeFrequency: 'weekly', priority: 1 },
+    { url: base, lastModified: indices, changeFrequency: 'weekly', priority: 1 },
     {
       url: `${base}/servicios`,
-      lastModified: now,
+      lastModified: indices,
       changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
       url: `${base}/proyectos`,
-      lastModified: now,
+      lastModified: indices,
       changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
       url: `${base}/nosotros`,
-      lastModified: now,
+      lastModified: indices,
       changeFrequency: 'yearly',
       priority: 0.7,
     },
     {
       url: `${base}/cotizar-obra`,
-      lastModified: now,
+      lastModified: indices,
       changeFrequency: 'monthly',
       priority: 0.85,
     },
@@ -47,14 +50,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const servicios: MetadataRoute.Sitemap = SERVICIOS_OBRAS.map((s) => ({
     url: `${base}/servicios/${s.slug}`,
-    lastModified: now,
+    lastModified: new Date(s.actualizado),
     changeFrequency: 'monthly' as const,
     priority: 0.85,
   }));
 
   const comunas: MetadataRoute.Sitemap = COMUNAS_OBRA.map((c) => ({
     url: `${base}/obras-civiles-en/${c.slug}`,
-    lastModified: now,
+    lastModified: new Date(c.actualizado),
     changeFrequency: 'monthly' as const,
     // Curicó es la comuna base: es la query con más volumen y la que mejor
     // convierte, así que va con prioridad más alta que el resto.

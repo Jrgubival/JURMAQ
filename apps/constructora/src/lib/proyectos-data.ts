@@ -60,16 +60,19 @@ export interface ProyectoCaseStudy {
 /**
  * Obras reales documentadas.
  *
- * NOTA SOBRE FOTOS: Los paths `/images/proyectos/<slug>/*.jpg` están declarados
- * pero los archivos NO existen aún. Deben subirse manualmente por el cliente
- * (Jorge tiene las fotos reales de obra). Mientras tanto el detail page muestra
- * un placeholder navy con patrón geométrico.
+ * NOTA SOBRE FOTOS: solo `nestle-teno-fundaciones-silos` tiene fotos reales en
+ * `public/images/proyectos/`. A los otros cuatro se les QUITÓ `imagenHero` y
+ * `galeria` porque apuntaban a archivos inexistentes: el hero salía roto y,
+ * peor, `openGraph.images` publicaba un og:image que daba 404 — o sea cada vez
+ * que alguien compartía esa obra por WhatsApp a un mandante, salía sin imagen.
+ * Ambos campos son opcionales y el detail hace fallback a un placeholder navy.
+ * Cuando Jorge suba las fotos reales, volver a declararlos.
  */
 export const PROYECTOS: ProyectoCaseStudy[] = [
   {
     slug: "nestle-teno-fundaciones-silos",
     cliente: "Nestlé Chile",
-    clienteLogo: "/images/clientes/nestle.png",
+    clienteLogo: "/images/clientes/nestle.webp",
     titulo: "Fundaciones y Silos · Nestlé Teno",
     ubicacion: "Planta Nestlé, Teno · Región del Maule",
     ubicacionGeo: { lat: -34.8744, lng: -71.1644 },
@@ -167,12 +170,6 @@ export const PROYECTOS: ProyectoCaseStudy[] = [
       "Cero impacto sobre el ciclo productivo de la viña.",
       "Portería central habilitada para control de acceso 24/7.",
     ],
-    imagenHero: "/images/proyectos/miguel-torres-bodega-cubas/hero.jpg",
-    galeria: [
-      "/images/proyectos/miguel-torres-bodega-cubas/01-fundaciones.jpg",
-      "/images/proyectos/miguel-torres-bodega-cubas/02-traslado.jpg",
-      "/images/proyectos/miguel-torres-bodega-cubas/03-cubas-instaladas.jpg",
-    ],
     fechaPublicacion: "2024-09-15",
     estado: "completado",
   },
@@ -220,12 +217,6 @@ export const PROYECTOS: ProyectoCaseStudy[] = [
       "Cero accidentes graves registrados en obras de mantención.",
       "Tiempos de respuesta ante emergencias <24 horas.",
       "Stock de materiales y maquinaria propia para no depender de terceros.",
-    ],
-    imagenHero: "/images/proyectos/iansagro-mantencion-industrial/hero.jpg",
-    galeria: [
-      "/images/proyectos/iansagro-mantencion-industrial/01-cubierta.jpg",
-      "/images/proyectos/iansagro-mantencion-industrial/02-pavimentos.jpg",
-      "/images/proyectos/iansagro-mantencion-industrial/03-estructura.jpg",
     ],
     fechaPublicacion: "2024-06-01",
     estado: "en_curso",
@@ -275,13 +266,6 @@ export const PROYECTOS: ProyectoCaseStudy[] = [
       "Habilitación previa al inicio de la temporada alta de cosecha.",
       "Capacidad de almacenamiento ampliada significativamente sobre la planta original.",
     ],
-    imagenHero: "/images/proyectos/surfrut-romeral-obras/hero.jpg",
-    galeria: [
-      "/images/proyectos/surfrut-romeral-obras/01-estructura.jpg",
-      "/images/proyectos/surfrut-romeral-obras/02-paneles.jpg",
-      "/images/proyectos/surfrut-romeral-obras/03-pisos.jpg",
-      "/images/proyectos/surfrut-romeral-obras/04-final.jpg",
-    ],
     fechaPublicacion: "2024-11-10",
     estado: "completado",
   },
@@ -328,12 +312,6 @@ export const PROYECTOS: ProyectoCaseStudy[] = [
       "Cero detenciones imprevistas durante la obra.",
       "Entrega dentro de los 4 meses comprometidos.",
     ],
-    imagenHero: "/images/proyectos/cementos-biobio-mantencion/hero.jpg",
-    galeria: [
-      "/images/proyectos/cementos-biobio-mantencion/01-silos.jpg",
-      "/images/proyectos/cementos-biobio-mantencion/02-tolva.jpg",
-      "/images/proyectos/cementos-biobio-mantencion/03-refuerzo.jpg",
-    ],
     fechaPublicacion: "2025-02-20",
     estado: "completado",
   },
@@ -374,8 +352,8 @@ export function getProyectoUrl(slug: string): string {
  */
 export const PROVEEDOR_JSONLD = {
   "@type": "Organization",
-  "@id": "https://jurmaq.cl/#organization",
+  "@id": "https://constructora.jurmaq.cl/#organization",
   name: LEGAL_INFO.nombreComercial,
   legalName: LEGAL_INFO.nombreLegal,
-  url: "https://jurmaq.cl",
+  url: "https://constructora.jurmaq.cl",
 } as const;

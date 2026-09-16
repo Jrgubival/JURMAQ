@@ -48,6 +48,19 @@ export interface ServicioObra {
   keywords: string[];
   /** Orden en el índice. */
   orden: number;
+  /**
+   * Fecha de la última edición real del contenido (YYYY-MM-DD).
+   *
+   * Alimenta el `lastmod` del sitemap. Antes se usaba `new Date()` del
+   * build, así que las 21 URLs salían con el mismo timestamp al
+   * milisegundo y cambiaba entero en cada deploy. Google usa lastmod para
+   * priorizar la cola de rastreo y un lastmod que se mueve siempre lo
+   * descarta — justo lo contrario de lo que necesitamos con 25 páginas en
+   * "Descubierta: actualmente sin indexar".
+   *
+   * SOLO tocar esta fecha cuando cambie el TEXTO del servicio.
+   */
+  actualizado: string;
 }
 
 export const SERVICIOS_OBRAS: ServicioObra[] = [
@@ -124,6 +137,7 @@ export const SERVICIOS_OBRAS: ServicioObra[] = [
       'constructora obra civil agroindustria',
     ],
     orden: 1,
+    actualizado: '2026-08-17',
   },
   {
     slug: 'estructuras-metalicas-y-montaje-industrial',
@@ -192,6 +206,7 @@ export const SERVICIOS_OBRAS: ServicioObra[] = [
       'fabricación estructura metálica agroindustria',
     ],
     orden: 2,
+    actualizado: '2026-08-17',
   },
   {
     slug: 'pavimentos-industriales',
@@ -260,6 +275,7 @@ export const SERVICIOS_OBRAS: ServicioObra[] = [
       'muelle de carga industrial',
     ],
     orden: 3,
+    actualizado: '2026-08-17',
   },
   {
     slug: 'cubiertas-y-revestimientos-industriales',
@@ -328,6 +344,7 @@ export const SERVICIOS_OBRAS: ServicioObra[] = [
       'reparación cubierta planta industrial',
     ],
     orden: 4,
+    actualizado: '2026-08-17',
   },
   {
     slug: 'mantencion-industrial-y-refuerzo-estructural',
@@ -396,6 +413,7 @@ export const SERVICIOS_OBRAS: ServicioObra[] = [
       'obras civiles complementarias industria',
     ],
     orden: 5,
+    actualizado: '2026-08-17',
   },
   {
     slug: 'movimiento-de-tierras-y-preparacion-de-terreno',
@@ -464,6 +482,7 @@ export const SERVICIOS_OBRAS: ServicioObra[] = [
       'compactación certificada Curicó',
     ],
     orden: 6,
+    actualizado: '2026-08-17',
   },
 ];
 

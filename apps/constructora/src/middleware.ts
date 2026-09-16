@@ -119,10 +119,14 @@ export const config = {
     // Edge Request facturable, y con el patrón anterior corría también en las
     // 82 imágenes de /public y en el brochure PDF de 8,5 MB.
     //
-    // OJO: acá NO se excluyen .txt ni .xml. En esta app el middleware es
+    // `manifest.json` va excluido por nombre: como .json NO está en la lista
+    // de extensiones, entraba al middleware, caía en el rewrite por Host y se
+    // pedía /constructora/manifest.json, que no existe → 404 en el subdominio.
+    //
+    // OJO: acá NO se excluyen .txt ni .xml en bloque. En esta app el middleware es
     // justamente quien sirve `constructora.jurmaq.cl/robots.txt` y
     // `/sitemap.xml` (los reescribe a /constructora/*); si los sacara del
     // matcher, el subdominio devolvería el robots del hub o un 404.
-    '/((?!_next/|images/|img/|icons/|pdf/|fonts/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|pdf|woff|woff2|ttf|mp4)$).*)',
+    '/((?!_next/|images/|img/|icons/|pdf/|fonts/|brochure/|manifest\\.json|humans\\.txt|llms\\.txt|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|pdf|woff|woff2|ttf|mp4|webmanifest)$).*)',
   ],
 };
