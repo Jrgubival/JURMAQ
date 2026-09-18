@@ -71,13 +71,23 @@ export function resolvePrice(
   }
 
   // Prioridad 1: Oferta real (admin la setea en DB)
+  //
+  // El par (precio, precio_original) llega en los DOS órdenes posibles según
+  // quién lo haya escrito, y eso es una bomba en el camino del dinero:
+  //   · promotions.ts y este archivo asumen precio_original = el con descuento.
+  //   · bulk-action del admin y el import de Excel escriben lo contrario:
+  //     precio = el con descuento, precio_original = el de lista.
+  // Con la segunda convención se tachaba el precio barato, se destacaba el caro
+  // y el carrito cobraba el caro. En vez de elegir una convención y confiar en
+  // que todos los escritores la respeten, resolvemos por valor: en una oferta
+  // el que se cobra es SIEMPRE el menor de los dos.
   if (producto.en_oferta && producto.precio_original && producto.precio_original > 0) {
-    const pctDesc = producto.precio > producto.precio_original
-      ? Math.round((1 - producto.precio_original / producto.precio) * 100)
-      : null;
+    const venta = Math.min(producto.precio, producto.precio_original);
+    const antes = Math.max(producto.precio, producto.precio_original);
+    const pctDesc = antes > venta ? Math.round((1 - venta / antes) * 100) : null;
     return {
-      precioFinal: producto.precio_original,
-      precioTachado: producto.precio,
+      precioFinal: venta,
+      precioTachado: antes > venta ? antes : null,
       porcentajeDescuento: pctDesc,
       tipo: 'oferta_real',
       label: 'OFERTA',
@@ -124,7 +134,10 @@ export function resolveCartItemPrice(args: {
   const { stored, precio, precio_original, en_oferta, promoDescuento } = args;
   let livePrice: number;
   if (en_oferta && precio_original && precio_original > 0) {
-    livePrice = precio_original;
+    // Mismo criterio que resolvePrice: en oferta se cobra el MENOR de los dos,
+    // porque los escritores de la DB no coinciden en cuál de los dos campos
+    // guarda el precio con descuento.
+    livePrice = Math.min(precio, precio_original);
   } else if (promoDescuento && promoDescuento > 0 && precio > 0) {
     livePrice = Math.round(precio * (1 - promoDescuento / 100));
   } else {
@@ -147,9 +160,9 @@ export function getCartPrice(
   if (precioOverride && precioOverride > 0) {
     return Math.round(precioOverride);
   }
-  // Oferta real
+  // Oferta real: el menor de los dos (ver la nota en resolvePrice).
   if (producto.en_oferta && producto.precio_original && producto.precio_original > 0) {
-    return producto.precio_original;
+    return Math.min(producto.precio, producto.precio_original);
   }
   // Precio normal
   return producto.precio;

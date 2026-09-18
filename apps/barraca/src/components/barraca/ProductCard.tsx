@@ -8,6 +8,7 @@ import { titleCase } from "@jurmaq/shared/format";
 import { formatCLP } from "@jurmaq/shared/format";
 import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
 import StarRating from "./StarRating";
+import { nombreMarca } from "@/lib/marcas";
 
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
@@ -89,6 +90,7 @@ export default function ProductCard({
   rating,
   rating_count,
 }: ProductCardProps) {
+  const marca = nombreMarca(nombre);
   const resolvedImage = getProductImage(imagen, categoriaSlug);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -201,11 +203,21 @@ export default function ProductCard({
 
       <div className="p-4 flex flex-col flex-grow">
         <Link href={`/producto/${slug}`} className="block flex-grow min-h-0">
+          {/* Marca arriba del nombre, como en la etiqueta de repisa: es lo
+              primero que busca quien ya sabe qué marca quiere. Sólo aparece
+              cuando el producto realmente tiene una — el 78% del catálogo es
+              fierro y fijación sin marca, y rotularlo "Genérico" lo haría ver
+              peor de lo que es. Ver src/lib/marcas.ts. */}
+          {marca && (
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-marca-700 mb-0.5">
+              {marca}
+            </p>
+          )}
           <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-marca-600 transition-colors leading-tight">
             {titleCase(nombre)}
           </h3>
           {medida && (
-            <p className="text-xs text-gray-500 mb-1">{medida}</p>
+            <p className="text-xs text-gray-500 mb-1 tabular-nums">{medida}</p>
           )}
           {/* Tier 4 D2: rating si hay reviews aprobadas */}
           {rating && rating > 0 && (
@@ -236,12 +248,16 @@ export default function ProductCard({
                 Consultar precio
               </p>
             ) : en_oferta && precio_original && precio_original > 0 ? (
+              /* El menor de los dos es el que se cobra: los escritores de la DB
+                 no coinciden en cuál campo guarda el precio con descuento, así
+                 que decidir por valor es lo único que no se puede invertir.
+                 Mismo criterio que resolvePrice/getCartPrice en lib/pricing.ts. */
               <div>
                 <p className="text-xs text-gray-500 line-through leading-none tabular-nums">
-                  {formatCLP(precio)}{unitLabel}
+                  {formatCLP(Math.max(precio, precio_original))}{unitLabel}
                 </p>
                 <p className="text-xl font-extrabold text-marca-600 leading-tight tabular-nums">
-                  {formatCLP(precio_original)}
+                  {formatCLP(Math.min(precio, precio_original))}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
                 <p className="text-[10px] text-gray-500 tracking-wide uppercase">IVA incl.</p>

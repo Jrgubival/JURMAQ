@@ -6,6 +6,7 @@ import type { Database } from "@jurmaq/shared/db-types";
 import ProductCard from "@/components/barraca/ProductCard";
 import HeroSlider from "@/components/barraca/HeroSlider";
 import MobileHero from "@/components/barraca/MobileHero";
+import MarcasCarrusel from "@/components/barraca/MarcasCarrusel";
 import MobileTrustStrip from "@/components/barraca/MobileTrustStrip";
 import PromotedProductCard from "@/components/barraca/PromotedProductCard";
 import CountdownTimer from "@/components/barraca/CountdownTimer";
@@ -198,21 +199,26 @@ export default async function BarracaHomePage() {
     .eq('activa', true)
     .is('padre_id', null);
 
+  // Conteo por categoría, contado en el servidor.
+  //
+  // Traer las filas y contarlas en JS chocaba con el tope de 1.000 de PostgREST
+  // (hay 1.978 productos activos). Acá el daño era doble: además de mostrar un
+  // número falso, la portada ORDENA por este conteo para elegir qué 6
+  // categorías destacar — con el conteo truncado elegía las 6 equivocadas.
   const allCatIds = (rawCategorias || []).map((c) => c.id);
-  let productCounts: Record<number, number> = {};
+  const productCounts: Record<number, number> = {};
   if (allCatIds.length > 0) {
-    const { data: countData } = await supabasePublic
-      .from('barraca_productos')
-      .select('categoria_id')
-      .eq('activo', true)
-      .in('categoria_id', allCatIds);
-    if (countData) {
-      for (const row of countData) {
-        if (row.categoria_id != null) {
-          productCounts[row.categoria_id] = (productCounts[row.categoria_id] || 0) + 1;
-        }
-      }
-    }
+    const counts = await Promise.all(
+      allCatIds.map(async (id: number) => {
+        const { count } = await supabasePublic
+          .from('barraca_productos')
+          .select('id', { count: 'exact', head: true })
+          .eq('activo', true)
+          .eq('categoria_id', id);
+        return [id, count || 0] as const;
+      }),
+    );
+    for (const [id, n] of counts) productCounts[id] = n;
   }
   // Sort by product count descending (most popular first), take top 6
   const categorias: Categoria[] = (rawCategorias || [])
@@ -559,29 +565,24 @@ export default async function BarracaHomePage() {
               de acero y materiales de Chile
             </h2>
           </div>
-          <ul className="flex flex-wrap items-center justify-center gap-x-8 sm:gap-x-10 gap-y-3 max-w-4xl mx-auto">
-            {[
-              "CAP Acero",
-              "Cintac",
-              "Inchalam",
-              "Ternium",
-              "Volcan",
-              "Prodac",
-              "Polpaico",
-              "Melón",
-              "CBB Cementos",
-              "Sherwin Williams",
-            ].map((nombre, i, arr) => (
-              <li key={nombre} className="flex items-center gap-x-8 sm:gap-x-10">
-                <span className="text-base sm:text-lg text-[#111111] tracking-tight" style={{ fontWeight: 500 }}>
-                  {nombre}
-                </span>
-                {i < arr.length - 1 && (
-                  <span className="hidden sm:inline text-[#EAEAEA] text-base" aria-hidden="true">·</span>
-                )}
-              </li>
-            ))}
-          </ul>
+          {/* Carrusel continuo. Cinco de las diez marcas tienen su logo
+              oficial; las otras cinco se dibujan con su nombre porque el logo
+              que publican es blanco para fondo oscuro y acá el fondo es claro.
+              Mezclar logo y nombre se lee mejor que un logo invisible. */}
+          <MarcasCarrusel
+            marcas={[
+              { nombre: "CAP Acero" },
+              { nombre: "Cintac", logo: "/images/barraca/marcas/cintac.jpg" },
+              { nombre: "Inchalam" },
+              { nombre: "Ternium" },
+              { nombre: "Volcán", logo: "/images/barraca/marcas/volcan.svg" },
+              { nombre: "Prodac" },
+              { nombre: "Polpaico", logo: "/images/barraca/marcas/polpaico.png" },
+              { nombre: "Melón", logo: "/images/barraca/marcas/melon.png" },
+              { nombre: "CBB Cementos", logo: "/images/barraca/marcas/cbb.png" },
+              { nombre: "Sherwin Williams" },
+            ]}
+          />
         </div>
       </section>
 

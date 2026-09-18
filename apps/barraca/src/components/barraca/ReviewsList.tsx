@@ -152,7 +152,11 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
         {loading ? (
           <div className="text-sm text-gray-500 text-center py-8">Cargando reviews…</div>
         ) : items.length === 0 ? (
-          <div className="text-sm text-gray-500 text-center py-8">Aún sin reviews aprobadas.</div>
+          /* Sin reseñas el resumen de arriba ya lo dijo ("Aún no hay reseñas
+             para este producto"). Repetirlo acá mostraba el mismo vacío dos
+             veces en las 1.977 fichas, y encima hablaba de "reviews aprobadas",
+             que es vocabulario del panel de moderación, no del comprador. */
+          null
         ) : (
           items.map((r) => (
             <article key={r.id} className="bg-white border border-gray-200 rounded-xl p-4">

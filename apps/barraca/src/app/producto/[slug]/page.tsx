@@ -13,6 +13,7 @@ import { getActiveCategoryDiscountMap, getDailyPromotions, applyDailyPromosToPro
 import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
+import { describir, especificaciones } from '@/lib/ficha';
 
 // ISR: la ficha de producto es pública (precio/stock).
 //
@@ -164,7 +165,7 @@ export default async function ProductoPage({
 
   const { data: producto } = await supabasePublic
     .from('barraca_productos')
-    .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, categoria_id, imagen, producto_padre_id, medida')
+    .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, categoria_id, imagen, producto_padre_id, medida, descripcion')
     .eq('slug', slug)
     .eq('activo', true)
     .single();
@@ -505,32 +506,43 @@ export default async function ProductoPage({
             {/* Share buttons */}
             <ShareButtons nombre={producto.nombre} slug={producto.slug} />
 
-            {/* Specifications — editorial definition list */}
+            {/* Descripción — ver src/lib/ficha.ts. Se arma con lo que el
+                catálogo sabe (tipo, medida, terminación, marca, forma de venta)
+                y el contexto escrito a mano de su categoría. Si alguien escribe
+                una descripción en el panel, esa manda. */}
+            <div className="mt-10 pt-8 border-t border-[#EAEAEA]">
+              <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
+                Descripción
+              </p>
+              <p className="text-[15px] leading-relaxed text-[#37352F]">
+                {describir({
+                  nombre: producto.nombre,
+                  medida: producto.medida,
+                  unidad: producto.unidad,
+                  descripcion: producto.descripcion,
+                  categoria_nombre: categoria?.nombre ?? null,
+                })}
+              </p>
+            </div>
+
+            {/* Especificaciones — sólo las filas con valor real.
+                Antes repetía "Categoría", que ya aparece en la miga de pan y en
+                el encabezado, y mostraba "UN" como si fuera un dato técnico. */}
             <div className="mt-10 pt-8 border-t border-[#EAEAEA]">
               <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-4">Especificaciones</p>
               <dl className="divide-y divide-[#EAEAEA]">
-                <div className="grid grid-cols-[120px_1fr] gap-4 py-3 text-sm">
-                  <dt className="text-[#787774]">Código</dt>
-                  <dd className="text-[#111111] font-medium">{producto.codigo}</dd>
-                </div>
-                {producto.unidad && (
-                  <div className="grid grid-cols-[120px_1fr] gap-4 py-3 text-sm">
-                    <dt className="text-[#787774]">Unidad</dt>
-                    <dd className="text-[#111111] font-medium">{producto.unidad}</dd>
+                {especificaciones({
+                  nombre: producto.nombre,
+                  medida: producto.medida,
+                  unidad: producto.unidad,
+                  codigo: producto.codigo,
+                  categoria_nombre: categoria?.nombre ?? null,
+                }).map((fila) => (
+                  <div key={fila.etiqueta} className="grid grid-cols-[150px_1fr] gap-4 py-3 text-sm">
+                    <dt className="text-[#787774]">{fila.etiqueta}</dt>
+                    <dd className="text-[#111111] font-medium">{fila.valor}</dd>
                   </div>
-                )}
-                {producto.medida && (
-                  <div className="grid grid-cols-[120px_1fr] gap-4 py-3 text-sm">
-                    <dt className="text-[#787774]">Medida</dt>
-                    <dd className="text-[#111111] font-medium">{producto.medida}</dd>
-                  </div>
-                )}
-                {categoria && (
-                  <div className="grid grid-cols-[120px_1fr] gap-4 py-3 text-sm">
-                    <dt className="text-[#787774]">Categoría</dt>
-                    <dd className="text-[#111111] font-medium">{categoria.nombre}</dd>
-                  </div>
-                )}
+                ))}
               </dl>
             </div>
           </div>

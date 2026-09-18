@@ -3,3 +3,44 @@
 
 /* Overrides específicos de barraca. Vacío por ahora — agregar aquí
    cualquier utility o token que aplique solo a esta app. */
+
+/* ---------------------------------------------------------------------------
+   Carrusel de marcas (MarcasCarrusel.tsx)
+
+   La animación vive acá y no en un <style jsx> del componente porque
+   styled-jsx reescribe el nombre de los @keyframes al alcance del componente,
+   y el `animation-name` quedaba apuntando a un keyframe que no existía: la
+   pista se renderizaba completa pero inmóvil.
+
+   La pista lleva las marcas dos veces y se desplaza exactamente -50%, que es
+   el largo de la primera copia: al reiniciar, el cuadro es idéntico y el corte
+   no se ve.
+--------------------------------------------------------------------------- */
+@keyframes marcas-desplazar {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+.marcas-pista {
+  animation-name: marcas-desplazar;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Se detiene cuando alguien quiere mirar un logo, con mouse o con teclado. */
+.marcas-carrusel:hover .marcas-pista,
+.marcas-carrusel:focus-within .marcas-pista {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marcas-pista {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+    row-gap: 1.5rem;
+  }
+  /* Sin desplazamiento la segunda copia mostraría cada marca dos veces. */
+  .marcas-pista li[aria-hidden='true'] { display: none; }
+}

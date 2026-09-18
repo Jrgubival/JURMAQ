@@ -20,13 +20,32 @@ type ProductoAplanado = Omit<BarracaProductoRow, 'costo'> & {
  * Sinónimos y abreviaciones comunes en ferretería/construcción chilena.
  */
 const SYNONYMS: Record<string, string[]> = {
+  // --- Abreviaturas del catálogo -------------------------------------------
+  // El maestro de productos viene abreviado desde el sistema de la barraca
+  // ("Tub Rect Neg 40 x 20"), pero nadie busca así: se escribe "tubo
+  // rectangular negro". Sin estos pares, 122 tubos, 50 rectangulares y 40
+  // cuadrados son invisibles para quien los busca por su nombre completo.
+  'tubo': ['tubo', 'tub', 'tuberia', 'cano'],
+  'tuberia': ['tubo', 'tub', 'tuberia', 'cano'],
+  'cano': ['tubo', 'tub', 'tuberia', 'cano'],
+  'tornillo': ['tornillo', 'torn', 'torn.'],
+  'negro': ['negro', 'neg', 'neg.'],
+  'cuadrado': ['cuadrado', 'cuad', 'cuad.'],
+  'rectangular': ['rectangular', 'rect', 'rect.'],
+  'redondo': ['redondo', 'red', 'red.'],
+  'unidad': ['unidad', 'und', 'un', 'und.'],
+  'mecanico': ['mecanico', 'mec', 'mec.'],
+  'tarugo': ['tarugo', 'tar', 'tar.'],
+  'perfil': ['perfil', 'perf', 'perf.'],
+  'autoperforante': ['autoperforante', 'aut.perfil', 'aut', 'autoperf'],
+  'zincado': ['zincado', 'zinc', 'zn'],
+  'eslabon': ['eslabon', 'eslb', 'eslb.'],
+  'estructural': ['estructural', 'estr', 'estruct'],
+
+  // --- Sinónimos del rubro --------------------------------------------------
   'fierro': ['fierro', 'fe', 'fe.', 'hierro'],
   'hierro': ['fierro', 'fe', 'fe.', 'hierro'],
   'fe': ['fierro', 'fe', 'fe.'],
-  'tornillo': ['tornillo', 'torn', 'torn.'],
-  'tubo': ['tubo', 'tuberia', 'cano'],
-  'tuberia': ['tubo', 'tuberia', 'cano'],
-  'cano': ['tubo', 'tuberia', 'cano'],
   'pintura': ['pintura', 'esmalte', 'latex'],
   'llave': ['llave', 'grifo', 'griferia'],
   'ampolleta': ['ampolleta', 'led', 'foco'],
@@ -42,6 +61,11 @@ const SYNONYMS: Record<string, string[]> = {
   'soldadura': ['soldadura', 'sold'],
   'cerradura': ['cerradura', 'cerrad'],
   'sanitario': ['sanitario', 'sanit', 'sanitar'],
+  'volcanita': ['volcanita', 'yeso carton', 'yeso-carton'],
+  'terciado': ['terciado', 'contrachapado'],
+  'teflon': ['teflon', 'cinta teflon'],
+  'pulgada': ['pulgada', '"'],
+  'pulgadas': ['pulgada', '"'],
 };
 
 function expandWord(word: string): string[] {
@@ -51,6 +75,15 @@ function expandWord(word: string): string[] {
   const variants = [lower];
   if (lower.endsWith('.')) variants.push(lower.slice(0, -1));
   else variants.push(lower + '.');
+
+  // Medidas: el catálogo escribe "8 MM" y la gente teclea "8mm" (y viceversa).
+  // Sin esta variante, buscar "fierro 8mm" no encuentra "Fierro Estriado A63
+  // 8 MM x 6.0 M", porque el ilike `%8mm%` no cruza el espacio.
+  const medida = lower.match(/^(\d+[.,]?\d*)\s*(mm|cm|mts?|kg|lts?|gr?)$/);
+  if (medida) {
+    variants.push(`${medida[1]} ${medida[2]}`);
+    variants.push(`${medida[1]}${medida[2]}`);
+  }
   return variants;
 }
 
@@ -84,10 +117,15 @@ export async function searchProducts(q: string, limit: number = 48) {
     .order('nombre', { ascending: true })
     .limit(limit);
 
-  // Only stop at Strategy 1 if there are enough results (>= 5)
-  // Otherwise continue to synonym expansion for better coverage
-  if (exactResults && exactResults.length >= 5) {
-    return applyDailyPromosToProducts(flattenProducts(exactResults));
+  // Cortar acá sólo si ninguna palabra tiene expansión pendiente.
+  //
+  // Antes bastaba con 5 coincidencias literales para devolver y salir, y eso
+  // enterraba los productos que el catálogo abrevia: buscar "tubo" encontraba
+  // 5 "Abrazadera de Fijacion Tubo" y retornaba, sin llegar nunca a expandir
+  // tubo -> "tub" y por lo tanto sin mostrar ninguno de los 122 tubos.
+  const tieneExpansion = words.some((w) => SYNONYMS[w] !== undefined);
+  if (exactResults && exactResults.length >= 5 && !tieneExpansion) {
+    return applyDailyPromosToProducts(rankResults(flattenProducts(exactResults), q, words));
   }
   const partialResults = exactResults || [];
 
@@ -115,7 +153,7 @@ export async function searchProducts(q: string, limit: number = 48) {
       .limit(limit);
 
     if (data && data.length > 0) {
-      return applyDailyPromosToProducts(mergeResults(partialResults, data, limit));
+      return applyDailyPromosToProducts(rankResults(mergeResults(partialResults, data, limit), q, words));
     }
   }
 
@@ -131,7 +169,90 @@ export async function searchProducts(q: string, limit: number = 48) {
     .order('nombre', { ascending: true })
     .limit(limit);
 
-  return applyDailyPromosToProducts(mergeResults(partialResults, data || [], limit));
+  return applyDailyPromosToProducts(rankResults(mergeResults(partialResults, data || [], limit), q, words));
+}
+
+/** Reordena por relevancia; empates conservan el orden que traía la consulta. */
+function rankResults(items: ProductoAplanado[], rawQuery: string, words: string[]): ProductoAplanado[] {
+  const variantes = words.map((w) => expandWord(w));
+  return items
+    .map((p, i) => ({ p, i, s: scoreProduct(p, rawQuery, words, variantes) }))
+    .sort((a, b) => (b.s - a.s) || (a.i - b.i))
+    .map((x) => x.p);
+}
+
+
+/**
+ * Puntúa qué tan bien un producto responde a lo buscado.
+ *
+ * Antes los resultados salían ordenados por `destacado` y luego alfabéticamente,
+ * así que buscar "cemento" devolvía primero "Broca Cemento 12 MM" y recién
+ * después "Cemento Polpaico 25kg": la B va antes que la C. El orden alfabético
+ * no es un orden de relevancia, es el azar del abecedario.
+ */
+function esc(t: string): string {
+  return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** "8mm" y "8 MM" son la misma medida; el catálogo usa las dos formas. */
+function patronMedida(m: string): string {
+  return esc(m.trim()).replace(/\\ /g, '\\s*').replace(/\s+/g, '\\s*');
+}
+
+/**
+ * Puntúa qué tan bien un producto responde a lo buscado.
+ *
+ * Dos cosas que el orden anterior no podía expresar:
+ *  - Relevancia: ordenaba por `destacado` y luego alfabéticamente, así que
+ *    "cemento" devolvía "Broca Cemento" antes que "Cemento Polpaico" — la B
+ *    va antes que la C. El abecedario no es un criterio de relevancia.
+ *  - Abreviaturas: el maestro dice "Tub Cuad Neg" y la gente escribe "tubo
+ *    cuadrado". Sin puntuar las variantes expandidas, los 122 tubos quedaban
+ *    siempre debajo de cualquier "Abrazadera de Fijacion Tubo" que sí trae la
+ *    palabra completa.
+ */
+function scoreProduct(
+  p: ProductoAplanado,
+  rawQuery: string,
+  words: string[],
+  variantesPorPalabra: string[][],
+): number {
+  const nombre = p.nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const q = rawQuery.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  let score = 0;
+
+  if (nombre === q) score += 1000;
+  if (nombre.startsWith(q)) score += 400;
+  else if (nombre.includes(q)) score += 120;
+
+  // Cada palabra buscada: vale por sí misma o por cualquiera de sus variantes
+  // (sinónimo o abreviatura del catálogo). La palabra literal vale más que la
+  // abreviatura, pero la abreviatura vale mucho más que nada.
+  words.forEach((w, i) => {
+    if (!w) return;
+    const variantes = variantesPorPalabra[i] || [w];
+    let mejor = 0;
+    for (const v of variantes) {
+      if (!v) continue;
+      const literal = v === w;
+      if (new RegExp(`^${esc(v)}`, 'i').test(nombre)) mejor = Math.max(mejor, literal ? 70 : 55);
+      else if (new RegExp(`\\b${esc(v)}`, 'i').test(nombre)) mejor = Math.max(mejor, literal ? 40 : 32);
+      else if (nombre.includes(v)) mejor = Math.max(mejor, 5);
+    }
+    score += mejor;
+  });
+
+  // Medidas: "8mm" debe premiar a "8 MM" y NO a "18mm".
+  const medidas = q.match(/\d+[.,]?\d*\s*(mm|cm|mts?|kg|lts?|gr?|")/gi) || [];
+  for (const m of medidas) {
+    if (new RegExp(`(^|[^\\d.,])${patronMedida(m)}\\b`, 'i').test(nombre)) score += 200;
+  }
+
+  if (p.destacado) score += 25;
+  if ((p.stock ?? 0) > 0) score += 40;
+  if (p.en_oferta) score += 15;
+
+  return score;
 }
 
 /** Merge results from multiple strategies, removing duplicates by ID */

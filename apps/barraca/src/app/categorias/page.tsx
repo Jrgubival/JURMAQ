@@ -97,20 +97,28 @@ export default async function CategoriasPage() {
     .eq('activa', true)
     .order('orden');
 
-  // Get product counts
+  // Conteo por categoría.
+  //
+  // Antes esto traía TODAS las filas de productos activos y las contaba en JS.
+  // PostgREST corta la respuesta en 1.000 filas y hay 1.978 activos, así que
+  // los 18 contadores sumaban exactamente 1.000: Fijaciones decía 146 cuando
+  // tiene 529, Techumbre decía 6 cuando tiene 24. Un `count: 'exact'` con
+  // `head: true` cuenta en el servidor y no trae filas, así que no hay tope
+  // que truncar. Mismo patrón que ya usa /api/categorias.
   const catIds = (allCats || []).map((c: BarracaCategoriaRow) => c.id);
-  let productCounts: Record<number, number> = {};
+  const productCounts: Record<number, number> = {};
   if (catIds.length > 0) {
-    const { data: countData } = await supabasePublic
-      .from('barraca_productos')
-      .select('categoria_id')
-      .eq('activo', true)
-      .in('categoria_id', catIds);
-    if (countData) {
-      for (const row of countData) {
-        productCounts[row.categoria_id] = (productCounts[row.categoria_id] || 0) + 1;
-      }
-    }
+    const counts = await Promise.all(
+      catIds.map(async (id: number) => {
+        const { count } = await supabasePublic
+          .from('barraca_productos')
+          .select('id', { count: 'exact', head: true })
+          .eq('activo', true)
+          .eq('categoria_id', id);
+        return [id, count || 0] as const;
+      }),
+    );
+    for (const [id, n] of counts) productCounts[id] = n;
   }
 
   const padres: Categoria[] = (allCats || [])
