@@ -470,9 +470,13 @@ function Navbar() {
           {/* Fila de categorías, bajo el buscador. La tienen Sodimac, Easy,
               Construmart y Prodalam. Siete que caben a 1280px sin scroll: un
               overflow-x-auto se corría con un gesto de trackpad y quedaba
-              desplazado, que fue como lo vio el dueño. */}
-          {categorias.length > 0 && (
-            <nav aria-label="Categorías principales" className="hidden lg:block border-t border-gray-100">
+              desplazado, que fue como lo vio el dueño.
+
+              La fila se dibuja SIEMPRE (con su alto de 40px) aunque las
+              categorías todavía no hayan llegado del fetch: antes se montaba
+              recién con los datos y el banner saltaba 40px hacia abajo en cada
+              carga. */}
+          <nav aria-label="Categorías principales" className="hidden lg:block border-t border-gray-100">
               <ul className="flex items-center h-10 overflow-hidden">
                 {[...categorias]
                   .sort((a, b) => (b.producto_count ?? 0) - (a.producto_count ?? 0))
@@ -493,8 +497,7 @@ function Navbar() {
                   </Link>
                 </li>
               </ul>
-            </nav>
-          )}
+          </nav>
           {/* Mobile Search */}
           <div className="lg:hidden pb-3">
             <SearchBar size="md" />
