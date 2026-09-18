@@ -15,6 +15,7 @@ import { titleCase } from "@jurmaq/shared/format";
 import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
 import type { ProductoPromocionado } from "@/lib/promotions";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
+import { familiaDe } from '@/lib/variantes';
 
 type BarracaCategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
@@ -247,27 +248,56 @@ export default async function BarracaHomePage() {
     precioMinimo('Tub %'),
   ]);
 
+  // Filas de la portada: UNA variante por familia y sin repetir entre filas.
+  // El 47% del catálogo son variantes de medida; ordenando por nombre o por
+  // id salían cinco "Angulo Doblado Negro" seguidos y ocho "Zincalum"
+  // seguidos, y la portada parecía tener cuatro productos. Se traen más de la
+  // cuenta y se filtra por familia (src/lib/variantes.ts).
+  const SELECT_TARJETA = 'id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id';
+  const POR_FILA = 10;
+  function unaPorFamilia<T extends { id: number; nombre: string }>(lista: T[], n: number, excluir: Set<string>): T[] {
+    const out: T[] = [];
+    if (n <= 0) return out; // con n=0 el bucle devolvía 1: la fila salía con 11
+    for (const p of lista) {
+      const fam = familiaDe(p.nombre) || p.nombre.toLowerCase();
+      if (excluir.has(fam)) continue;
+      excluir.add(fam);
+      out.push(p);
+      if (out.length >= n) break;
+    }
+    return out;
+  }
   const { data: destacadosRaw } = await supabasePublic
     .from('barraca_productos')
-    .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
+    .select(SELECT_TARJETA)
     .eq('activo', true)
-    .gte('stock', 0)
+    .gt('stock', 0)
     .eq('destacado', true)
-    .order('nombre')
-    .limit(8);
-
+    .order('stock', { ascending: false })
+    .limit(60);
+  const { data: masStockRaw } = await supabasePublic
+    .from('barraca_productos')
+    .select(SELECT_TARJETA)
+    .eq('activo', true)
+    .gt('stock', 0)
+    .not('imagen', 'is', null)
+    .order('stock', { ascending: false })
+    .limit(80);
   const { data: nuevosRaw } = await supabasePublic
     .from('barraca_productos')
-    .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
+    .select(SELECT_TARJETA)
     .eq('activo', true)
-    .gte('stock', 0)
+    .gt('stock', 0)
+    .not('imagen', 'is', null)
     .order('id', { ascending: false })
-    .limit(8);
-
-  // Apply daily-category promos to both lists so the homepage cards match
-  // the price the customer sees on the product detail page.
-  const destacados = await applyDailyPromosToProducts(destacadosRaw || []);
-  const nuevos = await applyDailyPromosToProducts(nuevosRaw || []);
+    .limit(80);
+  const familiasUsadas = new Set<string>();
+  // "Los más vendidos": los marcados como destacados y, si no alcanzan, los
+  // de más stock (lo que más se repone es lo que más sale).
+  const destacadosBase = unaPorFamilia(destacadosRaw || [], POR_FILA, familiasUsadas);
+  const relleno = unaPorFamilia(masStockRaw || [], POR_FILA - destacadosBase.length, familiasUsadas);
+  const destacados = await applyDailyPromosToProducts([...destacadosBase, ...relleno]);
+  const nuevos = await applyDailyPromosToProducts(unaPorFamilia(nuevosRaw || [], POR_FILA, familiasUsadas));
 
   // Build category ID -> slug lookup for product images
   const allProductCatIds = [
@@ -341,7 +371,7 @@ export default async function BarracaHomePage() {
               { t: 'Te mejoramos el precio en 2 h', d: 'Sube tu cotización de la competencia', href: '/te-mejoramos-el-precio', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
               { t: 'Despacho a todo el Maule', d: 'Curicó, Talca, Linares, Molina y más', href: '/sucursales', icon: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0' },
               { t: 'Retiro en Molina', d: 'Avda. Poniente 2157 · Lun-Sáb', href: '/sucursales', icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z' },
-              { t: 'Paga como prefieras', d: 'MercadoPago o transferencia', href: '/carrito', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
+              { t: 'Cotiza en línea, sin registro', d: 'Respondemos en horario de local', href: '/cotizar', icon: 'M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z' },
             ].map((it) => (
               <li key={it.t}>
                 <Link href={it.href} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors">
@@ -550,27 +580,18 @@ export default async function BarracaHomePage() {
       {/* Marcas */}
       <section className="bg-gray-50 border-t border-b border-gray-200 py-14 lg:py-20 content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
-              Marcas que trabajamos
-            </p>
-            <h2
-              className="text-[#111111] tracking-tight"
-              style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
-            >
-              Marcas que trabajamos
-            </h2>
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-extrabold text-navy-950">Marcas que trabajamos</h2>
           </div>
           {/* Carrusel continuo de los fabricantes con los que trabaja la barraca.
-              Ocho de nueve llevan su logo oficial. CAP queda con su nombre: los
-              únicos archivos que publica son blancos, pensados para fondo oscuro,
-              y sobre el fondo claro de esta sección serían un hueco. Prodac salió
-              de la lista a pedido del dueño. */}
+              Los nueve llevan su logo oficial; CAP e Inchalam vienen de los
+              archivos que mandó el dueño (azul sobre transparente, recortados a
+              120 px de alto). Prodac salió de la lista a pedido del dueño. */}
           <MarcasCarrusel
             marcas={[
-              { nombre: "CAP Acero" },
+              { nombre: "CAP Acero", logo: "/images/barraca/marcas/cap.png" },
               { nombre: "Cintac", logo: "/images/barraca/marcas/cintac.jpg" },
-              { nombre: "Inchalam", logo: "/images/barraca/marcas/inchalam.svg" },
+              { nombre: "Inchalam", logo: "/images/barraca/marcas/inchalam.png" },
               { nombre: "Ternium", logo: "/images/barraca/marcas/ternium.svg" },
               { nombre: "Volcán", logo: "/images/barraca/marcas/volcan.svg" },
               { nombre: "Polpaico", logo: "/images/barraca/marcas/polpaico.png" },

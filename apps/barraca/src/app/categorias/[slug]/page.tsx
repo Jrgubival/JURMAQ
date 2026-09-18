@@ -3,6 +3,7 @@ import Link from "next/link";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
 import ProductCard from "@/components/barraca/ProductCard";
+import OrdenarSelect from "@/components/barraca/OrdenarSelect";
 import { applyDailyPromosToProducts } from "@/lib/promotions";
 import type { Database } from "@jurmaq/shared/db-types";
 import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs";
@@ -517,10 +518,7 @@ export default async function CategoriaPage({
                 <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
                   Categoría
                 </p>
-                <h1
-                  className="text-[#111111] leading-[1.1] mb-2"
-                  style={{ fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
-                >
+                <h1 className="text-2xl lg:text-3xl font-extrabold text-navy-950 leading-tight mb-1">
                   {categoria.nombre}
                 </h1>
                 <p className="text-sm text-[#787774]">
@@ -528,42 +526,8 @@ export default async function CategoriaPage({
                   producto{total !== 1 ? "s" : ""} en stock
                 </p>
               </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <label className="text-sm text-gray-500 whitespace-nowrap shrink-0">Ordenar:</label>
-                <div className="relative w-full sm:w-auto">
-                  {(() => {
-                    const buildSortUrl = (sort: string) => {
-                      const parts = [`/categorias/${slug}?sort=${sort}`];
-                      if (sp.min) parts.push(`min=${sp.min}`);
-                      if (sp.max) parts.push(`max=${sp.max}`);
-                      if (sp.stock) parts.push(`stock=${sp.stock}`);
-                      return parts.join('&');
-                    };
-                    const sortOptions = [
-                      { value: 'nombre', label: 'Nombre (A-Z)' },
-                      { value: 'precio_asc', label: 'Precio: menor a mayor' },
-                      { value: 'precio_desc', label: 'Precio: mayor a menor' },
-                      { value: 'stock_desc', label: 'Mayor disponibilidad' },
-                    ];
-                    return (
-                      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5">
-                        {sortOptions.map((opt) => (
-                          <Link
-                            key={opt.value}
-                            href={buildSortUrl(opt.value)}
-                            className={`px-3 min-h-[40px] py-2 text-xs font-medium rounded-lg transition-colors text-center flex items-center justify-center ${
-                              sortBy === opt.value
-                                ? 'bg-marca-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-marca-50 hover:text-marca-600 active:bg-marca-100'
-                            }`}
-                          >
-                            {opt.label}
-                          </Link>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
+              <div className="shrink-0">
+                <OrdenarSelect actual={sortBy} slug={slug} extra={{ min: sp.min, max: sp.max, stock: sp.stock }} />
               </div>
             </div>
           </div>

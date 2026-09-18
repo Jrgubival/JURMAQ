@@ -32,9 +32,13 @@ const categoryImages: Record<string, string> = {
 };
 
 function getProductImage(imagen: string | null, categoriaSlug?: string): string | null {
-  if (!imagen) {
-    return categoriaSlug ? (categoryImages[categoriaSlug] || null) : null;
-  }
+  // Sin foto propia NO se muestra la foto de la categoría. Un "Chaleco
+  // Geólogo" sin imagen salía con el buzo blanco de Seguridad Industrial, y
+  // el comprador entendía que estaba comprando un buzo. La placa de medida
+  // (bloque oscuro con nombre y medida) es honesta: dice lo que hay y no
+  // finge una foto. El fallback de categoría queda sólo para cuando la foto
+  // propia FALLA al cargar (onError), que es otro caso.
+  if (!imagen) return null;
   if (imagen.startsWith('/images/barraca/categorias/')) {
     return imagen;
   }

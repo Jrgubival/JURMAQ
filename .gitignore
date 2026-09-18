@@ -65,3 +65,7 @@ _tmp_docs_maquinaria/
 # Python: caché de los scripts operativos (sync de precios, auditorías)
 __pycache__/
 *.pyc
+
+# node_modules real (fuera del alcance de iCloud Drive); node_modules es un enlace a esta carpeta
+node_modules.nosync
+node_modules

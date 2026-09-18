@@ -292,19 +292,8 @@ function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Search - bigger and more prominent */}
-            <div className="hidden lg:block flex-1 max-w-3xl mx-6">
-              <SearchBar size="lg" />
-            </div>
-
             {/* Desktop Nav */}
             <nav role="navigation" aria-label="Navegación barraca" className="hidden lg:flex items-center gap-1">
-              <Link
-                href="/"
-                className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Inicio
-              </Link>
 
               {/* Categorias Mega Menu */}
               <div
@@ -324,17 +313,14 @@ function Navbar() {
                   </svg>
                 </button>
                 {catOpen && categorias.length > 0 && (
-                  <div className="absolute top-full left-0 mt-1 w-[calc(100vw-2rem)] max-w-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 p-6 z-50 mega-menu">
-                    <div className="grid grid-cols-3 gap-x-6 gap-y-1">
+                  <div className="absolute top-full left-0 mt-2 w-[780px] bg-white rounded-lg shadow-[0_12px_40px_-12px_rgba(0,0,0,0.25)] border border-gray-200 p-5 z-50">
+                    <div className="grid grid-cols-3 gap-x-4 gap-y-0">
                       {categorias.map((cat) => (
                         <Link
                           key={cat.id}
                           href={`/categorias/${cat.slug}`}
-                          className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 rounded-lg transition-colors"
+                          className="block px-3 py-2 text-[15px] text-gray-800 hover:bg-gray-50 hover:text-marca-600 rounded-md transition-colors duration-150"
                         >
-                          <svg className="w-4 h-4 text-marca-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CATEGORY_ICON_DEFAULT} />
-                          </svg>
                           {cat.nombre}
                         </Link>
                       ))}
@@ -354,6 +340,11 @@ function Navbar() {
                 )}
               </div>
             </nav>
+
+            {/* Desktop Search - bigger and more prominent */}
+            <div className="hidden lg:block flex-1 max-w-3xl mx-6">
+              <SearchBar size="lg" />
+            </div>
 
             {/* Right Actions */}
             <div className="flex items-center gap-2">
@@ -477,35 +468,27 @@ function Navbar() {
           </div>
 
           {/* Fila de categorías, bajo el buscador. La tienen Sodimac, Easy,
-              Construmart y Prodalam: es el camino más corto de la portada a
-              un listado, y hace que el sitio se lea como tienda desde el
-              primer píxel. Desktop; en móvil el menú ya las lista. */}
+              Construmart y Prodalam. Siete que caben a 1280px sin scroll: un
+              overflow-x-auto se corría con un gesto de trackpad y quedaba
+              desplazado, que fue como lo vio el dueño. */}
           {categorias.length > 0 && (
-            <nav aria-label="Categorías principales" className="hidden lg:block -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 border-t border-gray-100">
-              <ul className="flex items-center gap-1 h-10 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <li className="shrink-0">
-                  <Link href="/te-mejoramos-el-precio" className="inline-flex items-center h-10 px-3 text-[13px] font-bold text-marca-600 hover:text-marca-700 transition-colors">
-                    Te mejoramos el precio
-                  </Link>
-                </li>
-                {/* Las grandes primero: Fijaciones (529) antes que Techumbre
-                    (24). El orden alfabético de la API ponía Áridos y Aditivos
-                    en los primeros puestos de la fila. */}
+            <nav aria-label="Categorías principales" className="hidden lg:block border-t border-gray-100">
+              <ul className="flex items-center h-10 overflow-hidden">
                 {[...categorias]
                   .sort((a, b) => (b.producto_count ?? 0) - (a.producto_count ?? 0))
-                  .slice(0, 10)
+                  .slice(0, 7)
                   .map((cat) => (
                   <li key={cat.id} className="shrink-0">
                     <Link
                       href={`/categorias/${cat.slug}`}
-                      className="inline-flex items-center h-10 px-3 text-[13px] font-medium text-gray-700 hover:text-navy-950 border-b-2 border-transparent hover:border-marca-600 transition-colors"
+                      className="inline-flex items-center h-10 px-3 text-[13px] font-medium text-gray-700 hover:text-navy-950 border-b-2 border-transparent hover:border-marca-600 transition-colors duration-150"
                     >
                       {cat.nombre}
                     </Link>
                   </li>
                 ))}
-                <li className="shrink-0 ml-auto">
-                  <Link href="/categorias" className="inline-flex items-center h-10 px-3 text-[13px] font-semibold text-navy-950 hover:text-marca-600 transition-colors">
+                <li className="shrink-0">
+                  <Link href="/categorias" className="inline-flex items-center h-10 px-3 text-[13px] font-semibold text-marca-600 hover:text-marca-700 transition-colors duration-150">
                     Todas las categorías →
                   </Link>
                 </li>
@@ -522,13 +505,6 @@ function Navbar() {
         {mobileOpen && (
           <div role="dialog" aria-label="Menú de navegación móvil" className="lg:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-8rem)] overflow-y-auto">
             <div className="px-4 py-4 space-y-1">
-              <Link
-                href="/"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Inicio
-              </Link>
               <Link
                 href="/categorias"
                 onClick={() => setMobileOpen(false)}
@@ -694,11 +670,9 @@ function Footer() {
           {/* Payments & Shipping */}
           <div>
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Pago y despacho
+              Despacho
             </h3>
             <div className="flex flex-wrap gap-2 mb-5">
-              <span className="px-3 py-1.5 bg-navy-800 rounded text-xs font-medium text-gray-300">MercadoPago</span>
-              <span className="px-3 py-1.5 bg-navy-800 rounded text-xs font-medium text-gray-300">Transferencia</span>
             </div>
             <ul className="space-y-2 text-xs text-gray-500">
               <li className="flex items-center gap-2">

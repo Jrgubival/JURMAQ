@@ -117,36 +117,34 @@ export default function CookieBanner({
   };
 
   return (
+    /* Barra delgada al pie, a todo el ancho, como la usan Sodimac y Easy.
+       Antes era una tarjeta blanca de 420px flotando abajo a la izquierda que
+       tapaba las primeras tarjetas de producto; el dueño la vio y la rechazó.
+       Una barra oscura de una línea no tapa contenido y se cierra de un toque. */
     <div
       role="region"
       aria-label="Aviso de cookies"
-      className="fixed bottom-4 inset-x-4 lg:inset-x-auto lg:right-6 lg:bottom-6 lg:max-w-md z-[60]"
+      className="fixed bottom-0 inset-x-0 z-[60] bg-navy-950 text-white border-t border-white/10"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="bg-white border border-[#EAEAEA] rounded-2xl shadow-[0_8px_32px_-12px_rgba(0,0,0,0.18)] p-5">
-        <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-2">
-          Privacidad
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+        <p className="text-[13px] leading-snug text-white/85 sm:flex-1">
+          Usamos cookies para medir qué {productLabel} se buscan y mejorar el sitio. Sin datos personales identificables.
         </p>
-        <h2 className="text-base font-medium text-[#111111] mb-2 tracking-[-0.005em]">
-          Usamos cookies para mejorar tu experiencia.
-        </h2>
-        <p className="text-sm text-[#5A5A57] leading-relaxed mb-4">
-          Analytics y marketing nos ayudan a entender qué {productLabel} buscás
-          y a mostrarte ofertas relevantes. Sin datos personales identificables.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={accept}
-            className={`inline-flex items-center gap-2 px-4 py-2 ${acceptButtonClassName} text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors`}
-          >
-            Aceptar todo
-          </button>
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={reject}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-[#EAEAEA] text-[#111111] text-sm font-medium tracking-[0.02em] rounded-lg hover:bg-[#FBFBFA] transition-colors"
+            className="h-9 px-3.5 text-[13px] font-medium text-white/85 hover:text-white border border-white/25 hover:border-white/50 rounded-md transition-colors duration-150"
           >
             Solo esencial
+          </button>
+          <button
+            type="button"
+            onClick={accept}
+            className={`h-9 px-4 text-[13px] font-semibold text-white rounded-md transition-colors duration-150 ${acceptButtonClassName}`}
+          >
+            Aceptar
           </button>
         </div>
       </div>
