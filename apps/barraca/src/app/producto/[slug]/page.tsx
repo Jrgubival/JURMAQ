@@ -182,15 +182,22 @@ export default async function ProductoPage({
     if (cat) categoria = cat as CategoriaRow;
   }
 
+  // Hermanas de familia: la misma pieza en otra medida.
+  //
+  // El ancla de cada familia es la variante de menor id y tiene
+  // producto_padre_id en NULL; las demás apuntan a ella. Por eso hay que
+  // traer AMBAS cosas: las que apuntan al ancla y el ancla misma. La consulta
+  // anterior sólo pedía `.eq('producto_padre_id', parentId)`, así que desde
+  // una variante hija nunca aparecía el ancla, y estando parada en el ancla
+  // no aparecía ninguna — con la columna vacía, el bloque no se dibujó nunca.
   let variantes: VarianteRow[] = [];
-  const parentId = producto.producto_padre_id || producto.id;
+  const anclaId = producto.producto_padre_id || producto.id;
   const { data: varData } = await supabasePublic
     .from('barraca_productos')
     .select('id, nombre, slug, precio, stock, medida')
-    .eq('producto_padre_id', parentId)
     .eq('activo', true)
-    .order('medida')
-    .order('nombre');
+    .or(`producto_padre_id.eq.${anclaId},id.eq.${anclaId}`)
+    .order('id');
   variantes = (varData || []) as VarianteRow[];
 
   // Mirror the listing-page promo logic: any active promo on this product's

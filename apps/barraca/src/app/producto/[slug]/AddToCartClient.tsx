@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { showToast } from "@/components/Toast";
+import SelectorMedidas from "@/components/barraca/SelectorMedidas";
+import { familiaDe, tituloFamilia } from "@/lib/variantes";
 import { formatCLP } from "@jurmaq/shared/format";
 import { whatsappCtaProducto } from "@jurmaq/shared/whatsapp";
 import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
@@ -108,46 +110,16 @@ export default function AddToCartClient({
 
   return (
     <div className="space-y-6">
-      {/* Variant Selector - Pill style */}
-      {variantes.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-navy-950 mb-3">
-            Medida / Variante
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {variantes.map((v) => (
-              <button
-                key={v.id}
-                onClick={() => {
-                  setSelectedVariant(v);
-                  router.push(`/producto/${v.slug}`, { scroll: false });
-                }}
-                className={`px-4 py-2.5 text-sm font-semibold rounded-full border-2 transition-all ${
-                  selectedVariant?.id === v.id
-                    ? "bg-marca-600 text-white border-marca-600 shadow-md shadow-marca-200"
-                    : v.stock <= 0
-                    ? "bg-amber-50 text-amber-700 border-amber-300 hover:border-amber-400"
-                    : "bg-white text-gray-700 border-gray-300 hover:border-marca-400 hover:text-marca-600"
-                }`}
-              >
-                {v.medida || v.nombre}
-                {v.stock <= 0 && " (sin stock)"}
-              </button>
-            ))}
-          </div>
-          {selectedVariant && (
-            <div className="mt-3 flex items-baseline gap-2">
-              <p className="text-xl font-bold text-navy-950">
-                {formatCLP(activePrecio)}
-              </p>
-              {selectedVariant.stock > 0 && selectedVariant.stock < 10 && (
-                <span className="text-xs text-amber-600 font-medium">
-                  Quedan {selectedVariant.stock} unidades
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+      {/* Selector de medida por ejes — ver SelectorMedidas.tsx.
+          Reemplaza la fila plana de píldoras con la medida completa: con 50
+          tubos rectangulares eran 50 etiquetas casi idénticas que había que
+          leer una por una. */}
+      {variantes.length > 1 && (
+        <SelectorMedidas
+          variantes={variantes}
+          actualId={producto.id}
+          nombreBase={tituloFamilia(familiaDe(producto.nombre), producto.nombre)}
+        />
       )}
 
       {/* Stock info note */}

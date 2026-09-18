@@ -565,22 +565,22 @@ export default async function BarracaHomePage() {
               de acero y materiales de Chile
             </h2>
           </div>
-          {/* Carrusel continuo. Cinco de las diez marcas tienen su logo
-              oficial; las otras cinco se dibujan con su nombre porque el logo
-              que publican es blanco para fondo oscuro y acá el fondo es claro.
-              Mezclar logo y nombre se lee mejor que un logo invisible. */}
+          {/* Carrusel continuo de los fabricantes con los que trabaja la barraca.
+              Ocho de nueve llevan su logo oficial. CAP queda con su nombre: los
+              únicos archivos que publica son blancos, pensados para fondo oscuro,
+              y sobre el fondo claro de esta sección serían un hueco. Prodac salió
+              de la lista a pedido del dueño. */}
           <MarcasCarrusel
             marcas={[
               { nombre: "CAP Acero" },
               { nombre: "Cintac", logo: "/images/barraca/marcas/cintac.jpg" },
-              { nombre: "Inchalam" },
-              { nombre: "Ternium" },
+              { nombre: "Inchalam", logo: "/images/barraca/marcas/inchalam.svg" },
+              { nombre: "Ternium", logo: "/images/barraca/marcas/ternium.svg" },
               { nombre: "Volcán", logo: "/images/barraca/marcas/volcan.svg" },
-              { nombre: "Prodac" },
               { nombre: "Polpaico", logo: "/images/barraca/marcas/polpaico.png" },
               { nombre: "Melón", logo: "/images/barraca/marcas/melon.png" },
               { nombre: "CBB Cementos", logo: "/images/barraca/marcas/cbb.png" },
-              { nombre: "Sherwin Williams" },
+              { nombre: "Sherwin Williams", logo: "/images/barraca/marcas/sherwin.svg" },
             ]}
           />
         </div>
