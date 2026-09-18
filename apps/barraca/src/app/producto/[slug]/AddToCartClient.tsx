@@ -155,7 +155,7 @@ export default function AddToCartClient({
           </div>
           {activeStock > 0 && activeStock <= 5 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-amber-500 text-white">
-              <span className="w-1.5 h-1.5 bg-white animate-pulse" />
+              <span className="w-1.5 h-1.5 bg-white" />
               {activeStock} unid.
             </span>
           )}
@@ -200,7 +200,7 @@ export default function AddToCartClient({
         <button
           onClick={handleAdd}
           disabled={adding}
-          className={`w-full h-14 flex items-center justify-center gap-2 font-bold rounded-xl text-base transition-all active:scale-[0.98] ${
+          className={`w-full h-14 flex items-center justify-center gap-2 font-bold rounded-xl text-base transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.98] ${
             added
               ? "bg-green-500 text-white"
               : activeStock <= 0

@@ -189,7 +189,7 @@ export default function HeroSlider() {
               aria-selected={i === current}
               aria-label={`${s.title} ${s.titleAccent} (${i + 1} de ${slides.length})`}
             >
-              <span className={`block h-px transition-all duration-300 ${
+              <span className={`block h-px transition-[width,background-color] duration-300 ease-out ${
                 i === current ? "w-10 bg-white" : "w-6 bg-white/30 hover:bg-white/50"
               }`} />
             </button>

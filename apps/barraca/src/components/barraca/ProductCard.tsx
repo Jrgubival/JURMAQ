@@ -91,9 +91,8 @@ export default function ProductCard({
   rating_count,
 }: ProductCardProps) {
   const marca = nombreMarca(nombre);
-  // El nombre sin su medida: se corta en el primer número que abre la cadena
-  // dimensional. Si el recorte deja menos de 3 caracteres, se usa el nombre
-  // completo — más vale repetir la medida que dejar la tarjeta sin título.
+  // El nombre sin su medida: se corta donde empieza la cadena dimensional. Si
+  // el recorte deja menos de 3 caracteres se usa el nombre completo.
   const recorte = nombre.replace(/\s+\d[\d.,/x×\s"]*(mm|cm|mts?|m|kg|gr|lts?|l|")?\s*$/i, '').trim();
   const nombreSinMedida = recorte.length >= 3 ? recorte : nombre;
   const resolvedImage = getProductImage(imagen, categoriaSlug);
@@ -152,7 +151,7 @@ export default function ProductCard({
   const unitLabel = unidad ? `/${unidad}` : '';
 
   return (
-    <div className="bg-white border border-gray-300 rounded-md overflow-hidden group transition-all duration-150 ease-out hover:-translate-y-0.5 hover:border-navy-950 hover:shadow-[0_2px_0_0_rgb(12,29,58)] flex flex-col h-full relative">
+    <div className="bg-white border border-gray-300 rounded-md overflow-hidden group transition-[transform,border-color,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-navy-950 hover:shadow-[0_2px_0_0_rgb(12,29,58)] flex flex-col h-full relative">
       <Link href={`/producto/${slug}`} className="block" aria-label={`Ver detalles de ${nombre}${medida ? ` - ${medida}` : ''}`}>
         <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
           {displayImage ? (
@@ -166,35 +165,31 @@ export default function ProductCard({
               onError={() => { if (!imgError) setImgError(true); }}
             />
           ) : (
-            /* Sin foto, la medida ES la imagen.
-               Antes acá había un ícono de caja gris, igual en cientos de
-               tarjetas. Un bloque de acero con la medida en blanco dice algo
-               —cuánto mide la pieza— y además es la traducción literal de cómo
-               la barraca rotula el fierro: con plumón blanco sobre el perfil
-               (barraca-angulos.jpg). Ver .placa-medida en globals.css. */
-            <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--color-acero)] px-4 text-center">
+            /* Sin foto, la medida ES la imagen. Antes acá iba un ícono de caja
+               gris, igual en cientos de tarjetas. Un bloque oscuro con la
+               medida en blanco dice cuánto mide la pieza, que es lo único que
+               distingue una variante de la siguiente. */
+            <div className="w-full h-full flex flex-col items-center justify-center bg-[#1A1C1E] px-4 text-center">
               {medida ? (
                 <>
                   <span className="text-[10px] uppercase tracking-[0.18em] text-white/45 mb-1.5">
-                    {titleCase(nombre).replace(/\s*\d.*$/, '').trim().slice(0, 28) || 'Medida'}
+                    {titleCase(nombreSinMedida).slice(0, 28)}
                   </span>
-                  <span className="cifra text-[26px] leading-none font-medium text-white">
+                  <span className="font-[var(--font-heading)] text-[26px] leading-none font-medium text-white tabular-nums">
                     {medida}
                   </span>
                 </>
               ) : (
-                <span className="text-xs uppercase tracking-[0.18em] text-white/40">
-                  Sin foto
-                </span>
+                <span className="text-xs uppercase tracking-[0.18em] text-white/40">Sin foto</span>
               )}
             </div>
           )}
 
-          {/* Con foto: la medida va como franja al pie, legible sobre cualquier
-              imagen. Las fotos de perfiles son todas iguales entre sí, así que
-              la medida es lo único que distingue una tarjeta de la siguiente. */}
+          {/* Con foto: la medida como franja al pie. Las fotos de perfiles son
+              todas iguales entre sí; la medida es lo que distingue tres ángulos
+              seguidos, y antes eran indistinguibles. */}
           {displayImage && medida && (
-            <span className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-[rgba(26,28,30,0.92)] text-white cifra text-[13px] leading-tight">
+            <span className="absolute bottom-0 left-0 right-0 px-2 py-1 bg-[rgba(26,28,30,0.92)] text-white font-[var(--font-heading)] text-[13px] leading-tight tabular-nums">
               {medida}
             </span>
           )}
@@ -234,16 +229,12 @@ export default function ProductCard({
               {marca}
             </p>
           )}
-          {/* El título pierde la medida cuando la placa ya la muestra: el
-              nombre del maestro la trae dentro ("Angulo Doblado Negro 100 x
-              100 x 3.0 MM") y con la placa al pie de la foto quedaba escrita
-              dos veces en una tarjeta de 250px. El aria-label del enlace sigue
-              llevando ambas para quien navega con lector de pantalla. */}
-          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-marca-600 transition-colors leading-tight">
+          {/* El nombre del maestro trae la medida dentro ("Angulo Doblado
+              Negro 100 x 100 x 3.0 MM"); con la placa al pie de la foto se
+              leía dos veces en 250px. El aria-label del enlace conserva ambas. */}
+          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-marca-600 transition-colors duration-150 leading-tight">
             {titleCase(medida ? nombreSinMedida : nombre)}
           </h3>
-          {/* La medida ya está en la placa sobre la foto: repetirla acá era
-              decirla dos veces en 250px. */}
           {/* Tier 4 D2: rating si hay reviews aprobadas */}
           {rating && rating > 0 && (
             <div className="mb-1">
@@ -259,7 +250,7 @@ export default function ProductCard({
             comprador de fierros lee "12 un." igual de bien, y el rojo queda
             libre para lo único que de verdad debe destacar: la oferta. */}
         {!solo_cotizar && (
-          <p className="cifra text-xs text-[var(--color-acero-2)] mb-2">
+          <p className="text-xs text-gray-500 mb-2 tabular-nums">
             {stock > 0 ? `En stock · ${stock} un.` : 'Sobre pedido'}
           </p>
         )}
@@ -281,7 +272,7 @@ export default function ProductCard({
                 <p className="text-xs text-gray-500 line-through leading-none tabular-nums">
                   {formatCLP(Math.max(precio, precio_original))}{unitLabel}
                 </p>
-                <p className="cifra text-xl font-semibold text-navy-900 leading-tight">
+                <p className="text-xl font-extrabold text-marca-600 leading-tight tabular-nums">
                   {formatCLP(Math.min(precio, precio_original))}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
@@ -289,7 +280,7 @@ export default function ProductCard({
               </div>
             ) : (
               <>
-                <p className="cifra text-xl font-semibold text-navy-900 leading-tight">
+                <p className="text-xl font-extrabold text-navy-950 leading-tight tabular-nums">
                   {formatCLP(precio)}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
@@ -305,7 +296,7 @@ export default function ProductCard({
             onClick={handleAdd}
             disabled={adding}
             aria-label={added ? `${nombre} agregado al carrito` : solo_cotizar ? `Cotizar ${nombre}` : `Agregar ${nombre} al carrito`}
-            className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] text-sm font-bold rounded-lg transition-all ${
+            className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] text-sm font-bold rounded-lg transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.97] ${
               added
                 ? "bg-green-500 text-white"
                 : solo_cotizar
