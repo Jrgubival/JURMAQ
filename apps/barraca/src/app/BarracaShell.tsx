@@ -33,6 +33,7 @@ interface Categoria {
   id: number;
   nombre: string;
   slug: string;
+  producto_count?: number;
 }
 
 const CATEGORY_ICON_DEFAULT = "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4";
@@ -278,21 +279,21 @@ function Navbar() {
 
   return (
     <>
-      <header role="banner" style={{ paddingTop: 'env(safe-area-inset-top)' }} className={`sticky top-0 z-50 bg-navy-950/95 backdrop-blur-sm border-b border-navy-800 transition-transform duration-300 ${navVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <header role="banner" style={{ paddingTop: 'env(safe-area-inset-top)' }} className={`sticky top-0 z-50 bg-white border-b border-gray-200 shadow-[0_1px_0_0_rgba(0,0,0,0.04)] transition-transform duration-300 ${navVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20 gap-4">
             {/* Logo */}
             <Link href="/" className="flex items-baseline shrink-0">
-              <span className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+              <span className="text-2xl lg:text-3xl font-extrabold text-navy-950 tracking-tight">
                 JURMAQ
               </span>{" "}
-              <span className="text-lg lg:text-xl font-semibold text-marca-500 ml-1">
+              <span className="text-lg lg:text-xl font-semibold text-marca-600 ml-1">
                 Barraca
               </span>
             </Link>
 
             {/* Desktop Search - bigger and more prominent */}
-            <div className="hidden lg:block flex-1 max-w-2xl mx-8">
+            <div className="hidden lg:block flex-1 max-w-3xl mx-6">
               <SearchBar size="lg" />
             </div>
 
@@ -300,7 +301,7 @@ function Navbar() {
             <nav role="navigation" aria-label="Navegación barraca" className="hidden lg:flex items-center gap-1">
               <Link
                 href="/"
-                className="px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Inicio
               </Link>
@@ -315,7 +316,7 @@ function Navbar() {
                   onClick={() => setCatOpen(!catOpen)}
                   aria-expanded={catOpen}
                   aria-haspopup="true"
-                  className="px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors flex items-center gap-1"
+                  className="px-3.5 py-2 text-sm font-semibold text-white bg-navy-950 hover:bg-navy-800 rounded-md transition-colors flex items-center gap-1"
                 >
                   Categorías
                   <svg className={`w-3 h-3 transition-transform ${catOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -362,7 +363,7 @@ function Navbar() {
                   onClick={() => setAccountOpen(!accountOpen)}
                   aria-expanded={accountOpen}
                   aria-haspopup="true"
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -443,7 +444,7 @@ function Navbar() {
               <button
                 onClick={() => setCartOpen(true)}
                 data-magnetic
-                className="relative p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                className="relative p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                 aria-label="Carrito"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -475,6 +476,42 @@ function Navbar() {
             </div>
           </div>
 
+          {/* Fila de categorías, bajo el buscador. La tienen Sodimac, Easy,
+              Construmart y Prodalam: es el camino más corto de la portada a
+              un listado, y hace que el sitio se lea como tienda desde el
+              primer píxel. Desktop; en móvil el menú ya las lista. */}
+          {categorias.length > 0 && (
+            <nav aria-label="Categorías principales" className="hidden lg:block -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 border-t border-gray-100">
+              <ul className="flex items-center gap-1 h-10 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <li className="shrink-0">
+                  <Link href="/te-mejoramos-el-precio" className="inline-flex items-center h-10 px-3 text-[13px] font-bold text-marca-600 hover:text-marca-700 transition-colors">
+                    Te mejoramos el precio
+                  </Link>
+                </li>
+                {/* Las grandes primero: Fijaciones (529) antes que Techumbre
+                    (24). El orden alfabético de la API ponía Áridos y Aditivos
+                    en los primeros puestos de la fila. */}
+                {[...categorias]
+                  .sort((a, b) => (b.producto_count ?? 0) - (a.producto_count ?? 0))
+                  .slice(0, 10)
+                  .map((cat) => (
+                  <li key={cat.id} className="shrink-0">
+                    <Link
+                      href={`/categorias/${cat.slug}`}
+                      className="inline-flex items-center h-10 px-3 text-[13px] font-medium text-gray-700 hover:text-navy-950 border-b-2 border-transparent hover:border-marca-600 transition-colors"
+                    >
+                      {cat.nombre}
+                    </Link>
+                  </li>
+                ))}
+                <li className="shrink-0 ml-auto">
+                  <Link href="/categorias" className="inline-flex items-center h-10 px-3 text-[13px] font-semibold text-navy-950 hover:text-marca-600 transition-colors">
+                    Todas las categorías →
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          )}
           {/* Mobile Search */}
           <div className="lg:hidden pb-3">
             <SearchBar size="md" />
@@ -483,19 +520,19 @@ function Navbar() {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div role="dialog" aria-label="Menú de navegación móvil" className="lg:hidden bg-navy-950 border-t border-navy-800 max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <div role="dialog" aria-label="Menú de navegación móvil" className="lg:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-8rem)] overflow-y-auto">
             <div className="px-4 py-4 space-y-1">
               <Link
                 href="/"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Inicio
               </Link>
               <Link
                 href="/categorias"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Categorías
               </Link>
@@ -504,16 +541,16 @@ function Navbar() {
                   key={cat.id}
                   href={`/categorias/${cat.slug}`}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center px-8 min-h-[44px] py-2.5 text-sm text-gray-500 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                  className="flex items-center px-8 min-h-[44px] py-2.5 text-sm text-gray-500 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   {cat.nombre}
                 </Link>
               ))}
-              <div className="pt-4 border-t border-navy-800 space-y-1">
+              <div className="pt-4 border-t border-gray-200 space-y-1">
                 <Link
                   href="/carrito"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                  className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   Carrito ({cartCount})
                 </Link>
@@ -522,14 +559,14 @@ function Navbar() {
                     <Link
                       href="/cuenta"
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       Mi Cuenta
                     </Link>
                     <Link
                       href="/cuenta"
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       Mis Cotizaciones
                     </Link>
@@ -539,7 +576,7 @@ function Navbar() {
                     <Link
                       href="/cuenta/login"
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-300 hover:text-white hover:bg-navy-800/60 rounded-lg transition-colors"
+                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       Ingresar
                     </Link>

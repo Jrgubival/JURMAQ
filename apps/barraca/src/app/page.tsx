@@ -226,6 +226,27 @@ export default async function BarracaHomePage() {
     .sort((a: Categoria, b: Categoria) => b.product_count - a.product_count)
     .slice(0, 6);
 
+  // Precios mínimos REALES para el banner de portada. Se consultan acá y no
+  // se escriben en el slider, para que "desde $3.990" nunca sea una cifra que
+  // la base ya no tiene.
+  async function precioMinimo(patron: string): Promise<number | null> {
+    const { data } = await supabasePublic
+      .from('barraca_productos')
+      .select('precio')
+      .eq('activo', true)
+      .gt('stock', 0)
+      .gt('precio', 0)
+      .ilike('nombre', patron)
+      .order('precio', { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    return data?.precio ?? null;
+  }
+  const [precioFierro, precioTubo] = await Promise.all([
+    precioMinimo('Fierro Estriado%'),
+    precioMinimo('Tub %'),
+  ]);
+
   const { data: destacadosRaw } = await supabasePublic
     .from('barraca_productos')
     .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
@@ -306,62 +327,42 @@ export default async function BarracaHomePage() {
           El H1 vive dentro de MobileHero en mobile y abajo en desktop. */}
       <MobileHero />
       <div className="hidden lg:block">
-        <HeroSlider />
+        <HeroSlider precios={{ fierro: precioFierro, tubo: precioTubo }} />
       </div>
 
-      {/* Tagline + trust signals + despacho banner: desktop only.
-          On mobile these were eating ~40% of the viewport before showing
-          any product. Mobile gets a compact version near the bottom. */}
-      <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-2">
-        <h1 className="text-3xl lg:text-4xl font-extrabold text-navy-950 mb-2" data-text-reveal>
-          Barraca de fierros y materiales de construcción en Molina, con despacho a Curicó y todo el Maule
-        </h1>
-      </div>
-
-      {/* Spec-sheet: KPIs estilo planilla técnica de obra. Números grandes
-          en tabular-nums (estables como ficha técnica), labels uppercase
-          tracking-wider. Mobile-first: 2x2 grid en mobile, 1x4 en lg+. */}
-      {/* Trust strip — reemplaza hero-metric template (impeccable banned)
-          por editorial inline prose donde los números van resaltados con
-          font-serif italic. Mantiene la info, elimina el "big number small label". */}
-      <section className="bg-navy-950 border-b border-navy-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 lg:py-6">
-          <p className="text-center text-sm lg:text-base text-gray-200 leading-relaxed max-w-3xl mx-auto">
-            Más de{' '}
-            <span className="font-[var(--font-serif)] italic text-marca-300 tabular-nums" style={{ fontSize: '1.25em', fontWeight: 500 }}>
-              1.600
-            </span>{' '}
-            productos en stock. Te mejoramos cualquier cotización en{' '}
-            <span className="font-[var(--font-serif)] italic text-marca-300" style={{ fontSize: '1.25em', fontWeight: 500 }}>
-              2 horas
-            </span>
-            . Despacho propio a{' '}
-            <span className="font-[var(--font-serif)] italic text-marca-300 tabular-nums" style={{ fontSize: '1.25em', fontWeight: 500 }}>
-              12
-            </span>{' '}
-            comunas del Maule, con stock y precio en línea.
-          </p>
+      {/* Franja de confianza, como la que va bajo el banner en Sodimac y Easy:
+          cuatro hechos concretos, con ícono, sobre blanco. Reemplaza la prosa
+          con cifras en serif itálica y la banda roja de despacho. El H1 se
+          conserva para SEO pero deja de ser un titular de revista. */}
+      <section aria-label="Por qué comprar en JURMAQ" className="hidden lg:block bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ul className="grid grid-cols-4 divide-x divide-gray-200">
+            {[
+              { t: 'Te mejoramos el precio en 2 h', d: 'Sube tu cotización de la competencia', href: '/te-mejoramos-el-precio', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+              { t: 'Despacho a todo el Maule', d: 'Curicó, Talca, Linares, Molina y más', href: '/sucursales', icon: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0' },
+              { t: 'Retiro en Molina', d: 'Avda. Poniente 2157 · Lun-Sáb', href: '/sucursales', icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z' },
+              { t: 'Paga como prefieras', d: 'MercadoPago o transferencia', href: '/carrito', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
+            ].map((it) => (
+              <li key={it.t}>
+                <Link href={it.href} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors">
+                  <svg className="w-6 h-6 text-marca-600 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d={it.icon} />
+                  </svg>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-bold text-navy-950 leading-tight">{it.t}</span>
+                    <span className="block text-xs text-gray-500 leading-tight mt-0.5">{it.d}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
-
-      {/* Banner despacho — desaturado (marca-600 → marca-700 muted, design-taste
-          rule 2 max 80% saturación). Em dash reemplazado por dos puntos (impeccable). */}
-      <section className="hidden lg:block bg-marca-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-center gap-3 text-white">
-            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <p className="text-sm lg:text-[15px] font-medium text-center tracking-tight">
-              Despacho a toda la Región del Maule: Curicó, Teno, Molina, Talca, Romeral y más.
-            </p>
-          </div>
-        </div>
-      </section>
+      <h1 className="sr-only">Barraca de fierros y materiales de construcción en Molina, con despacho a Curicó y todo el Maule</h1>
 
       {/* === OFERTAS DEL DIA === */}
       {dailyPromo && promotedProducts.length > 0 && (
-        <section className="py-12 lg:py-16 bg-[#FBFBFA] border-t border-b border-[#EAEAEA]">
+        <section className="py-12 lg:py-16 bg-gray-50 border-t border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Promo banner bar — Editorial hairline */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10 border border-[#EAEAEA] bg-white rounded-2xl px-6 py-5">
@@ -466,29 +467,28 @@ export default async function BarracaHomePage() {
       {/* === Categories: DESKTOP === full grid with overlay text */}
       <section id="categorias" className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 scroll-mt-24 content-auto">
         <div className="mb-10">
-          <h2 className="editorial-h1 text-3xl text-navy-950 mb-2">18 categorías, precio en pantalla</h2>
+          <h2 className="text-2xl font-extrabold text-navy-950 mb-1">Compra por categoría</h2>
           <p className="text-gray-500">Fierro, perfiles, planchas, herramientas y más. Todo con stock y precio visible.</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-5" data-stagger="0.08">
+        {/* Mosaico de categorías al modo retail: tarjeta blanca, la foto con
+            aire (sin sangrar, sin degradado negro encima), el nombre debajo en
+            negrita y el conteo en gris. Es la tarjeta de categoría de Sodimac
+            y Easy, que es lo que el dueño pidió parecerse. */}
+        <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
           {categorias.map((cat) => {
             const catImg = getCategoryImage(cat.imagen, cat.slug);
             return (
-              <Link key={cat.id} href={`/categorias/${cat.slug}`} className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-                <div className="aspect-[3/2] bg-gray-200 relative overflow-hidden">
+              <Link key={cat.id} href={`/categorias/${cat.slug}`} className="group block bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-navy-950 transition-colors">
+                <div className="aspect-square bg-white p-4">
                   {catImg ? (
-                    <Image src={catImg} alt={`${cat.nombre} - JURMAQ Barraca`} loading="lazy" width={400} height={267} sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" className="w-full h-full object-cover [@media(hover:hover)]:group-hover:scale-105 transition-transform duration-300 ease-out" />
+                    <Image src={catImg} alt={`${cat.nombre} - JURMAQ Barraca`} loading="lazy" width={300} height={300} sizes="(max-width: 1024px) 33vw, 16vw" className="w-full h-full object-contain" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-marca-50 to-marca-100">
-                      <svg className="w-10 h-10 text-marca-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                    </div>
+                    <div className="w-full h-full bg-gray-50" />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-                    <h3 className="text-sm sm:text-base lg:text-lg font-bold text-white leading-tight">{titleCase(cat.nombre)}</h3>
-                    <p className="text-xs sm:text-sm text-white/80 mt-0.5">{cat.product_count} productos</p>
-                  </div>
+                </div>
+                <div className="px-3 pb-3 text-center">
+                  <h3 className="text-[13px] font-bold text-navy-950 leading-tight group-hover:text-marca-600 transition-colors">{titleCase(cat.nombre)}</h3>
+                  <p className="text-[11px] text-gray-500 mt-0.5 tabular-nums">{cat.product_count} productos</p>
                 </div>
               </Link>
             );
@@ -509,16 +509,16 @@ export default async function BarracaHomePage() {
         <section id="destacados" className="bg-white pt-4 pb-8 lg:py-16 scroll-mt-24 content-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-3 lg:mb-10">
-              <h2 className="text-sm lg:text-3xl font-bold text-navy-950 uppercase tracking-wide lg:normal-case lg:tracking-normal">
+              <h2 className="text-sm lg:text-2xl font-extrabold text-navy-950 uppercase tracking-wide lg:normal-case lg:tracking-normal">
                 <span className="lg:hidden">Productos destacados</span>
-                <span className="hidden lg:inline">Lo que más sale en Molina</span>
+                <span className="hidden lg:inline">Los más vendidos</span>
               </h2>
               <Link href="/categorias" className="text-xs lg:text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors lg:inline-flex lg:items-center lg:gap-1">
                 Ver todos
                 <svg className="hidden lg:inline w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </Link>
             </div>
-            <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
               {destacados.map((p) => (
                 <ProductCard key={p.id} id={p.id} nombre={p.nombre} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} />
               ))}
@@ -532,14 +532,14 @@ export default async function BarracaHomePage() {
         <section id="nuevos" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 scroll-mt-24 content-auto">
           <div className="flex items-center justify-between mb-10">
             <div>
-              <h2 className="editorial-h1 text-3xl text-navy-950 mb-1">Llegó esta semana</h2>
+              <h2 className="text-2xl font-extrabold text-navy-950 mb-1">Recién llegados</h2>
             </div>
             <Link href="/categorias" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors">
               Ver todos
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
-          <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
             {nuevos.map((p) => (
               <ProductCard key={p.id} id={p.id} nombre={p.nombre} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} isNew categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} />
             ))}
@@ -548,7 +548,7 @@ export default async function BarracaHomePage() {
       )}
 
       {/* Marcas */}
-      <section className="bg-[#FBFBFA] border-t border-b border-[#EAEAEA] py-14 lg:py-20 content-auto">
+      <section className="bg-gray-50 border-t border-b border-gray-200 py-14 lg:py-20 content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
@@ -558,11 +558,7 @@ export default async function BarracaHomePage() {
               className="text-[#111111] tracking-tight"
               style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
             >
-              Principales{' '}
-              <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>
-                fabricantes
-              </span>{' '}
-              de acero y materiales de Chile
+              Marcas que trabajamos
             </h2>
           </div>
           {/* Carrusel continuo de los fabricantes con los que trabaja la barraca.

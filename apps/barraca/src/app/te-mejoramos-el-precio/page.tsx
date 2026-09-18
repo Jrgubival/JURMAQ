@@ -223,7 +223,7 @@ export default function PriceMatchPage() {
             >
               Te mejoramos el precio
               <br />
-              <span className="font-[var(--font-serif)] italic text-white/95" style={{ fontWeight: 400 }}>
+              <span className="font-semibold text-white/95" style={{ fontWeight: 400 }}>
                 en menos de dos horas.
               </span>
             </h1>
@@ -279,7 +279,7 @@ export default function PriceMatchPage() {
                 className="text-[#111111] leading-[1.1] mb-6"
                 style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
               >
-                Cómo <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>funciona</span>.
+                Cómo <span className="font-semibold" style={{ fontWeight: 400 }}>funciona</span>.
               </h2>
               <p className="text-base text-[#5A5A57] leading-relaxed">
                 Cuatro pasos. Treinta segundos para subirla. Dos horas para que te respondamos.
@@ -293,7 +293,7 @@ export default function PriceMatchPage() {
                   className="grid grid-cols-[auto_1fr] lg:grid-cols-[120px_180px_1fr] gap-x-6 lg:gap-x-12 gap-y-2 py-8 lg:py-10 border-b border-[#EAEAEA]"
                 >
                   <p
-                    className="text-[#956400] font-[var(--font-serif)] italic text-2xl lg:text-3xl leading-none"
+                    className="text-[#956400] font-semibold text-2xl lg:text-3xl leading-none"
                     style={{ fontWeight: 400 }}
                   >
                     {p.n}
@@ -323,7 +323,7 @@ export default function PriceMatchPage() {
               >
                 Ahorros concretos en
                 <br />
-                <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>obras concretas</span>.
+                <span className="font-semibold" style={{ fontWeight: 400 }}>obras concretas</span>.
               </h2>
               <p className="text-base text-[#5A5A57] leading-relaxed">
                 Datos anónimos, números reales. Comparativas producto por producto contra Sodimac, Easy y Construmart.
@@ -337,7 +337,7 @@ export default function PriceMatchPage() {
                   className={`py-10 lg:py-12 lg:px-10 ${i > 0 ? 'lg:border-l border-[#EAEAEA] border-t lg:border-t-0' : 'lg:pr-10'}`}
                 >
                   <p
-                    className="text-[#111111] font-[var(--font-serif)] italic leading-none mb-2"
+                    className="text-[#111111] font-semibold leading-none mb-2"
                     style={{ fontSize: 'clamp(2rem, 3vw, 2.75rem)', fontWeight: 400, letterSpacing: '-0.01em' }}
                   >
                     {c.ahorro}
@@ -372,7 +372,7 @@ export default function PriceMatchPage() {
                   className="text-[#111111] leading-[1.1] mb-6"
                   style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
                 >
-                  Tres razones por las que <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>te damos mejor precio</span>.
+                  Tres razones por las que <span className="font-semibold" style={{ fontWeight: 400 }}>te damos mejor precio</span>.
                 </h2>
               </div>
               <ul className="border-t border-[#EAEAEA]">
@@ -382,7 +382,7 @@ export default function PriceMatchPage() {
                     className="grid grid-cols-[60px_1fr] gap-x-6 py-8 border-b border-[#EAEAEA]"
                   >
                     <p
-                      className="text-[#956400] font-[var(--font-serif)] italic text-xl leading-none mt-1"
+                      className="text-[#956400] font-semibold text-xl leading-none mt-1"
                       style={{ fontWeight: 400 }}
                     >
                       {r.n}
@@ -409,7 +409,7 @@ export default function PriceMatchPage() {
                 className="text-[#111111] leading-[1.1] mb-6"
                 style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
               >
-                Donde más se nota la <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>diferencia</span>.
+                Donde más se nota la <span className="font-semibold" style={{ fontWeight: 400 }}>diferencia</span>.
               </h2>
               <p className="text-base text-[#5A5A57] leading-relaxed">
                 Categorías donde JURMAQ históricamente le saca ventaja a los homecenters.
@@ -440,7 +440,7 @@ export default function PriceMatchPage() {
               className="text-[#111111] leading-[1.1] mb-16"
               style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
             >
-              Lo que <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>siempre</span> nos preguntan.
+              Lo que <span className="font-semibold" style={{ fontWeight: 400 }}>siempre</span> nos preguntan.
             </h2>
             <dl className="border-t border-[#EAEAEA]">
               {FAQ.map((f, i) => (
@@ -467,7 +467,7 @@ export default function PriceMatchPage() {
               className="text-white leading-[1.1] mb-8"
               style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
             >
-              ¿Tienes una <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>cotización</span>?
+              ¿Tienes una <span className="font-semibold" style={{ fontWeight: 400 }}>cotización</span>?
             </h2>
             <p className="text-base lg:text-lg text-white/75 mb-12 max-w-2xl mx-auto leading-relaxed">
               Sube tu cotización ahora y te respondemos en menos de dos horas hábiles con una contraoferta JURMAQ por correo.

@@ -235,7 +235,7 @@ export default function CarritoPage() {
             className="text-[#111111] leading-[1.1]"
             style={{ fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
           >
-            Mi <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>carrito</span>
+            Mi <span className="font-semibold" style={{ fontWeight: 400 }}>carrito</span>
           </h1>
         </div>
         {items.length > 0 && (
@@ -263,7 +263,7 @@ export default function CarritoPage() {
             className="text-[#111111] mb-3 leading-[1.15]"
             style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 500, letterSpacing: '-0.005em' }}
           >
-            Aún no hay <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>productos</span>.
+            Aún no hay <span className="font-semibold" style={{ fontWeight: 400 }}>productos</span>.
           </h2>
           <p className="text-base text-[#5A5A57] mb-8 max-w-md mx-auto">
             Agregá productos al carrito para pedir una cotización.
@@ -388,7 +388,7 @@ export default function CarritoPage() {
                 className="text-[#111111] mb-5 leading-[1.1]"
                 style={{ fontSize: 'clamp(1.125rem, 1.6vw, 1.375rem)', fontWeight: 500, letterSpacing: '-0.005em' }}
               >
-                Resumen del <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>pedido</span>
+                Resumen del <span className="font-semibold" style={{ fontWeight: 400 }}>pedido</span>
               </h2>
               <div className="mb-6">
                 <div className="flex justify-between text-sm mb-2">

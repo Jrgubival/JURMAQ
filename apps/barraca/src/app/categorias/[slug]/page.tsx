@@ -524,7 +524,7 @@ export default async function CategoriaPage({
                   {categoria.nombre}
                 </h1>
                 <p className="text-sm text-[#787774]">
-                  <span className="font-[var(--font-serif)] italic text-[#111111] mr-1" style={{ fontWeight: 400 }}>{total}</span>
+                  <span className="font-semibold text-[#111111] mr-1" style={{ fontWeight: 400 }}>{total}</span>
                   producto{total !== 1 ? "s" : ""} en stock
                 </p>
               </div>

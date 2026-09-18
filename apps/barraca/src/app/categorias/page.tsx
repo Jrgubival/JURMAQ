@@ -172,7 +172,7 @@ export default async function CategoriasPage() {
         style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
       >
         Todas las{' '}
-        <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>
+        <span className="font-semibold" style={{ fontWeight: 400 }}>
           categorías
         </span>
       </h1>

@@ -26,13 +26,11 @@ export default function MobileHero() {
           </p>
           <h1
             className="text-white leading-[1.1]"
-            style={{ fontSize: 'clamp(1.5rem, 6vw, 1.875rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
+            style={{ fontSize: 'clamp(1.5rem, 6vw, 1.875rem)', fontWeight: 800, letterSpacing: '-0.01em' }}
           >
             Fierro y perfiles
             <br />
-            <span className="font-[var(--font-serif)] italic text-white/90" style={{ fontWeight: 400 }}>
-              con precio en pantalla
-            </span>
+            <span className="text-white/90">con precio en pantalla</span>
           </h1>
           <p className="text-xs text-white/65 mt-3 inline-flex items-center gap-1.5">
             Ver catálogo

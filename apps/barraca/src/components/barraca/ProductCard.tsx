@@ -151,14 +151,14 @@ export default function ProductCard({
   const unitLabel = unidad ? `/${unidad}` : '';
 
   return (
-    <div className="bg-white border border-gray-300 rounded-md overflow-hidden group transition-[transform,border-color,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-navy-950 hover:shadow-[0_2px_0_0_rgb(12,29,58)] flex flex-col h-full relative">
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden group transition-[transform,border-color,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:border-navy-950 hover:shadow-[0_2px_0_0_rgb(12,29,58)] flex flex-col h-full relative">
       <Link href={`/producto/${slug}`} className="block" aria-label={`Ver detalles de ${nombre}${medida ? ` - ${medida}` : ''}`}>
-        <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
+        <div className="aspect-square bg-white relative overflow-hidden p-3">
           {displayImage ? (
             <Image
               src={displayImage}
               alt={`Producto ${nombre}${medida ? ` ${medida}` : ''} disponible en Barraca JURMAQ`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               width={400}
               height={300}
               sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -272,7 +272,7 @@ export default function ProductCard({
                 <p className="text-xs text-gray-500 line-through leading-none tabular-nums">
                   {formatCLP(Math.max(precio, precio_original))}{unitLabel}
                 </p>
-                <p className="text-xl font-extrabold text-marca-600 leading-tight tabular-nums">
+                <p className="text-[22px] font-extrabold text-navy-950 leading-none tabular-nums">
                   {formatCLP(Math.min(precio, precio_original))}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
@@ -280,7 +280,7 @@ export default function ProductCard({
               </div>
             ) : (
               <>
-                <p className="text-xl font-extrabold text-navy-950 leading-tight tabular-nums">
+                <p className="text-[22px] font-extrabold text-navy-950 leading-none tabular-nums">
                   {formatCLP(precio)}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>

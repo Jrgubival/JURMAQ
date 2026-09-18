@@ -460,7 +460,7 @@ export default async function ProductoPage({
                   A pedido
                 </p>
                 <p
-                  className="text-[#111111] font-[var(--font-serif)] italic leading-none"
+                  className="text-[#111111] font-semibold leading-none"
                   style={{ fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 400, letterSpacing: '-0.01em' }}
                 >
                   Consultar precio
@@ -568,7 +568,7 @@ export default async function ProductoPage({
               className="text-[#111111] mb-10 leading-[1.15]"
               style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
             >
-              También te puede <span className="font-[var(--font-serif)] italic" style={{ fontWeight: 400 }}>interesar</span>.
+              También te puede <span className="font-semibold" style={{ fontWeight: 400 }}>interesar</span>.
             </h2>
             <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
               {relacionadosConPromo.map((p) => (
