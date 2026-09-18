@@ -64,85 +64,116 @@ const VERTICALES = [
   { key: 'barraca', label: 'Barraca', sub: 'Fierros y materiales', url: '/' },
 ] as const;
 
-function BrandSwitcher() {
+/**
+ * Las tres unidades de JURMAQ.
+ *
+ * Esto vivía como una barra de 36px pegada al borde superior de la página: el
+ * primer píxel del sitio, por encima del logo y del buscador, ocupado por algo
+ * que a quien viene a comprar fierro no le sirve. Quien entra a
+ * barraca.jurmaq.cl ya eligió la barraca.
+ *
+ * Como bloque de pie sigue cumpliendo lo que tiene que cumplir —que se sepa
+ * que detrás hay una empresa con tres patas— sin cobrarle el lugar de más
+ * valor de la pantalla al comprador.
+ */
+function UnidadesJurmaq() {
   return (
-    <div className="bg-navy-950 border-b border-navy-800/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* overflow-x-auto con scrollbar oculto: en macOS con "mostrar siempre"
-            pintaba una barra gris permanente cruzando el header. */}
-        <nav
-          aria-label="Unidades de negocio JURMAQ"
-          className="flex items-stretch gap-1 h-9 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {VERTICALES.map((v) => {
-            const activa = v.key === 'barraca';
-            return (
-              <Link
-                key={v.key}
-                href={v.url}
-                aria-current={activa ? 'page' : undefined}
-                className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 sm:px-3 text-[11px] sm:text-xs font-semibold tracking-wide uppercase border-b-2 transition-colors ${
-                  activa
-                    ? 'border-marca-500 text-marca-400'
-                    : 'border-transparent text-white/60 hover:text-white hover:border-white/30'
-                }`}
-              >
-                {v.label}
-                <span className="hidden sm:inline font-normal normal-case tracking-normal text-white/40">
-                  {v.sub}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
+    <div className="border-t border-navy-800 pt-8 mt-8">
+      <p className="text-[10px] uppercase tracking-[0.22em] text-gray-500 mb-4">
+        Grupo JURMAQ
+      </p>
+      <nav aria-label="Unidades de negocio JURMAQ" className="flex flex-wrap gap-x-8 gap-y-3">
+        {VERTICALES.map((v) => {
+          const activa = v.key === 'barraca';
+          return (
+            <Link
+              key={v.key}
+              href={v.url}
+              aria-current={activa ? 'page' : undefined}
+              className={`group inline-flex items-baseline gap-2 ${
+                activa ? 'text-white' : 'text-gray-400 hover:text-white transition-colors'
+              }`}
+            >
+              <span className="text-sm font-semibold uppercase tracking-wide">{v.label}</span>
+              <span className="text-xs text-gray-500 group-hover:text-gray-400">{v.sub}</span>
+              {activa && <span className="text-[10px] text-marca-500 uppercase tracking-wider">· aquí estás</span>}
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
 
+/**
+ * La franja del letrero.
+ *
+ * Antes era una barra de utilidades tipo SaaS: promesa + despacho + horario +
+ * teléfono + correo, cinco cosas compitiendo en 8px de alto. Ahora dice lo
+ * único que una barra de 32px puede decir bien, y que es lo que ningún
+ * competidor puede escribir: DÓNDE está el mesón.
+ *
+ * Es la banda inferior del letrero de la fachada, traducida: fondo navy,
+ * condensada en caja alta, dirección y teléfono.
+ */
 function TopBar() {
   return (
-    <div className="bg-navy-950 border-b border-navy-800 text-gray-300 text-xs">
+    <div className="bg-navy-950 text-white/85">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-8 gap-4">
-          <div className="hidden sm:flex items-center gap-4">
-            <Link
-              href="/te-mejoramos-el-precio"
-              className="inline-flex items-center gap-1.5 font-semibold text-marca-400 hover:text-marca-300 transition-colors"
-            >
-              <IconCoin className="w-3.5 h-3.5" />
-              Te mejoramos el precio en 2h
-            </Link>
-            <span className="text-navy-700">|</span>
-            <span className="flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              </svg>
-              Despacho a toda la Región del Maule
-            </span>
-            <span className="text-navy-700">|</span>
-            <span>Lun-Vie 8:30-18:30 / Sab 9:00-14:00</span>
-          </div>
-          <div className="flex items-center gap-4 ml-auto">
-            <a
-              href="https://wa.me/56976673577"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:text-green-400 transition-colors"
-            >
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-              </svg>
+        <div className="flex items-center justify-between h-8 gap-4 text-[11px] uppercase tracking-[0.08em]">
+          <p className="cifra truncate">
+            Avda. Poniente 2157, Molina
+            <span className="hidden sm:inline text-white/40"> · </span>
+            <span className="hidden sm:inline">Lun-Vie 8:30-18:30 · Sáb 9:00-14:00</span>
+          </p>
+          <div className="flex items-center gap-3 shrink-0">
+            <a href="tel:+56976673577" className="cifra hover:text-white transition-colors">
               +56 9 7667 3577
             </a>
-            <span className="text-navy-600 hidden sm:inline">|</span>
-            <a href="mailto:contacto@jurmaq.cl" className="hidden sm:inline hover:text-marca-400 transition-colors">
+            <span className="text-white/30 hidden sm:inline">·</span>
+            <a
+              href="mailto:contacto@jurmaq.cl"
+              className="hidden sm:inline normal-case tracking-normal hover:text-white transition-colors"
+            >
               contacto@jurmaq.cl
             </a>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * La banda de la promesa.
+ *
+ * "Te mejoramos el precio en 2 h" es la única ventaja estructural de la
+ * barraca sobre Sodimac, Easy y Construmart, y hasta ahora vivía como un
+ * enlace de 11px perdido entre el horario y el correo.
+ *
+ * Va en el lugar exacto donde Sodimac pone su franja negra de campaña, y la
+ * subraya la regla amarilla — el único amarillo del sitio, tomado de la línea
+ * pintada en el piso del local que lleva al mostrador.
+ */
+function BandaPromesa() {
+  return (
+    <Link
+      href="/te-mejoramos-el-precio"
+      className="block bg-white border-b border-[var(--color-canto)] hover:bg-[var(--color-losa)] transition-colors group"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center gap-2 h-9 text-center">
+          <p className="text-[11px] sm:text-[13px] uppercase tracking-[0.08em] text-[var(--color-acero)]">
+            <span className="cifra font-semibold">Te mejoramos el precio en 2 h</span>
+            <span className="hidden sm:inline text-[var(--color-acero-3)] normal-case tracking-normal">
+              {" "}— súbenos tu cotización de la competencia
+            </span>
+          </p>
+          <span aria-hidden className="text-[var(--color-acero-3)] group-hover:translate-x-0.5 transition-transform">→</span>
+        </div>
+      </div>
+      <div className="regla-promesa" />
+    </Link>
   );
 }
 
@@ -692,6 +723,8 @@ function Footer() {
           </div>
         </div>
 
+        <UnidadesJurmaq />
+
         {/* Despacho por comuna — internal links for SEO */}
         <div className="mt-12 pt-8 border-t border-navy-800 space-y-8">
           <div>
@@ -780,9 +813,9 @@ export default function BarracaShell({
       <a href="#main-content" className="skip-to-content">
         Ir al contenido principal
       </a>
-      <BrandSwitcher />
       <TopBar />
       <Navbar />
+      <BandaPromesa />
       <main id="main-content" className="flex-1 min-h-screen bg-gray-50">{children}</main>
       <Footer />
       <WhatsAppFloat />

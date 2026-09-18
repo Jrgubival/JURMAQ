@@ -6,6 +6,7 @@ import type { Database } from "@jurmaq/shared/db-types";
 import ProductCard from "@/components/barraca/ProductCard";
 import HeroSlider from "@/components/barraca/HeroSlider";
 import MobileHero from "@/components/barraca/MobileHero";
+import BandaFoto from "@/components/barraca/BandaFoto";
 import MarcasCarrusel from "@/components/barraca/MarcasCarrusel";
 import MobileTrustStrip from "@/components/barraca/MobileTrustStrip";
 import PromotedProductCard from "@/components/barraca/PromotedProductCard";
@@ -469,30 +470,33 @@ export default async function BarracaHomePage() {
           <h2 className="editorial-h1 text-3xl text-navy-950 mb-2">18 categorías, precio en pantalla</h2>
           <p className="text-gray-500">Fierro, perfiles, planchas, herramientas y más. Todo con stock y precio visible.</p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 lg:gap-5" data-stagger="0.08">
-          {categorias.map((cat) => {
-            const catImg = getCategoryImage(cat.imagen, cat.slug);
-            return (
-              <Link key={cat.id} href={`/categorias/${cat.slug}`} className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-                <div className="aspect-[3/2] bg-gray-200 relative overflow-hidden">
-                  {catImg ? (
-                    <Image src={catImg} alt={`${cat.nombre} - JURMAQ Barraca`} loading="lazy" width={400} height={267} sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-marca-50 to-marca-100">
-                      <svg className="w-10 h-10 text-marca-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
-                    <h3 className="text-sm sm:text-base lg:text-lg font-bold text-white leading-tight">{titleCase(cat.nombre)}</h3>
-                    <p className="text-xs sm:text-sm text-white/80 mt-0.5">{cat.product_count} productos</p>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+        {/* Rótulos de repisa.
+            Antes cada categoría era un packshot de proveedor con un degradado
+            negro encima y el nombre en blanco: el patrón de banco de imágenes
+            que hace que todo se vea igual, y además la foto no aportaba nada
+            (un saco de cemento no dice qué hay en "Fijaciones").
+
+            Esto es el cartel que cuelga sobre la repisa del local — el mismo
+            que se ve en barraca-meson.jpg: recuadro blanco, cabecera azul del
+            mesón, nombre en condensada y el conteo al lado. Sin foto. */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4" data-stagger="0.08">
+          {categorias.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/categorias/${cat.slug}`}
+              className="group block bg-white border border-[var(--color-canto)] rounded-[3px] overflow-hidden hover:border-navy-800 transition-colors"
+            >
+              <div className="h-1.5 bg-navy-800" />
+              <div className="px-4 py-5 sm:px-5 sm:py-6">
+                <h3 className="cifra text-base sm:text-lg uppercase tracking-[0.04em] text-[var(--color-acero)] leading-tight group-hover:text-navy-900">
+                  {cat.nombre}
+                </h3>
+                <p className="mt-1.5 text-xs text-[var(--color-acero-3)]">
+                  <span className="cifra">{cat.product_count}</span> productos
+                </p>
+              </div>
+            </Link>
+          ))}
         </div>
         <div className="text-center mt-8">
           <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 border-2 border-marca-600 text-marca-600 hover:bg-marca-600 hover:text-white font-semibold rounded-lg transition-colors">
@@ -548,6 +552,13 @@ export default async function BarracaHomePage() {
       )}
 
       {/* Marcas */}
+      {/* Las tres fotos del local que estaban sin usar. Ver BandaFoto.tsx. */}
+      <BandaFoto
+        src="/images/barraca/hero/barraca-meson.jpg"
+        alt="Mesón de atención de Barraca JURMAQ en Molina, con el letrero interior y los estantes de herramientas"
+        rotulo="El mesón · Avda. Poniente 2157, Molina"
+      />
+
       <section className="bg-[#FBFBFA] border-t border-b border-[#EAEAEA] py-14 lg:py-20 content-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -587,7 +598,20 @@ export default async function BarracaHomePage() {
       </section>
 
       {/* Mobile-only trust strip — slim 3-icon bar near the bottom */}
+      <BandaFoto
+        src="/images/barraca/hero/barraca-angulos.jpg"
+        alt="Ángulos y canales de acero con la medida escrita a plumón sobre el fierro"
+        rotulo="Cada perfil rotulado con su medida"
+      />
+
       <MobileTrustStrip />
+
+      <BandaFoto
+        src="/images/barraca/hero/barraca-camion-randon.jpg"
+        alt="Camión propio de JURMAQ cargado con perfiles de acero dentro del galpón"
+        rotulo="Despacho propio a toda la Región del Maule"
+        posicion="center"
+      />
 
       {/* CTA */}
       <section className="bg-navy-950 py-12 lg:py-16">

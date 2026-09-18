@@ -1,8 +1,116 @@
 @import "tailwindcss";
 @import "@jurmaq/shared/styles/globals.css";
 
-/* Overrides específicos de barraca. Vacío por ahora — agregar aquí
-   cualquier utility o token que aplique solo a esta app. */
+/* ===========================================================================
+   JURMAQ Barraca — "el mesón"
+
+   El sistema compartido se llama "Editorial Luxury" y viene de skills
+   genéricos de diseño: fondo hueso, off-black de Notion, pasteles. Se ve
+   correcto y podría ser de cualquiera — que es justo lo que el dueño rechazó
+   ("siento estilo IA").
+
+   Los valores de acá no se eligieron: se MIDIERON de las fotos del local que
+   ya estaban en el repo.
+     · #1A1C1E  el acero del rack en barraca-angulos.jpg
+     · #182E54  la pintura del mesón y la estantería en barraca-meson.jpg
+     · #D4CCC5  el hormigón del piso del galpón
+     · #C90319  el rojo del letrero de la fachada (ya estaba muestreado)
+     · #E9B400  la línea amarilla pintada en el piso que lleva al mostrador
+
+   Si Sodimac es el supermercado y Prodalam el especialista, esto es el mesón:
+   una sola dirección, precio en pantalla sin pedir nada, y la medida escrita
+   a mano sobre el fierro.
+   =========================================================================== */
+
+@theme inline {
+  /* --- Superficie: hormigón y mesón ------------------------------------- */
+  --color-losa: #F2F1EE;        /* fondo de página (hormigón aclarado) */
+  --color-losa-alt: #E6E4DF;    /* banda de sección alterna — UNA sola */
+  --color-meson: #FFFFFF;       /* tarjeta, ficha, mostrador */
+
+  /* --- Tinta: acero ------------------------------------------------------ */
+  --color-acero: #1A1C1E;       /* texto primario y placa de medida */
+  --color-acero-2: #5B5F63;     /* secundario */
+  --color-acero-3: #8A8E92;     /* terciario, metadatos, "IVA incl." */
+
+  /* --- Cantos ------------------------------------------------------------ */
+  --color-canto: #D8D6D1;       /* borde de tarjeta, divisores */
+  --color-canto-fuerte: #B9B6B0;/* borde de input y de tabla de medidas */
+
+  /* --- La línea del piso -------------------------------------------------- */
+  /* Un único uso en todo el sitio: la regla bajo la promesa de las 2 horas.
+     Nunca como fondo, nunca como texto, nunca dentro de una tarjeta. */
+  --color-linea: #E9B400;
+}
+
+/* Presupuesto de color, escrito para que se pueda revisar:
+     rojo #C90319 → sólo el botón primario (uno por pantalla), la píldora −X%
+                    de oferta, y el trazo de remate del letrero.
+                    PROHIBIDO en: precio, títulos, texto corrido, iconos.
+     navy         → precio, cifras de stock, cromo, tabla de medidas.
+     amarillo     → sólo la regla de la promesa.
+     verde        → sólo el glifo de WhatsApp, sin fondo y sin latido. */
+
+/* ---------------------------------------------------------------------------
+   Firma 1 — La placa de medida
+
+   La medida deja de ser una leyenda gris bajo el nombre y pasa a ser un
+   objeto: acero oscuro con la cifra en blanco condensado. Es la traducción
+   literal de lo que está escrito con plumón blanco sobre los ángulos en
+   barraca-angulos.jpg y con tiza en las vigas del rack.
+
+   Resuelve además un problema real: el 47% del catálogo son variantes de
+   medida y las fotos de perfiles son todas iguales, así que la medida es lo
+   único que distingue una tarjeta de la siguiente.
+--------------------------------------------------------------------------- */
+.placa-medida {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  background: var(--color-acero);
+  color: #fff;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  line-height: 1.15;
+}
+
+/* ---------------------------------------------------------------------------
+   Firma 2 — Los números en condensada
+
+   Toda cifra del sitio (precio, medida, stock, teléfono, años) va en Oswald;
+   todo el texto va en la sans. Ningún referente chileno separa texto de
+   número, y es la decisión tipográfica más barata y más reconocible que hay.
+--------------------------------------------------------------------------- */
+.cifra {
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* ---------------------------------------------------------------------------
+   Firma 3 — El trazo de remate del letrero
+
+   Cuando un bloque habla como la marca, cierra con un trazo rojo corto pegado
+   al borde izquierdo. Nunca centrado, nunca de ancho completo.
+--------------------------------------------------------------------------- */
+.trazo-letrero::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 3px;
+  margin-top: 0.75rem;
+  background: #C90319;
+}
+
+/* La regla amarilla de la promesa: el único amarillo del sitio. */
+.regla-promesa {
+  height: 3px;
+  background: var(--color-linea);
+}
 
 /* ---------------------------------------------------------------------------
    Carrusel de marcas (MarcasCarrusel.tsx)
