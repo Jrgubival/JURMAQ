@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title:
     "JURMAQ · Arriendo Retroexcavadora y Maquinaria en Curicó",
   description:
-    "Arriendo de retroexcavadora, miniexcavadora, minicargador y maquinaria pesada en Curicó, Teno, Molina, Romeral, Talca y toda la Región del Maule. Constructora, maestranza y barraca de fierros JURMAQ. +25 años. Para barraca: súbenos tu cotización y en menos de 2 horas te mejoramos el precio.",
+    "Arriendo de retroexcavadora, miniexcavadora, minicargador y maquinaria pesada en Curicó, Teno, Molina, Romeral, Talca y toda la Región del Maule. Constructora, maestranza y barraca de fierros JURMAQ. +25 años. Para barraca: tráenos tu cotización y te mejoramos el precio.",
   keywords: [
     "arriendo maquinaria Curicó",
     "arriendo maquinaria Maule",

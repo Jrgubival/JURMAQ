@@ -1,6 +1,7 @@
 import { transporter } from "../transport";
 import { renderEmailLayout, renderButton, renderOrderItems, BRAND } from "../layout";
 import { formatCLP, escapeHtml } from "../utils";
+import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from "../../whatsapp";
 
 /**
  * Email "cotización recibida" al cliente final tras submit del formulario
@@ -24,9 +25,13 @@ export async function sendCotizacionEmail(
     }))
   );
 
-  const whatsappHref = `https://wa.me/56976673577?text=Hola%2C%20consulto%20por%20mi%20cotizacion%20%23${encodeURIComponent(
-    cotizacion.numero
-  )}`;
+  // Mantiene el número de cotización como contexto y arranca con
+  // "Hola, vengo de la web" para que se sepa el origen.
+  const whatsappHref = buildWhatsappUrl({
+    text: `${SALUDO_WEB_BARRACA} y consulto por mi cotización #${cotizacion.numero}`,
+    utm_content: "email_cotizacion",
+    utm_campaign: "barraca_cotizacion",
+  });
 
   const body = `
     <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${BRAND.orange};">Cotización recibida</p>
@@ -49,7 +54,7 @@ export async function sendCotizacionEmail(
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f7f8fa;border:1px solid ${BRAND.border};border-radius:10px;margin-bottom:20px;">
       <tr><td style="padding:16px 22px;text-align:center;">
         <p style="margin:0;font-size:15px;font-weight:700;line-height:1.5;color:${BRAND.navy};">
-          &#9200; Revisaremos tu pedido y te contactaremos en menos de 2 horas
+          &#9200; Revisaremos tu pedido y te contactaremos en horario de atención
         </p>
       </td></tr>
     </table>
@@ -71,7 +76,7 @@ export async function sendCotizacionEmail(
 
   const html = renderEmailLayout({
     title: `Cotización ${cotizacion.numero} - JURMAQ Barraca`,
-    preheader: `Recibimos tu cotización #${cotizacion.numero}. Te contactamos en menos de 2 horas.`,
+    preheader: `Recibimos tu cotización #${cotizacion.numero}. Te contactamos en horario de atención.`,
     bodyHtml: body,
   });
 

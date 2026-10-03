@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import Link from "@/components/barraca/Enlace";
-import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ } from "@jurmaq/shared/seo";
+import { CIUDADES, TOP_PRODUCTOS_BARRACA, HORARIO_BARRACA } from "@jurmaq/shared/seo";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
+import { whatsappCtaBarracaMejorarPrecio } from "@jurmaq/shared/whatsapp";
+import ComoFunciona from "@/components/barraca/ComoFunciona";
+import { PROMESA, PROMESA_CON_ASTERISCO, NOTA_PROMESA, CONDICIONES_PROMESA } from "@/lib/promesa";
+
+/** Línea visible junto a cada botón de WhatsApp de esta página. */
+const NOTA_WHATSAPP = "Adjunta una foto o captura de tu cotización";
 
 /**
  * Te mejoramos el precio — Editorial Luxury retrofit.
@@ -19,9 +25,9 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
  */
 
 export const metadata: Metadata = {
-  title: "Te mejoramos el precio en menos de 2 horas · Barraca JURMAQ",
+  title: `${PROMESA} · Barraca JURMAQ`,
   description:
-    "¿Tienes cotización de Sodimac, Easy o Construmart? Súbela en barraca.jurmaq.cl y en menos de 2 horas te llega una contraoferta JURMAQ por correo. Sin trampa, sin letra chica, sin compromiso de compra. Despacho a Curicó, Molina, Talca y toda la Región del Maule.",
+    `¿Tienes cotización de Sodimac, Easy o Construmart? ${PROMESA}. Sin compromiso de compra. Despacho a Curicó, Molina, Talca y toda la Región del Maule.`,
   keywords: [
     "te mejoramos el precio",
     "súbenos tu cotización",
@@ -36,9 +42,9 @@ export const metadata: Metadata = {
     "ferretería online Maule",
   ],
   openGraph: {
-    title: "Te mejoramos el precio en 2 horas · Barraca JURMAQ Curicó",
+    title: `${PROMESA} · Barraca JURMAQ Curicó`,
     description:
-      "Súbenos tu cotización de la competencia y te respondemos con contraoferta JURMAQ en menos de 2 horas. Sin compromiso. Despacho a toda la Región del Maule.",
+      `${PROMESA}. Sin compromiso. Despacho a toda la Región del Maule.`,
     url: "https://barraca.jurmaq.cl/te-mejoramos-el-precio",
     siteName: "Barraca JURMAQ",
     locale: "es_CL",
@@ -47,9 +53,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Te mejoramos el precio en 2h · Barraca JURMAQ",
+    title: `${PROMESA} · Barraca JURMAQ`,
     description:
-      "Súbenos tu cotización de Sodimac, Easy o Construmart y te respondemos con contraoferta JURMAQ en menos de 2 horas.",
+      `¿Tienes cotización de Sodimac, Easy o Construmart? ${PROMESA}.`,
   },
   alternates: { canonical: "https://barraca.jurmaq.cl/te-mejoramos-el-precio" },
 };
@@ -60,12 +66,12 @@ const FAQ = [
     a: "Sacas foto o PDF de tu cotización (de Sodimac, Easy, Construmart u otra barraca), la subes en la sección 'Sube tu cotización' o nos la mandas por WhatsApp. La revisamos, comparamos precios producto por producto, y te respondemos por correo con una contraoferta JURMAQ. Si te conviene, aceptas. Si no, no pasa nada.",
   },
   {
-    q: "¿En cuánto tiempo me responden?",
-    a: "En menos de 2 horas hábiles (Lun-Vie 8:30-18:30, Sáb 9:00-14:00). Si nos escribes fuera de horario, te contestamos a primera hora del día hábil siguiente.",
+    q: "¿Cuándo revisan mi cotización?",
+    a: `En horario de atención. ${HORARIO_BARRACA.texto}`,
   },
   {
-    q: "¿Tiene letra chica?",
-    a: "No. La contraoferta es por escrito, con detalle producto por producto y total final con IVA incluido. Si igualamos o bajamos, lo hacemos sobre el mismo producto, marca y formato. Si bajamos pero cambiando una marca, te lo decimos explícitamente.",
+    q: "¿Qué condiciones tiene?",
+    a: `${CONDICIONES_PROMESA} La contraoferta es por escrito, con detalle producto por producto y total final con IVA incluido. Si igualamos o bajamos, lo hacemos sobre el mismo producto, marca y formato. Si bajamos pero cambiando una marca, te lo decimos explícitamente.`,
   },
   {
     q: "¿Mejoran el precio en TODOS los productos?",
@@ -87,13 +93,6 @@ const FAQ = [
     q: "¿Necesito tener cuenta para subir mi cotización?",
     a: "No. Puedes subir cotización sin cuenta, solo nos dejas tu correo y teléfono para responderte. Si tienes cuenta JURMAQ, te queda guardado el historial.",
   },
-];
-
-const STEPS = [
-  { n: "01", t: "Saca foto", d: "De tu cotización en Sodimac, Easy, Construmart o donde sea." },
-  { n: "02", t: "Súbela acá", d: "En la sección 'Sube tu cotización' o por WhatsApp." },
-  { n: "03", t: "Respondemos", d: "En menos de 2 horas hábiles. Por correo o WhatsApp." },
-  { n: "04", t: "Decides", d: "Si te conviene, aceptas y coordinamos despacho. Si no, no pasa nada." },
 ];
 
 const CASOS = [
@@ -172,10 +171,10 @@ export default function PriceMatchPage() {
       {
         "@type": "Service",
         "@id": "https://barraca.jurmaq.cl/te-mejoramos-el-precio#service",
-        name: "Te mejoramos el precio en 2 horas",
+        name: PROMESA,
         serviceType: "Comparación y contraoferta de precios de materiales de construcción",
         description:
-          "Compara tu cotización de Sodimac, Easy, Construmart u otra barraca contra los precios de JURMAQ. Te respondemos con contraoferta por correo en menos de 2 horas. Sin compromiso de compra.",
+          `Compara tu cotización de Sodimac, Easy, Construmart u otra barraca contra los precios de JURMAQ. ${PROMESA}. Sin compromiso de compra. ${CONDICIONES_PROMESA}`,
         provider: { "@id": "https://jurmaq.cl/#organization" },
         areaServed: CIUDADES.map((c) => ({ "@type": "City", name: c.nombre })),
         offers: {
@@ -218,20 +217,19 @@ export default function PriceMatchPage() {
               Servicio JURMAQ · gratis · sin compromiso
             </p>
             <h1
-              className="text-white mb-8 leading-[1.05] max-w-4xl"
+              className="text-white mb-4 leading-[1.05] max-w-4xl"
               style={{ fontSize: 'clamp(2.5rem, 5.5vw, 4.5rem)', fontWeight: 500, letterSpacing: '-0.015em' }}
             >
-              Te mejoramos el precio
-              <br />
-              <span className="font-semibold text-white/95" style={{ fontWeight: 400 }}>
-                en menos de dos horas.
-              </span>
+              {PROMESA_CON_ASTERISCO}
             </h1>
+            {/* Nota del asterisco: en el mismo bloque, chica y gris. */}
+            <p className="text-xs text-gray-400 max-w-2xl leading-relaxed mb-8">{NOTA_PROMESA}</p>
             <p className="text-base lg:text-lg text-white/75 max-w-2xl leading-relaxed mb-10">
-              Súbenos tu cotización de Sodimac, Easy, Construmart u otra barraca. La revisamos producto por producto y te respondemos por correo con una contraoferta JURMAQ. Si te conviene, aceptas. Si no, no pasa nada.
+              Sirve la de Sodimac, Easy, Construmart u otra barraca. La revisamos producto por producto y te respondemos con una contraoferta JURMAQ. Si te conviene, aceptas. Si no, no pasa nada.
             </p>
 
-            {/* Garantías como lista divisible, no badge shouted */}
+            {/* "Sin letra chica" salió de la lista: ahora la promesa lleva una
+                nota con condiciones, y decir lo contrario al lado la contradice. */}
             <ul className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-white/70 mb-12">
               <li className="inline-flex items-center gap-2">
                 <IconCheck className="w-3.5 h-3.5 text-[#D4B16A]" />
@@ -239,15 +237,11 @@ export default function PriceMatchPage() {
               </li>
               <li className="inline-flex items-center gap-2">
                 <IconCheck className="w-3.5 h-3.5 text-[#D4B16A]" />
-                Sin letra chica
-              </li>
-              <li className="inline-flex items-center gap-2">
-                <IconCheck className="w-3.5 h-3.5 text-[#D4B16A]" />
-                Sin compromiso
+                Sin compromiso de compra
               </li>
             </ul>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Link
                 href="/cotizar"
                 className="inline-flex items-center gap-2 bg-white text-[#111111] px-6 py-3 rounded-lg text-sm font-medium tracking-[0.02em] hover:bg-white/90 transition-colors"
@@ -256,7 +250,7 @@ export default function PriceMatchPage() {
                 <IconArrow className="w-4 h-4" />
               </Link>
               <a
-                href={HQ.whatsapp + "?text=Hola%2C%20quiero%20que%20me%20mejoren%20una%20cotización"}
+                href={whatsappCtaBarracaMejorarPrecio('hero')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 border border-white/25 text-white px-6 py-3 rounded-lg text-sm font-medium tracking-[0.02em] hover:bg-white/10 transition-colors"
@@ -264,51 +258,20 @@ export default function PriceMatchPage() {
                 <IconWhatsapp className="w-4 h-4" />
                 Mándala por WhatsApp
               </a>
+              <p className="text-sm text-gray-400">{NOTA_WHATSAPP}</p>
             </div>
           </div>
         </header>
 
-        {/* Cómo funciona — divided list editorial */}
-        <section className="py-24 lg:py-32">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl mb-16">
-              <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-4">
-                Proceso
-              </p>
-              <h2
-                className="text-[#111111] leading-[1.1] mb-6"
-                style={{ fontSize: 'clamp(1.875rem, 3.5vw, 3rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
-              >
-                Cómo <span className="font-semibold" style={{ fontWeight: 400 }}>funciona</span>.
-              </h2>
-              <p className="text-base text-[#5A5A57] leading-relaxed">
-                Cuatro pasos. Treinta segundos para subirla. Dos horas para que te respondamos.
-              </p>
-            </div>
-
-            <ol className="border-t border-[#EAEAEA]">
-              {STEPS.map((p) => (
-                <li
-                  key={p.n}
-                  className="grid grid-cols-[auto_1fr] lg:grid-cols-[120px_180px_1fr] gap-x-6 lg:gap-x-12 gap-y-2 py-8 lg:py-10 border-b border-[#EAEAEA]"
-                >
-                  <p
-                    className="text-[#956400] font-semibold text-2xl lg:text-3xl leading-none"
-                    style={{ fontWeight: 400 }}
-                  >
-                    {p.n}
-                  </p>
-                  <h3 className="text-lg lg:text-xl text-[#111111] font-medium tracking-[-0.005em] col-span-2 lg:col-span-1">
-                    {p.t}
-                  </h3>
-                  <p className="text-sm lg:text-base text-[#5A5A57] leading-relaxed col-span-2 lg:col-span-1">
-                    {p.d}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
+        {/* Cómo funciona — el mismo bloque de tienda que la portada (tres pasos,
+            números en círculo rojo, botón verde de WhatsApp). Reemplaza la
+            lista editorial de cuatro pasos, que además prometía un plazo. */}
+        <ComoFunciona
+          whatsappHref={whatsappCtaBarracaMejorarPrecio('como_funciona')}
+          nota={NOTA_WHATSAPP}
+          className="border-b border-gray-200"
+          ancho="max-w-6xl"
+        />
 
         {/* Casos reales — editorial table-as-cards */}
         <section className="py-24 lg:py-32 bg-white border-y border-[#EAEAEA]">
@@ -461,7 +424,7 @@ export default function PriceMatchPage() {
         <section className="py-24 lg:py-32 bg-navy-950 text-white border-t border-white/10">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p className="text-[10px] font-semibold text-white/55 uppercase tracking-[0.22em] mb-6">
-              Tu cotización en 30 segundos
+              Gratis · sin compromiso
             </p>
             <h2
               className="text-white leading-[1.1] mb-8"
@@ -469,9 +432,10 @@ export default function PriceMatchPage() {
             >
               ¿Tienes una <span className="font-semibold" style={{ fontWeight: 400 }}>cotización</span>?
             </h2>
-            <p className="text-base lg:text-lg text-white/75 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Sube tu cotización ahora y te respondemos en menos de dos horas hábiles con una contraoferta JURMAQ por correo.
+            <p className="text-base lg:text-lg text-white/75 mb-2 max-w-2xl mx-auto leading-relaxed">
+              {PROMESA_CON_ASTERISCO}
             </p>
+            <p className="text-xs text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">{NOTA_PROMESA}</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
                 href="/cotizar"
@@ -481,7 +445,7 @@ export default function PriceMatchPage() {
                 <IconArrow className="w-4 h-4" />
               </Link>
               <a
-                href={HQ.whatsapp + "?text=Hola%2C%20quiero%20que%20me%20mejoren%20una%20cotización"}
+                href={whatsappCtaBarracaMejorarPrecio('cta_final')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 border border-white/25 text-white px-6 py-3 rounded-lg text-sm font-medium tracking-[0.02em] hover:bg-white/10 transition-colors"
@@ -490,6 +454,7 @@ export default function PriceMatchPage() {
                 WhatsApp +56 9 7667 3577
               </a>
             </div>
+            <p className="mt-4 text-sm text-gray-400">{NOTA_WHATSAPP}</p>
           </div>
         </section>
       </article>

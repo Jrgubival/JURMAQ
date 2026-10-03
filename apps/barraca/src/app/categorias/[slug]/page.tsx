@@ -13,6 +13,7 @@ import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs"
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import { CIUDADES } from "@jurmaq/shared/seo";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
+import { PROMESA, PROMESA_CORTA_META } from "@/lib/promesa";
 
 type BarracaCategoriaRow = Pick<
   Database['public']['Tables']['barraca_categorias']['Row'],
@@ -81,7 +82,7 @@ export async function generateMetadata({
   const lowerName = cat.nombre.toLowerCase();
   return {
     title: `${cat.nombre} en Molina · Despacho a Curicó y el Maule · Barraca JURMAQ`,
-    description: `${productCount.total} productos de ${lowerName} con precio publicado en Barraca JURMAQ Curicó · Molina. Despacho a Teno, Romeral, Talca y toda la Región del Maule. Súbenos tu cotización de la competencia y en menos de 2 horas te mejoramos el precio.`,
+    description: `${productCount.total} productos de ${lowerName} con precio publicado en Barraca JURMAQ Curicó · Molina. Despacho a Teno, Romeral, Talca y toda la Región del Maule. ${PROMESA}.`,
     keywords: [
       `${lowerName} Curicó`,
       `${lowerName} Molina`,
@@ -99,8 +100,8 @@ export async function generateMetadata({
       "ferretería online Maule",
     ],
     openGraph: {
-      title: `${cat.nombre} · Barraca JURMAQ Curicó · Te mejoramos el precio en 2h`,
-      description: `${productCount.total} productos de ${lowerName} con precio publicado y stock. Despacho a toda la Región del Maule. Cotiza online o súbenos tu cotización de Sodimac, Easy o Construmart y te mejoramos el precio en menos de 2 horas.`,
+      title: `${cat.nombre} · Barraca JURMAQ Curicó · ${PROMESA_CORTA_META}`,
+      description: `${productCount.total} productos de ${lowerName} con precio publicado y stock. Despacho a toda la Región del Maule. Cotiza online. ${PROMESA}.`,
       url: `https://barraca.jurmaq.cl/categorias/${cat.slug}`,
       siteName: "Barraca JURMAQ",
       locale: "es_CL",
@@ -117,7 +118,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title: `${cat.nombre} · Barraca JURMAQ Curicó`,
-      description: `${productCount.total} productos. Súbenos tu cotización y en 2h te mejoramos el precio.`,
+      description: `${productCount.total} productos. ${PROMESA}.`,
     },
     // Sin bloque `icons:`: en Next la página REEMPLAZA el del layout en vez
     // de fusionarse, y este declaraba solo 2 de los 6 iconos, apuntando
@@ -205,7 +206,7 @@ export default async function CategoriaPage({
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: `${categoria.nombre} - Barraca JURMAQ`,
-    description: `Productos de ${categoria.nombre.toLowerCase()} disponibles en Barraca JURMAQ Curicó. Te mejoramos el precio de Sodimac, Easy o Construmart en menos de 2 horas. Despacho a toda la Región del Maule.`,
+    description: `Productos de ${categoria.nombre.toLowerCase()} disponibles en Barraca JURMAQ Curicó. ${PROMESA}. Despacho a toda la Región del Maule.`,
     numberOfItems: total,
     itemListElement: (productos || []).map((p: BarracaProductoRow, i: number) => {
       const effective = p.en_oferta && p.precio_original ? p.precio_original : p.precio;

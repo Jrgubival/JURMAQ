@@ -21,6 +21,20 @@ const DEFAULT_PHONE = HQ.whatsapp.replace('https://wa.me/', '');
 /** Saludo canonical para todos los CTAs. Cambiar acá → afecta todos los textos. */
 export const SALUDO = 'Hola, ';
 
+/**
+ * Barraca: todo mensaje que sale de barraca.jurmaq.cl (o de sus correos)
+ * arranca con esta frase, para que quien atiende el WhatsApp sepa de inmediato
+ * que el cliente llegó desde la web. Los mensajes con contexto (producto,
+ * número de cotización, ciudad) lo agregan después: "Hola, vengo de la web y …".
+ */
+export const SALUDO_WEB_BARRACA = 'Hola, vengo de la web';
+
+/** Barraca: texto por defecto de cualquier enlace de WhatsApp sin contexto propio. */
+export const TEXTO_WA_BARRACA = `${SALUDO_WEB_BARRACA} y quiero cotizar`;
+
+/** Barraca: texto de los botones de /te-mejoramos-el-precio. */
+export const TEXTO_WA_MEJORAR_PRECIO = 'Hola, quiero que me mejoren esta cotización';
+
 export interface WhatsappCtaOpts {
   /** Texto a pre-rellenar en el chat. Si no se provee, no se incluye `text=`. */
   text?: string;
@@ -45,13 +59,17 @@ export interface WhatsappCtaOpts {
  */
 export function buildWhatsappUrl(opts: WhatsappCtaOpts = {}): string {
   const phone = opts.phone || DEFAULT_PHONE;
-  const params = new URLSearchParams();
-  if (opts.text) params.set('text', opts.text);
-  params.set('utm_source', opts.utm_source || 'jurmaq');
-  params.set('utm_medium', opts.utm_medium || 'wa');
-  if (opts.utm_content) params.set('utm_content', opts.utm_content);
-  if (opts.utm_campaign) params.set('utm_campaign', opts.utm_campaign);
-  return `https://wa.me/${phone}?${params.toString()}`;
+  // encodeURIComponent y no URLSearchParams: URLSearchParams codifica el
+  // espacio como "+", y hay clientes de WhatsApp que lo dejan literal en el
+  // mensaje ("Hola,+vengo+de+la+web"). Con %20 el texto llega limpio siempre.
+  const params: Array<[string, string]> = [];
+  if (opts.text) params.push(['text', opts.text]);
+  params.push(['utm_source', opts.utm_source || 'jurmaq']);
+  params.push(['utm_medium', opts.utm_medium || 'wa']);
+  if (opts.utm_content) params.push(['utm_content', opts.utm_content]);
+  if (opts.utm_campaign) params.push(['utm_campaign', opts.utm_campaign]);
+  const query = params.map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  return `https://wa.me/${phone}?${query}`;
 }
 
 // ============================================================================
@@ -157,22 +175,33 @@ export function whatsappCtaObraCompleta(
 // ============================================================================
 
 /**
- * CTA "cotizar X" desde landing/shell/slider de barraca. Scope identifica
- * la copia visible (cotizar materiales / productos / productos-barraca).
+ * CTA por defecto de barraca.jurmaq.cl (barra superior, pie, botón flotante,
+ * portada, correos). Siempre el mismo texto: TEXTO_WA_BARRACA. `source`
+ * identifica el lugar del botón en los UTM (topbar, footer, shell_fab, …).
  */
-export function whatsappCtaBarracaCotizar(
-  scope: 'materiales' | 'productos' | 'productos-barraca' = 'productos',
-  source: string = 'shell',
-): string {
-  const map: Record<typeof scope, string> = {
-    materiales: 'necesito cotizar materiales',
-    productos: 'necesito cotizar productos',
-    'productos-barraca': 'necesito cotizar productos de la barraca',
-  };
+export function whatsappCtaBarracaCotizar(source: string = 'shell'): string {
   return buildWhatsappUrl({
-    text: `${SALUDO}${map[scope]}`,
+    text: TEXTO_WA_BARRACA,
     utm_content: `barraca_${source}`,
     utm_campaign: 'barraca_cotizar',
+  });
+}
+
+/** CTA de /te-mejoramos-el-precio: el cliente manda la cotización a mejorar. */
+export function whatsappCtaBarracaMejorarPrecio(source: string = 'te_mejoramos'): string {
+  return buildWhatsappUrl({
+    text: TEXTO_WA_MEJORAR_PRECIO,
+    utm_content: `barraca_${source}`,
+    utm_campaign: 'barraca_mejorar_precio',
+  });
+}
+
+/** CTA de la landing /en/[ciudad] de la barraca: mantiene la ciudad de la obra. */
+export function whatsappCtaBarracaCiudad(ciudadSlug: string, ciudadNombre: string): string {
+  return buildWhatsappUrl({
+    text: `${SALUDO_WEB_BARRACA} y necesito cotizar materiales para una obra en ${ciudadNombre}`,
+    utm_content: `barraca_ciudad_${ciudadSlug}`,
+    utm_campaign: 'barraca_ciudad',
   });
 }
 
@@ -184,7 +213,7 @@ export function whatsappCtaProducto(
 ): string {
   const qty = cantidad > 1 ? ` (x${cantidad})` : '';
   return buildWhatsappUrl({
-    text: `${SALUDO}quiero cotizar: ${productoNombre}${qty}`,
+    text: `${SALUDO_WEB_BARRACA} y quiero cotizar: ${productoNombre}${qty}`,
     utm_content: `producto_${productoSlug}`,
     utm_campaign: 'barraca_producto',
   });
@@ -196,11 +225,13 @@ export function whatsappCtaProducto(
 
 /**
  * CTA "consultar sobre cotización existente". Lo usa el cliente desde el
- * email de cotización o desde /cotizacion/[numero].
+ * email de cotización o desde /cotizacion/[numero]. En barraca el mensaje
+ * arranca con SALUDO_WEB_BARRACA; en constructora queda como estaba.
  */
 export function whatsappCtaConsultaCotizacion(numero: string, app: 'barraca' | 'constructora' = 'barraca'): string {
+  const saludo = app === 'barraca' ? `${SALUDO_WEB_BARRACA} y ` : SALUDO;
   return buildWhatsappUrl({
-    text: `${SALUDO}tengo una consulta sobre la cotización ${numero}`,
+    text: `${saludo}tengo una consulta sobre la cotización ${numero}`,
     utm_content: `cotizacion_consulta_${numero}`,
     utm_campaign: `${app}_cotizacion`,
   });
@@ -209,7 +240,7 @@ export function whatsappCtaConsultaCotizacion(numero: string, app: 'barraca' | '
 /** CTA confirmación post-envío (cliente acaba de enviar la cotización). */
 export function whatsappCtaCotizacionEnviada(numero: string): string {
   return buildWhatsappUrl({
-    text: `${SALUDO}acabo de enviar la cotización ${numero}. Quedo atento a la confirmación.`,
+    text: `${SALUDO_WEB_BARRACA} y acabo de enviar la cotización ${numero}. Quedo atento a la confirmación.`,
     utm_content: `cotizacion_enviada_${numero}`,
     utm_campaign: 'barraca_cotizacion_enviada',
   });
@@ -226,7 +257,7 @@ export function whatsappCtaSucursal(
   opts: { phone?: string; slug?: string } = {},
 ): string {
   return buildWhatsappUrl({
-    text: `${SALUDO}consulto por la sucursal ${ciudad}`,
+    text: `${SALUDO_WEB_BARRACA} y consulto por la sucursal ${ciudad}`,
     utm_content: `sucursal_${opts.slug || ciudad.toLowerCase()}`,
     utm_campaign: 'sucursales',
     phone: opts.phone,

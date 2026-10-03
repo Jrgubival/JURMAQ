@@ -21,7 +21,7 @@
  * https://search.google.com/test/rich-results
  */
 
-import { LEGAL_INFO } from './index';
+import { LEGAL_INFO, HORARIO_BARRACA } from './index';
 
 /**
  * Serializa un objeto a JSON seguro para inyectar dentro de un
@@ -99,12 +99,28 @@ const AREA_SERVED = [
  * Notar:
  * - Address/geo/telefono salen de `LEGAL_INFO.brands[brand]` — single source of truth.
  * - El logo siempre es `/icon-512.png` (asset deployado en cada dominio).
- * - `openingHoursSpecification` está hardcoded acá (lunes-viernes 08:30-18:30,
- *   sábado 09:00-14:00). Si cambian los horarios, editar solo este archivo.
- *   OJO: decía 18:00 mientras la barra superior del sitio y la página de
- *   ubicación mostraban 18:30. Se alineó al horario que ve el cliente en
- *   pantalla; si el correcto fuera 18:00, hay que cambiar los tres lugares.
+ * - `openingHoursSpecification` depende de la brand:
+ *   - barraca: sale de `HORARIO_BARRACA` (seo/index.ts), la misma constante
+ *     que alimenta la barra superior, el pie y /sucursales. Lunes a viernes
+ *     08:30–13:00 y 14:30–18:00, sábado 09:00–13:00, domingo cerrado.
+ *   - constructora: lunes a viernes 08:30–18:30, sábado 09:00–14:00
+ *     (hardcoded abajo; no se tocó al cambiar el horario de la barraca).
  */
+const OPENING_HOURS_CONSTRUCTORA = [
+  {
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+    opens: '08:30',
+    closes: '18:30',
+  },
+  {
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: 'Saturday',
+    opens: '09:00',
+    closes: '14:00',
+  },
+];
+
 export function buildJsonLdGraph(brand: JsonLdBrand): Record<string, unknown> {
   const config = BRAND_CONFIG[brand];
   const brandData = LEGAL_INFO.brands[brand];
@@ -150,20 +166,10 @@ export function buildJsonLdGraph(brand: JsonLdBrand): Record<string, unknown> {
           latitude: brandData.geo.latitude,
           longitude: brandData.geo.longitude,
         },
-        openingHoursSpecification: [
-          {
-            '@type': 'OpeningHoursSpecification',
-            dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-            opens: '08:30',
-            closes: '18:30',
-          },
-          {
-            '@type': 'OpeningHoursSpecification',
-            dayOfWeek: 'Saturday',
-            opens: '09:00',
-            closes: '14:00',
-          },
-        ],
+        openingHoursSpecification:
+          brand === 'barraca'
+            ? HORARIO_BARRACA.openingHoursSpecification
+            : OPENING_HOURS_CONSTRUCTORA,
         areaServed: { '@type': 'AdministrativeArea', name: 'Región del Maule, Chile' },
         parentOrganization: { '@id': `${baseUrl}/#organization` },
       },

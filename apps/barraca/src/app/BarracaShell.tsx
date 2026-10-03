@@ -8,8 +8,9 @@ import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
 import ToastContainer from "@/components/Toast";
 import { IconCoin, IconArrowRight } from "@jurmaq/shared/icons";
-import { LEGAL_INFO, buildFooterCopyright } from "@jurmaq/shared/seo";
-import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
+import { LEGAL_INFO, HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
+import { whatsappCtaBarracaCotizar, whatsappCtaBarracaMejorarPrecio } from "@jurmaq/shared/whatsapp";
+import { PROMESA_CON_ASTERISCO, PROMESA_CORTA, NOTA_PROMESA } from "@/lib/promesa";
 
 const CartDrawer = dynamic(
   () => import("@/components/barraca/CartDrawer"),
@@ -89,32 +90,36 @@ function UnidadesJurmaq() {
   );
 }
 
+// Barra superior. La promesa va en su forma corta (no cabe la frase entera);
+// la nota del asterisco está en el pie de la misma página. El horario es el
+// texto completo de HORARIO_BARRACA y sólo se muestra desde xl, que es donde
+// entra en una línea junto al resto sin desbordar.
 function TopBar() {
   return (
     <div className="bg-navy-950 border-b border-navy-800 text-gray-300 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-8 gap-4">
-          <div className="hidden sm:flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-4 min-w-0 whitespace-nowrap">
             <Link
               href="/te-mejoramos-el-precio"
               className="inline-flex items-center gap-1.5 font-semibold text-marca-400 hover:text-marca-300 transition-colors"
             >
               <IconCoin className="w-3.5 h-3.5" />
-              Te mejoramos el precio en 2h
+              {PROMESA_CORTA}
             </Link>
-            <span className="text-navy-700">|</span>
-            <span className="flex items-center gap-1.5">
+            <span className="hidden lg:inline text-navy-700">|</span>
+            <span className="hidden lg:flex items-center gap-1.5">
               <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               </svg>
               Despacho a toda la Región del Maule
             </span>
-            <span className="text-navy-700">|</span>
-            <span>Lun-Vie 8:30-18:30 / Sab 9:00-14:00</span>
+            <span className="hidden xl:inline text-navy-700">|</span>
+            <span className="hidden xl:inline">{HORARIO_BARRACA.texto}</span>
           </div>
-          <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-4 ml-auto whitespace-nowrap">
             <a
-              href="https://wa.me/56976673577"
+              href={whatsappCtaBarracaCotizar('topbar')}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 hover:text-green-400 transition-colors"
@@ -593,9 +598,15 @@ function WhatsAppFloat() {
   // WhatsApp FAB reubicado a left-6 (esquina opuesta a ADIA) y reducido a
   // w-11 h-11 para no competir visualmente con el botón ADIA primary.
   // Verde mantenido por reconocimiento de marca WhatsApp.
+  // En /te-mejoramos-el-precio lleva el mismo texto que los botones de esa
+  // página ("quiero que me mejoren esta cotización"); en el resto, el default.
+  const pathname = usePathname();
+  const href = pathname === "/te-mejoramos-el-precio"
+    ? whatsappCtaBarracaMejorarPrecio('shell_fab')
+    : whatsappCtaBarracaCotizar('shell_fab');
   return (
     <a
-      href={whatsappCtaBarracaCotizar('productos-barraca', 'shell_fab')}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 left-6 z-40 w-11 h-11 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-md whatsapp-float transition-colors safe-bottom"
@@ -625,14 +636,16 @@ function Footer() {
             <p className="text-sm text-gray-300 mb-4 leading-relaxed">
               Barraca de fierros y materiales de construcción en Molina. Despachamos a Curicó, Talca, Linares y toda la Región del Maule.
               Más de 1.600 productos: fierros, perfiles, planchas, tubos, mallas,
-              pinturas y herramientas. <strong className="text-marca-400">Súbenos tu
-              cotización y en menos de 2 horas te mejoramos el precio</strong> de Sodimac,
-              Easy o Construmart.
+              pinturas y herramientas.
             </p>
+            <p className="text-sm mb-1">
+              <strong className="text-marca-400">{PROMESA_CON_ASTERISCO}</strong>
+            </p>
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed">{NOTA_PROMESA}</p>
             {/* Social Links */}
             <div className="flex items-center gap-3 mb-6">
               <a
-                href="https://wa.me/56976673577"
+                href={whatsappCtaBarracaCotizar('footer')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 bg-navy-800 hover:bg-green-600 rounded-lg flex items-center justify-center transition-colors"
@@ -675,8 +688,9 @@ function Footer() {
               </li>
             </ul>
             <div className="text-xs text-gray-500 mt-4 space-y-1">
-              <p>Lun - Vie: 8:30 - 18:30</p>
-              <p>Sábado: 9:00 - 14:00</p>
+              <p>{HORARIO_BARRACA.semana}.</p>
+              <p>{HORARIO_BARRACA.sabado}.</p>
+              <p>{HORARIO_BARRACA.domingo}.</p>
             </div>
           </div>
 
@@ -753,7 +767,7 @@ function Footer() {
               className="inline-flex items-center gap-2 px-4 py-2 bg-marca-600 hover:bg-marca-700 rounded-lg text-sm font-bold text-white transition-colors"
             >
               <IconCoin className="w-4 h-4" />
-              Te mejoramos el precio en 2h
+              {PROMESA_CORTA}
               <IconArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

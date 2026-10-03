@@ -1,6 +1,7 @@
 import { BARRACA_URL, sendPostPurchaseEmail } from './post-purchase-shared';
 import { renderEmailLayout, renderButton, BRAND } from '../layout';
 import { escapeHtml } from "../utils";
+import { whatsappCtaBarracaCotizar } from "../../whatsapp";
 
 /**
  * Email "Gracias por tu compra" — disparado inmediatamente cuando una
@@ -18,6 +19,8 @@ export async function sendPurchaseThankYouEmail(args: {
   const totalFmt = `$${Number(args.total).toLocaleString('es-CL')}`;
   const cotUrl = `${BARRACA_URL}/cuenta/cotizaciones/${encodeURIComponent(args.numero)}`;
   const primerNombre = args.nombre.split(' ')[0] || 'Cliente';
+  // Sin contexto propio: texto por defecto de la barraca ("Hola, vengo de la web y quiero cotizar").
+  const waHref = whatsappCtaBarracaCotizar('email_gracias');
 
   const bodyHtml = `
     <p style="margin:0 0 6px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${BRAND.orange};">Compra confirmada</p>
@@ -42,11 +45,11 @@ export async function sendPurchaseThankYouEmail(args: {
     </table>
 
     <div style="margin-bottom:14px;">${renderButton({ href: cotUrl, label: 'Ver mi pedido' })}</div>
-    <div class="jm-btn">${renderButton({ href: 'https://wa.me/56976673577', label: 'Escríbenos por WhatsApp', color: 'whatsapp' })}</div>
+    <div class="jm-btn">${renderButton({ href: waHref, label: 'Escríbenos por WhatsApp', color: 'whatsapp' })}</div>
 
     <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:${BRAND.textMuted};">
       ¿Tienes dudas? Estamos disponibles por WhatsApp al
-      <a href="https://wa.me/56976673577" style="color:${BRAND.orange};text-decoration:underline;">+56 9 7667 3577</a>.
+      <a href="${escapeHtml(waHref)}" style="color:${BRAND.orange};text-decoration:underline;">+56 9 7667 3577</a>.
     </p>
   `;
 

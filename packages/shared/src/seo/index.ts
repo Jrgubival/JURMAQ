@@ -971,6 +971,44 @@ export const HQ = {
 };
 
 /**
+ * Horario de atención de la barraca (Av. Poniente 2157, Molina). Fuente única
+ * para todo lo que ve el cliente de barraca.jurmaq.cl: barra superior, pie,
+ * /sucursales, preguntas frecuentes, pie de los correos y el JSON-LD
+ * (`openingHoursSpecification`). Si cambia el horario, se cambia SOLO acá.
+ *
+ * Cierra a mediodía (13:00–14:30), por eso de lunes a viernes son dos tramos.
+ * La constructora tiene su propio horario: no usar esta constante para ella.
+ */
+export const HORARIO_BARRACA = {
+  /** Texto completo, tal cual se muestra al cliente. */
+  texto: "Lunes a viernes 8:30–13:00 y 14:30–18:00. Sábado 9:00–13:00. Domingo cerrado.",
+  semana: "Lunes a viernes 8:30–13:00 y 14:30–18:00",
+  sabado: "Sábado 9:00–13:00",
+  domingo: "Domingo cerrado",
+  /** schema.org: dos tramos de lunes a viernes y el sábado. Domingo no se declara (cerrado). */
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "08:30",
+      closes: "13:00",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      opens: "14:30",
+      closes: "18:00",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Saturday"],
+      opens: "09:00",
+      closes: "13:00",
+    },
+  ],
+} as const;
+
+/**
  * Coordenadas físicas de despacho — fuente única de verdad para ruteo OSRM.
  *
  * - Barraca: Av. Poniente 2157, Molina (sucursal materiales).

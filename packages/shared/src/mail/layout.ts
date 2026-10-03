@@ -1,4 +1,6 @@
 import { escapeHtml, formatCLP } from './utils';
+import { HORARIO_BARRACA } from '../seo';
+import { whatsappCtaBarracaCotizar } from '../whatsapp';
 
 /**
  * Sistema de email unificado JURMAQ Barraca (jun-2026).
@@ -25,8 +27,10 @@ export const BRAND = {
   whatsapp: '#25D366',
 } as const;
 
-const WA = '56976673577';
 const SITE = 'https://barraca.jurmaq.cl';
+// Enlace de WhatsApp del pie: con el texto por defecto de la barraca
+// ("Hola, vengo de la web y quiero cotizar") para que quien atiende sepa el origen.
+const WA_PIE = whatsappCtaBarracaCotizar('email_footer');
 
 const FONT = `-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif`;
 
@@ -128,7 +132,8 @@ ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacit
         <p style="margin:0 0 8px;color:#cbd5e1;font-family:${FONT};font-size:13px;line-height:1.7;">
           <strong style="color:#ffffff;">JURMAQ Barraca</strong> — Fierros y materiales de construcción<br>
           Av. Poniente 2157, Molina · Región del Maule<br>
-          WhatsApp <a href="https://wa.me/${WA}" style="color:${BRAND.orange};text-decoration:none;">+56 9 7667 3577</a> &nbsp;·&nbsp; <a href="mailto:contacto@jurmaq.cl" style="color:${BRAND.orange};text-decoration:none;">contacto@jurmaq.cl</a>
+          WhatsApp <a href="${escapeHtml(WA_PIE)}" style="color:${BRAND.orange};text-decoration:none;">+56 9 7667 3577</a> &nbsp;·&nbsp; <a href="mailto:contacto@jurmaq.cl" style="color:${BRAND.orange};text-decoration:none;">contacto@jurmaq.cl</a><br>
+          ${escapeHtml(HORARIO_BARRACA.texto)}
         </p>
         <p style="margin:12px 0 0;color:#64748b;font-family:${FONT};font-size:11px;line-height:1.5;">
           © ${year} JURMAQ · barraca.jurmaq.cl${opts.marketing ? ` · <a href="${SITE}/cuenta" style="color:#94a3b8;">Preferencias de correo</a>` : ''}

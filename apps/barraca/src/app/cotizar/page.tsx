@@ -5,6 +5,7 @@ import Link from "@/components/barraca/Enlace";
 import { showToast } from "@/components/Toast";
 import { formatCLP } from "@jurmaq/shared/format";
 import { whatsappCtaCotizacionEnviada } from "@jurmaq/shared/whatsapp";
+import { PROMESA_CON_ASTERISCO, NOTA_PROMESA } from "@/lib/promesa";
 import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
 
 interface CartItem {
@@ -356,7 +357,7 @@ export default function CotizarPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span className="text-sm font-medium">
-                  Tiempo de respuesta: 1-2 horas en horario laboral
+                  Te respondemos en horario de atención
                 </span>
               </div>
             </div>
@@ -524,7 +525,8 @@ export default function CotizarPage() {
                     />
                     <label htmlFor="tieneCompetencia" className="cursor-pointer">
                       <span className="font-semibold text-gray-900 text-sm block">Tengo una cotización de otro lugar</span>
-                      <span className="text-xs text-gray-500">Sube la cotización de la competencia y te mejoramos el precio</span>
+                      <span className="text-xs text-gray-500 block">{PROMESA_CON_ASTERISCO}</span>
+                      <span className="text-[11px] text-gray-400 block mt-0.5 leading-snug">{NOTA_PROMESA}</span>
                     </label>
                   </div>
                 </div>
@@ -634,7 +636,7 @@ export default function CotizarPage() {
                 )}
               </button>
               <p className="text-xs text-gray-500 text-center mt-2">
-                Te respondemos en menos de 2 horas en horario laboral
+                Te respondemos en horario de atención
               </p>
             </div>
           </form>

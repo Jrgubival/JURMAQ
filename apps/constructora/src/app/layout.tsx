@@ -202,7 +202,7 @@ export const metadata: Metadata = {
     title:
       "JURMAQ · Arriendo Maquinaria y Barraca de Fierros en Curicó y Maule",
     description:
-      "Arriendo de retros, miniexcavadoras y minicargadores en Curicó, Teno, Molina y Talca. Barraca de fierros con +1.600 productos. Te mejoramos el precio en menos de 2 horas.",
+      "Arriendo de retros, miniexcavadoras y minicargadores en Curicó, Teno, Molina y Talca. Barraca de fierros con +1.600 productos: tráenos tu cotización y te mejoramos el precio.",
   },
   robots: {
     index: true,

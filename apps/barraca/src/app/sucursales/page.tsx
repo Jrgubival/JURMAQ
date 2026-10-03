@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
 import { whatsappCtaSucursal } from '@jurmaq/shared/whatsapp';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import { LEGAL_INFO, CIUDADES, DISTANCIAS_BARRACA } from '@jurmaq/shared/seo';
+import { LEGAL_INFO, CIUDADES, DISTANCIAS_BARRACA, HORARIO_BARRACA } from '@jurmaq/shared/seo';
 
 /**
  * /sucursales — dónde estamos físicamente y hasta dónde despachamos.
@@ -35,9 +35,6 @@ import { LEGAL_INFO, CIUDADES, DISTANCIAS_BARRACA } from '@jurmaq/shared/seo';
 
 const BARRACA = LEGAL_INFO.brands.barraca;
 const CONSTRUCTORA = LEGAL_INFO.brands.constructora;
-
-const HORARIO_SEMANA = '08:30 — 18:30';
-const HORARIO_SABADO = '09:00 — 14:00';
 
 const TITLE = 'Dónde estamos · Barraca en Molina y despacho a todo el Maule · JURMAQ';
 const DESCRIPTION =
@@ -99,20 +96,8 @@ export default function SucursalesPage() {
       latitude: BARRACA.geo.latitude,
       longitude: BARRACA.geo.longitude,
     },
-    openingHoursSpecification: [
-      {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-        opens: '08:30',
-        closes: '18:30',
-      },
-      {
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: ['Saturday'],
-        opens: '09:00',
-        closes: '14:00',
-      },
-    ],
+    // Misma constante que el JSON-LD del layout, la barra superior y el pie.
+    openingHoursSpecification: HORARIO_BARRACA.openingHoursSpecification,
     areaServed: despacho.map((c) => ({
       '@type': 'City',
       name: c.nombre,
@@ -177,9 +162,11 @@ export default function SucursalesPage() {
                   <div>
                     <dt className="text-gray-500">Horario</dt>
                     <dd className="mt-0.5 text-navy-950">
-                      <span className="font-medium">Lun a Vie</span> {HORARIO_SEMANA}
+                      {HORARIO_BARRACA.semana}.
                       <br />
-                      <span className="font-medium">Sábado</span> {HORARIO_SABADO}
+                      {HORARIO_BARRACA.sabado}.
+                      <br />
+                      {HORARIO_BARRACA.domingo}.
                     </dd>
                   </div>
                   <div>

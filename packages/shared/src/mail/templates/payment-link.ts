@@ -1,6 +1,7 @@
 import { transporter } from "../transport";
 import { renderEmailLayout, renderButton, renderOrderItems, BRAND } from "../layout";
 import { formatCLP, escapeHtml } from "../utils";
+import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from "../../whatsapp";
 import { env } from "@jurmaq/shared/env";
 
 /**
@@ -111,7 +112,7 @@ export async function sendPaymentLinkEmail(
     </table>
 
     <p style="margin:28px 0 12px;font-size:14px;line-height:1.6;color:${BRAND.text};">¿Tienes dudas con tu pago? Escríbenos y te ayudamos.</p>
-    <div class="jm-btn">${renderButton({ href: `https://wa.me/56976673577?text=Hola%2C%20consulto%20por%20mi%20cotizacion%20%23${encodeURIComponent(cotizacion.numero)}`, label: "Escríbenos por WhatsApp", color: "whatsapp" })}</div>
+    <div class="jm-btn">${renderButton({ href: buildWhatsappUrl({ text: `${SALUDO_WEB_BARRACA} y consulto por mi cotización #${cotizacion.numero}`, utm_content: "email_pago", utm_campaign: "barraca_pago" }), label: "Escríbenos por WhatsApp", color: "whatsapp" })}</div>
   `;
 
   const title =

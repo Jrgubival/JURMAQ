@@ -8,7 +8,10 @@
 - [Categorías](https://barraca.jurmaq.cl/categoria) — Listado completo de categorías de productos
 - [Buscador](https://barraca.jurmaq.cl/buscar) — Búsqueda full-text de productos
 - [Calculadoras](https://barraca.jurmaq.cl/calculadoras) — Herramientas para estimar cemento, fierro, malla, pintura
-- [Cotizador](https://barraca.jurmaq.cl/cotizar) — Sube tu lista o foto y te mejoramos el precio
+- [Cotizador](https://barraca.jurmaq.cl/cotizar) — Sube tu lista o foto y te cotizamos
+- [Te mejoramos el precio](https://barraca.jurmaq.cl/te-mejoramos-el-precio) — Tráenos tu cotización y te mejoramos el precio*
+
+*Sujeto a validación de cotización, disponibilidad, condiciones comerciales y precio mínimo autorizado por JURMAQ.
 
 ## Categorías principales
 
@@ -33,3 +36,4 @@ Servimos Curicó, Molina, Teno, Romeral, Sagrada Familia, Hualañé, Licantén, 
 - WhatsApp: +56 9 7667 3577
 - Email: contacto@jurmaq.cl
 - Dirección: Av. Poniente 2157, Molina, Maule
+- Horario: Lunes a viernes 8:30–13:00 y 14:30–18:00. Sábado 9:00–13:00. Domingo cerrado.

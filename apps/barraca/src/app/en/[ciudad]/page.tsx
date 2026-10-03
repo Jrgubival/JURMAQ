@@ -8,6 +8,8 @@ import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ, DISTANCIAS_BARRACA } from "@jurmaq
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
+import { whatsappCtaBarracaCiudad } from "@jurmaq/shared/whatsapp";
+import { PROMESA, PROMESA_CON_ASTERISCO, PROMESA_CORTA_META, NOTA_PROMESA, CONDICIONES_PROMESA } from "@/lib/promesa";
 
 interface Categoria {
   id: number;
@@ -29,8 +31,8 @@ export async function generateMetadata({
   if (!c) return { title: "Ciudad no encontrada" };
 
   return {
-    title: `Barraca de Fierros y Materiales en ${c.nombre} · Te mejoramos el precio en 2h · JURMAQ`,
-    description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y +1.600 productos en ${c.nombre} (${c.region}). Despacho desde Molina en ${DISTANCIAS_BARRACA[c.slug].tiempo}. Súbenos tu cotización de Sodimac, Easy o Construmart y en menos de 2 horas te mejoramos el precio.`,
+    title: `Barraca de Fierros y Materiales en ${c.nombre} · ${PROMESA_CORTA_META} · JURMAQ`,
+    description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y +1.600 productos en ${c.nombre} (${c.region}). Despacho desde Molina en ${DISTANCIAS_BARRACA[c.slug].tiempo}. ${PROMESA}.`,
     keywords: [
       `barraca de fierros ${c.nombre}`,
       `barraca fierros ${c.nombre}`,
@@ -52,8 +54,8 @@ export async function generateMetadata({
       "JURMAQ Barraca",
     ],
     openGraph: {
-      title: `Barraca JURMAQ en ${c.nombre} · Te mejoramos el precio en 2h`,
-      description: `+1.600 productos. Despacho a ${c.nombre} en ${DISTANCIAS_BARRACA[c.slug].tiempo}. Súbenos tu cotización de la competencia y en menos de 2 horas te llega contraoferta JURMAQ por correo.`,
+      title: `Barraca JURMAQ en ${c.nombre} · ${PROMESA_CORTA_META}`,
+      description: `+1.600 productos. Despacho a ${c.nombre} en ${DISTANCIAS_BARRACA[c.slug].tiempo}. ${PROMESA}.`,
       url: `https://barraca.jurmaq.cl/en/${c.slug}`,
       siteName: "Barraca JURMAQ",
       locale: "es_CL",
@@ -101,8 +103,8 @@ export default async function BarracaEnCiudadPage({
         "@type": "HardwareStore",
         "@id": `https://barraca.jurmaq.cl/en/${c.slug}#store`,
         name: `Barraca JURMAQ — Despacho a ${c.nombre}`,
-        slogan: "Súbenos tu cotización y en menos de 2 horas te mejoramos el precio",
-        description: `Barraca de fierros y materiales de construcción con despacho a ${c.nombre} desde Molina. +1.600 productos disponibles. Te mejoramos el precio de Sodimac, Easy o Construmart.`,
+        slogan: PROMESA,
+        description: `Barraca de fierros y materiales de construcción con despacho a ${c.nombre} desde Molina. +1.600 productos disponibles. ${PROMESA}.`,
         url: `https://barraca.jurmaq.cl/en/${c.slug}`,
         telephone: HQ.telefono,
         priceRange: "$$",
@@ -141,15 +143,15 @@ export default async function BarracaEnCiudadPage({
             name: `¿Cuánto cuesta el despacho a ${c.nombre}?`,
             acceptedAnswer: {
               "@type": "Answer",
-              text: `El costo de despacho varía según volumen y peso del pedido. Súbenos tu cotización en la página y te indicamos el precio total con despacho incluido a ${c.nombre} en menos de 2 horas.`,
+              text: `El costo de despacho varía según volumen y peso del pedido. Súbenos tu cotización en la página y te indicamos el precio total con despacho incluido a ${c.nombre}.`,
             },
           },
           {
             "@type": "Question",
-            name: "¿Cómo funciona la garantía 'Te mejoramos el precio'?",
+            name: "¿Cómo funciona 'Te mejoramos el precio'?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Súbenos foto o PDF de tu cotización de Sodimac, Easy, Construmart u otra barraca. En menos de 2 horas te enviamos por correo nuestra contraoferta JURMAQ. Si te conviene, aceptas; si no, no pasa nada.",
+              text: `Nos mandas foto o PDF de tu cotización de Sodimac, Easy, Construmart u otra barraca. La revisamos y te enviamos nuestra contraoferta JURMAQ. Si te conviene, aceptas; si no, no pasa nada. ${CONDICIONES_PROMESA}`,
             },
           },
           {
@@ -193,10 +195,12 @@ export default async function BarracaEnCiudadPage({
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
               Barraca de Fierros y Materiales de Construcción en {c.nombre}
             </h1>
+            <p className="text-lg text-gray-200 max-w-3xl mb-1">
+              <strong className="text-marca-400">{PROMESA_CON_ASTERISCO}</strong>
+            </p>
+            <p className="text-xs text-gray-400 max-w-3xl mb-3">{NOTA_PROMESA}</p>
             <p className="text-lg text-gray-200 max-w-3xl mb-2">
-              <strong className="text-marca-400">Súbenos tu cotización de Sodimac, Easy o Construmart</strong> y
-              en menos de 2 horas te mejoramos el precio. Despacho desde Molina a {c.nombre}{" "}
-              en {DISTANCIAS_BARRACA[c.slug].tiempo} ({DISTANCIAS_BARRACA[c.slug].km} km).
+              Despacho desde Molina a {c.nombre} en {DISTANCIAS_BARRACA[c.slug].tiempo} ({DISTANCIAS_BARRACA[c.slug].km} km).
             </p>
             <p className="text-gray-300 max-w-3xl mb-8">{c.contextoLocal}</p>
             <div className="flex flex-wrap gap-3">
@@ -220,8 +224,9 @@ export default async function BarracaEnCiudadPage({
         <section className="py-16 bg-marca-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-2">
-              Te mejoramos el precio en menos de 2 horas
+              {PROMESA_CON_ASTERISCO}
             </h2>
+            <p className="text-xs text-gray-500 mb-3">{NOTA_PROMESA}</p>
             <p className="text-gray-700 mb-8">
               Si tienes cotización de Sodimac, Easy, Construmart u otra barraca, te respondemos
               con contraoferta JURMAQ por correo.
@@ -239,7 +244,7 @@ export default async function BarracaEnCiudadPage({
               </div>
               <div className="bg-white p-6 rounded-xl border border-marca-200">
                 <div className="text-3xl font-bold text-marca-600 mb-2">3</div>
-                <h3 className="font-bold text-navy-950 mb-2">Recibe contraoferta en 2h</h3>
+                <h3 className="font-bold text-navy-950 mb-2">Recibe nuestra contraoferta</h3>
                 <p className="text-sm text-gray-700">Te llega al correo con cuánto ahorras. Si te conviene, aceptas. Si no, no pasa nada.</p>
               </div>
             </div>
@@ -333,15 +338,15 @@ export default async function BarracaEnCiudadPage({
               <div>
                 <dt className="font-semibold text-navy-950 mb-1">¿Cuánto cuesta el despacho?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Varía según volumen y peso del pedido. Súbenos tu cotización y en menos de 2 horas te indicamos
+                  Varía según volumen y peso del pedido. Súbenos tu cotización en la página y te indicamos
                   el precio total con despacho incluido a {c.nombre}.
                 </dd>
               </div>
               <div>
                 <dt className="font-semibold text-navy-950 mb-1">¿Cómo funciona &quot;Te mejoramos el precio&quot;?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Súbenos foto o PDF de tu cotización de Sodimac, Easy, Construmart u otra barraca. En menos de
-                  2 horas te enviamos por correo nuestra contraoferta. Si te conviene, aceptas; si no, no pasa nada.
+                  Nos mandas foto o PDF de tu cotización de Sodimac, Easy, Construmart u otra barraca. La revisamos y
+                  te enviamos nuestra contraoferta JURMAQ. Si te conviene, aceptas; si no, no pasa nada. {CONDICIONES_PROMESA}
                 </dd>
               </div>
               <div>
@@ -387,9 +392,10 @@ export default async function BarracaEnCiudadPage({
             <h2 className="text-2xl sm:text-3xl font-bold mb-4">
               ¿Tienes una obra en {c.nombre}?
             </h2>
-            <p className="text-gray-200 mb-8">
-              Súbenos tu cotización y en menos de 2 horas te mejoramos el precio.
+            <p className="text-gray-200 mb-1">
+              {PROMESA_CON_ASTERISCO}
             </p>
+            <p className="text-xs text-gray-400 mb-8">{NOTA_PROMESA}</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
                 href="/cotizar"
@@ -398,7 +404,7 @@ export default async function BarracaEnCiudadPage({
                 Sube tu cotización
               </Link>
               <a
-                href={HQ.whatsapp + `?text=Hola%2C%20obra%20en%20${encodeURIComponent(c.nombre)}%2C%20necesito%20cotizar%20materiales`}
+                href={whatsappCtaBarracaCiudad(c.slug, c.nombre)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"

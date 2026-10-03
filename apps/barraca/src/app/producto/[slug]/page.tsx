@@ -14,6 +14,7 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { describir, especificaciones } from '@/lib/ficha';
+import { PROMESA } from '@/lib/promesa';
 
 // ISR: la ficha de producto es pública (precio/stock).
 //
@@ -281,7 +282,7 @@ export default async function ProductoPage({
     "@context": "https://schema.org",
     "@type": "Product",
     name: producto.nombre,
-    description: `${producto.nombre}${producto.medida ? ` (${producto.medida})` : ""} en Barraca JURMAQ Curicó · Molina. Despacho a toda la Región del Maule. Si tienes cotización de Sodimac, Easy o Construmart, te mejoramos el precio en menos de 2 horas.`,
+    description: `${producto.nombre}${producto.medida ? ` (${producto.medida})` : ""} en Barraca JURMAQ Curicó · Molina. Despacho a toda la Región del Maule. ${PROMESA}.`,
     image: producto.imagen || undefined,
     sku: producto.codigo,
     mpn: producto.codigo,
@@ -475,7 +476,7 @@ export default async function ProductoPage({
                 >
                   Consultar precio
                 </p>
-                <p className="text-[11px] text-[#787774] mt-3">Cotización por WhatsApp o correo en menos de 2 horas hábiles.</p>
+                <p className="text-[11px] text-[#787774] mt-3">Cotización por WhatsApp o correo, en horario de atención.</p>
               </div>
             ) : (
               <div className="border-t border-b border-[#EAEAEA] py-6 my-2">

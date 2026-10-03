@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
+import { PROMESA_CON_ASTERISCO, NOTA_PROMESA } from "@/lib/promesa";
 
 /**
  * Banner de portada, al modo de un retail: una OFERTA por slide, con el
@@ -32,8 +33,10 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
     () => [
       {
         eyebrow: "Nuestra promesa",
-        title: "Te mejoramos el precio en 2 horas",
-        sub: "Sube tu cotización de Sodimac, Easy o Construmart y te respondemos con un precio mejor. Sin registro, sin vueltas.",
+        title: PROMESA_CON_ASTERISCO,
+        sub: "Sirve la de Sodimac, Easy, Construmart u otra barraca. Sin registro, sin vueltas.",
+        // La nota del asterisco va en el mismo bloque, chica y gris.
+        nota: NOTA_PROMESA as string | null,
         precio: null as number | null,
         precioNota: "",
         cta: { label: "Subir mi cotización", href: "/te-mejoramos-el-precio" },
@@ -44,6 +47,7 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
         eyebrow: "Fierro de construcción",
         title: "Fierro estriado A63, la barra de 6 metros",
         sub: "Desde 8 mm hasta 25 mm. Despacho desde una barra a toda la Región del Maule.",
+        nota: null,
         precio: precios.fierro ?? null,
         precioNota: "la barra de 8 mm",
         cta: { label: "Ver fierros", href: "/categorias/fierros-construccion" },
@@ -54,6 +58,7 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
         eyebrow: "Perfiles y planchas",
         title: "Tubos, ángulos y canales en todas las medidas",
         sub: "Más de 120 medidas de tubo en stock, cortados a medida en el local.",
+        nota: null,
         precio: precios.tubo ?? null,
         precioNota: "el tubo de 6 metros",
         cta: { label: "Ver perfiles", href: "/categorias/perfiles-y-planchas" },
@@ -113,6 +118,9 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
             {s.title}
           </h2>
           <p className="text-[15px] text-white/80 leading-relaxed mb-5 max-w-lg">{s.sub}</p>
+          {s.nota ? (
+            <p className="-mt-3 mb-5 max-w-lg text-xs text-gray-400 leading-relaxed">{s.nota}</p>
+          ) : null}
 
           {s.precio ? (
             <p className="mb-6 flex items-baseline gap-2">

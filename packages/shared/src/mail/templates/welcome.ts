@@ -1,6 +1,7 @@
 import { transporter } from "../transport";
 import { renderEmailLayout, renderButton, BRAND } from "../layout";
 import { escapeHtml } from "../utils";
+import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from "../../whatsapp";
 
 const SITE = "https://barraca.jurmaq.cl";
 
@@ -27,7 +28,7 @@ export async function sendWelcomeEmail(to: string, nombre: string) {
       </td></tr>
     </table>
     <div style="margin-bottom:14px;">${renderButton({ href: `${SITE}/categorias`, label: "Explorar el catálogo" })}</div>
-    <div class="jm-btn">${renderButton({ href: "https://wa.me/56976673577?text=Hola%2C%20acabo%20de%20crear%20mi%20cuenta%20en%20JURMAQ", label: "Escríbenos por WhatsApp", color: "whatsapp" })}</div>
+    <div class="jm-btn">${renderButton({ href: buildWhatsappUrl({ text: `${SALUDO_WEB_BARRACA} y acabo de crear mi cuenta en JURMAQ`, utm_content: "email_bienvenida", utm_campaign: "barraca_cuenta" }), label: "Escríbenos por WhatsApp", color: "whatsapp" })}</div>
   `;
 
   const html = renderEmailLayout({

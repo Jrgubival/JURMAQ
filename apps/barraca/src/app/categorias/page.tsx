@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import type { Database } from "@jurmaq/shared/db-types";
+import { PROMESA, PROMESA_CORTA_META } from "@/lib/promesa";
 
 
 // Estática con refresco horario: toma cambios de imagen/nombre de la base
@@ -43,7 +44,7 @@ function getCategoryImage(imagen: string | null, slug: string): string | null {
 export const metadata: Metadata = {
   title: "Categorías · Barraca JURMAQ Curicó · Materiales de Construcción Maule",
   description:
-    "Todas las categorías de la Barraca JURMAQ Curicó · Molina: fierros, perfiles, planchas, tubos, mallas Acma, cementos, pinturas, herramientas y más. Súbenos tu cotización y en menos de 2 horas te mejoramos el precio. Despacho a toda la Región del Maule.",
+    `Todas las categorías de la Barraca JURMAQ Curicó · Molina: fierros, perfiles, planchas, tubos, mallas Acma, cementos, pinturas, herramientas y más. ${PROMESA}. Despacho a toda la Región del Maule.`,
   keywords: [
     "categorías barraca Curicó",
     "categorías materiales construcción Maule",
@@ -59,9 +60,9 @@ export const metadata: Metadata = {
     canonical: "https://barraca.jurmaq.cl/categorias",
   },
   openGraph: {
-    title: "Categorías · Barraca JURMAQ · Te mejoramos el precio en 2h",
+    title: `Categorías · Barraca JURMAQ · ${PROMESA_CORTA_META}`,
     description:
-      "Todas las categorías de materiales en Barraca JURMAQ Curicó · Molina: fierros, perfiles, planchas, tubos, mallas, cementos, pinturas. Súbenos tu cotización y te mejoramos el precio en menos de 2 horas.",
+      `Todas las categorías de materiales en Barraca JURMAQ Curicó · Molina: fierros, perfiles, planchas, tubos, mallas, cementos, pinturas. ${PROMESA}.`,
     url: "https://barraca.jurmaq.cl/categorias",
     siteName: "Barraca JURMAQ",
     locale: "es_CL",
