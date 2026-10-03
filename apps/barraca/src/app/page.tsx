@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import type { Database } from "@jurmaq/shared/db-types";
@@ -20,25 +20,27 @@ import { familiaDe } from '@/lib/variantes';
 type BarracaCategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
 
+// Fotos de categoría (ver public/images/barraca/categorias/fotos/CREDITOS.md).
+// La columna `imagen` de la base manda si apunta a /images/barraca/.
 const categoryImages: Record<string, string> = {
-  'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
-  'fijaciones': '/images/barraca/categorias/fijaciones.jpg',
-  'herramientas-y-maq': '/images/barraca/categorias/herramientas.webp',
-  'pinturas': '/images/barraca/categorias/pinturas.webp',
-  'perfiles-y-planchas': '/images/barraca/categorias/perfiles.webp',
-  'electricidad-e-iluminacion': '/images/barraca/categorias/electricidad.webp',
-  'bano-cocina-y-loggia': '/images/barraca/categorias/bano.jpg',
-  'seguridad-industrial': '/images/barraca/categorias/seguridad.webp',
-  'jardin': '/images/barraca/categorias/jardin.png',
-  'adhesivos-y-sellantes': '/images/barraca/categorias/adhesivos.webp',
-  'cerraduras': '/images/barraca/categorias/cerraduras.jpg',
-  'quincalleria': '/images/barraca/categorias/quincasilleria.webp',
-  'cercos-y-mallas': '/images/barraca/categorias/mallas.jpg',
-  'aridos-y-morteros': '/images/barraca/categorias/morteros.webp',
-  'tabiqueria': '/images/barraca/categorias/tabiqueria.webp',
-  'techumbre': '/images/barraca/categorias/Techumbres.jpg',
-  'aditivos-e-impermeabilizantes': '/images/barraca/categorias/impermeabilizante.webp',
-  'aislacion': '/images/barraca/categorias/aislacion.webp',
+  'fierros-construccion': '/images/barraca/categorias/fotos/fierros-construccion.webp',
+  'fijaciones': '/images/barraca/categorias/fotos/fijaciones.webp',
+  'herramientas-y-maq': '/images/barraca/categorias/fotos/herramientas-y-maq.webp',
+  'pinturas': '/images/barraca/categorias/fotos/pinturas.webp',
+  'perfiles-y-planchas': '/images/barraca/categorias/fotos/perfiles-y-planchas.webp',
+  'electricidad-e-iluminacion': '/images/barraca/categorias/fotos/electricidad-e-iluminacion.webp',
+  'bano-cocina-y-loggia': '/images/barraca/categorias/fotos/bano-cocina-y-loggia.webp',
+  'seguridad-industrial': '/images/barraca/categorias/fotos/seguridad-industrial.webp',
+  'jardin': '/images/barraca/categorias/fotos/jardin.webp',
+  'adhesivos-y-sellantes': '/images/barraca/categorias/fotos/adhesivos-y-sellantes.webp',
+  'cerraduras': '/images/barraca/categorias/fotos/cerraduras.webp',
+  'quincalleria': '/images/barraca/categorias/fotos/quincalleria.webp',
+  'cercos-y-mallas': '/images/barraca/categorias/fotos/cercos-y-mallas.webp',
+  'aridos-y-morteros': '/images/barraca/categorias/fotos/aridos-y-morteros.webp',
+  'tabiqueria': '/images/barraca/categorias/fotos/tabiqueria.webp',
+  'techumbre': '/images/barraca/categorias/fotos/techumbre.webp',
+  'aditivos-e-impermeabilizantes': '/images/barraca/categorias/fotos/aditivos-e-impermeabilizantes.webp',
+  'aislacion': '/images/barraca/categorias/fotos/aislacion.webp',
 };
 
 function getCategoryImage(imagen: string | null, slug: string): string | null {
@@ -509,14 +511,18 @@ export default async function BarracaHomePage() {
             const catImg = getCategoryImage(cat.imagen, cat.slug);
             return (
               <Link key={cat.id} href={`/categorias/${cat.slug}`} className="group block bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-navy-950 transition-colors">
-                <div className="aspect-square bg-white p-4">
+                {/* Foto a sangre (560 px, recortada al cuadrado). Antes era el
+                    packshot de un producto suelto sobre blanco —un tarro de
+                    cloro para Jardín, un enchufe para Electricidad— y el dueño
+                    lo vio "pobre y feo". */}
+                <div className="aspect-square bg-gray-100 overflow-hidden">
                   {catImg ? (
-                    <Image src={catImg} alt={`${cat.nombre} - JURMAQ Barraca`} loading="lazy" width={300} height={300} sizes="(max-width: 1024px) 33vw, 16vw" className="w-full h-full object-contain" />
+                    <Image src={catImg} alt={`${cat.nombre} - JURMAQ Barraca`} loading="lazy" width={560} height={560} sizes="(max-width: 1024px) 33vw, 16vw" className="w-full h-full object-cover transition-transform duration-300 ease-out [@media(hover:hover)]:group-hover:scale-[1.04]" />
                   ) : (
                     <div className="w-full h-full bg-gray-50" />
                   )}
                 </div>
-                <div className="px-3 pb-3 text-center">
+                <div className="px-3 pt-2.5 pb-3 text-center">
                   <h3 className="text-[13px] font-bold text-navy-950 leading-tight group-hover:text-marca-600 transition-colors">{titleCase(cat.nombre)}</h3>
                   <p className="text-[11px] text-gray-500 mt-0.5 tabular-nums">{cat.product_count} productos</p>
                 </div>

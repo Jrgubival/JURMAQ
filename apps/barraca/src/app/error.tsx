@@ -1,6 +1,6 @@
 "use client"
 
-import Link from 'next/link';
+import Link from '@/components/barraca/Enlace';
 
 export default function BarracaError({
   error,

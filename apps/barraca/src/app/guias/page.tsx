@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { GUIAS } from "@/lib/guias-seo-data";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 

@@ -75,6 +75,7 @@ export default function CrossLinksGrid({
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 lg:gap-3">
           {items.map((item) => (
             <Link
+              prefetch={false}
               key={item.href}
               href={item.href}
               className={`group inline-flex items-center justify-between gap-2 px-4 py-3 rounded-xl border transition-colors ${

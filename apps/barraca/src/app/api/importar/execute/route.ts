@@ -6,7 +6,8 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { parseExcelFile, matchProducts, executeImport } from '@/lib/import-barraca-smart';
 
-export async function POST(request: NextRequest) {
+import { conRevalidacion } from '@/lib/revalidar';
+async function manejarPOST(request: NextRequest) {
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
@@ -53,3 +54,6 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(result);
 }
+
+// Si el cambio se guardó, las fichas y categorías en caché se invalidan.
+export const POST = conRevalidacion(manejarPOST);

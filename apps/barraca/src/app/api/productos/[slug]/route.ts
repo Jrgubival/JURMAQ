@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, stripHtml } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
+import { conRevalidacion } from '@/lib/revalidar';
 /**
  * Busca el producto por slug o, si el segmento es numérico, por id.
  *
@@ -161,7 +162,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
+async function manejarDELETE(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
@@ -197,3 +198,6 @@ export async function DELETE(
     );
   }
 }
+
+// Si el cambio se guardó, las páginas de catálogo en caché se invalidan.
+export const DELETE = conRevalidacion(manejarDELETE);

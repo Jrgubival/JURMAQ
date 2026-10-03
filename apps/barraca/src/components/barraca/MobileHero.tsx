@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 
 /**
  * MobileHero — Editorial Luxury retrofit.
@@ -47,7 +47,7 @@ export default function MobileHero() {
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/barraca/hero/barraca-perfiles-tubos.jpg"
+            src="/images/barraca/hero/jurmaq-perfiles-movil.webp"
             alt="Perfiles y tubos de acero en la Barraca JURMAQ de Molina"
             width={400}
             height={300}

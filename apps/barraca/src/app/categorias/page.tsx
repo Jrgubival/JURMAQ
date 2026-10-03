@@ -1,32 +1,38 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import type { Database } from "@jurmaq/shared/db-types";
 
+
+// Estática con refresco horario: toma cambios de imagen/nombre de la base
+// sin esperar un deploy.
+export const revalidate = 3600;
 type BarracaCategoriaRow = Pick<
   Database['public']['Tables']['barraca_categorias']['Row'],
   'id' | 'nombre' | 'slug' | 'imagen' | 'padre_id'
 >;
 
+// Fotos de categoría (ver public/images/barraca/categorias/fotos/CREDITOS.md).
+// La columna `imagen` de la base manda si apunta a /images/barraca/.
 const categoryImages: Record<string, string> = {
-  'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
-  'fijaciones': '/images/barraca/categorias/fijaciones.jpg',
-  'herramientas-y-maq': '/images/barraca/categorias/herramientas.webp',
-  'pinturas': '/images/barraca/categorias/pinturas.webp',
-  'perfiles-y-planchas': '/images/barraca/categorias/perfiles.webp',
-  'electricidad-e-iluminacion': '/images/barraca/categorias/electricidad.webp',
-  'bano-cocina-y-loggia': '/images/barraca/categorias/Baño.jpg',
-  'seguridad-industrial': '/images/barraca/categorias/seguridad.webp',
-  'jardin': '/images/barraca/categorias/jardin.png',
-  'adhesivos-y-sellantes': '/images/barraca/categorias/adhesivos.webp',
-  'cerraduras': '/images/barraca/categorias/cerraduras.jpg',
-  'quincalleria': '/images/barraca/categorias/quincasilleria.webp',
-  'cercos-y-mallas': '/images/barraca/categorias/mallas.jpg',
-  'aridos-y-morteros': '/images/barraca/categorias/morteros.webp',
-  'tabiqueria': '/images/barraca/categorias/tabiqueria.webp',
-  'techumbre': '/images/barraca/categorias/Techumbres.jpg',
-  'aditivos-e-impermeabilizantes': '/images/barraca/categorias/impermeabilizante.webp',
-  'aislacion': '/images/barraca/categorias/aislacion.webp',
+  'fierros-construccion': '/images/barraca/categorias/fotos/fierros-construccion.webp',
+  'fijaciones': '/images/barraca/categorias/fotos/fijaciones.webp',
+  'herramientas-y-maq': '/images/barraca/categorias/fotos/herramientas-y-maq.webp',
+  'pinturas': '/images/barraca/categorias/fotos/pinturas.webp',
+  'perfiles-y-planchas': '/images/barraca/categorias/fotos/perfiles-y-planchas.webp',
+  'electricidad-e-iluminacion': '/images/barraca/categorias/fotos/electricidad-e-iluminacion.webp',
+  'bano-cocina-y-loggia': '/images/barraca/categorias/fotos/bano-cocina-y-loggia.webp',
+  'seguridad-industrial': '/images/barraca/categorias/fotos/seguridad-industrial.webp',
+  'jardin': '/images/barraca/categorias/fotos/jardin.webp',
+  'adhesivos-y-sellantes': '/images/barraca/categorias/fotos/adhesivos-y-sellantes.webp',
+  'cerraduras': '/images/barraca/categorias/fotos/cerraduras.webp',
+  'quincalleria': '/images/barraca/categorias/fotos/quincalleria.webp',
+  'cercos-y-mallas': '/images/barraca/categorias/fotos/cercos-y-mallas.webp',
+  'aridos-y-morteros': '/images/barraca/categorias/fotos/aridos-y-morteros.webp',
+  'tabiqueria': '/images/barraca/categorias/fotos/tabiqueria.webp',
+  'techumbre': '/images/barraca/categorias/fotos/techumbre.webp',
+  'aditivos-e-impermeabilizantes': '/images/barraca/categorias/fotos/aditivos-e-impermeabilizantes.webp',
+  'aislacion': '/images/barraca/categorias/fotos/aislacion.webp',
 };
 
 function getCategoryImage(imagen: string | null, slug: string): string | null {

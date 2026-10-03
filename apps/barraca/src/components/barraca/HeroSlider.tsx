@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
 
@@ -57,7 +57,7 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
         precio: precios.tubo ?? null,
         precioNota: "el tubo de 6 metros",
         cta: { label: "Ver perfiles", href: "/categorias/perfiles-y-planchas" },
-        image: "/images/barraca/hero/barraca-galpon.jpg",
+        image: "/images/barraca/hero/jurmaq-perfiles-1600.webp",
         alt: "Galpón de perfiles de acero de la barraca",
       },
     ],

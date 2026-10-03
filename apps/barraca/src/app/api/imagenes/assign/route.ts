@@ -3,7 +3,8 @@ import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 
-export async function POST(request: NextRequest) {
+import { conRevalidacion } from '@/lib/revalidar';
+async function manejarPOST(request: NextRequest) {
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
@@ -55,3 +56,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// Si el cambio se guardó, las fichas y categorías en caché se invalidan.
+export const POST = conRevalidacion(manejarPOST);

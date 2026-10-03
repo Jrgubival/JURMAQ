@@ -52,5 +52,9 @@ export async function GET(
       r2: 0,
       r1: 0,
     },
+  }, {
+    // Público e igual para todos: la CDN lo guarda 10 min. Antes cada ficha
+    // vista ejecutaba esta función con 2 consultas, para 0 reseñas.
+    headers: { 'Cache-Control': 'public, max-age=60, s-maxage=600, stale-while-revalidate=3600' },
   });
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { notFound } from "next/navigation";
 // Audit A1+SEO: cliente publico (anon) para lecturas de catalogo. Reduce
 // blast-radius del admin client y permite SSG estatico de la landing.

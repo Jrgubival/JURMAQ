@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ } from "@jurmaq/shared/seo";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 

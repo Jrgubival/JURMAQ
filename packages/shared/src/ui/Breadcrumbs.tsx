@@ -42,6 +42,7 @@ export default function Breadcrumbs({
           <span key={i} className="inline-flex items-center gap-2">
             {item.href && !isLast ? (
               <Link
+                prefetch={false}
                 href={item.href}
                 className={
                   isDark

@@ -104,17 +104,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Junto con ellas se fue la query sin límite que traía las 1.978 filas de
   // productos solo para decidir qué categorías eran elegibles.
 
-  // All active products via la vista publica (sin costo). Usamos updated_at
-  // real si existe para señalar a Google qué páginas tienen contenido fresco
-  // (cambio de precio, stock, descripción) y mejorar crawl prioritization.
-  const { data: products } = await supabasePublic
-    .from('barraca_productos_public')
-    .select('slug, updated_at')
-    .eq('activo', true);
+  // Fichas de producto desde la vista pública (sin costo).
+  //
+  // Hasta oct-2026 esta consulta pedía `updated_at`, columna que la vista NO
+  // tiene: PostgREST respondía 400, `data` llegaba null y el sitemap salía con
+  // CERO productos. Los bots tenían que descubrirlos recorriendo la paginación
+  // de categorías, que era dinámica y gastaba una función por página.
+  //
+  // PostgREST corta en 1.000 filas: se pide en tramos. Sin lastModified: la
+  // vista no tiene fecha de modificación y una fecha inventada le enseña a
+  // Google a ignorar el campo. Hay slugs repetidos (productos duplicados en
+  // el catálogo); se listan una vez.
+  const slugs = new Set<string>();
+  for (let desde = 0; desde < 20_000; desde += 1000) {
+    const { data, error } = await supabasePublic
+      .from('barraca_productos_public')
+      .select('slug')
+      .eq('activo', true)
+      .order('id')
+      .range(desde, desde + 999);
+    if (error || !data) break;
+    for (const p of data as { slug: string | null }[]) if (p.slug) slugs.add(p.slug);
+    if (data.length < 1000) break;
+  }
 
-  const productUrls: MetadataRoute.Sitemap = (products || []).map((p: { slug: string; updated_at?: string | null }) => ({
-    url: `${baseUrl}/producto/${p.slug}`,
-    lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+  const productUrls: MetadataRoute.Sitemap = [...slugs].map((slug) => ({
+    url: `${baseUrl}/producto/${slug}`,
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));

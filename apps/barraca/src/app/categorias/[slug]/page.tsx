@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
-import ProductCard from "@/components/barraca/ProductCard";
-import OrdenarSelect from "@/components/barraca/OrdenarSelect";
-import { applyDailyPromosToProducts } from "@/lib/promotions";
+import CatalogoCategoria from "@/components/barraca/CatalogoCategoria";
+import {
+  POR_PAGINA,
+  PARAMETROS_POR_DEFECTO,
+  categoriaPorSlug,
+  productosDeCategoria,
+} from "@/lib/catalogo";
 import type { Database } from "@jurmaq/shared/db-types";
 import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
@@ -125,118 +128,47 @@ export async function generateMetadata({
   };
 }
 
-const ITEMS_PER_PAGE = 16;
+// Página estática: se genera una vez por categoría y se refresca cada hora.
+// Antes leía searchParams (orden, stock, precio, página) y eso la volvía
+// dinámica: cada visita y cada bot ejecutaba una función y ~8 consultas a
+// Supabase. Los filtros ahora corren en el navegador (CatalogoCategoria) contra
+// /api/catalogo, que sale de caché. Ver src/lib/catalogo.ts.
+export const revalidate = 3600;
 
-type SortOption = 'nombre' | 'precio_asc' | 'precio_desc' | 'stock_desc';
+export async function generateStaticParams() {
+  const { data } = await supabasePublic
+    .from('barraca_categorias')
+    .select('slug')
+    .eq('activa', true);
+  return (data ?? []).map((c: { slug: string }) => ({ slug: c.slug }));
+}
 
 export default async function CategoriaPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string; min?: string; max?: string; sort?: string; stock?: string }>;
 }) {
   const { slug } = await params;
-  const sp = await searchParams;
-  const page = Math.max(1, parseInt(sp.page || "1", 10));
-  const minPrice = sp.min ? parseFloat(sp.min) : undefined;
-  const maxPrice = sp.max ? parseFloat(sp.max) : undefined;
-  const sortBy = (sp.sort || 'nombre') as SortOption;
-  const stockFilter = sp.stock || 'all';
 
-  const { data: categoria } = await supabasePublic
-    .from('barraca_categorias')
-    .select('id, nombre, slug, imagen, padre_id')
-    .eq('slug', slug)
-    .eq('activa', true)
-    .single();
+  const cat = await categoriaPorSlug(slug);
+  if (!cat) notFound();
+  const { categoria, catIds } = cat;
 
-  if (!categoria) notFound();
+  // Conteo por subcategoría: una consulta `head` por subcategoría, en vez de
+  // descargar la categoria_id de cada producto para contarlas en JS.
+  const subcats: SubCat[] = await Promise.all(
+    cat.subcats.map(async (s: BarracaCategoriaRow) => {
+      const { count } = await supabasePublic
+        .from('barraca_productos')
+        .select('id', { count: 'exact', head: true })
+        .eq('activo', true)
+        .eq('categoria_id', s.id);
+      return { id: s.id, nombre: s.nombre, slug: s.slug, product_count: count ?? 0 };
+    }),
+  );
 
-  // Get subcategories with product counts
-  const { data: rawSubcats } = await supabasePublic
-    .from('barraca_categorias')
-    .select('id, nombre, slug')
-    .eq('padre_id', categoria.id)
-    .eq('activa', true)
-    .order('nombre');
-
-  // Get product counts for subcats
-  const subcatIds = (rawSubcats || []).map((s: BarracaCategoriaRow) => s.id);
-  const catIds = [categoria.id, ...subcatIds];
-  let subcatCounts: Record<number, number> = {};
-  if (catIds.length > 0) {
-    const { data: countData } = await supabasePublic
-      .from('barraca_productos')
-      .select('categoria_id')
-      .eq('activo', true)
-      .in('categoria_id', catIds);
-    if (countData) {
-      for (const row of countData) {
-        subcatCounts[row.categoria_id] = (subcatCounts[row.categoria_id] || 0) + 1;
-      }
-    }
-  }
-
-  const subcats: SubCat[] = (rawSubcats || []).map((s: BarracaCategoriaRow) => ({
-    id: s.id,
-    nombre: s.nombre,
-    slug: s.slug,
-    product_count: subcatCounts[s.id] || 0,
-  }));
-
-  // Build product query with price filters
-  let countQuery = supabasePublic
-    .from('barraca_productos')
-    .select('*', { count: 'exact', head: true })
-    .eq('activo', true)
-    .in('categoria_id', catIds);
-
-  let productQuery = supabasePublic
-    .from('barraca_productos')
-    .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
-    .eq('activo', true)
-    .in('categoria_id', catIds);
-
-  if (minPrice !== undefined) {
-    countQuery = countQuery.gte('precio', minPrice);
-    productQuery = productQuery.gte('precio', minPrice);
-  }
-  if (maxPrice !== undefined) {
-    countQuery = countQuery.lte('precio', maxPrice);
-    productQuery = productQuery.lte('precio', maxPrice);
-  }
-
-  // Stock filter
-  if (stockFilter === 'instock') {
-    countQuery = countQuery.gt('stock', 0);
-    productQuery = productQuery.gt('stock', 0);
-  } else if (stockFilter === 'outofstock') {
-    countQuery = countQuery.eq('stock', 0);
-    productQuery = productQuery.eq('stock', 0);
-  }
-
-  const { count: totalCount } = await countQuery;
-  const total = totalCount || 0;
-  const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
-  const offset = (page - 1) * ITEMS_PER_PAGE;
-
-  // Sort
-  if (sortBy === 'precio_asc') {
-    productQuery = productQuery.order('precio', { ascending: true });
-  } else if (sortBy === 'precio_desc') {
-    productQuery = productQuery.order('precio', { ascending: false });
-  } else if (sortBy === 'stock_desc') {
-    productQuery = productQuery.order('stock', { ascending: false });
-  } else {
-    productQuery = productQuery.order('nombre');
-  }
-
-  const { data: productosRaw } = await productQuery
-    .range(offset, offset + ITEMS_PER_PAGE - 1);
-
-  // Apply daily-category promos so the grid matches the detail-page price.
-  const productos = await applyDailyPromosToProducts((productosRaw || []) as any[]);
+  const { productos, total } = await productosDeCategoria(catIds, PARAMETROS_POR_DEFECTO);
+  const offset = 0;
 
   // Parent category (for breadcrumb)
   let parentCat: { nombre: string; slug: string } | null = null;
@@ -378,248 +310,14 @@ export default async function CategoriaPage({
         })()}
       />
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar - Sodimac-style filters. Native <details> collapsible on mobile,
-            always-visible on desktop (lg:open + summary hidden). */}
-        <aside className="w-full lg:w-64 shrink-0">
-          <details className="bg-white border border-gray-200 rounded-xl lg:border-0 lg:bg-transparent lg:sticky lg:top-24 group" open>
-            <summary className="flex items-center justify-between px-4 py-3 min-h-[48px] text-sm font-semibold text-navy-950 cursor-pointer select-none touch-manipulation list-none lg:hidden [&::-webkit-details-marker]:hidden">
-              <span className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-                Filtros
-              </span>
-              <svg className="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </summary>
-            <div className="bg-white border-t border-gray-200 lg:border-0 p-5 space-y-6 rounded-b-xl lg:rounded-xl lg:bg-white lg:border lg:border-gray-200">
-            {/* Subcategories */}
-            {subcats.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider mb-3">
-                  Subcategorias
-                </h3>
-                <ul className="space-y-1">
-                  {subcats.map((sub) => (
-                    <li key={sub.id}>
-                      <Link
-                        href={`/categorias/${sub.slug}`}
-                        className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 rounded-lg transition-colors"
-                      >
-                        <span>{sub.nombre}</span>
-                        <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                          {sub.product_count}
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Stock Filter - like Sodimac availability */}
-            <div>
-              <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider mb-3">
-                Disponibilidad
-              </h3>
-              <div className="space-y-1.5">
-                {[
-                  { value: 'all', label: 'Todos' },
-                  { value: 'instock', label: 'En stock' },
-                  { value: 'outofstock', label: 'Sin stock (cotizable)' },
-                ].map((opt) => (
-                  <Link
-                    key={opt.value}
-                    href={`/categorias/${slug}?stock=${opt.value}${sp.min ? `&min=${sp.min}` : ''}${sp.max ? `&max=${sp.max}` : ''}${sp.sort ? `&sort=${sp.sort}` : ''}`}
-                    className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors ${
-                      stockFilter === opt.value
-                        ? 'bg-marca-50 text-marca-700 font-semibold border border-marca-200'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${
-                      stockFilter === opt.value
-                        ? 'border-marca-600 bg-marca-600'
-                        : 'border-gray-300'
-                    }`}>
-                      {stockFilter === opt.value && (
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </span>
-                    {opt.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Price Filter */}
-            <div>
-              <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider mb-3">
-                Rango de Precio
-              </h3>
-              <form className="space-y-3">
-                <div className="flex gap-2 items-center">
-                  <div className="relative w-full">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">$</span>
-                    <input
-                      type="number"
-                      name="min"
-                      placeholder="Min"
-                      defaultValue={sp.min || ""}
-                      inputMode="numeric"
-                      className="w-full h-11 min-h-[44px] pl-6 pr-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
-                    />
-                  </div>
-                  <span className="text-gray-300 shrink-0">-</span>
-                  <div className="relative w-full">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-500">$</span>
-                    <input
-                      type="number"
-                      name="max"
-                      placeholder="Max"
-                      defaultValue={sp.max || ""}
-                      inputMode="numeric"
-                      className="w-full h-11 min-h-[44px] pl-6 pr-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500"
-                    />
-                  </div>
-                </div>
-                {sp.sort && <input type="hidden" name="sort" value={sp.sort} />}
-                {sp.stock && <input type="hidden" name="stock" value={sp.stock} />}
-                <button
-                  type="submit"
-                  className="w-full h-11 min-h-[44px] bg-navy-950 hover:bg-[#111111] text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors touch-manipulation"
-                >
-                  Aplicar filtro
-                </button>
-                {(sp.min || sp.max) && (
-                  <Link
-                    href={`/categorias/${slug}${sp.sort ? `?sort=${sp.sort}` : ''}${sp.stock ? `${sp.sort ? '&' : '?'}stock=${sp.stock}` : ''}`}
-                    className="block text-center text-xs text-[#787774] hover:text-[#111111] font-medium underline-offset-4"
-                  >
-                    Limpiar filtro de precio
-                  </Link>
-                )}
-              </form>
-            </div>
-            </div>
-          </details>
-        </aside>
-
-        {/* Product Grid */}
-        <div className="flex-1">
-          {/* Header — editorial hairline + clamp H1 */}
-          <div className="border-b border-[#EAEAEA] pb-6 mb-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
-                  Categoría
-                </p>
-                <h1 className="text-2xl lg:text-3xl font-extrabold text-navy-950 leading-tight mb-1">
-                  {categoria.nombre}
-                </h1>
-                <p className="text-sm text-[#787774]">
-                  <span className="font-semibold text-[#111111] mr-1" style={{ fontWeight: 400 }}>{total}</span>
-                  producto{total !== 1 ? "s" : ""} en stock
-                </p>
-              </div>
-              <div className="shrink-0">
-                <OrdenarSelect actual={sortBy} slug={slug} extra={{ min: sp.min, max: sp.max, stock: sp.stock }} />
-              </div>
-            </div>
-          </div>
-
-          {(productos || []).length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
-              <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-              <p className="text-gray-500 mb-4">
-                No hay productos en esta categoria
-              </p>
-              <Link
-                href="/categorias"
-                className="text-sm font-semibold text-marca-600 hover:text-marca-700"
-              >
-                Ver otras categorias
-              </Link>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {(productos || []).map((p: BarracaProductoRow) => (
-                  <ProductCard
-                    key={p.id}
-                    id={p.id}
-                    nombre={p.nombre}
-                    slug={p.slug}
-                    precio={p.precio}
-                    precio_original={p.precio_original}
-                    en_oferta={p.en_oferta ?? undefined}
-                    solo_cotizar={p.solo_cotizar ?? undefined}
-                    imagen={p.imagen}
-                    stock={p.stock ?? 0}
-                    unidad={p.unidad}
-                    medida={p.medida}
-                    categoriaSlug={categoria.slug}
-                  />
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <nav aria-label="Paginacion" className="flex items-center justify-center gap-1.5 mt-10">
-                  {page > 1 && (
-                    <Link
-                      href={`/categorias/${slug}?page=${page - 1}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
-                      className="inline-flex items-center gap-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-marca-50 hover:border-marca-300 hover:text-marca-600 transition-colors"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                      Anterior
-                    </Link>
-                  )}
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter(
-                      (p) =>
-                        p === 1 ||
-                        p === totalPages ||
-                        Math.abs(p - page) <= 2
-                    )
-                    .map((p, idx, arr) => (
-                      <span key={p} className="inline-flex items-center">
-                        {idx > 0 && arr[idx - 1] !== p - 1 && (
-                          <span className="px-1.5 text-gray-500 select-none">...</span>
-                        )}
-                        <Link
-                          href={`/categorias/${slug}?page=${p}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
-                          className={`w-10 h-10 flex items-center justify-center text-sm font-semibold rounded-lg transition-colors ${
-                            p === page
-                              ? "bg-marca-600 text-white shadow-sm"
-                              : "bg-white border border-gray-300 text-gray-700 hover:bg-marca-50 hover:border-marca-300 hover:text-marca-600"
-                          }`}
-                        >
-                          {p}
-                        </Link>
-                      </span>
-                    ))}
-                  {page < totalPages && (
-                    <Link
-                      href={`/categorias/${slug}?page=${page + 1}${sp.min ? `&min=${sp.min}` : ""}${sp.max ? `&max=${sp.max}` : ""}${sp.sort ? `&sort=${sp.sort}` : ""}${sp.stock ? `&stock=${sp.stock}` : ""}`}
-                      className="inline-flex items-center gap-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-marca-50 hover:border-marca-300 hover:text-marca-600 transition-colors"
-                    >
-                      Siguiente
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                    </Link>
-                  )}
-                </nav>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+      <CatalogoCategoria
+        slug={categoria.slug}
+        nombre={categoria.nombre}
+        subcats={subcats}
+        inicial={productos}
+        totalInicial={total}
+        porPagina={POR_PAGINA}
+      />
     </div>
     <CrossLinksGrid
       title="Despacho a todo el Maule"

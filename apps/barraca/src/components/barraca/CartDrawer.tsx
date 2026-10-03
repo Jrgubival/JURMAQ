@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
 
 interface CartItem {

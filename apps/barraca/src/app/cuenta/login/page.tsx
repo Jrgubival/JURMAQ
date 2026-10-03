@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 

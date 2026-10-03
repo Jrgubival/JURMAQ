@@ -5,7 +5,6 @@ import BarracaShell from "./BarracaShell";
 import Analytics from "@jurmaq/shared/ui/Analytics";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
 import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
-import { buildPrerenderRules, BARRACA_PRERENDER_EXCLUDES } from "@jurmaq/shared/seo/prerender-rules";
 // Side-effect import: valida env vars al startup. Si falta una required en
 // prod, Zod tira un error explícito en lugar de propagar `undefined`.
 import "@jurmaq/shared/env";
@@ -190,17 +189,10 @@ export default function BarracaLayout({
         <link rel="preconnect" href="https://wmoizhbdalvnveclenvf.supabase.co" />
         <link rel="dns-prefetch" href="https://wmoizhbdalvnveclenvf.supabase.co" />
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
-        {/* Speculation Rules — Chromium prerender hover-baseado.
-            Colapsa LCP percibido a ~0ms en navegaciones probables. Excluye
-            paths sensibles (admin, cuenta, carrito, cotizar, pago, API)
-            para no disparar side-effects o costos en flujos transaccionales.
-            Safari/Firefox ignoran este script (progressive enhancement). */}
-        <script
-          type="speculationrules"
-          dangerouslySetInnerHTML={{
-            __html: safeJsonLd(buildPrerenderRules(BARRACA_PRERENDER_EXCLUDES)),
-          }}
-        />
+        {/* Sin Speculation Rules: el prerender al presionar un enlace renderizaba
+            la página completa en segundo plano (otra función + otra llamada al
+            carrito) y Next la descartaba al navegar por su cuenta. Costo doble
+            por clic, sin ganancia real con las páginas ya en caché. */}
         {/* Organization + LocalBusiness (HardwareStore) + WebSite JSON-LD
             via helper compartido — mismo schema que jurmaq.cl con brand="barraca". */}
         <script

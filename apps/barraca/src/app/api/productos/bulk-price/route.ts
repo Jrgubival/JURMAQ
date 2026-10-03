@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
-export async function PUT(request: NextRequest) {
+import { conRevalidacion } from '@/lib/revalidar';
+async function manejarPUT(request: NextRequest) {
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
@@ -357,3 +358,6 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+// Si el cambio se guardó, las fichas y categorías en caché se invalidan.
+export const PUT = conRevalidacion(manejarPUT);

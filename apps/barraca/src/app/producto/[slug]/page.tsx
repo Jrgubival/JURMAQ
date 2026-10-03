@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
 import ProductCard from "@/components/barraca/ProductCard";
@@ -28,6 +28,16 @@ import { describir, especificaciones } from '@/lib/ficha';
 // se toca. Si un precio se ve viejo en el sitio, el bug está en que falta el
 // revalidatePath en el endpoint que lo editó, no acá.
 export const revalidate = 86400;
+
+// Sin generateStaticParams la ruta quedaba DINÁMICA (ƒ en el build): el
+// revalidate de arriba no tenía efecto y cada visita, bot y prefetch
+// ejecutaba la función con ~10 consultas a Supabase. Con la lista vacía la
+// ficha se genera la primera vez que alguien la pide y después sale de caché
+// hasta que vence o hasta que /api/revalidar la invalida tras una carga de
+// precios. No se pre-generan en el build: serían 1.977 páginas por deploy.
+export async function generateStaticParams() {
+  return [];
+}
 
 interface ProductoRow {
   id: number;

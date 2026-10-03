@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { searchProducts } from "@/lib/search";
 import ProductCard from "@/components/barraca/ProductCard";

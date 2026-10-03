@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/barraca/Enlace';
 import { whatsappCtaSucursal } from '@jurmaq/shared/whatsapp';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { LEGAL_INFO, CIUDADES, DISTANCIAS_BARRACA } from '@jurmaq/shared/seo';

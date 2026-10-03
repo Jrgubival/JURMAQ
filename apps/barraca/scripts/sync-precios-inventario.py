@@ -491,6 +491,37 @@ def main() -> None:
 
     print(f"\nListo: {ok} actualizados, {fallos} fallidos.")
     print(f"Para revertir: los valores previos están en {backup}")
+    if ok:
+        avisar_sitio()
+
+
+def avisar_sitio() -> None:
+    """Pide al sitio que invalide las fichas y categorías en caché.
+
+    Las fichas se cachean 24 h; sin este aviso un precio nuevo tardaría hasta
+    un día en verse. Usa CRON_SECRET de .env.local (nunca se imprime).
+    """
+    env = {}
+    for linea in ENV_FILE.read_text(encoding="utf-8").splitlines():
+        if "=" in linea and not linea.strip().startswith("#"):
+            k, v = linea.split("=", 1)
+            env[k.strip()] = v.strip().strip('"').strip("'")
+    secreto = env.get("CRON_SECRET")
+    base = (env.get("NEXT_PUBLIC_BARRACA_URL") or "https://barraca.jurmaq.cl").rstrip("/")
+    if not secreto:
+        print("Sin CRON_SECRET en .env.local: el sitio mostrará los precios nuevos cuando venza su caché (hasta 24 h).")
+        return
+    req = urllib.request.Request(
+        f"{base}/api/revalidar", data=b"{}", method="POST",
+        headers={"Authorization": f"Bearer {secreto}", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            print(f"Caché del sitio invalidado ({r.status}): los precios nuevos se ven desde ya.")
+    except urllib.error.HTTPError as e:
+        print(f"No se pudo invalidar el caché del sitio (HTTP {e.code}); los precios aparecerán al vencer el caché.")
+    except urllib.error.URLError as e:
+        print(f"No se pudo avisar al sitio ({e.reason}); los precios aparecerán al vencer el caché.")
 
 
 if __name__ == "__main__":

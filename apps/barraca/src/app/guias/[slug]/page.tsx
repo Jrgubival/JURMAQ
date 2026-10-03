@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { notFound } from "next/navigation";
 import { GUIAS, getGuia } from "@/lib/guias-seo-data";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";

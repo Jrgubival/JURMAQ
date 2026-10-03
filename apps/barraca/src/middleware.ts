@@ -45,16 +45,10 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // Excluye TODO lo estático, no solo _next.
-    //
-    // El patrón anterior ('/((?!_next/static|_next/image|favicon\\.ico).*)')
-    // hacía correr el middleware en cada imagen de /public, cada PDF, el
-    // robots.txt y el manifest. En Vercel cada ejecución del middleware es una
-    // Edge Request facturable, así que una sola visita con 30 imágenes gastaba
-    // 30 requests de más. Era la causa principal de 1.4M/1M Edge Requests.
-    //
-    // Si agregas una carpeta nueva de assets en /public, súmala acá.
-    '/((?!_next/|images/|img/|icons/|pdf/|fonts/|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico|pdf|txt|xml|json|webmanifest|woff|woff2|ttf|mp4)$).*)',
-  ],
+  // Sólo las rutas donde este middleware hace algo: los redirects heredados
+  // del monolito (/barraca/*, /api/barraca/*, /admin/barraca/*) y el login
+  // de /admin. Antes corría en TODAS las páginas públicas para terminar en
+  // NextResponse.next(): en los logs de oct-2026, 9 de cada 10 líneas eran
+  // invocaciones del middleware que no hacían nada.
+  matcher: ['/barraca', '/barraca/:path*', '/api/barraca/:path*', '/admin', '/admin/:path*'],
 };

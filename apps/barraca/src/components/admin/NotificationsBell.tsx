@@ -58,11 +58,27 @@ export default function NotificationsBell() {
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Polling.
+  // Polling, sólo con la pestaña visible. Una pestaña del admin olvidada
+  // abierta hacía 1.440 llamadas al día; ahora se detiene al ocultarla y
+  // consulta una vez al volver.
   useEffect(() => {
-    void load();
-    const t = setInterval(() => void load(), POLL_INTERVAL_MS);
-    return () => clearInterval(t);
+    let t: ReturnType<typeof setInterval> | null = null;
+    const arrancar = () => {
+      if (t) return;
+      void load();
+      t = setInterval(() => void load(), POLL_INTERVAL_MS);
+    };
+    const parar = () => {
+      if (t) clearInterval(t);
+      t = null;
+    };
+    const alCambiar = () => (document.hidden ? parar() : arrancar());
+    alCambiar();
+    document.addEventListener("visibilitychange", alCambiar);
+    return () => {
+      parar();
+      document.removeEventListener("visibilitychange", alCambiar);
+    };
   }, []);
 
   // Refresh al abrir.

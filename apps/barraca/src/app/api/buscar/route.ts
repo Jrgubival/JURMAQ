@@ -21,9 +21,13 @@ export async function GET(request: NextRequest) {
 
     const productos = await searchProducts(q, limit);
 
+    // El buscador consulta en cada pausa de tecleo; las mismas palabras se
+    // repiten mucho ("fierro", "zinc", "cemento"). 5 min en la CDN por query.
     return NextResponse.json({
       productos,
       total: productos.length,
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=900' },
     });
   } catch (error) {
     console.error('Error en busqueda:', error);

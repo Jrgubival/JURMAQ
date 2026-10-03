@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { useState } from "react";
 import { showToast } from "@/components/Toast";

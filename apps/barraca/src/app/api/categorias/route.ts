@@ -5,6 +5,7 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import type { Database } from '@jurmaq/shared/db-types';
 
+import { conRevalidacion } from '@/lib/revalidar';
 type CategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
 type CategoriaConCount = CategoriaRow & { producto_count: number };
 
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function manejarPOST(request: NextRequest) {
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
@@ -130,3 +131,6 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// Si el cambio se guardó, las páginas de catálogo en caché se invalidan.
+export const POST = conRevalidacion(manejarPOST);

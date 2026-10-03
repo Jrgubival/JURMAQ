@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import CalculadoraFierroClient from "./CalculadoraFierroClient";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 

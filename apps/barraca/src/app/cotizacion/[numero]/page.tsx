@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
 import { whatsappCtaConsultaCotizacion } from "@jurmaq/shared/whatsapp";
 

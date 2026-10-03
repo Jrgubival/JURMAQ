@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import dynamic from "next/dynamic";
 import { useState, useEffect, useRef } from "react";
 import { env } from "@jurmaq/shared/env";
@@ -37,16 +37,6 @@ interface Categoria {
 }
 
 const CATEGORY_ICON_DEFAULT = "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4";
-
-function getSessionId(): string {
-  if (typeof window === "undefined") return "";
-  let sid = localStorage.getItem("barraca_session_id");
-  if (!sid) {
-    sid = crypto.randomUUID();
-    localStorage.setItem("barraca_session_id", sid);
-  }
-  return sid;
-}
 
 /**
  * Switcher de las tres unidades JURMAQ.
@@ -226,23 +216,43 @@ function Navbar() {
     };
   }, []);
 
-  function fetchCartCount() {
-    const sid = getSessionId();
-    if (!sid) return;
+  // Contador del carrito. Antes se pedía a /api/carrito en CADA carga de
+  // página, para todos los visitantes: el shell creaba un id de sesión a quien
+  // no lo tenía, así que la API nunca podía responder "no hay carrito" sin ir a
+  // Supabase. Era una función + 2-3 consultas por página vista, casi siempre
+  // para devolver 0. Ahora el número se recuerda en localStorage y sólo se
+  // consulta al servidor si el carrito tenía algo o si acaba de cambiar.
+  function fetchCartCount(forzar = false) {
+    if (typeof window === "undefined") return;
+    const sid = localStorage.getItem("barraca_session_id");
+    if (!sid) {
+      setCartCount(0);
+      localStorage.setItem("barraca_cart_count", "0");
+      return;
+    }
+    const guardado = localStorage.getItem("barraca_cart_count");
+    if (!forzar && guardado !== null) {
+      const n = Number(guardado) || 0;
+      setCartCount(n);
+      if (n === 0) return; // carrito vacío conocido: no hay nada que preguntar
+    }
     fetch("/api/carrito", {
       headers: { "X-Session-Id": sid },
     })
       .then((r) => r.json())
       .then((d) => {
-        setCartCount(d.cantidad || 0);
+        const n = d.cantidad || 0;
+        setCartCount(n);
+        localStorage.setItem("barraca_cart_count", String(n));
       })
       .catch(() => {});
   }
 
   useEffect(() => {
     fetchCartCount();
-    window.addEventListener("cart-updated", fetchCartCount);
-    return () => window.removeEventListener("cart-updated", fetchCartCount);
+    const alCambiar = () => fetchCartCount(true);
+    window.addEventListener("cart-updated", alCambiar);
+    return () => window.removeEventListener("cart-updated", alCambiar);
   }, []);
 
   // Cualquier componente puede disparar "barraca:open-cart" para abrir el drawer

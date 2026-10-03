@@ -3,6 +3,7 @@ import { auth } from '@jurmaq/shared/auth';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, stripHtml } from '@jurmaq/shared/sanitize';
 
+import { conRevalidacion } from '@/lib/revalidar';
 /**
  * PUT/DELETE de una categoría de barraca.
  *
@@ -43,7 +44,7 @@ async function idValido(params: Promise<{ id: string }>): Promise<number | null>
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-export async function PUT(
+async function manejarPUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -105,7 +106,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
+async function manejarDELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -137,3 +138,9 @@ export async function DELETE(
     return NextResponse.json({ error: 'Error al eliminar categoria' }, { status: 500 });
   }
 }
+
+// Si el cambio se guardó, las páginas de catálogo en caché se invalidan.
+export const PUT = conRevalidacion(manejarPUT);
+
+// Si el cambio se guardó, las páginas de catálogo en caché se invalidan.
+export const DELETE = conRevalidacion(manejarDELETE);

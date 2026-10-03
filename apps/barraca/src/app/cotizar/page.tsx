@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/barraca/Enlace";
 import { showToast } from "@/components/Toast";
 import { formatCLP } from "@jurmaq/shared/format";
 import { whatsappCtaCotizacionEnviada } from "@jurmaq/shared/whatsapp";
