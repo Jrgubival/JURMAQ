@@ -10,8 +10,8 @@
 
 const PASOS = [
   { t: "Mándanos tu cotización por WhatsApp", d: "Sirve una foto, una captura o el PDF." },
-  { t: "La revisamos", d: "Producto por producto." },
-  { t: "Te respondemos con nuestra oferta y el despacho", d: "Si te conviene, compras. Si no, no pasa nada." },
+  { t: "La revisamos", d: "" },
+  { t: "Te respondemos con nuestra oferta y el despacho", d: "" },
 ];
 
 export default function ComoFunciona({

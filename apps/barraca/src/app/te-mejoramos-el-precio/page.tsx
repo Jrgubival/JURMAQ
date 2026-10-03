@@ -87,7 +87,7 @@ const FAQ = [
   },
   {
     q: "¿Despachan a mi ciudad?",
-    a: `Sí, despachamos a toda la Región del Maule: ${CIUDADES.map((c) => c.nombre).join(", ")}. Tiempos varían entre 30 minutos (Molina) y 2 horas (Constitución).`,
+    a: `Sí, despachamos a toda la Región del Maule: ${CIUDADES.map((c) => c.nombre).join(", ")}. El plazo depende de la comuna y del pedido; te lo confirmamos junto con la oferta.`,
   },
   {
     q: "¿Necesito tener cuenta para subir mi cotización?",
