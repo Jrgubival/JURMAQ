@@ -69,3 +69,7 @@ __pycache__/
 # node_modules real (fuera del alcance de iCloud Drive); node_modules es un enlace a esta carpeta
 node_modules.nosync
 node_modules
+
+# Respaldos de precios: traen el COSTO de cada producto y el repo es público.
+# Se guardan sólo en la máquina que corre el script.
+apps/barraca/scripts/backups/*
