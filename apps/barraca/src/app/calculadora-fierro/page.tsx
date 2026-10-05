@@ -182,7 +182,7 @@ export default function CalculadoraFierroPage() {
             name: "¿Despachan fierro al Maule?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Sí. JURMAQ Barraca despacha fierro estriado, perfiles, mallas Acma y +1.600 productos a todo el Maule desde Molina. Curicó en 30 min, Talca en 1h, despacho coordinado para obras grandes.",
+              text: "Sí. JURMAQ Barraca despacha fierro estriado, perfiles, mallas Acma y +1.600 productos a todo el Maule desde Molina. El día de entrega se coordina al confirmar el pedido.",
             },
           },
         ],
@@ -291,7 +291,7 @@ export default function CalculadoraFierroPage() {
               <div>
                 <dt className="font-semibold text-navy-950 mb-1">¿Despachan fierro al Maule?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Sí. Despachamos desde Molina a todo el Maule: Curicó (30 min), Talca (1h), Linares y
+                  Sí. Despachamos desde Molina a todo el Maule: Curicó, Talca, Linares y
                   más. <Link href="/categorias/fierros" className="text-marca-600 hover:underline">
                     Ver catálogo de fierros
                   </Link>.

@@ -33,6 +33,7 @@ interface Filtros {
 
 export interface ProductoGrilla {
   id: number;
+  codigo: string | null;
   nombre: string;
   slug: string;
   precio: number;
@@ -365,6 +366,7 @@ export default function CatalogoCategoria({
                   key={p.id}
                   id={p.id}
                   nombre={p.nombre}
+                  codigo={p.codigo}
                   slug={p.slug}
                   precio={p.precio}
                   precio_original={p.precio_original}

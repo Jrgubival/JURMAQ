@@ -7,11 +7,14 @@
  * condiciones.
  *
  * Reglas de uso:
- * - En pantalla va SIEMPRE con asterisco (PROMESA_CON_ASTERISCO) y con
- *   NOTA_PROMESA visible en el mismo bloque (texto chico y gris).
- * - Donde no cabe la frase (barra superior, etiqueta de botón, píldora) se usa
- *   PROMESA_CORTA, y NOTA_PROMESA tiene que estar en la misma página: la del
- *   pie cuenta.
+ * - La frase completa va en pantalla con asterisco (PROMESA_CON_ASTERISCO) y
+ *   con NOTA_PROMESA visible en el mismo bloque (texto chico y gris).
+ * - Donde no cabe la frase (barra superior, etiqueta de botón, píldora) va
+ *   PROMESA_CORTA, "Te mejoramos el precio", sin asterisco (pedido del dueño,
+ *   oct-2026).
+ * - Precios de lista (oct-2026): la franja roja fija de arriba (FRANJA_PRECIOS)
+ *   lleva su propio asterisco, y NOTA_DESCUENTO va en el pie de todas las
+ *   páginas.
  * - En metadatos, títulos y JSON-LD (sin espacio para notas al pie) va PROMESA
  *   (o PROMESA_CORTA_META en títulos), sin asterisco.
  * - Nunca se le agrega un plazo ni una promesa de rapidez.
@@ -23,8 +26,8 @@ export const PROMESA = "Tráenos tu cotización y te mejoramos el precio";
 /** La frase con asterisco, para mostrar en pantalla junto a NOTA_PROMESA. */
 export const PROMESA_CON_ASTERISCO = `${PROMESA}*`;
 
-/** Forma corta para espacios chicos (barra superior, botones, píldoras). */
-export const PROMESA_CORTA = "Te mejoramos el precio*";
+/** Forma corta para espacios chicos (barra superior, botones, píldoras). Sin plazo ni asterisco. */
+export const PROMESA_CORTA = "Te mejoramos el precio";
 
 /** Forma corta sin asterisco, para títulos de metadatos. */
 export const PROMESA_CORTA_META = "Te mejoramos el precio";
@@ -36,3 +39,12 @@ export const NOTA_PROMESA =
 /** Las condiciones como frase suelta (sin asterisco), para textos corridos y JSON-LD. */
 export const CONDICIONES_PROMESA =
   "Sujeto a validación de cotización, disponibilidad, condiciones comerciales y precio mínimo autorizado por JURMAQ.";
+
+/**
+ * Franja roja fija arriba en todas las páginas: los precios publicados son de
+ * lista y el descuento se pide (WhatsApp o "Mi cotización").
+ */
+export const FRANJA_PRECIOS = "Precios de lista. Pide tu cotización y te hacemos descuento*";
+
+/** Nota del asterisco de FRANJA_PRECIOS. Va en el pie de todas las páginas. */
+export const NOTA_DESCUENTO = "*Descuento sujeto a validación del vendedor, según producto y cantidad.";

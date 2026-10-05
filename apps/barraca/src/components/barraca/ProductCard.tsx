@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "@/components/barraca/Enlace";
+import BotonDescuento from "@/components/barraca/BotonDescuento";
 import Image from "next/image";
 import { useState } from "react";
 import { showToast } from "@/components/Toast";
@@ -62,6 +63,8 @@ interface ProductCardProps {
   precio_original?: number | null;
   en_oferta?: boolean;
   solo_cotizar?: boolean;
+  /** Código del maestro (SKU). Va en el mensaje de WhatsApp del descuento. */
+  codigo?: string | null;
   /** Tier 4 D2: rating agregado de reviews aprobadas. Opcional. */
   rating?: number | null;
   rating_count?: number;
@@ -91,6 +94,7 @@ export default function ProductCard({
   precio_original,
   en_oferta,
   solo_cotizar,
+  codigo,
   rating,
   rating_count,
 }: ProductCardProps) {
@@ -259,8 +263,10 @@ export default function ProductCard({
           </p>
         )}
 
-        {/* Price section - tabular-nums para feel "factura" estable.
-            Pricing legible y técnico, no decoración. */}
+        {/* Precio. Los precios del sitio son de LISTA: el descuento se pide
+            por WhatsApp (botón rojo) y lo da el vendedor según producto y
+            cantidad. Por eso "Precio de lista" bajo el precio. En oferta, el
+            tachado ES el de lista y el grande es el de oferta. */}
         <div className="mt-auto pt-3 border-t border-gray-200">
           <div className="mb-3">
             {solo_cotizar ? (
@@ -273,14 +279,14 @@ export default function ProductCard({
                  que decidir por valor es lo único que no se puede invertir.
                  Mismo criterio que resolvePrice/getCartPrice en lib/pricing.ts. */
               <div>
-                <p className="text-xs text-gray-500 line-through leading-none tabular-nums">
-                  {formatCLP(Math.max(precio, precio_original))}{unitLabel}
+                <p className="text-xs text-gray-500 leading-none tabular-nums mb-0.5">
+                  Precio de lista <span className="line-through">{formatCLP(Math.max(precio, precio_original))}</span>
                 </p>
                 <p className="text-[22px] font-extrabold text-navy-950 leading-none tabular-nums">
                   {formatCLP(Math.min(precio, precio_original))}
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
-                <p className="text-[10px] text-gray-500 tracking-wide uppercase">IVA incl.</p>
+                <p className="text-[10px] text-gray-500 tracking-wide uppercase mt-0.5">Precio oferta · IVA incl.</p>
               </div>
             ) : (
               <>
@@ -289,59 +295,46 @@ export default function ProductCard({
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
                 {precio > 0 && (
-                  <p className="text-[10px] text-gray-500 tracking-wide uppercase">IVA incl.</p>
+                  <p className="text-[10px] text-gray-500 tracking-wide uppercase mt-0.5">Precio de lista · IVA incl.</p>
                 )}
               </>
             )}
           </div>
 
-          {/* Add to cart button - full width */}
-          <button
-            onClick={handleAdd}
-            disabled={adding}
-            aria-label={added ? `${nombre} agregado al carrito` : solo_cotizar ? `Cotizar ${nombre}` : `Agregar ${nombre} al carrito`}
-            className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] text-sm font-bold rounded-lg transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.97] ${
-              added
-                ? "bg-green-500 text-white"
-                : solo_cotizar
-                ? "bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.98]"
-                : stock <= 0
-                ? "bg-amber-600 text-white hover:bg-amber-700 active:scale-[0.98]"
-                : "bg-marca-600 text-white hover:bg-marca-700 active:scale-[0.98] shadow-sm shadow-marca-200"
-            }`}
-          >
-            {adding ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : added ? (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Agregado</span>
-              </>
-            ) : solo_cotizar ? (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-                <span>Cotizar</span>
-              </>
-            ) : stock <= 0 ? (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-                <span>Cotizar</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-                </svg>
-                <span>Agregar al carrito</span>
-              </>
-            )}
-          </button>
+          <div className="@container flex flex-col gap-1">
+            <BotonDescuento nombre={nombre} codigo={codigo} lugar="tarjeta" />
+
+            {/* Agregar a "Mi cotización" (el carrito). Secundario: la acción
+                principal de la tarjeta es pedir el precio con descuento. */}
+            <button
+              onClick={handleAdd}
+              disabled={adding}
+              aria-label={added ? `${nombre} agregado a mi cotización` : `Agregar ${nombre} a mi cotización`}
+              className={`w-full flex items-center justify-center gap-1.5 px-2 min-h-[44px] lg:min-h-[38px] text-[13px] font-semibold leading-tight rounded-lg transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.97] touch-manipulation ${
+                added
+                  ? "text-green-700"
+                  : "text-marca-700 hover:bg-marca-50"
+              }`}
+            >
+              {adding ? (
+                <div className="w-4 h-4 border-2 border-marca-600 border-t-transparent rounded-full animate-spin" />
+              ) : added ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Agregado</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v14M5 12h14" />
+                  </svg>
+                  <span>Agregar a mi cotización</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

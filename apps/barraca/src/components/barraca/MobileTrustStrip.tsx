@@ -6,8 +6,9 @@
 export default function MobileTrustStrip() {
   const items = [
     {
-      title: "Cotización",
-      sub: "al instante",
+      // Sin plazos: el dueño pidió no prometer tiempos en ningún lugar del sitio.
+      title: "Cotiza por",
+      sub: "WhatsApp",
       icon: (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
       ),
@@ -19,19 +20,11 @@ export default function MobileTrustStrip() {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8a2 2 0 012-2h7v10H5a2 2 0 01-2-2V8zm9-2h4l3 4v4a2 2 0 01-2 2h-5V6zM7 18a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z" />
       ),
     },
-    {
-      // Forma corta de la promesa: la nota del asterisco está en el pie.
-      title: "Te mejoramos",
-      sub: "el precio*",
-      icon: (
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 12V7a4 4 0 014-4z" />
-      ),
-    },
   ];
 
   return (
     <section className="lg:hidden bg-navy-950 border-t border-navy-800 mt-2">
-      <div className="px-4 py-4 grid grid-cols-3 gap-3">
+      <div className="px-4 py-4 grid grid-cols-2 gap-3">
         {items.map((it) => (
           <div key={it.title} className="flex items-start gap-2">
             <div className="w-8 h-8 rounded-lg bg-marca-600 flex items-center justify-center shrink-0">

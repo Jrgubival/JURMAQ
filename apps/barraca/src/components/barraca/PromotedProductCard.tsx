@@ -7,6 +7,7 @@ import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
 import { formatCLP } from "@jurmaq/shared/format";
 import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
+import BotonDescuento from "@/components/barraca/BotonDescuento";
 
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
@@ -58,6 +59,7 @@ function getSessionId(): string {
 interface PromotedProductCardProps {
   id: number;
   nombre: string;
+  codigo?: string | null;
   slug: string;
   precioOriginal: number;
   precioDescuento: number;
@@ -72,6 +74,7 @@ interface PromotedProductCardProps {
 export default function PromotedProductCard({
   id,
   nombre,
+  codigo,
   slug,
   precioOriginal,
   precioDescuento,
@@ -192,8 +195,8 @@ export default function PromotedProductCard({
 
         <div className="flex items-end justify-between mt-2 gap-2">
           <div>
-            <p className="text-[10px] text-[#787774] line-through tabular-nums">
-              Antes {formatCLP(precioOriginal)}
+            <p className="text-[10px] text-[#787774] tabular-nums">
+              Precio de lista <span className="line-through">{formatCLP(precioOriginal)}</span>
             </p>
             <div className="flex items-baseline gap-1.5 mt-0.5">
               <p className="text-lg font-medium text-[#111111] tabular-nums">
@@ -209,6 +212,7 @@ export default function PromotedProductCard({
           <button
             onClick={handleAdd}
             disabled={adding || stock <= 0}
+            aria-label={`Agregar ${nombre} a mi cotización`}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium tracking-[0.02em] rounded-lg transition-colors ${
               added
                 ? "bg-[#2F7F4E] text-white"
@@ -251,8 +255,9 @@ export default function PromotedProductCard({
                 <span className="hidden sm:inline">Agregar</span>
               </>
             )}
-          </button>
+                    </button>
         </div>
+        <BotonDescuento nombre={nombre} codigo={codigo} lugar="oferta_del_dia" className="mt-3" />
       </div>
     </div>
   );

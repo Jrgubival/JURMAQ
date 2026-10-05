@@ -28,7 +28,7 @@ function getSessionId(): string {
 
 function StepIndicator({ currentStep }: { currentStep: number }) {
   const steps = [
-    { num: 1, label: "Carrito" },
+    { num: 1, label: "Mi cotización" },
     { num: 2, label: "Datos" },
     { num: 3, label: "Confirmar" },
   ];
@@ -304,7 +304,7 @@ export default function CotizarPage() {
           <svg className="w-20 h-20 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
           </svg>
-          <h1 className="text-xl font-bold text-navy-950 mb-2">Tu carrito está vacío</h1>
+          <h1 className="text-xl font-bold text-navy-950 mb-2">Tu cotización está vacía</h1>
           <p className="text-gray-500 mb-6">Agrega productos antes de solicitar una cotización.</p>
           <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 bg-marca-600 hover:bg-marca-700 text-white font-semibold rounded-lg transition-colors">
             Explorar categorías
@@ -395,7 +395,7 @@ export default function CotizarPage() {
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        <Link href="/carrito" className="hover:text-marca-600 transition-colors">Carrito</Link>
+        <Link href="/carrito" className="hover:text-marca-600 transition-colors">Mi cotización</Link>
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>

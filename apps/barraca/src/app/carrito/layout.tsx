@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Carrito de Compras | Barraca JURMAQ",
+  title: "Mi cotización | Barraca JURMAQ",
   description:
-    "Revisa los productos en tu carrito y solicita tu cotización en Barraca JURMAQ. Materiales de construccion con despacho en Curico, Teno, Molina y toda la Region del Maule.",
+    "Revisa los productos de tu cotización y pide tu precio con descuento en Barraca JURMAQ. Materiales de construccion con despacho en Curico, Teno, Molina y toda la Region del Maule.",
   robots: { index: false, follow: true },
   alternates: {
     canonical: "https://barraca.jurmaq.cl/carrito",

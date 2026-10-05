@@ -19,7 +19,7 @@ type CarritoItemConProducto = {
   created_at: string;
   barraca_productos: Pick<
     BarracaProductoRow,
-    'nombre' | 'precio' | 'precio_original' | 'en_oferta' | 'imagen' | 'slug' | 'medida' | 'unidad' | 'stock' | 'categoria_id'
+    'nombre' | 'codigo' | 'precio' | 'precio_original' | 'en_oferta' | 'imagen' | 'slug' | 'medida' | 'unidad' | 'stock' | 'categoria_id'
   >;
 };
 
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
 
     const { data: rawItems, error } = await supabaseAdmin
       .from('barraca_carrito')
-      .select('id, producto_id, cantidad, precio_unitario, created_at, barraca_productos!inner(nombre, precio, precio_original, en_oferta, imagen, slug, medida, unidad, stock, categoria_id)')
+      .select('id, producto_id, cantidad, precio_unitario, created_at, barraca_productos!inner(nombre, codigo, precio, precio_original, en_oferta, imagen, slug, medida, unidad, stock, categoria_id)')
       .eq('session_id', sessionId)
       .eq('barraca_productos.activo', true)
       .order('created_at', { ascending: false });
@@ -124,6 +124,7 @@ export async function GET(request: NextRequest) {
         cantidad: item.cantidad,
         created_at: item.created_at,
         nombre: p.nombre,
+        codigo: p.codigo ?? null,
         precio: precioReal,
         precio_tachado: precioTachado,
         porcentaje_descuento: precioTachado ? Math.round((1 - precioReal / p.precio) * 100) : null,

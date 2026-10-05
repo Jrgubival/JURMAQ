@@ -421,8 +421,8 @@ export default async function ProductoPage({
                 {dailyPromoTitle && (
                   <p className="text-sm text-[#956400] font-medium mb-2">{dailyPromoTitle}</p>
                 )}
-                <p className="text-base text-[#787774] line-through mb-1">
-                  {formatCLP(precioResuelto.precioTachado!)}
+                <p className="text-base text-[#787774] mb-1">
+                  Precio de lista <span className="line-through">{formatCLP(precioResuelto.precioTachado!)}</span>
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p
@@ -449,8 +449,8 @@ export default async function ProductoPage({
                     </span>
                   )}
                 </div>
-                <p className="text-base text-[#787774] line-through mb-1">
-                  {formatCLP(precioResuelto.precioTachado!)}
+                <p className="text-base text-[#787774] mb-1">
+                  Precio de lista <span className="line-through">{formatCLP(precioResuelto.precioTachado!)}</span>
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p
@@ -492,7 +492,7 @@ export default async function ProductoPage({
                   )}
                 </div>
                 {precioResuelto.precioFinal > 0 && (
-                  <p className="text-[11px] text-[#787774] mt-2">IVA incluido.</p>
+                  <p className="text-[11px] text-[#787774] mt-2">Precio de lista · IVA incluido.</p>
                 )}
               </div>
             )}
@@ -583,7 +583,7 @@ export default async function ProductoPage({
             </h2>
             <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
               {relacionadosConPromo.map((p) => (
-                <ProductCard key={p.id} id={p.id} nombre={p.nombre} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={categoria?.slug || ''} />
+                <ProductCard key={p.id} id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={categoria?.slug || ''} />
               ))}
             </div>
           </section>

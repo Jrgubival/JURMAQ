@@ -17,15 +17,16 @@
  * literal — no todo es centralizable.
  */
 export const TOAST_MESSAGES = {
+  // El carrito se llama "Mi cotización" en el sitio (pedido del dueño, oct-2026).
   cart: {
     /** Producto agregado al carrito (success). */
-    ADDED: 'Agregado al carrito',
+    ADDED: 'Agregado a tu cotización',
     /** Producto promocionado agregado (incluye señalización del descuento). */
-    ADDED_WITH_DISCOUNT: 'Agregado al carrito con descuento',
+    ADDED_WITH_DISCOUNT: 'Agregado a tu cotización con descuento',
     /** Fallo genérico al agregar al carrito (sin detalle del backend). */
-    ADD_ERROR: 'No pudimos agregar al carrito — intenta de nuevo',
+    ADD_ERROR: 'No pudimos agregarlo a tu cotización — intenta de nuevo',
     /** Fallback cuando el backend no devuelve mensaje específico. */
-    ADD_FAILED_FALLBACK: 'No pudimos agregar al carrito',
+    ADD_FAILED_FALLBACK: 'No pudimos agregarlo a tu cotización',
     /** Rate-limit del API de carrito (HTTP 429). */
     RATE_LIMITED: 'Demasiadas solicitudes — espera un momento',
   },

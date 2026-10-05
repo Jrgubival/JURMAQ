@@ -112,6 +112,7 @@ export default async function BuscarPage({
                   key={p.id}
                   id={p.id}
                   nombre={p.nombre}
+                  codigo={p.codigo}
                   slug={p.slug}
                   precio={p.precio}
                   precio_original={p.precio_original}

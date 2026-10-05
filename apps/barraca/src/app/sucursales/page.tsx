@@ -224,17 +224,17 @@ export default function SucursalesPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h2 className="text-2xl font-bold text-navy-950">Hasta dónde despachamos</h2>
           <p className="mt-3 text-gray-600 max-w-2xl leading-relaxed">
-            Tiempos estimados de viaje desde Molina con camión cargado. No
-            necesitas ir al local: cotizas online y te llega a la obra.
+            Distancia por carretera desde Molina. No necesitas ir al local:
+            cotizas online y te llega a la obra. El día de entrega se coordina
+            al confirmar el pedido.
           </p>
 
           <div className="mt-8 overflow-x-auto">
-            <table className="w-full text-sm min-w-[26rem]">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-300 text-left">
                   <th className="pb-2 font-semibold text-navy-950">Comuna</th>
                   <th className="pb-2 font-semibold text-navy-950">Distancia</th>
-                  <th className="pb-2 font-semibold text-navy-950">Tiempo estimado</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -242,7 +242,6 @@ export default function SucursalesPage() {
                   <tr key={c.slug}>
                     <td className="py-2.5 font-medium text-navy-950">{c.nombre}</td>
                     <td className="py-2.5 text-gray-600">{c.d!.km} km</td>
-                    <td className="py-2.5 text-gray-600">{c.d!.tiempo}</td>
                   </tr>
                 ))}
               </tbody>

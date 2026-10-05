@@ -9,7 +9,7 @@ import MobileHero from "@/components/barraca/MobileHero";
 import MarcasCarrusel from "@/components/barraca/MarcasCarrusel";
 import MobileTrustStrip from "@/components/barraca/MobileTrustStrip";
 import ComoFunciona from "@/components/barraca/ComoFunciona";
-import { PROMESA, PROMESA_CORTA, PROMESA_CORTA_META } from "@/lib/promesa";
+import { PROMESA, PROMESA_CORTA_META } from "@/lib/promesa";
 import PromotedProductCard from "@/components/barraca/PromotedProductCard";
 import CountdownTimer from "@/components/barraca/CountdownTimer";
 import { applyDailyPromosToProducts, getDailyPromotions, getPromotedProducts } from "@/lib/promotions";
@@ -370,10 +370,8 @@ export default async function BarracaHomePage() {
           conserva para SEO pero deja de ser un titular de revista. */}
       <section aria-label="Por qué comprar en JURMAQ" className="hidden lg:block bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ul className="grid grid-cols-4 divide-x divide-gray-200">
+          <ul className="grid grid-cols-3 divide-x divide-gray-200">
             {[
-              // Forma corta de la promesa (columna angosta); la nota del asterisco está en el pie.
-              { t: PROMESA_CORTA, d: 'Tráenos tu cotización', href: '/te-mejoramos-el-precio', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
               { t: 'Despacho a todo el Maule', d: 'Curicó, Talca, Linares, Molina y más', href: '/sucursales', icon: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0' },
               { t: 'Retiro en Molina', d: 'Av. Poniente 2157 · Lun–Sáb', href: '/sucursales', icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z' },
               { t: 'Cotiza en línea, sin registro', d: 'Respondemos en horario de local', href: '/cotizar', icon: 'M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z' },
@@ -439,6 +437,7 @@ export default async function BarracaHomePage() {
                   key={product.id}
                   id={product.id}
                   nombre={product.nombre}
+                  codigo={product.codigo}
                   slug={product.slug}
                   precioOriginal={product.precio_original_calculado}
                   precioDescuento={product.precio_con_descuento}
@@ -559,7 +558,7 @@ export default async function BarracaHomePage() {
             </div>
             <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
               {destacados.map((p) => (
-                <ProductCard key={p.id} id={p.id} nombre={p.nombre} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} />
+                <ProductCard key={p.id} id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} />
               ))}
             </div>
           </div>
@@ -580,7 +579,7 @@ export default async function BarracaHomePage() {
           </div>
           <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
             {nuevos.map((p) => (
-              <ProductCard key={p.id} id={p.id} nombre={p.nombre} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} isNew categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} />
+              <ProductCard key={p.id} id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} isNew categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} />
             ))}
           </div>
         </section>

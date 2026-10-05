@@ -4,11 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
+import { trackCustom } from "@/lib/analytics";
+import { mensajeDescuentoCotizacion, urlWhatsapp } from "@/lib/whatsapp-descuento";
 
 interface CartItem {
   id: number;
   producto_id: number;
   nombre: string;
+  codigo?: string | null;
   precio: number;
   precio_tachado?: number | null;
   porcentaje_descuento?: number | null;
@@ -223,19 +226,19 @@ export default function CarritoPage() {
         <svg className="w-3.5 h-3.5 text-[#C9C9C5]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
         </svg>
-        <span className="text-[#111111] font-medium">Carrito</span>
+        <span className="text-[#111111] font-medium">Mi cotización</span>
       </nav>
 
       <div className="flex items-end justify-between mb-10 pb-6 border-b border-[#EAEAEA]">
         <div>
           <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
-            Tu pedido
+            Precios de lista
           </p>
           <h1
             className="text-[#111111] leading-[1.1]"
             style={{ fontSize: 'clamp(1.875rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
           >
-            Mi <span className="font-semibold" style={{ fontWeight: 400 }}>carrito</span>
+            Mi <span className="font-semibold" style={{ fontWeight: 400 }}>cotización</span>
           </h1>
         </div>
         {items.length > 0 && (
@@ -246,7 +249,7 @@ export default function CarritoPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            Vaciar carrito
+            Vaciar cotización
           </button>
         )}
       </div>
@@ -257,7 +260,7 @@ export default function CarritoPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
           </svg>
           <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
-            Carrito vacío
+            Tu cotización está vacía
           </p>
           <h2
             className="text-[#111111] mb-3 leading-[1.15]"
@@ -266,7 +269,7 @@ export default function CarritoPage() {
             Aún no hay <span className="font-semibold" style={{ fontWeight: 400 }}>productos</span>.
           </h2>
           <p className="text-base text-[#5A5A57] mb-8 max-w-md mx-auto">
-            Agregá productos al carrito para pedir una cotización.
+            Agrega productos y pide tu precio con descuento por WhatsApp.
           </p>
           <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 bg-navy-950 hover:bg-[#111111] text-white text-sm font-medium tracking-[0.02em] rounded-lg transition-colors">
             Explorar categorías
@@ -298,7 +301,7 @@ export default function CarritoPage() {
                       aria-label={`Ver ${item.nombre}`}
                     >
                       <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
-                        <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} fill sizes="64px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
+                        <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en tu cotización`} fill sizes="64px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900 group-hover:text-marca-600 transition-colors">{item.nombre}</p>
@@ -327,7 +330,7 @@ export default function CarritoPage() {
                     {formatCLP((item.precio * item.cantidad))}
                   </div>
                   <div className="col-span-1 flex justify-end">
-                    <button onClick={() => removeItem(item.id)} className="p-2 text-gray-500 hover:text-red-500 transition-colors" aria-label={`Eliminar ${item.nombre} del carrito`}>
+                    <button onClick={() => removeItem(item.id)} className="p-2 text-gray-500 hover:text-red-500 transition-colors" aria-label={`Eliminar ${item.nombre} de tu cotización`}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -343,7 +346,7 @@ export default function CarritoPage() {
                 <div key={item.id} className="bg-white border border-gray-200 rounded-xl p-4">
                   <div className="flex gap-3">
                     <Link href={item.slug ? `/producto/${item.slug}` : '#'} className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative" aria-label={`Ver ${item.nombre}`}>
-                      <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en el carrito`} fill sizes="80px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
+                      <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en tu cotización`} fill sizes="80px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
                     </Link>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
@@ -351,7 +354,7 @@ export default function CarritoPage() {
                           <p className="text-sm font-medium text-gray-900 hover:text-marca-600 transition-colors">{item.nombre}</p>
                           {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
                         </Link>
-                        <button onClick={() => removeItem(item.id)} aria-label={`Eliminar ${item.nombre} del carrito`} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500">
+                        <button onClick={() => removeItem(item.id)} aria-label={`Eliminar ${item.nombre} de tu cotización`} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -388,7 +391,7 @@ export default function CarritoPage() {
                 className="text-[#111111] mb-5 leading-[1.1]"
                 style={{ fontSize: 'clamp(1.125rem, 1.6vw, 1.375rem)', fontWeight: 500, letterSpacing: '-0.005em' }}
               >
-                Resumen del <span className="font-semibold" style={{ fontWeight: 400 }}>pedido</span>
+                Resumen de tu <span className="font-semibold" style={{ fontWeight: 400 }}>cotización</span>
               </h2>
               <div className="mb-6">
                 <div className="flex justify-between text-sm mb-2">
@@ -477,11 +480,28 @@ export default function CarritoPage() {
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mb-5">* Precios referenciales. Se confirmarán en la cotización.</p>
-              <Link href="/cotizar" className="block w-full py-3.5 text-center text-base font-bold bg-marca-600 text-white rounded-lg hover:bg-marca-700 shadow-md shadow-marca-200 transition-colors">
+              <p className="text-xs text-gray-500 mb-5">
+                Precios de lista. El descuento lo confirma el vendedor según producto y cantidad.
+              </p>
+              {/* Principal: mandar la cotización completa por WhatsApp para que
+                  el vendedor la devuelva con descuento. El formulario de
+                  /cotizar queda como opción secundaria. */}
+              <a
+                href={urlWhatsapp(mensajeDescuentoCotizacion(items))}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackCustom("whatsapp_descuento", { lugar: "mi_cotizacion", productos: items.length, total: subtotal })}
+                className="flex w-full min-h-[52px] items-center justify-center gap-2 px-4 py-3.5 text-center text-base font-bold leading-tight bg-marca-600 text-white rounded-lg hover:bg-marca-700 shadow-md shadow-marca-200 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98] touch-manipulation"
+              >
+                <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                Pedir mi precio con descuento
+              </a>
+              <Link href="/cotizar" className="block w-full py-3 mt-3 text-center text-sm font-semibold border-2 border-marca-600 text-marca-700 hover:bg-marca-50 rounded-lg transition-colors">
                 Solicitar cotización
               </Link>
-              <Link href="/categorias" className="block w-full py-3 mt-3 text-center text-sm font-semibold border-2 border-marca-600 text-marca-600 hover:bg-marca-50 rounded-lg transition-colors">
+              <Link href="/categorias" className="block w-full py-2.5 mt-2 text-center text-sm font-medium text-gray-600 hover:text-navy-950 transition-colors">
                 Seguir comprando
               </Link>
             </div>
