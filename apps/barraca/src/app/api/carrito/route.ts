@@ -117,7 +117,17 @@ export async function GET(request: NextRequest) {
       // FIX (audit jun-2026): exponer el precio NORMAL tachado + % de descuento
       // para que el carrito y el CartDrawer muestren la oferta como el resto del
       // sitio (precio = efectivo de cobro; precio_tachado = normal cuando hay promo).
-      const precioTachado = p.precio > precioReal ? p.precio : null;
+      // Precio de LISTA. En una oferta la base guarda el precio con descuento
+      // en `precio` y el de lista en `precio_original` (o al revés, según quién
+      // la escribió): el de lista es siempre el mayor de los dos. Antes se
+      // tomaba `precio` a ciegas y en las ofertas de liquidación "Mi cotización"
+      // mostraba —y mandaba por WhatsApp— el precio de oferta como si fuera el
+      // de lista.
+      const precioLista =
+        p.en_oferta && p.precio_original && p.precio_original > 0
+          ? Math.max(p.precio, p.precio_original)
+          : p.precio;
+      const precioTachado = precioLista > precioReal ? precioLista : null;
       return {
         id: item.id,
         producto_id: item.producto_id,
@@ -127,7 +137,7 @@ export async function GET(request: NextRequest) {
         codigo: p.codigo ?? null,
         precio: precioReal,
         precio_tachado: precioTachado,
-        porcentaje_descuento: precioTachado ? Math.round((1 - precioReal / p.precio) * 100) : null,
+        porcentaje_descuento: precioTachado ? Math.round((1 - precioReal / precioTachado) * 100) : null,
         imagen: p.imagen,
         slug: p.slug,
         medida: p.medida,

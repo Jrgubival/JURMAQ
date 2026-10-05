@@ -96,8 +96,8 @@ function UnidadesJurmaq() {
 // promesa, despacho, horario, teléfono y correo) y pidió dejar sólo esta. El
 // horario y el contacto siguen en el pie y en /sucursales.
 //
-// Siempre en una línea: la letra se achica con el ancho (clamp) en vez de
-// partirse en dos en celular. Mide 32 px y el header usa ese alto como offset.
+// Siempre en una línea: la letra se achica con el ancho en vez de partirse en
+// dos en celular. Mide 32 px y el header usa ese alto como offset.
 // La nota del asterisco (NOTA_DESCUENTO) está en el pie.
 function FranjaPrecios() {
   return (
@@ -105,7 +105,12 @@ function FranjaPrecios() {
       className="sticky top-0 z-[55] bg-marca-600 text-white"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
-      <p className="max-w-7xl mx-auto px-3 h-8 flex items-center justify-center text-center font-semibold leading-none whitespace-nowrap overflow-hidden text-[clamp(10px,2.75vw,13px)]">
+      {/* El texto mide ~28,7 veces el tamaño de letra: con (ancho − 24 px) / 30
+          cabe siempre en una línea, de 320 px en adelante y con margen; tope 13 px. */}
+      <p
+        className="max-w-7xl mx-auto px-3 h-8 flex items-center justify-center text-center font-semibold leading-none whitespace-nowrap overflow-hidden"
+        style={{ fontSize: 'min(13px, calc((100vw - 24px) / 30))' }}
+      >
         {FRANJA_PRECIOS}
       </p>
     </div>
