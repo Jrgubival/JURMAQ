@@ -107,15 +107,15 @@ export async function generateMetadata({
   const precioMostrar = metaResolved.precioFinal > 0 ? metaResolved.precioFinal : producto.precio;
   const precioFormateado = `${formatCLP(precioMostrar)}`;
   const stockTexto =
-    producto.stock > 0 ? "Stock disponible" : "Consultar disponibilidad";
+    producto.stock >= 1 ? "Stock disponible" : "Sin stock";
   // Etiqueta corta de stock para el TÍTULO visible (lo que el usuario ve en
   // Google). Antes el título solo decía "Precio y Stock" como palabras; ahora
   // surfacea el precio real + stock → sube CTR en consultas tipo "fierro
   // estriado 18mm", "cemento talca", "perfiles curico" (rankean pos 6–8.5, 0
   // clics). El precio ya estaba solo en el OG title.
-  const stockBadge = producto.stock > 0 ? "En stock" : "Consultar stock";
+  const stockBadge = producto.stock >= 1 ? "En stock" : "Sin stock";
   const titlePrecio = metaResolved.tipo === "cotizar"
-    ? "Cotiza online"
+    ? "Consultar precio"
     : `${precioFormateado} · ${stockBadge}`;
 
   return {
@@ -422,7 +422,7 @@ export default async function ProductoPage({
                   <p className="text-sm text-[#956400] font-medium mb-2">{dailyPromoTitle}</p>
                 )}
                 <p className="text-base text-[#787774] mb-1">
-                  Precio de lista <span className="line-through">{formatCLP(precioResuelto.precioTachado!)}</span>
+                  Antes <span className="line-through">{formatCLP(precioResuelto.precioTachado!)}</span>
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p
@@ -450,7 +450,7 @@ export default async function ProductoPage({
                   )}
                 </div>
                 <p className="text-base text-[#787774] mb-1">
-                  Precio de lista <span className="line-through">{formatCLP(precioResuelto.precioTachado!)}</span>
+                  Antes <span className="line-through">{formatCLP(precioResuelto.precioTachado!)}</span>
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <p
@@ -476,7 +476,7 @@ export default async function ProductoPage({
                 >
                   Consultar precio
                 </p>
-                <p className="text-[11px] text-[#787774] mt-3">Cotización por WhatsApp o correo, en horario de atención.</p>
+                <p className="text-[11px] text-[#787774] mt-3">No se vende en línea. Consúltanos por WhatsApp o correo, en horario de atención.</p>
               </div>
             ) : (
               <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
@@ -492,7 +492,7 @@ export default async function ProductoPage({
                   )}
                 </div>
                 {precioResuelto.precioFinal > 0 && (
-                  <p className="text-[11px] text-[#787774] mt-2">Precio de lista · IVA incluido.</p>
+                  <p className="text-[11px] text-[#787774] mt-2">IVA incluido.</p>
                 )}
               </div>
             )}
@@ -502,11 +502,11 @@ export default async function ProductoPage({
 
             {/* Stock — editorial inline indicator */}
             <div className="mb-8 flex items-center gap-2 text-sm">
-              {producto.stock > 0 ? (
+              {producto.stock >= 1 ? (
                 <>
                   <span className="w-1.5 h-1.5 rounded-full bg-[#2F7F4E]" aria-hidden="true" />
                   <span className="text-[#2F7F4E] font-medium">En stock</span>
-                  <span className="text-[#787774]">· {producto.stock} disponibles</span>
+                  <span className="text-[#787774]">· {Math.floor(producto.stock)} disponibles</span>
                 </>
               ) : (
                 <>
@@ -518,7 +518,7 @@ export default async function ProductoPage({
 
             {/* Variants & Add to Cart - sticky on mobile */}
             <div className="lg:relative">
-              <AddToCartClient producto={producto} variantes={variantes} precioPromo={promoPrecioDescuento} />
+              <AddToCartClient producto={producto} variantes={variantes} precioVenta={precioResuelto.precioFinal} />
             </div>
 
             {/* Share buttons */}

@@ -6,6 +6,9 @@ const DISALLOW = [
   "/cuenta/",
   "/carrito",
   "/cotizar",
+  "/checkout",
+  "/pedido/",
+  "/pago/",
   // Búsquedas y variantes con filtros: contenido duplicado de la categoría
   // (que ya tiene canonical) y miles de URLs para rastrear. La categoría sin
   // filtros y las fichas siguen abiertas, y el sitemap lista las fichas.

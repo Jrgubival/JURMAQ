@@ -309,20 +309,20 @@ export default function CalculadoraFierroPage() {
               ¿Ya sabes cuántos quintales necesitas?
             </h2>
             <p className="text-gray-700 mb-8">
-              Cotiza tu pedido con barraca JURMAQ. Te respondemos con precio y despacho coordinado a tu obra.
+              Agrega el fierro al carrito y paga en línea. Retiro en Molina o despacho a tu obra, a coordinar.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
-                href="/cotizar"
+                href="/categorias/fierros"
                 className="inline-flex items-center gap-2 bg-marca-600 hover:bg-marca-700 text-white px-8 py-4 rounded-lg font-bold text-lg transition-colors"
               >
-                Cotizar mi pedido
+                Comprar fierro
               </Link>
               <Link
-                href="/categorias/fierros"
+                href="/carrito"
                 className="inline-flex items-center gap-2 bg-white border border-gray-300 hover:border-marca-500 text-navy-950 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
               >
-                Ver catálogo
+                Ver mi carrito
               </Link>
             </div>
           </div>

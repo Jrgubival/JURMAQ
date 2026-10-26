@@ -205,16 +205,16 @@ export default async function BarracaEnCiudadPage({
             <p className="text-gray-300 max-w-3xl mb-8">{c.contextoLocal}</p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/cotizar"
+                href="/categorias"
                 className="inline-flex items-center gap-2 bg-marca-600 hover:bg-marca-700 px-6 py-3 rounded-lg font-semibold transition-colors"
               >
-                Súbenos tu cotización
+                Comprar en línea
               </Link>
               <Link
-                href="/categorias"
+                href="/sucursales"
                 className="inline-flex items-center gap-2 bg-white text-navy-950 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition-colors"
               >
-                Ver +1.600 productos
+                Retiro y despacho
               </Link>
             </div>
           </div>
@@ -398,10 +398,10 @@ export default async function BarracaEnCiudadPage({
             <p className="text-xs text-gray-400 mb-8">{NOTA_PROMESA}</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
-                href="/cotizar"
+                href="/categorias"
                 className="inline-flex items-center gap-2 bg-marca-600 hover:bg-marca-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
               >
-                Sube tu cotización
+                Comprar en línea
               </Link>
               <a
                 href={whatsappCtaBarracaCiudad(c.slug, c.nombre)}

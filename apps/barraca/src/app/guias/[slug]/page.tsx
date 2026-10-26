@@ -187,10 +187,10 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
                 Ver catálogo {guia.categoriaNombre}
               </Link>
               <Link
-                href="/cotizar"
+                href="/categorias"
                 className="inline-flex items-center gap-2 bg-white border border-gray-300 hover:border-marca-500 text-navy-950 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
               >
-                Súbenos tu cotización
+                Ver el catálogo
               </Link>
             </div>
           </div>

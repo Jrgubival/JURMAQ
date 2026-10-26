@@ -70,6 +70,12 @@ const clientEnvSchema = z.object({
 
   /** Token Bing Webmaster (meta name="msvalidate.01"). Opcional. */
   NEXT_PUBLIC_BING_VERIFICATION: z.string().optional(),
+
+  /** ID del píxel de Meta (Facebook/Instagram Ads) de la barraca. Vacío = píxel apagado. */
+  NEXT_PUBLIC_META_PIXEL_ID: z
+    .string()
+    .optional()
+    .transform((v) => (v && /^\d{5,20}$/.test(v.trim()) ? v.trim() : undefined)),
 });
 
 // ============================================================================
@@ -195,6 +201,35 @@ const serverEnvSchema = z.object({
   BANK_RUT: z.string().optional(),
   /** Email del titular para notificar transferencias. */
   BANK_EMAIL: z.string().email().optional(),
+  /** Titular de la cuenta (razón social) para transferencias. */
+  BANK_HOLDER: z.string().optional(),
+  /** Tipo de cuenta (ej. "Cuenta corriente"). */
+  BANK_ACCOUNT_TYPE: z.string().optional(),
+
+  /**
+   * Tienda barraca: pasarela de pago para "Pagar en línea".
+   * 'mercadopago' (Checkout Pro, por defecto) o 'simulado' (sólo desarrollo:
+   * una página local que aprueba el pago; se rechaza en producción).
+   */
+  PAGO_PASARELA: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim().toLowerCase())
+    .pipe(z.enum(['mercadopago', 'simulado']).optional()),
+
+  /**
+   * Tienda barraca: dónde se guardan los pedidos. 'supabase' (por defecto,
+   * tabla barraca_pedidos) o 'archivo' (sólo desarrollo: un JSON local, para
+   * probar sin tocar la base de producción).
+   */
+  PEDIDOS_STORE: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim().toLowerCase())
+    .pipe(z.enum(['supabase', 'archivo']).optional()),
+
+  /** Correo que recibe el aviso de cada pedido nuevo de la tienda barraca. */
+  BARRACA_PEDIDOS_EMAIL: z.string().email().optional(),
 
   /** Scope de autenticación legacy (cuenta vs constructora vs admin). */
   AUTH_SCOPE: z.string().optional(),
@@ -241,6 +276,7 @@ function parseClient() {
     NEXT_PUBLIC_KLAP_MODE: process.env.NEXT_PUBLIC_KLAP_MODE,
     NEXT_PUBLIC_GSC_VERIFICATION: process.env.NEXT_PUBLIC_GSC_VERIFICATION,
     NEXT_PUBLIC_BING_VERIFICATION: process.env.NEXT_PUBLIC_BING_VERIFICATION,
+    NEXT_PUBLIC_META_PIXEL_ID: process.env.NEXT_PUBLIC_META_PIXEL_ID,
   });
   if (!result.success) {
     throw new Error(

@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Newsreader, Oswald } from "next/font/google";
 import BarracaShell from "./BarracaShell";
 import Analytics from "@jurmaq/shared/ui/Analytics";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
+import MetaPixel from "@/components/MetaPixel";
 import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
 // Side-effect import: valida env vars al startup. Si falta una required en
 // prod, Zod tira un error explícito en lugar de propagar `undefined`.
@@ -206,6 +207,7 @@ export default function BarracaLayout({
         {/* P0 audit-analytics fix: Analytics no estaba en el árbol, todo trackEvents.*
             quedaba no-op (0 datos GA4). Esta línea repara el bug. */}
         <Analytics />
+        <MetaPixel />
         <BarracaShell>{children}</BarracaShell>
         <CookieBanner productLabel="productos" />
       </body>

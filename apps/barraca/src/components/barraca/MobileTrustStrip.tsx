@@ -7,8 +7,8 @@ export default function MobileTrustStrip() {
   const items = [
     {
       // Sin plazos: el dueño pidió no prometer tiempos en ningún lugar del sitio.
-      title: "Cotiza por",
-      sub: "WhatsApp",
+      title: "Compra en línea",
+      sub: "o retira en Molina",
       icon: (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
       ),

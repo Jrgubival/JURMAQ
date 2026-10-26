@@ -242,13 +242,6 @@ export default function PriceMatchPage() {
             </ul>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/cotizar"
-                className="inline-flex items-center gap-2 bg-white text-[#111111] px-6 py-3 rounded-lg text-sm font-medium tracking-[0.02em] hover:bg-white/90 transition-colors"
-              >
-                Subir cotización
-                <IconArrow className="w-4 h-4" />
-              </Link>
               <a
                 href={whatsappCtaBarracaMejorarPrecio('hero')}
                 target="_blank"
@@ -437,13 +430,6 @@ export default function PriceMatchPage() {
             </p>
             <p className="text-xs text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">{NOTA_PROMESA}</p>
             <div className="flex flex-wrap gap-3 justify-center">
-              <Link
-                href="/cotizar"
-                className="inline-flex items-center gap-2 bg-white text-[#111111] px-6 py-3 rounded-lg text-sm font-medium tracking-[0.02em] hover:bg-white/90 transition-colors"
-              >
-                Subir cotización
-                <IconArrow className="w-4 h-4" />
-              </Link>
               <a
                 href={whatsappCtaBarracaMejorarPrecio('cta_final')}
                 target="_blank"

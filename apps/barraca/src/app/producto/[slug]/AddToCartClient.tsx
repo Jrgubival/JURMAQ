@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { showToast } from "@/components/Toast";
 import SelectorMedidas from "@/components/barraca/SelectorMedidas";
 import { familiaDe, tituloFamilia } from "@/lib/variantes";
 import { formatCLP } from "@jurmaq/shared/format";
-import BotonDescuento from "@/components/barraca/BotonDescuento";
-import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
+import { agregarProducto } from "@/lib/agregar";
+import { unidadesDisponibles } from "@/lib/stock";
 
 interface Producto {
   id: number;
@@ -15,6 +13,10 @@ interface Producto {
   codigo?: string | null;
   precio: number;
   stock: number;
+  slug: string;
+  imagen: string | null;
+  medida: string | null;
+  unidad: string | null;
 }
 
 interface Variante {
@@ -26,86 +28,48 @@ interface Variante {
   medida: string | null;
 }
 
-function getSessionId(): string {
-  if (typeof window === "undefined") return "";
-  let sid = localStorage.getItem("barraca_session_id");
-  if (!sid) {
-    // crypto.randomUUID() == 128 bits de entropia y formato consistente con
-    // el resto de los componentes (CartDrawer, etc.). Antes usabamos
-    // Math.random + Date.now que es no-criptografico y produce IDs con
-    // formato distinto, lo que rompia el matching de sesion entre componentes.
-    sid = crypto.randomUUID();
-    localStorage.setItem("barraca_session_id", sid);
-  }
-  return sid;
-}
-
 export default function AddToCartClient({
   producto,
   variantes,
-  precioPromo,
+  precioVenta,
 }: {
   producto: Producto;
   variantes: Variante[];
-  precioPromo?: number | null;
+  /** Precio que se cobra (oferta o promoción ya aplicada), o 0 si no se vende en línea. */
+  precioVenta: number;
 }) {
-  const router = useRouter();
-  const [selectedVariant, setSelectedVariant] = useState<Variante | null>(null);
   const [cantidad, setCantidad] = useState(1);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const activeProduct = selectedVariant || producto;
-  const activeId = selectedVariant ? selectedVariant.id : producto.id;
-  const activeStock = activeProduct.stock;
-  const activePrecio = activeProduct.precio;
-  // FIX (audit jun-2026): junto al botón mostrábamos el precio NORMAL aunque
-  // hubiera oferta (precioPromo, que es lo que se cobra). Mostramos la oferta
-  // tachando el normal. precioPromo aplica al producto base, no a variantes.
-  const showPromo = !selectedVariant && !!precioPromo && precioPromo > 0 && precioPromo < producto.precio;
-  const displayPrecio = showPromo ? (precioPromo as number) : activePrecio;
-  const displayTachado = showPromo ? producto.precio : null;
+  // El selector de medidas navega a la ficha de cada variante: el producto
+  // que se compra es siempre el de esta página.
+  const unidades = unidadesDisponibles(producto.stock);
+  const comprable = precioVenta > 0 && unidades > 0;
+  const displayPrecio = precioVenta > 0 ? precioVenta : producto.precio;
+  const displayTachado = precioVenta > 0 && precioVenta < producto.precio ? producto.precio : null;
 
-  async function handleAdd() {
+  function handleAdd() {
+    if (!comprable) return;
     setAdding(true);
-    try {
-      const sid = getSessionId();
-      const res = await fetch("/api/carrito", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Session-Id": sid,
-        },
-        body: JSON.stringify({
-          sessionId: sid,
-          productoId: activeId,
-          cantidad,
-          ...(precioPromo ? { precioOverride: precioPromo } : {}),
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        showToast(data?.error || TOAST_MESSAGES.cart.ADD_FAILED_FALLBACK, "error");
-        return;
-      }
-      // Track conversion event GA4 (no-op si NEXT_PUBLIC_GA_MEASUREMENT_ID falta)
-      try {
-        const { trackEvents } = await import("@/lib/analytics");
-        trackEvents.addToCart({
-          id: activeId,
-          nombre: activeProduct.nombre,
-          precio: activePrecio,
-          cantidad,
-        });
-      } catch { /* no romper UX si el track falla */ }
+    const ok = agregarProducto(
+      {
+        productoId: producto.id,
+        nombre: producto.nombre,
+        precio: precioVenta,
+        imagen: producto.imagen,
+        slug: producto.slug,
+        medida: producto.medida,
+        unidad: producto.unidad,
+        stock: unidades,
+      },
+      cantidad,
+      { abrirCarrito: true },
+    );
+    setAdding(false);
+    if (ok) {
       setAdded(true);
-      window.dispatchEvent(new Event("cart-updated"));
-      showToast(TOAST_MESSAGES.cart.ADDED, "success");
       setTimeout(() => setAdded(false), 2000);
-    } catch {
-      showToast(TOAST_MESSAGES.cart.ADD_ERROR, "error");
-    } finally {
-      setAdding(false);
     }
   }
 
@@ -123,15 +87,9 @@ export default function AddToCartClient({
         />
       )}
 
-      {/* Stock info note */}
-      {activeStock > 0 && cantidad > activeStock && (
+      {comprable && cantidad > unidades && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
-          Stock actual: {activeStock} unidades. Para cantidades mayores, cotizaremos disponibilidad.
-        </div>
-      )}
-      {activeStock <= 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
-          Sin stock actualmente. Pide tu precio por WhatsApp o agrégalo a tu cotización y te confirmamos disponibilidad.
+          Solo quedan {unidades} unidades.
         </div>
       )}
 
@@ -151,23 +109,24 @@ export default function AddToCartClient({
               <span className={displayTachado ? "text-marca-600" : ""}>{formatCLP(displayPrecio)}</span>
             </p>
             <p className="mt-1 text-[10px] uppercase tracking-wider text-gray-500">
-              {displayTachado ? "Precio oferta" : "Precio de lista"} · IVA incl.{selectedVariant?.medida ? ` · ${selectedVariant.medida}` : ""}
+              {displayTachado ? "Precio oferta · " : ""}IVA incluido{comprable ? "" : " · sin stock"}
             </p>
           </div>
-          {activeStock > 0 && activeStock <= 5 && (
+          {unidades > 0 && unidades <= 5 && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-amber-500 text-white">
               <span className="w-1.5 h-1.5 bg-white" />
-              {activeStock} unid.
+              {unidades} unid.
             </span>
           )}
         </div>
-        {/* Quantity selector */}
-        <div className="flex items-center gap-3">
+        {/* Quantity selector (sólo si se puede comprar) */}
+        <div className={`flex items-center gap-3 ${comprable ? "" : "hidden"}`}>
           <span className="text-sm font-medium text-gray-700">Cantidad:</span>
           <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
             <button
               onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-              className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              disabled={!comprable || cantidad <= 1}
+              className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-40 transition-colors"
               aria-label="Disminuir cantidad"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,16 +137,20 @@ export default function AddToCartClient({
               type="number"
               inputMode="numeric"
               min={1}
+              max={Math.max(1, unidades)}
+              disabled={!comprable}
+              aria-label="Cantidad"
               value={cantidad}
               onChange={(e) => {
                 const val = parseInt(e.target.value);
-                if (!isNaN(val) && val >= 1 && val <= 9999) setCantidad(val);
+                if (!isNaN(val) && val >= 1) setCantidad(Math.min(val, Math.max(1, unidades)));
               }}
               className="w-14 h-11 text-center text-base font-bold text-navy-950 border-x-2 border-gray-200 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
             <button
-              onClick={() => setCantidad(Math.min(9999, cantidad + 1))}
-              className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+              onClick={() => setCantidad(Math.min(Math.max(1, unidades), cantidad + 1))}
+              disabled={!comprable || cantidad >= unidades}
+              className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-40 transition-colors"
               aria-label="Aumentar cantidad"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,36 +160,34 @@ export default function AddToCartClient({
           </div>
         </div>
 
-        {/* Acción principal: pedir el precio con descuento por WhatsApp, con
-            el producto, su código y la cantidad elegida. Reemplaza al antiguo
-            "Cotizar por WhatsApp" verde: dos botones de WhatsApp confundían. */}
-        <BotonDescuento nombre={producto.nombre} codigo={producto.codigo} cantidad={cantidad} lugar="ficha" grande />
-
-        {/* Secundario: sumar el producto a "Mi cotización" (el carrito). */}
+        {/* Acción principal de la ficha: agregar al carrito (abre el carrito
+            para seguir a pagar). Sin stock, el botón queda inerte y lo dice. */}
         <button
           onClick={handleAdd}
-          disabled={adding}
-          className={`w-full h-12 flex items-center justify-center gap-2 font-semibold rounded-xl text-base border-2 transition-[transform,background-color,color,border-color] duration-150 ease-out active:scale-[0.98] touch-manipulation ${
-            added
-              ? "border-green-600 bg-green-50 text-green-700"
-              : "border-marca-600 bg-white text-marca-700 hover:bg-marca-50"
+          disabled={adding || !comprable}
+          className={`w-full min-h-[52px] flex items-center justify-center gap-2 font-bold rounded-xl text-base transition-[transform,background-color] duration-150 ease-out active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-marca-600 ${
+            !comprable
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+              : added
+                ? "bg-green-700 text-white"
+                : "bg-marca-600 text-white hover:bg-marca-700 shadow-md shadow-marca-200"
           }`}
         >
-          {adding ? (
-            <div className="w-5 h-5 border-2 border-marca-600 border-t-transparent rounded-full animate-spin" />
+          {!comprable ? (
+            precioVenta > 0 ? "Sin stock" : "No disponible en línea"
           ) : added ? (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Agregado a mi cotización
+              Agregado al carrito
             </>
           ) : (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
               </svg>
-              Agregar a mi cotización
+              Agregar al carrito
             </>
           )}
         </button>

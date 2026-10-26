@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "@/components/barraca/Enlace";
-import BotonDescuento from "@/components/barraca/BotonDescuento";
 import Image from "next/image";
 import { useState } from "react";
-import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
 import { formatCLP } from "@jurmaq/shared/format";
-import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
+import { agregarProducto } from "@/lib/agregar";
+import { esComprable, tienePrecio, unidadesDisponibles } from "@/lib/stock";
 import StarRating from "./StarRating";
 import { nombreMarca } from "@/lib/marcas";
 
@@ -63,21 +62,11 @@ interface ProductCardProps {
   precio_original?: number | null;
   en_oferta?: boolean;
   solo_cotizar?: boolean;
-  /** Código del maestro (SKU). Va en el mensaje de WhatsApp del descuento. */
+  /** Código del maestro (SKU). */
   codigo?: string | null;
   /** Tier 4 D2: rating agregado de reviews aprobadas. Opcional. */
   rating?: number | null;
   rating_count?: number;
-}
-
-function getSessionId(): string {
-  if (typeof window === "undefined") return "";
-  let sid = localStorage.getItem("barraca_session_id");
-  if (!sid) {
-    sid = crypto.randomUUID();
-    localStorage.setItem("barraca_session_id", sid);
-  }
-  return sid;
 }
 
 export default function ProductCard({
@@ -94,7 +83,6 @@ export default function ProductCard({
   precio_original,
   en_oferta,
   solo_cotizar,
-  codigo,
   rating,
   rating_count,
 }: ProductCardProps) {
@@ -111,47 +99,22 @@ export default function ProductCard({
   const fallbackImage = categoriaSlug ? (categoryImages[categoriaSlug] || null) : null;
   const displayImage = imgError ? fallbackImage : resolvedImage;
 
-  async function handleAdd() {
+  // Precio que se cobra: en oferta, el menor de los dos (mismo criterio que
+  // resolvePrice en lib/pricing.ts y que el servidor al armar el pedido).
+  const precioVenta = en_oferta && precio_original && precio_original > 0 ? Math.min(precio, precio_original) : precio;
+  const unidades = unidadesDisponibles(stock);
+  const comprable = esComprable({ precio: precioVenta, stock, solo_cotizar });
+
+  function handleAdd() {
+    if (!comprable) return;
     setAdding(true);
-    try {
-      // If this card is showing a discounted price (either sticky offer with
-      // precio_original, or daily-promo enriched in-memory), send it as
-      // precioOverride so the cart honors what the customer saw on the card.
-      // The server validates it against active promotions before accepting.
-      const overridePrice =
-        en_oferta && precio_original && precio_original > 0
-          ? precio_original
-          : null;
-      const res = await fetch("/api/carrito", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Session-Id": getSessionId(),
-        },
-        body: JSON.stringify({
-          sessionId: getSessionId(),
-          productoId: id,
-          cantidad: 1,
-          ...(overridePrice ? { precioOverride: overridePrice } : {}),
-        }),
-      });
-      if (!res.ok) {
-        // 429 rate-limit, 403 origin, 400 stock — todos surface al usuario.
-        // Antes el catch solo agarraba network errors y mostrabamos "Agregado"
-        // aunque el server hubiera rechazado el item.
-        const data = await res.json().catch(() => ({} as { error?: string }));
-        const msg = (data as { error?: string }).error || (res.status === 429 ? TOAST_MESSAGES.cart.RATE_LIMITED : TOAST_MESSAGES.cart.ADD_FAILED_FALLBACK);
-        showToast(msg, "error");
-        return;
-      }
+    const ok = agregarProducto({
+      productoId: id, nombre, precio: precioVenta, imagen, slug, medida, unidad, stock: unidades,
+    });
+    setAdding(false);
+    if (ok) {
       setAdded(true);
-      window.dispatchEvent(new Event("cart-updated"));
-      showToast(TOAST_MESSAGES.cart.ADDED, "success");
       setTimeout(() => setAdded(false), 2000);
-    } catch {
-      showToast(TOAST_MESSAGES.cart.ADD_ERROR, "error");
-    } finally {
-      setAdding(false);
     }
   }
 
@@ -257,16 +220,16 @@ export default function ProductCard({
             foto. Tres formas de decir lo mismo, dos de ellas gritando. Un
             comprador de fierros lee "12 un." igual de bien, y el rojo queda
             libre para lo único que de verdad debe destacar: la oferta. */}
-        {!solo_cotizar && (
-          <p className="text-xs text-gray-500 mb-2 tabular-nums">
-            {stock > 0 ? `En stock · ${stock} un.` : 'Sobre pedido'}
-          </p>
+        {tienePrecio({ precio: precioVenta, stock, solo_cotizar }) && (
+          unidades > 0 ? (
+            <p className="text-xs text-gray-500 mb-2 tabular-nums">En stock · {unidades} un.</p>
+          ) : (
+            <p className="text-xs font-semibold text-[#9C2B1F] mb-2">Sin stock</p>
+          )
         )}
 
-        {/* Precio. Los precios del sitio son de LISTA: el descuento se pide
-            por WhatsApp (botón rojo) y lo da el vendedor según producto y
-            cantidad. Por eso "Precio de lista" bajo el precio. En oferta, el
-            tachado ES el de lista y el grande es el de oferta. */}
+        {/* Precio: lo que se paga al comprar. En oferta, el tachado es el
+            precio normal y el grande el de oferta. */}
         <div className="mt-auto pt-3 border-t border-gray-200">
           <div className="mb-3">
             {solo_cotizar ? (
@@ -280,7 +243,7 @@ export default function ProductCard({
                  Mismo criterio que resolvePrice/getCartPrice en lib/pricing.ts. */
               <div>
                 <p className="text-xs text-gray-500 leading-none tabular-nums mb-0.5">
-                  Precio de lista <span className="line-through">{formatCLP(Math.max(precio, precio_original))}</span>
+                  Antes <span className="line-through">{formatCLP(Math.max(precio, precio_original))}</span>
                 </p>
                 <p className="text-[22px] font-extrabold text-navy-950 leading-none tabular-nums">
                   {formatCLP(Math.min(precio, precio_original))}
@@ -295,30 +258,25 @@ export default function ProductCard({
                   <span className="text-xs text-gray-500 font-medium ml-0.5">{unitLabel}</span>
                 </p>
                 {precio > 0 && (
-                  <p className="text-[10px] text-gray-500 tracking-wide uppercase mt-0.5">Precio de lista · IVA incl.</p>
+                  <p className="text-[10px] text-gray-500 tracking-wide uppercase mt-0.5">IVA incluido</p>
                 )}
               </>
             )}
           </div>
 
-          <div className="@container flex flex-col gap-1">
-            <BotonDescuento nombre={nombre} codigo={codigo} lugar="tarjeta" />
-
-            {/* Agregar a "Mi cotización" (el carrito). Secundario: la acción
-                principal de la tarjeta es pedir el precio con descuento. */}
+          {/* Una sola acción por tarjeta. Navy y no naranja: en una grilla de
+              24 tarjetas, 24 botones naranjos competirían con "Ir a pagar",
+              que es el único naranjo de la compra. */}
+          {comprable ? (
             <button
               onClick={handleAdd}
               disabled={adding}
-              aria-label={added ? `${nombre} agregado a mi cotización` : `Agregar ${nombre} a mi cotización`}
-              className={`w-full flex items-center justify-center gap-1.5 px-2 min-h-[44px] lg:min-h-[38px] text-[13px] font-semibold leading-tight rounded-lg transition-[transform,background-color,color] duration-150 ease-out active:scale-[0.97] touch-manipulation ${
-                added
-                  ? "text-green-700"
-                  : "text-marca-700 hover:bg-marca-50"
+              aria-label={added ? `${nombre} agregado al carrito` : `Agregar ${nombre} al carrito`}
+              className={`w-full flex items-center justify-center gap-1.5 px-3 min-h-[44px] text-sm font-semibold leading-tight rounded-lg transition-[transform,background-color] duration-150 ease-out active:scale-[0.97] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy-950 ${
+                added ? "bg-green-700 text-white" : "bg-navy-950 text-white hover:bg-navy-800"
               }`}
             >
-              {adding ? (
-                <div className="w-4 h-4 border-2 border-marca-600 border-t-transparent rounded-full animate-spin" />
-              ) : added ? (
+              {added ? (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -327,14 +285,22 @@ export default function ProductCard({
                 </>
               ) : (
                 <>
-                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 5v14M5 12h14" />
+                  <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
                   </svg>
-                  <span>Agregar a mi cotización</span>
+                  <span>Agregar al carrito</span>
                 </>
               )}
             </button>
-          </div>
+          ) : (
+            <Link
+              href={`/producto/${slug}`}
+              className="w-full flex items-center justify-center px-3 min-h-[44px] text-sm font-medium text-gray-500 bg-gray-100 rounded-lg"
+              aria-label={`${nombre}: ${unidades > 0 ? 'consultar precio' : 'sin stock'}`}
+            >
+              {tienePrecio({ precio: precioVenta, stock, solo_cotizar }) ? 'Sin stock' : 'Ver producto'}
+            </Link>
+          )}
         </div>
       </div>
     </div>

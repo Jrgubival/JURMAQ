@@ -18,6 +18,7 @@
 
 export { transporter, ADMIN_BCC_EMAILS, EMAIL_FROM } from "./transport";
 export { formatCLP, escapeHtml } from "./utils";
+export { renderEmailLayout, renderButton, renderOrderItems } from "./layout";
 
 export { sendOtpEmail } from "./templates/otp";
 export { sendSignedContractEmail } from "./templates/signed-contract";

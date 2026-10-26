@@ -117,6 +117,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: 'Clientes', path: '/admin/clientes', app: 'constructora', module: 'clientes', group: 'Arriendo y obras', avanzado: true },
 
   // ── Barraca ───────────────────────────────────────────────────────────────
+  { label: 'Pedidos web', path: '/admin/pedidos', app: 'barraca', module: 'barraca_cotizaciones', group: 'Barraca', keywords: ['tienda', 'ventas', 'transferencia'] },
   { label: 'Cotizaciones barraca', path: '/admin/cotizaciones', app: 'barraca', module: 'barraca_cotizaciones', group: 'Barraca', keywords: ['pedidos', 'ventas'] },
   { label: 'Productos', path: '/admin/productos', app: 'barraca', module: 'barraca_productos', group: 'Barraca', keywords: ['catalogo', 'sku'] },
   { label: 'Categorías', path: '/admin/categorias', app: 'barraca', module: 'barraca_categorias', group: 'Barraca' },

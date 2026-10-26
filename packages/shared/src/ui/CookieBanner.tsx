@@ -70,7 +70,10 @@ function setStoredConsent(accepted: boolean) {
 }
 
 function pushConsent(value: ConsentValue) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+  if (typeof window === "undefined") return;
+  // Otros rastreadores (píxel de Meta de la barraca) escuchan este evento.
+  window.dispatchEvent(new CustomEvent("jurmaq:consent", { detail: { granted: value === "granted" } }));
+  if (typeof window.gtag !== "function") return;
   const params: ConsentParams = {
     ad_storage: value,
     ad_user_data: value,

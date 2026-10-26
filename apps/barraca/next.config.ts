@@ -85,11 +85,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com https://connect.facebook.net",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://*.mlstatic.com https://media.falabella.com https://upload.wikimedia.org",
+              "img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://*.mlstatic.com https://media.falabella.com https://upload.wikimedia.org https://www.facebook.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://*.supabase.co https://wmoizhbdalvnveclenvf.supabase.co https://api.mercadopago.com https://www.google-analytics.com https://analytics.google.com https://*.googletagmanager.com",
+              "connect-src 'self' https://*.supabase.co https://wmoizhbdalvnveclenvf.supabase.co https://api.mercadopago.com https://www.google-analytics.com https://analytics.google.com https://*.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
               // Allow same-origin iframes so admin can embed contract preview.
               "frame-ancestors 'self'",
               "base-uri 'self'",

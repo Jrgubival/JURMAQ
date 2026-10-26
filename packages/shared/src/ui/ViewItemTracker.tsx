@@ -43,7 +43,19 @@ export default function ViewItemTracker({
   currency = "CLP",
 }: ViewItemTrackerProps) {
   useEffect(() => {
-    if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+    if (typeof window === "undefined") return;
+    // Píxel de Meta (sólo existe donde la app lo montó, hoy la barraca).
+    const fbq = (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq;
+    if (typeof fbq === "function") {
+      fbq("track", "ViewContent", {
+        content_ids: [String(id)],
+        content_name: nombre,
+        content_type: "product",
+        value: precio,
+        currency,
+      });
+    }
+    if (typeof window.gtag !== "function") return;
     window.gtag("event", "view_item", {
       currency,
       value: precio,

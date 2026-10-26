@@ -164,10 +164,13 @@ export default function CatalogoCategoria({
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
-      {/* Sidebar - Sodimac-style filters. Native <details> collapsible on mobile,
-          always-visible on desktop (lg:open + summary hidden). */}
+      {/* Filtros: <details> cerrado en celular (abierto empujaba los productos
+          casi una pantalla hacia abajo) y abierto siempre en escritorio. */}
       <aside className="w-full lg:w-64 shrink-0">
-        <details className="bg-white border border-gray-200 rounded-xl lg:border-0 lg:bg-transparent lg:sticky lg:top-24 group" open>
+        <details
+          ref={(el) => { if (el && window.matchMedia("(min-width: 1024px)").matches) el.open = true; }}
+          className="bg-white border border-gray-200 rounded-xl lg:border-0 lg:bg-transparent lg:sticky lg:top-24 group"
+        >
           <summary className="flex items-center justify-between px-4 py-3 min-h-[48px] text-sm font-semibold text-navy-950 cursor-pointer select-none touch-manipulation list-none lg:hidden [&::-webkit-details-marker]:hidden">
             <span className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,7 +214,7 @@ export default function CatalogoCategoria({
                 {([
                   { value: "all", label: "Todos" },
                   { value: "instock", label: "En stock" },
-                  { value: "outofstock", label: "Sin stock (cotizable)" },
+                  { value: "outofstock", label: "Sin stock" },
                 ] as { value: Stock; label: string }[]).map((opt) => (
                   <a
                     key={opt.value}

@@ -5,29 +5,41 @@
  * marca y un botón de WhatsApp con el verde que ya usa el sitio.
  *
  * Sin plazos ni promesas nuevas: los pasos dicen lo que pasa, no cuánto tarda.
- * Se usa en la portada y en /te-mejoramos-el-precio.
+ * Dos versiones: `modo="tienda"` (portada: cómo se compra en línea) y
+ * `modo="cotizacion"` (en /te-mejoramos-el-precio: mandar otra cotización).
  */
 
-const PASOS = [
+import Link from "@/components/barraca/Enlace";
+
+const PASOS_COTIZACION = [
   { t: "Mándanos tu cotización por WhatsApp", d: "Sirve una foto, una captura o el PDF." },
   { t: "La revisamos", d: "" },
   { t: "Te respondemos con nuestra oferta y el despacho", d: "" },
 ];
 
+const PASOS_TIENDA = [
+  { t: "Elige tus productos", d: "El precio publicado es el que pagas, IVA incluido." },
+  { t: "Paga en línea o por transferencia", d: "Tarjeta con Mercado Pago, o transferencia bancaria." },
+  { t: "Retira en Molina o pide despacho", d: "El despacho lo coordinamos contigo según la comuna." },
+];
+
 export default function ComoFunciona({
-  whatsappHref,
+  modo = "cotizacion",
+  whatsappHref = "",
   nota,
   className = "",
   ancho = "max-w-7xl",
 }: {
-  /** URL completa de wa.me con el texto ya pre-llenado. */
-  whatsappHref: string;
+  modo?: "tienda" | "cotizacion";
+  /** URL completa de wa.me con el texto ya pre-llenado (modo cotización). */
+  whatsappHref?: string;
   /** Línea visible junto al botón (opcional). */
   nota?: string;
   className?: string;
   /** Ancho del contenedor, para alinear con el resto de la página. */
   ancho?: "max-w-7xl" | "max-w-6xl";
 }) {
+  const PASOS = modo === "tienda" ? PASOS_TIENDA : PASOS_COTIZACION;
   return (
     <section aria-labelledby="como-funciona-titulo" className={`bg-white ${className}`}>
       <div className={`${ancho} mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16`}>
@@ -54,6 +66,14 @@ export default function ComoFunciona({
           ))}
         </ol>
         <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
+          {modo === "tienda" ? (
+            <Link
+              href="/categorias"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 min-h-[48px] bg-navy-950 hover:bg-navy-800 text-white font-semibold rounded-lg transition-colors"
+            >
+              Ver el catálogo
+            </Link>
+          ) : (
           <a
             href={whatsappHref}
             target="_blank"
@@ -65,6 +85,7 @@ export default function ComoFunciona({
             </svg>
             Mandar mi cotización por WhatsApp
           </a>
+          )}
           {nota && <p className="text-sm text-gray-500">{nota}</p>}
         </div>
       </div>

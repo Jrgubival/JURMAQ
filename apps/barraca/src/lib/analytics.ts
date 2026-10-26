@@ -54,6 +54,33 @@ export type Ga4Event =
   | 'search'
   | 'generate_lead';
 
+/**
+ * Evento estándar del píxel de Meta (no-op si el píxel no está montado; ver
+ * components/MetaPixel.tsx).
+ */
+export function trackMeta(
+  event: 'ViewContent' | 'AddToCart' | 'InitiateCheckout' | 'Purchase',
+  params: Record<string, unknown>,
+  eventId?: string,
+): void {
+  if (typeof window === 'undefined') return;
+  const fbq = (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq;
+  if (typeof fbq !== 'function') return;
+  if (eventId) fbq('track', event, params, { eventID: eventId });
+  else fbq('track', event, params);
+}
+
+function metaContenido(items: ItemBarraca[]) {
+  return {
+    content_ids: items.map((i) => String(i.id)),
+    content_type: 'product',
+    contents: items.map((i) => ({ id: String(i.id), quantity: i.cantidad, item_price: i.precio })),
+    num_items: items.reduce((s, i) => s + i.cantidad, 0),
+    value: items.reduce((s, i) => s + i.precio * i.cantidad, 0),
+    currency: CURRENCY,
+  };
+}
+
 export function track(event: Ga4Event, params?: GtagEventParams): void {
   if (!gtagAvailable()) return;
   window.gtag!('event', event, params || {});
@@ -107,6 +134,7 @@ export const trackEvents = {
     });
   },
   addToCart(item: ItemBarraca) {
+    trackMeta('AddToCart', metaContenido([item]));
     track('add_to_cart', {
       currency: CURRENCY,
       value: item.precio * item.cantidad,
@@ -129,6 +157,7 @@ export const trackEvents = {
     });
   },
   beginCheckout(items: ItemBarraca[]) {
+    trackMeta('InitiateCheckout', metaContenido(items));
     const value = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
     track('begin_checkout', {
       currency: CURRENCY,
@@ -181,6 +210,9 @@ export const trackEvents = {
     const key = `ga4_purchase_${numero}`;
     if (sessionStorage.getItem(key)) return; // ya enviado en esta sesión
     sessionStorage.setItem(key, '1');
+    // eventID = número de pedido: si algún día se suma la API de Conversiones
+    // del servidor, Meta deduplica las dos señales del mismo pedido.
+    trackMeta('Purchase', { ...metaContenido(items), value: total }, numero);
     track('purchase', {
       transaction_id: numero,
       currency: CURRENCY,

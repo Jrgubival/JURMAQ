@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { env } from '@jurmaq/shared/env';
+import { PATRON_NUMERO } from '@/lib/pedidos';
+import { aplicarEstadoPago } from '@/lib/pagos';
+import type { EstadoPagoPasarela } from '@/lib/pagos/tipos';
 
 /**
  * Verify MercadoPago webhook signature.
@@ -156,6 +159,21 @@ export async function POST(request: NextRequest) {
       // ignorar el webhook (puede ser tardio y no queremos retroceder estado).
       if (!externalReference) {
         return NextResponse.json({ status: 'no_external_reference' });
+      }
+
+      // Pedidos de la tienda en línea (BJ-AAMMDD-XXXX). El pago ya se consultó
+      // arriba a la API de Mercado Pago con nuestro token: no se usa nada del
+      // cuerpo de la notificación salvo el id.
+      if (PATRON_NUMERO.test(externalReference)) {
+        const estado: EstadoPagoPasarela['estado'] =
+          status === 'approved' ? 'aprobado'
+            : ['rejected', 'cancelled', 'refunded', 'charged_back'].includes(status) ? 'rechazado'
+              : 'pendiente';
+        const r = await aplicarEstadoPago(
+          { numero: externalReference, estado, monto: Number(transactionAmount) || 0, pagoId: paymentIdStr },
+          'mercadopago',
+        );
+        return NextResponse.json({ status: 'ok', pedido: r });
       }
 
       const { data: cotizacion, error: cotError } = await supabaseAdmin

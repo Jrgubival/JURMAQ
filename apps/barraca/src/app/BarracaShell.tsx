@@ -10,7 +10,8 @@ import ToastContainer from "@/components/Toast";
 import { IconCoin, IconArrowRight } from "@jurmaq/shared/icons";
 import { LEGAL_INFO, HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
 import { whatsappCtaBarracaCotizar, whatsappCtaBarracaMejorarPrecio } from "@jurmaq/shared/whatsapp";
-import { PROMESA_CON_ASTERISCO, PROMESA_CORTA, NOTA_PROMESA, FRANJA_PRECIOS, NOTA_DESCUENTO } from "@/lib/promesa";
+import { PROMESA_CON_ASTERISCO, PROMESA_CORTA, NOTA_PROMESA, FRANJA_TIENDA } from "@/lib/promesa";
+import { cantidadEnCarrito } from "@/lib/carrito";
 
 const CartDrawer = dynamic(
   () => import("@/components/barraca/CartDrawer"),
@@ -90,15 +91,14 @@ function UnidadesJurmaq() {
   );
 }
 
-// Franja roja fija arriba en todas las páginas (pedido del dueño, oct-2026):
-// los precios publicados son de lista y el descuento se pide. Es la ÚNICA línea
+// Franja roja fija arriba en todas las páginas (pedido del dueño, oct-2026).
+// Desde la tienda en línea dice cómo comprar (FRANJA_TIENDA). Es la ÚNICA línea
 // sobre el header: el dueño encontró recargadas dos barras (la azul llevaba
 // promesa, despacho, horario, teléfono y correo) y pidió dejar sólo esta. El
 // horario y el contacto siguen en el pie y en /sucursales.
 //
 // Siempre en una línea: la letra se achica con el ancho en vez de partirse en
 // dos en celular. Mide 32 px y el header usa ese alto como offset.
-// La nota del asterisco (NOTA_DESCUENTO) está en el pie.
 function FranjaPrecios() {
   return (
     <div
@@ -111,7 +111,7 @@ function FranjaPrecios() {
         className="max-w-7xl mx-auto px-3 h-8 flex items-center justify-center text-center font-semibold leading-none whitespace-nowrap overflow-hidden"
         style={{ fontSize: 'min(13px, calc((100vw - 24px) / 30))' }}
       >
-        {FRANJA_PRECIOS}
+        {FRANJA_TIENDA}
       </p>
     </div>
   );
@@ -198,43 +198,17 @@ function Navbar() {
     };
   }, []);
 
-  // Contador del carrito. Antes se pedía a /api/carrito en CADA carga de
-  // página, para todos los visitantes: el shell creaba un id de sesión a quien
-  // no lo tenía, así que la API nunca podía responder "no hay carrito" sin ir a
-  // Supabase. Era una función + 2-3 consultas por página vista, casi siempre
-  // para devolver 0. Ahora el número se recuerda en localStorage y sólo se
-  // consulta al servidor si el carrito tenía algo o si acaba de cambiar.
-  function fetchCartCount(forzar = false) {
-    if (typeof window === "undefined") return;
-    const sid = localStorage.getItem("barraca_session_id");
-    if (!sid) {
-      setCartCount(0);
-      localStorage.setItem("barraca_cart_count", "0");
-      return;
-    }
-    const guardado = localStorage.getItem("barraca_cart_count");
-    if (!forzar && guardado !== null) {
-      const n = Number(guardado) || 0;
-      setCartCount(n);
-      if (n === 0) return; // carrito vacío conocido: no hay nada que preguntar
-    }
-    fetch("/api/carrito", {
-      headers: { "X-Session-Id": sid },
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        const n = d.cantidad || 0;
-        setCartCount(n);
-        localStorage.setItem("barraca_cart_count", String(n));
-      })
-      .catch(() => {});
-  }
-
+  // Contador del carrito: el carrito vive en el navegador (lib/carrito.ts),
+  // así que se lee de localStorage sin ir al servidor.
   useEffect(() => {
-    fetchCartCount();
-    const alCambiar = () => fetchCartCount(true);
-    window.addEventListener("cart-updated", alCambiar);
-    return () => window.removeEventListener("cart-updated", alCambiar);
+    const leer = () => setCartCount(cantidadEnCarrito());
+    leer();
+    window.addEventListener("cart-updated", leer);
+    window.addEventListener("storage", leer);
+    return () => {
+      window.removeEventListener("cart-updated", leer);
+      window.removeEventListener("storage", leer);
+    };
   }, []);
 
   // Cualquier componente puede disparar "barraca:open-cart" para abrir el drawer
@@ -372,9 +346,6 @@ function Navbar() {
                         <Link href="/cuenta" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
                           Mi Cuenta
                         </Link>
-                        <Link href="/cuenta" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
-                          Mis Cotizaciones
-                        </Link>
                         {user?.rol === 'admin' && (
                           // Full URL to main domain (admin panel lives only on jurmaq.cl).
                           // Using <a> instead of <Link> so the browser does a full cross-subdomain
@@ -428,10 +399,8 @@ function Navbar() {
                 onClick={() => setCartOpen(true)}
                 data-magnetic
                 className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label={`Mi cotización${cartCount > 0 ? ` (${cartCount})` : ""}`}
+                aria-label={`Carrito${cartCount > 0 ? ` (${cartCount})` : ""}`}
               >
-                {/* El carrito se llama "Mi cotización": los precios del sitio son
-                    de lista y el descuento se pide por WhatsApp. */}
                 <span className="relative">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
@@ -442,7 +411,7 @@ function Navbar() {
                     </span>
                   )}
                 </span>
-                <span className="hidden lg:inline text-sm font-medium whitespace-nowrap">Mi cotización</span>
+                <span className="hidden lg:inline text-sm font-medium whitespace-nowrap">Carrito</span>
               </button>
 
               {/* Mobile Menu Button */}
@@ -528,7 +497,7 @@ function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Mi cotización ({cartCount})
+                  Carrito ({cartCount})
                 </Link>
                 {user ? (
                   <>
@@ -538,13 +507,6 @@ function Navbar() {
                       className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       Mi Cuenta
-                    </Link>
-                    <Link
-                      href="/cuenta"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      Mis Cotizaciones
                     </Link>
                   </>
                 ) : (
@@ -583,6 +545,11 @@ function WhatsAppFloat() {
   // En /te-mejoramos-el-precio lleva el mismo texto que los botones de esa
   // página ("quiero que me mejoren esta cotización"); en el resto, el default.
   const pathname = usePathname();
+  // En la compra (carrito, checkout, confirmación) el botón flotante tapaba
+  // campos y el botón de pagar en celular; ahí no se muestra.
+  if (pathname === "/carrito" || pathname === "/checkout" || pathname?.startsWith("/pedido/") || pathname?.startsWith("/pago/")) {
+    return null;
+  }
   const href = pathname === "/te-mejoramos-el-precio"
     ? whatsappCtaBarracaMejorarPrecio('shell_fab')
     : whatsappCtaBarracaCotizar('shell_fab');
@@ -761,7 +728,6 @@ function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-xs text-gray-500 space-y-1 text-center sm:text-left">
-              <p className="text-gray-400">{NOTA_DESCUENTO}</p>
               <p>{buildFooterCopyright('barraca')}</p>
             </div>
             <div className="flex items-center gap-3 text-xs text-gray-500">

@@ -12,9 +12,7 @@
  * - Donde no cabe la frase (barra superior, etiqueta de botón, píldora) va
  *   PROMESA_CORTA, "Te mejoramos el precio", sin asterisco (pedido del dueño,
  *   oct-2026).
- * - Precios de lista (oct-2026): la franja roja fija de arriba (FRANJA_PRECIOS)
- *   lleva su propio asterisco, y NOTA_DESCUENTO va en el pie de todas las
- *   páginas.
+ * - Tienda en línea (oct-2026): la franja roja de arriba es FRANJA_TIENDA.
  * - En metadatos, títulos y JSON-LD (sin espacio para notas al pie) va PROMESA
  *   (o PROMESA_CORTA_META en títulos), sin asterisco.
  * - Nunca se le agrega un plazo ni una promesa de rapidez.
@@ -41,10 +39,10 @@ export const CONDICIONES_PROMESA =
   "Sujeto a validación de cotización, disponibilidad, condiciones comerciales y precio mínimo autorizado por JURMAQ.";
 
 /**
- * Franja roja fija arriba en todas las páginas: los precios publicados son de
- * lista y el descuento se pide (WhatsApp o "Mi cotización").
+ * Franja roja fija arriba en todas las páginas. Antes decía que los precios
+ * eran de lista y que el descuento se pedía; con la tienda en línea (oct-2026)
+ * el precio publicado es el que se paga, así que la franja cuenta cómo
+ * comprar. Mismo largo aproximado que la anterior: cabe en una línea desde
+ * 320 px con el cálculo de tamaño de BarracaShell.
  */
-export const FRANJA_PRECIOS = "Precios de lista. Pide tu cotización y te hacemos descuento*";
-
-/** Nota del asterisco de FRANJA_PRECIOS. Va en el pie de todas las páginas. */
-export const NOTA_DESCUENTO = "*Descuento sujeto a validación del vendedor, según producto y cantidad.";
+export const FRANJA_TIENDA = "Compra en línea · Retiro en Molina o despacho a coordinar";

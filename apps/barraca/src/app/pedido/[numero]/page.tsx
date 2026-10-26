@@ -1,0 +1,181 @@
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import Link from "@/components/barraca/Enlace";
+import { formatCLP } from "@jurmaq/shared/format";
+import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
+import { logSafeError } from "@jurmaq/shared/logging";
+import { pedidos, cookiePedido, tokenValido, PATRON_NUMERO, ETIQUETA_ESTADO, type Pedido } from "@/lib/pedidos";
+import { datosTransferencia } from "@/lib/pedidos/correos";
+import { aplicarEstadoPago, pasarelaActiva, pagoEnLineaDisponible } from "@/lib/pagos";
+import AccionesPedido from "./AccionesPedido";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Tu pedido | Barraca JURMAQ",
+  robots: { index: false, follow: false },
+};
+
+/**
+ * Confirmación del pedido. Sólo la ve quien tiene la cookie httpOnly que se
+ * dejó al crear el pedido (mismo navegador). Al volver de Mercado Pago con
+ * ?payment_id=..., el pago se consulta a Mercado Pago (no se cree en la URL)
+ * por si la notificación del webhook todavía no llegó.
+ */
+export default async function PedidoPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ numero: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const { numero } = await params;
+  const sp = await searchParams;
+  const jar = await cookies();
+
+  let pedido: Pedido | null = null;
+  if (PATRON_NUMERO.test(numero)) {
+    const p = await pedidos().porNumero(numero);
+    if (p && tokenValido(jar.get(cookiePedido(numero))?.value, p.acceso_hash)) pedido = p;
+  }
+
+  if (!pedido) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-semibold text-[#111111] mb-3">No encontramos este pedido</h1>
+        <p className="text-[#5A5A57] mb-8">
+          El detalle sólo se ve en el navegador donde se hizo la compra. También te lo mandamos por correo.
+          Si tienes dudas, escríbenos a contacto@jurmaq.cl o al +56 9 7667 3577.
+        </p>
+        <Link href="/categorias" className="inline-flex items-center px-6 py-3 bg-navy-950 text-white text-sm font-medium rounded-lg">
+          Volver al catálogo
+        </Link>
+      </div>
+    );
+  }
+
+  // Retorno de la pasarela: confirmar el pago consultándolo directamente.
+  const pagoId = typeof sp.payment_id === "string" ? sp.payment_id : typeof sp.collection_id === "string" ? sp.collection_id : null;
+  if (pagoId && (pedido.estado === "pendiente_pago" || pedido.estado === "pago_rechazado") && pedido.pasarela === "mercadopago") {
+    try {
+      const estado = await pasarelaActiva().consultarPago(pagoId);
+      if (estado && estado.numero === pedido.numero) {
+        await aplicarEstadoPago(estado, "mercadopago");
+        pedido = (await pedidos().porNumero(numero)) ?? pedido;
+      }
+    } catch (error) {
+      logSafeError("pedido-retorno-consulta", { numero, error: String(error) });
+    }
+  }
+
+  const pagado = pedido.estado === "pagado" || ["en_preparacion", "listo_retiro", "despachado", "entregado"].includes(pedido.estado);
+  const transferencia = pedido.metodo_pago === "transferencia" && pedido.estado === "pendiente_pago";
+  const rechazado = pedido.estado === "pago_rechazado";
+  const esperandoPago = pedido.metodo_pago === "mercadopago" && pedido.estado === "pendiente_pago";
+  const t = datosTransferencia();
+
+  const titulo = pagado
+    ? "¡Gracias! Tu pago está confirmado"
+    : transferencia
+      ? "Pedido recibido: falta la transferencia"
+      : rechazado
+        ? "El pago no se completó"
+        : esperandoPago
+          ? "Tu pedido está guardado: falta el pago"
+          : ETIQUETA_ESTADO[pedido.estado];
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div className="bg-white border border-[#EAEAEA] rounded-2xl p-6 sm:p-8 mb-5">
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-5 ${pagado ? "bg-green-100 text-green-700" : rechazado ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`} aria-hidden="true">
+          {pagado ? (
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+          ) : rechazado ? (
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+          ) : (
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          )}
+        </div>
+        <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-2">
+          Pedido <span className="tabular-nums">{pedido.numero}</span>
+        </p>
+        <h1 className="text-[#111111] leading-[1.15] mb-3" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 500, letterSpacing: "-0.01em" }}>
+          {titulo}
+        </h1>
+        <p className="text-[15px] text-[#5A5A57]">
+          {pagado
+            ? `Te mandamos el detalle a ${pedido.email}. ${pedido.entrega === "retiro" ? "Te avisamos cuando esté listo para retirar." : "Te llamamos para coordinar el despacho."}`
+            : transferencia
+              ? `Transfiere ${formatCLP(pedido.total)} con estos datos e indica el número de pedido. Preparamos el pedido cuando veamos la transferencia.`
+              : rechazado
+                ? "No se hizo ningún cobro. Puedes intentar de nuevo, con la misma u otra tarjeta. Si prefieres transferir, escríbenos y te mandamos los datos."
+                : esperandoPago
+                  ? "Si ya pagaste, la confirmación puede tardar unos minutos: recarga esta página. Si no, puedes pagar ahora."
+                  : `Estado: ${ETIQUETA_ESTADO[pedido.estado]}.`}
+        </p>
+
+        <AccionesPedido
+          numero={pedido.numero}
+          total={pedido.total}
+          pagado={pagado}
+          puedeReintentar={(rechazado || esperandoPago) && pagoEnLineaDisponible()}
+        />
+
+        {transferencia && (
+          <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px] bg-[#F7F7F5] border border-[#EAEAEA] rounded-xl p-5">
+            {t.banco && (<><dt className="text-[#787774]">Banco</dt><dd className="font-semibold text-[#111111]">{t.banco}</dd></>)}
+            <dt className="text-[#787774]">Tipo</dt><dd className="font-semibold text-[#111111]">{t.tipo}</dd>
+            {t.cuenta && (<><dt className="text-[#787774]">N° de cuenta</dt><dd className="font-semibold text-[#111111] tabular-nums">{t.cuenta}</dd></>)}
+            <dt className="text-[#787774]">Titular</dt><dd className="font-semibold text-[#111111]">{t.titular}</dd>
+            {t.rut && (<><dt className="text-[#787774]">RUT</dt><dd className="font-semibold text-[#111111] tabular-nums">{t.rut}</dd></>)}
+            <dt className="text-[#787774]">Monto</dt><dd className="font-extrabold text-navy-950 tabular-nums">{formatCLP(pedido.total)}</dd>
+            <dt className="text-[#787774]">Comentario</dt><dd className="font-semibold text-[#111111] tabular-nums">{pedido.numero}</dd>
+            <dt className="text-[#787774]">Comprobante</dt><dd className="font-semibold text-[#111111] break-all">{t.email}</dd>
+            {!t.cuenta && (
+              <dd className="col-span-2 text-[13px] text-[#5A5A57] mt-1">Te mandamos los datos de la cuenta por correo y WhatsApp.</dd>
+            )}
+          </dl>
+        )}
+      </div>
+
+      <div className="bg-white border border-[#EAEAEA] rounded-2xl p-6 sm:p-8 mb-5">
+        <h2 className="text-[17px] font-semibold text-[#111111] mb-4">Detalle</h2>
+        <ul className="divide-y divide-gray-100">
+          {pedido.items.map((i) => (
+            <li key={i.productoId} className="py-3 flex justify-between gap-4 text-sm">
+              <span className="min-w-0">
+                <span className="block text-[#111111]">{i.nombre}</span>
+                <span className="block text-xs text-[#787774] tabular-nums">{i.cantidad} × {formatCLP(i.precio)}</span>
+              </span>
+              <span className="font-medium tabular-nums shrink-0">{formatCLP(i.subtotal)}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="flex justify-between items-baseline border-t border-gray-200 pt-4 mt-1">
+          <span className="font-semibold">Total</span>
+          <span className="text-2xl font-extrabold text-navy-950 tabular-nums">{formatCLP(pedido.total)}</span>
+        </div>
+        <p className="text-xs text-[#787774] text-right">IVA incluido{pedido.entrega === "despacho" ? " · despacho aparte" : ""}</p>
+      </div>
+
+      <div className="bg-white border border-[#EAEAEA] rounded-2xl p-6 sm:p-8">
+        <h2 className="text-[17px] font-semibold text-[#111111] mb-3">Entrega</h2>
+        {pedido.entrega === "retiro" ? (
+          <p className="text-[15px] text-[#5A5A57]">
+            <strong className="text-[#111111]">Retiro en la barraca</strong>: Av. Poniente 2157, Molina.<br />
+            {HORARIO_BARRACA.semana}. {HORARIO_BARRACA.sabado}.
+          </p>
+        ) : (
+          <p className="text-[15px] text-[#5A5A57]">
+            <strong className="text-[#111111]">Despacho a coordinar</strong>: {pedido.direccion}, {pedido.comuna}.<br />
+            Te llamamos al {pedido.telefono} para acordar día y costo.
+          </p>
+        )}
+      </div>
+
+      <div className="text-center mt-8">
+        <Link href="/categorias" className="text-sm font-semibold text-marca-600 hover:text-marca-700">Seguir comprando</Link>
+      </div>
+    </div>
+  );
+}

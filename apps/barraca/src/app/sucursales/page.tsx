@@ -208,10 +208,10 @@ export default function SucursalesPage() {
                   Ver en Google Maps
                 </a>
                 <Link
-                  href="/cotizar"
+                  href="/categorias"
                   className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-navy-950 hover:bg-navy-900 text-white font-semibold rounded-lg transition-colors"
                 >
-                  Cotizar con despacho
+                  Comprar en línea
                 </Link>
               </div>
             </div>

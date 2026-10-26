@@ -3,11 +3,10 @@
 import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { useState } from "react";
-import { showToast } from "@/components/Toast";
 import { titleCase } from "@jurmaq/shared/format";
 import { formatCLP } from "@jurmaq/shared/format";
-import { TOAST_MESSAGES } from "@jurmaq/shared/messages";
-import BotonDescuento from "@/components/barraca/BotonDescuento";
+import { agregarProducto } from "@/lib/agregar";
+import { unidadesDisponibles } from "@/lib/stock";
 
 const categoryImages: Record<string, string> = {
   'fierros-construccion': '/images/barraca/categorias/fierro.jpg',
@@ -46,16 +45,6 @@ function getProductImage(
   return imagen;
 }
 
-function getSessionId(): string {
-  if (typeof window === "undefined") return "";
-  let sid = localStorage.getItem("barraca_session_id");
-  if (!sid) {
-    sid = crypto.randomUUID();
-    localStorage.setItem("barraca_session_id", sid);
-  }
-  return sid;
-}
-
 interface PromotedProductCardProps {
   id: number;
   nombre: string;
@@ -74,7 +63,6 @@ interface PromotedProductCardProps {
 export default function PromotedProductCard({
   id,
   nombre,
-  codigo,
   slug,
   precioOriginal,
   precioDescuento,
@@ -93,36 +81,18 @@ export default function PromotedProductCard({
   const fallbackImage = categoriaSlug ? (categoryImages[categoriaSlug] || null) : null;
   const displayImage = imgError ? fallbackImage : resolvedImage;
 
-  async function handleAdd() {
+  const unidades = unidadesDisponibles(stock);
+
+  function handleAdd() {
+    if (unidades < 1 || precioDescuento <= 0) return;
     setAdding(true);
-    try {
-      const res = await fetch("/api/carrito", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Session-Id": getSessionId(),
-        },
-        body: JSON.stringify({
-          sessionId: getSessionId(),
-          productoId: id,
-          cantidad: 1,
-          precioOverride: precioDescuento,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({} as { error?: string }));
-        const msg = (data as { error?: string }).error || (res.status === 429 ? TOAST_MESSAGES.cart.RATE_LIMITED : TOAST_MESSAGES.cart.ADD_FAILED_FALLBACK);
-        showToast(msg, "error");
-        return;
-      }
+    const ok = agregarProducto({
+      productoId: id, nombre, precio: precioDescuento, imagen, slug, medida, unidad, stock: unidades,
+    });
+    setAdding(false);
+    if (ok) {
       setAdded(true);
-      window.dispatchEvent(new Event("cart-updated"));
-      showToast(TOAST_MESSAGES.cart.ADDED_WITH_DISCOUNT, "success");
       setTimeout(() => setAdded(false), 2000);
-    } catch {
-      showToast(TOAST_MESSAGES.cart.ADD_ERROR, "error");
-    } finally {
-      setAdding(false);
     }
   }
 
@@ -166,7 +136,7 @@ export default function PromotedProductCard({
           )}
 
           <div className="absolute top-3 right-3">
-            {stock > 0 ? (
+            {unidades > 0 ? (
               <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] bg-white/95 border border-[#EAEAEA] text-[#2F7F4E] rounded-full">
                 En stock
               </span>
@@ -187,16 +157,16 @@ export default function PromotedProductCard({
           {medida && <p className="text-xs text-[#787774] mb-2">{medida}</p>}
         </Link>
 
-        {stock > 0 && stock < 10 && (
+        {unidades > 0 && unidades < 10 && (
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#787774] mb-2">
-            Quedan {stock} unidades
+            Quedan {unidades} unidades
           </p>
         )}
 
         <div className="flex items-end justify-between mt-2 gap-2">
           <div>
             <p className="text-[10px] text-[#787774] tabular-nums">
-              Precio de lista <span className="line-through">{formatCLP(precioOriginal)}</span>
+              Antes <span className="line-through">{formatCLP(precioOriginal)}</span>
             </p>
             <div className="flex items-baseline gap-1.5 mt-0.5">
               <p className="text-lg font-medium text-[#111111] tabular-nums">
@@ -211,12 +181,12 @@ export default function PromotedProductCard({
           </div>
           <button
             onClick={handleAdd}
-            disabled={adding || stock <= 0}
-            aria-label={`Agregar ${nombre} a mi cotización`}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium tracking-[0.02em] rounded-lg transition-colors ${
+            disabled={adding || unidades <= 0}
+            aria-label={unidades > 0 ? `Agregar ${nombre} al carrito` : `${nombre} sin stock`}
+            className={`flex items-center justify-center gap-1.5 px-3 min-h-[44px] min-w-[44px] text-sm font-semibold tracking-[0.02em] rounded-lg transition-colors ${
               added
                 ? "bg-[#2F7F4E] text-white"
-                : stock <= 0
+                : unidades <= 0
                 ? "bg-[#F0EFEB] text-[#787774] cursor-not-allowed"
                 : "bg-navy-950 text-white hover:bg-[#111111]"
             }`}
@@ -257,7 +227,6 @@ export default function PromotedProductCard({
             )}
                     </button>
         </div>
-        <BotonDescuento nombre={nombre} codigo={codigo} lugar="oferta_del_dia" className="mt-3" />
       </div>
     </div>
   );
