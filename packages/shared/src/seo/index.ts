@@ -957,7 +957,10 @@ export const TOP_PRODUCTOS_BARRACA: ProductoBarracaSEO[] = [
 export function buildFooterCopyright(brand: 'constructora' | 'barraca'): string {
   const b = LEGAL_INFO.brands[brand];
   const year = new Date().getFullYear();
-  return `© ${year} ${b.nombre} · RUT ${LEGAL_INFO.rut} · ${b.direccion}. Todos los derechos reservados.`;
+  // LEGAL_INFO.rut es el RUT de la constructora: no va en el pie de la
+  // barraca. RUT de la barraca: pendiente (lo entrega el dueño).
+  const rut = brand === 'constructora' ? ` · RUT ${LEGAL_INFO.rut}` : '';
+  return `© ${year} ${b.nombre}${rut} · ${b.direccion}. Todos los derechos reservados.`;
 }
 
 export const HQ = {

@@ -4,11 +4,10 @@ import Link from "@/components/barraca/Enlace";
 import dynamic from "next/dynamic";
 import MediosPago from "@/components/barraca/MediosPago";
 import { useState, useEffect, useRef } from "react";
-import { env } from "@jurmaq/shared/env";
 import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
 import ToastContainer from "@/components/Toast";
-import { LEGAL_INFO, HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
+import { HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
 import { whatsappCtaBarracaCotizar, whatsappCtaBarracaMejorarPrecio } from "@jurmaq/shared/whatsapp";
 import { FRANJA_TIENDA } from "@/lib/promesa";
 import { cantidadEnCarrito } from "@/lib/carrito";
@@ -534,8 +533,6 @@ function WhatsAppFloat() {
   );
 }
 
-// The actual RUT should be set via NEXT_PUBLIC_COMPANY_RUT in .env
-const RUT = env.NEXT_PUBLIC_COMPANY_RUT || '76.624.872-1';
 
 // Comunas con landing propia (/en/[comuna]). Se enlazan desde el pie por SEO.
 const COMUNAS_DESPACHO = [
@@ -562,80 +559,48 @@ const CATEGORIAS_PIE = [
   { href: "/sucursales", name: "Despacho y retiro" },
 ] as const;
 
-const URL_COMO_LLEGAR = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent("Av. Poniente 2157, Molina, Chile")}`;
+const DIRECCION_MAPS = "Av. Poniente 2157, Molina, Chile";
+const URL_COMO_LLEGAR = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(DIRECCION_MAPS)}`;
 
-/* Pie compacto: arriba una franja de contacto (teléfono grande que se toca,
-   WhatsApp y Llamar), que reemplaza la franja "¿No encuentras lo que
-   buscas?" que había sobre el pie en la portada; abajo cuatro columnas
-   cortas (marca y pagos, tienda, contacto, comunas en chico). */
+/* Pie en cuatro columnas: marca con el contacto compacto (teléfono que se
+   toca, WhatsApp, dirección con "Cómo llegar" y horario), tienda, comunas en
+   chico y medios de pago con logos. Reemplaza la franja "¿No encuentras lo
+   que buscas?" que había sobre el pie en la portada. */
 function Footer() {
   const titulo = "text-xs font-semibold text-white uppercase tracking-wider mb-3";
   const enlace = "text-sm text-gray-400 hover:text-white transition-colors duration-150";
   return (
     <footer role="contentinfo" className="bg-navy-950 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8">
-        {/* Contacto destacado */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8 pb-8 border-b border-navy-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10">
+        {/* Marca, tienda, comunas y pagos */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1.3fr_1.3fr] gap-10">
           <div>
-            <p className="text-base font-semibold text-white">¿No encuentras lo que buscas?</p>
-            <p className="text-sm text-gray-400 mt-0.5">Llámanos o escríbenos con la medida que necesitas.</p>
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-            <a
-              href="tel:+56976673577"
-              className="text-[28px] leading-none font-extrabold text-white tracking-tight tabular-nums hover:text-marca-400 transition-colors w-fit sm:mr-2"
-            >
-              +56 9 7667 3577
-            </a>
-            <div className="flex gap-3">
-              <a
-                href={whatsappCtaBarracaCotizar('footer')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 h-11 px-4 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-                WhatsApp
-              </a>
-              <a
-                href="tel:+56976673577"
-                className="flex-1 sm:flex-none inline-flex items-center justify-center h-11 px-4 border border-white/25 hover:bg-white/10 text-white text-sm font-semibold rounded-lg transition-colors"
-              >
-                Llamar
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1.2fr] gap-8 lg:gap-10">
-          <div>
-            <Link href="/" className="inline-flex items-baseline mb-2">
-              <span className="text-xl font-extrabold text-white tracking-tight">JURMAQ</span>{" "}
-              <span className="text-base font-semibold text-marca-500 ml-1">Barraca</span>
+            <Link href="/" className="inline-flex items-baseline mb-3">
+              <span className="text-2xl font-extrabold text-white tracking-tight">JURMAQ</span>{" "}
+              <span className="text-lg font-semibold text-marca-500 ml-1">Barraca</span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
-              Fierros y materiales de construcción en Molina, con despacho a toda la Región del Maule.
+              Fierros y materiales de construcción en Molina. Despacho a Curicó, Talca y toda la Región del Maule.
             </p>
-            <MediosPago className="mt-4" />
-          </div>
-
-          <nav aria-label="Tienda">
-            <h3 className={titulo}>Tienda</h3>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:block sm:space-y-1.5">
-              {CATEGORIAS_PIE.map((c) => (
-                <li key={c.href}>
-                  <Link href={c.href} className={enlace}>{c.name}</Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <div>
-            <h3 className={titulo}>Contacto</h3>
-            <address className="not-italic text-sm text-gray-400 space-y-1.5">
-              <p>
+            {/* Contacto compacto: teléfono que se toca, WhatsApp, dirección y horario. */}
+            <div className="mt-5 space-y-2">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <a href="tel:+56976673577" className="text-lg font-bold text-white tabular-nums whitespace-nowrap hover:text-marca-400 transition-colors">
+                  +56 9 7667 3577
+                </a>
+                <a
+                  href={whatsappCtaBarracaCotizar('footer')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 h-8 px-3 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-md transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                  </svg>
+                  WhatsApp
+                </a>
+              </div>
+              <p className="text-sm text-gray-400">
                 Av. Poniente 2157, Molina{" "}
                 <a
                   href={URL_COMO_LLEGAR}
@@ -646,20 +611,28 @@ function Footer() {
                   Cómo llegar
                 </a>
               </p>
-              <p>
-                <a href="mailto:contacto@jurmaq.cl" className="hover:text-white transition-colors duration-150">contacto@jurmaq.cl</a>
-              </p>
-            </address>
-            <div className="mt-3 text-xs text-gray-500 leading-relaxed">
-              <p>{HORARIO_BARRACA.semana}</p>
-              <p>{HORARIO_BARRACA.sabado} · {HORARIO_BARRACA.domingo}</p>
+              <div className="text-xs text-gray-500 leading-relaxed">
+                <p>{HORARIO_BARRACA.semana}</p>
+                <p>{HORARIO_BARRACA.sabado} · {HORARIO_BARRACA.domingo}</p>
+              </div>
             </div>
           </div>
+
+          <nav aria-label="Tienda">
+            <h3 className={titulo}>Tienda</h3>
+            <ul className="space-y-2">
+              {CATEGORIAS_PIE.map((c) => (
+                <li key={c.href}>
+                  <Link href={c.href} className={enlace}>{c.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
           {/* Comunas con landing propia: enlaces internos para SEO, en chico. */}
           <nav aria-label="Despacho por comuna">
             <h3 className={titulo}>Despacho en el Maule</h3>
-            <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs leading-relaxed">
+            <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs leading-relaxed">
               {COMUNAS_DESPACHO.map((c) => (
                 <li key={c.slug}>
                   <Link href={`/en/${c.slug}`} className="text-gray-500 hover:text-white transition-colors duration-150" title={`Barraca en ${c.name}`}>
@@ -669,33 +642,37 @@ function Footer() {
               ))}
             </ul>
           </nav>
+
+          <div>
+            <h3 className={titulo}>Medios de pago</h3>
+            <MediosPago />
+          </div>
         </div>
       </div>
 
-      {/* Barra legal + grupo JURMAQ. En celular deja aire abajo para el botón
-          flotante de WhatsApp; desde sm el botón queda a la izquierda, así
-          que se corre el contenido en vez de agregar alto. */}
+      {/* Barra legal + grupo JURMAQ en una línea discreta */}
       <div className="border-t border-navy-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-20 sm:pb-5 sm:pl-20 lg:pl-20 xl:pl-8 text-xs text-gray-500 flex flex-col lg:flex-row items-center lg:justify-between gap-2 lg:gap-6">
-          <p className="text-center lg:text-left">{buildFooterCopyright('barraca')}</p>
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-            <nav aria-label="Unidades de negocio JURMAQ" className="inline-flex flex-wrap items-center gap-x-2">
-              <span>Grupo JURMAQ:</span>
-              {VERTICALES.map((v, i) => (
-                <span key={v.key} className="inline-flex items-center gap-2">
-                  {i > 0 && <span className="text-navy-700" aria-hidden="true">·</span>}
-                  {v.key === 'barraca' ? (
-                    <span className="text-gray-400" aria-current="page">{v.label}</span>
-                  ) : (
-                    <a href={v.url} className="hover:text-white transition-colors duration-150">{v.label}</a>
-                  )}
-                </span>
-              ))}
-            </nav>
-            <span className="text-navy-700" aria-hidden="true">|</span>
-            <a href="https://jurmaq.cl/terminos" className="hover:text-white transition-colors duration-150">Términos</a>
-            <span className="text-navy-700" aria-hidden="true">|</span>
-            <a href="https://jurmaq.cl/privacidad" className="hover:text-white transition-colors duration-150">Privacidad</a>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24 space-y-3 text-xs text-gray-500">
+          <nav aria-label="Unidades de negocio JURMAQ" className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+            <span>Grupo JURMAQ:</span>
+            {VERTICALES.map((v, i) => (
+              <span key={v.key} className="inline-flex items-center gap-2">
+                {i > 0 && <span className="text-navy-700" aria-hidden="true">·</span>}
+                {v.key === 'barraca' ? (
+                  <span className="text-gray-400" aria-current="page">{v.label}</span>
+                ) : (
+                  <a href={v.url} className="hover:text-white transition-colors duration-150">{v.label}</a>
+                )}
+              </span>
+            ))}
+          </nav>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-center sm:text-left">{buildFooterCopyright('barraca')}</p>
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+              <a href="https://jurmaq.cl/terminos" className="hover:text-white transition-colors duration-150">Términos y condiciones</a>
+              <span className="text-navy-700" aria-hidden="true">|</span>
+              <a href="https://jurmaq.cl/privacidad" className="hover:text-white transition-colors duration-150">Política de privacidad</a>
+            </div>
           </div>
         </div>
       </div>
