@@ -2,6 +2,8 @@
 
 import Link from "@/components/barraca/Enlace";
 import dynamic from "next/dynamic";
+import Image from "next/image";
+import MediosPago from "@/components/barraca/MediosPago";
 import { useState, useEffect, useRef } from "react";
 import { env } from "@jurmaq/shared/env";
 import { usePathname } from "next/navigation";
@@ -553,101 +555,147 @@ const COMUNAS_DESPACHO = [
 ] as const;
 
 const CATEGORIAS_PIE = [
-  { slug: "fierros-construccion", name: "Fierros de construcción" },
-  { slug: "perfiles-y-planchas", name: "Perfiles y planchas" },
-  { slug: "techumbre", name: "Techumbre" },
-  { slug: "herramientas-y-maq", name: "Herramientas" },
-  { slug: "pinturas", name: "Pinturas" },
-  { slug: "fijaciones", name: "Fijaciones" },
+  { href: "/categorias/fierros-construccion", name: "Fierros de construcción" },
+  { href: "/categorias/perfiles-y-planchas", name: "Perfiles y planchas" },
+  { href: "/categorias/techumbre", name: "Techumbre" },
+  { href: "/categorias/herramientas-y-maq", name: "Herramientas" },
+  { href: "/categorias", name: "Todas las categorías" },
+  { href: "/sucursales", name: "Despacho y retiro" },
 ] as const;
 
-/* Pie en cuatro columnas: marca, tienda, contacto y comunas de despacho.
-   Todo es texto con enlaces; los títulos son el único elemento en blanco.
-   Sin nada de cotizar: la tienda vende con precio publicado (oct-2026). */
+const DIRECCION_MAPS = "Av. Poniente 2157, Molina, Chile";
+const URL_COMO_LLEGAR = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(DIRECCION_MAPS)}`;
+const URL_MAPA_EMBED = `https://www.google.com/maps?q=${encodeURIComponent(DIRECCION_MAPS)}&z=16&output=embed`;
+
+/* Pie con identidad propia: arriba el local (foto real de la fachada + mapa
+   de Av. Poniente 2157) junto al contacto en grande (teléfono que se toca y
+   WhatsApp); abajo, marca, tienda, comunas en chico y medios de pago con
+   logos. Reemplaza la franja "¿No encuentras lo que buscas?" que había sobre
+   el pie en la portada: decía lo mismo que este bloque de contacto. */
 function Footer() {
-  const titulo = "text-sm font-semibold text-white uppercase tracking-wider mb-4";
+  const titulo = "text-xs font-semibold text-white uppercase tracking-wider mb-3";
   const enlace = "text-sm text-gray-400 hover:text-white transition-colors duration-150";
   return (
     <footer role="contentinfo" className="bg-navy-950 text-gray-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.4fr] gap-10 lg:gap-12">
-          {/* Marca */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 lg:pt-16 pb-10">
+        {/* El local y el contacto */}
+        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
+          <div className="lg:col-span-7 grid sm:grid-cols-2 rounded-xl overflow-hidden border border-navy-800">
+            <div className="relative aspect-[16/9] sm:aspect-auto sm:min-h-[260px]">
+              <Image
+                src="/images/barraca/hero/hero-fachada.webp"
+                alt="Fachada de Barraca JURMAQ en Av. Poniente 2157, Molina"
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 30vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/90 to-transparent px-4 pt-10 pb-3">
+                <p className="text-sm font-semibold text-white">Barraca JURMAQ</p>
+                <p className="text-xs text-gray-300">Av. Poniente 2157, Molina</p>
+              </div>
+            </div>
+            <div className="relative aspect-[16/9] sm:aspect-auto sm:min-h-[260px] bg-navy-900">
+              <iframe
+                src={URL_MAPA_EMBED}
+                title="Mapa: Barraca JURMAQ, Av. Poniente 2157, Molina"
+                className="absolute inset-0 w-full h-full border-0"
+                loading="lazy"
+                referrerPolicy="strict-origin"
+              />
+              <a
+                href={URL_COMO_LLEGAR}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute bottom-8 right-3 inline-flex items-center gap-2 h-10 px-4 bg-marca-600 hover:bg-marca-700 text-white text-sm font-bold rounded-lg shadow-md transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Cómo llegar
+              </a>
+            </div>
+          </div>
+
+          <div className="lg:col-span-5 flex flex-col justify-center">
+            <p className="text-xs font-semibold text-marca-400 uppercase tracking-wider mb-2">¿No encuentras lo que buscas?</p>
+            <p className="text-sm text-gray-400 mb-4">Llámanos o escríbenos con la medida que necesitas.</p>
+            <a
+              href="tel:+56976673577"
+              className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight tabular-nums hover:text-marca-400 transition-colors w-fit"
+            >
+              +56 9 7667 3577
+            </a>
+            <div className="flex flex-col min-[400px]:flex-row gap-3 mt-5">
+              <a
+                href={whatsappCtaBarracaCotizar('footer')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 h-12 px-5 bg-green-600 hover:bg-green-700 text-white text-[15px] font-semibold rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                </svg>
+                Escribir por WhatsApp
+              </a>
+              <a
+                href="tel:+56976673577"
+                className="inline-flex items-center justify-center h-12 px-5 border border-white/25 hover:bg-white/10 text-white text-[15px] font-semibold rounded-lg transition-colors"
+              >
+                Llamar
+              </a>
+            </div>
+            <div className="mt-6 text-xs text-gray-500 leading-relaxed">
+              <p>{HORARIO_BARRACA.semana}</p>
+              <p>{HORARIO_BARRACA.sabado} · {HORARIO_BARRACA.domingo}</p>
+              <p className="mt-1">
+                <a href="mailto:contacto@jurmaq.cl" className="hover:text-white transition-colors duration-150">contacto@jurmaq.cl</a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Marca, tienda, comunas y pagos */}
+        <div className="mt-12 pt-10 border-t border-navy-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1.3fr_1.3fr] gap-10">
           <div>
-            <Link href="/" className="inline-flex items-baseline mb-4">
+            <Link href="/" className="inline-flex items-baseline mb-3">
               <span className="text-2xl font-extrabold text-white tracking-tight">JURMAQ</span>{" "}
               <span className="text-lg font-semibold text-marca-500 ml-1">Barraca</span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
               Fierros y materiales de construcción en Molina. Despacho a Curicó, Talca y toda la Región del Maule.
             </p>
-            <div className="flex items-center gap-3 mt-5">
-              <a
-                href={whatsappCtaBarracaCotizar('footer')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 bg-navy-800 hover:bg-green-600 rounded-lg flex items-center justify-center transition-colors"
-                aria-label="WhatsApp"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-              </a>
-              <a href="mailto:contacto@jurmaq.cl" className="w-9 h-9 bg-navy-800 hover:bg-marca-600 rounded-lg flex items-center justify-center transition-colors" aria-label="Correo">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </a>
-            </div>
           </div>
 
-          {/* Tienda */}
           <nav aria-label="Tienda">
             <h3 className={titulo}>Tienda</h3>
-            <ul className="space-y-2.5">
+            <ul className="space-y-2">
               {CATEGORIAS_PIE.map((c) => (
-                <li key={c.slug}>
-                  <Link href={`/categorias/${c.slug}`} className={enlace}>{c.name}</Link>
+                <li key={c.href}>
+                  <Link href={c.href} className={enlace}>{c.name}</Link>
                 </li>
               ))}
-              <li><Link href="/categorias" className={enlace}>Todas las categorías</Link></li>
-              <li className="pt-2"><Link href="/carrito" className={enlace}>Carrito</Link></li>
-              <li><Link href="/sucursales" className={enlace}>Despacho y retiro</Link></li>
             </ul>
           </nav>
 
-          {/* Contacto */}
-          <div>
-            <h3 className={titulo}>Contacto</h3>
-            <address className="not-italic space-y-2.5 text-sm text-gray-400">
-              <p>Av. Poniente 2157, Molina</p>
-              <p>
-                <a href="tel:+56976673577" className="hover:text-white transition-colors duration-150 tabular-nums">+56 9 7667 3577</a>
-              </p>
-              <p>
-                <a href="mailto:contacto@jurmaq.cl" className="hover:text-white transition-colors duration-150">contacto@jurmaq.cl</a>
-              </p>
-            </address>
-            <div className="mt-5 space-y-1 text-xs text-gray-500 leading-relaxed">
-              <p>{HORARIO_BARRACA.semana}</p>
-              <p>{HORARIO_BARRACA.sabado}</p>
-              <p>{HORARIO_BARRACA.domingo}</p>
-            </div>
-            <p className="mt-5 text-xs text-gray-500">
-              <span className="text-gray-400">Medios de pago:</span> Mercado Pago · Transferencia
-            </p>
-          </div>
-
-          {/* Comunas de despacho (enlaces internos para SEO) */}
+          {/* Comunas con landing propia: enlaces internos para SEO, en chico. */}
           <nav aria-label="Despacho por comuna">
             <h3 className={titulo}>Despacho en el Maule</h3>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+            <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs leading-relaxed">
               {COMUNAS_DESPACHO.map((c) => (
                 <li key={c.slug}>
-                  <Link href={`/en/${c.slug}`} className={`${enlace} whitespace-nowrap`} title={`Barraca en ${c.name}`}>{c.name}</Link>
+                  <Link href={`/en/${c.slug}`} className="text-gray-500 hover:text-white transition-colors duration-150" title={`Barraca en ${c.name}`}>
+                    {c.name}
+                  </Link>
                 </li>
               ))}
             </ul>
           </nav>
+
+          <div>
+            <h3 className={titulo}>Medios de pago</h3>
+            <MediosPago />
+          </div>
         </div>
       </div>
 
