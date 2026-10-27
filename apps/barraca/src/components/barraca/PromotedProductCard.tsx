@@ -33,9 +33,10 @@ function getProductImage(
   imagen: string | null,
   categoriaSlug?: string
 ): string | null {
-  if (!imagen) {
-    return categoriaSlug ? categoryImages[categoriaSlug] || null : null;
-  }
+  // Igual que ProductCard: sin foto propia va la placa con la medida, no la
+  // foto de la categoría (confundía con otro producto). La de la categoría
+  // queda sólo para cuando la foto propia falla al cargar.
+  if (!imagen) return null;
   if (imagen.startsWith("/images/barraca/categorias/")) {
     return imagen;
   }
@@ -82,9 +83,18 @@ export default function PromotedProductCard({
   const displayImage = imgError ? fallbackImage : resolvedImage;
 
   const unidades = unidadesDisponibles(stock);
+  const comprable = unidades > 0 && precioDescuento > 0;
+  // El descuento sólo se muestra si es real (≥1%), como en ProductCard.
+  const muestraOferta = descuento >= 1 && precioOriginal > precioDescuento;
+  const recorte = nombre.replace(/\s+\d[\d.,/x×\s"]*(mm|cm|mts?|m|kg|gr|lts?|l|")?\s*$/i, "").trim();
+  const nombreSinMedida = recorte.length >= 3 ? recorte : nombre;
+  const unitLabel = unidad ? `/${unidad.toLowerCase()}` : "";
+  const medidaTexto = medida
+    ? medida.replace(/(\d)\s*[xX]\s*(?=\d)/g, "$1\u2009×\u2009").replace(/(\d)\.(\d)/g, "$1,$2").replace(/\b(MM|CM|MTS?|KG|LTS?)\b/g, (u) => u.toLowerCase())
+    : null;
 
   function handleAdd() {
-    if (unidades < 1 || precioDescuento <= 0) return;
+    if (!comprable) return;
     setAdding(true);
     const ok = agregarProducto({
       productoId: id, nombre, precio: precioDescuento, imagen, slug, medida, unidad, stock: unidades,
@@ -96,136 +106,105 @@ export default function PromotedProductCard({
     }
   }
 
+  /* Misma jerarquía que ProductCard: precio de oferta primero, nombre en
+     medio tono con la medida en negrita, una línea gris de metadatos y un
+     solo botón. Sin pastillas de stock sobre la foto. */
   return (
-    <div className="bg-white border border-[#EAEAEA] rounded-2xl overflow-hidden group hover:border-[#111111]/30 transition-colors duration-300 relative">
-      {/* Discount badge — single hairline pill, editorial */}
-      <div className="absolute top-3 left-3 z-10">
-        <span className="inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] bg-white/95 border border-[#EAEAEA] text-[#111111] rounded-full tabular-nums">
-          Oferta · −{descuento}%
-        </span>
-      </div>
-
-      <Link href={`/producto/${slug}`} className="block">
-        <div className="aspect-square bg-gray-100 relative overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden group transition-[border-color,box-shadow] duration-150 ease-out hover:border-gray-300 hover:shadow-[0_8px_24px_-12px_rgba(12,29,58,0.25)] flex flex-col h-full relative">
+      <Link href={`/producto/${slug}`} className="block" aria-label={`Ver detalles de ${nombre}${medida ? ` - ${medida}` : ""}`}>
+        <div className="aspect-square bg-white relative overflow-hidden p-4">
           {displayImage ? (
             <Image
               src={displayImage}
               alt={nombre}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03]"
               width={400}
               height={400}
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
               onError={() => { if (!imgError) setImgError(true); }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <svg
-                className="w-16 h-16 text-gray-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
+            <div className="w-full h-full flex flex-col items-center justify-center bg-[#F3F3F1] rounded-lg px-3 pt-6 sm:pt-0 text-center">
+              {medida ? (
+                <>
+                  <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.14em] text-gray-500 mb-2 line-clamp-2">
+                    {titleCase(nombreSinMedida).slice(0, 28)}
+                  </span>
+                  <span className="font-[var(--font-heading)] text-lg sm:text-2xl leading-tight sm:leading-none font-semibold text-navy-950 tabular-nums">
+                    {medidaTexto}
+                  </span>
+                </>
+              ) : (
+                <span className="text-xs uppercase tracking-[0.14em] text-gray-400">Sin foto</span>
+              )}
             </div>
           )}
 
-          <div className="absolute top-3 right-3">
-            {unidades > 0 ? (
-              <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] bg-white/95 border border-[#EAEAEA] text-[#2F7F4E] rounded-full">
-                En stock
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.18em] bg-white/95 border border-[#EAEAEA] text-[#9C2B1F] rounded-full">
-                Sin stock
-              </span>
-            )}
-          </div>
+          {muestraOferta && (
+            <span className="absolute top-3 left-3 px-2 py-0.5 rounded-md text-xs font-bold bg-marca-600 text-white tabular-nums">
+              −{descuento}%
+            </span>
+          )}
         </div>
       </Link>
 
-      <div className="p-4">
+      <div className="px-4 pb-4 pt-1 flex flex-col flex-grow">
         <Link href={`/producto/${slug}`} className="block">
-          <h3 className="text-sm font-medium text-[#111111] line-clamp-2 mb-1 group-hover:text-[#111111] transition-colors">
-            {titleCase(nombre)}
+          <h3 className="text-sm text-gray-600 leading-snug line-clamp-2 group-hover:text-navy-950 transition-colors duration-150">
+            {titleCase(medida ? nombreSinMedida : nombre)}
           </h3>
-          {medida && <p className="text-xs text-[#787774] mb-2">{medida}</p>}
+          {medidaTexto && (
+            <p className="mt-0.5 text-sm sm:text-[15px] font-semibold text-navy-950 leading-snug tabular-nums">
+              {medidaTexto}
+            </p>
+          )}
         </Link>
 
-        {unidades > 0 && unidades < 10 && (
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#787774] mb-2">
-            Quedan {unidades} unidades
-          </p>
-        )}
-
-        <div className="flex items-end justify-between mt-2 gap-2">
-          <div>
-            <p className="text-[10px] text-[#787774] tabular-nums">
-              Antes <span className="line-through">{formatCLP(precioOriginal)}</span>
+        <div className="mt-auto pt-4">
+          {muestraOferta && (
+            <p className="text-xs text-gray-400 line-through tabular-nums leading-none mb-1">
+              {formatCLP(precioOriginal)}
             </p>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <p className="text-lg font-medium text-[#111111] tabular-nums">
-                {formatCLP(precioDescuento)}
-              </p>
-              {unidad && (
-                <span className="text-xs text-[#787774] font-medium">
-                  /{unidad}
-                </span>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={handleAdd}
-            disabled={adding || unidades <= 0}
-            aria-label={unidades > 0 ? `Agregar ${nombre} al carrito` : `${nombre} sin stock`}
-            className={`flex items-center justify-center gap-1.5 px-3 min-h-[44px] min-w-[44px] text-sm font-semibold tracking-[0.02em] rounded-lg transition-colors ${
-              added
-                ? "bg-[#2F7F4E] text-white"
-                : unidades <= 0
-                ? "bg-[#F0EFEB] text-[#787774] cursor-not-allowed"
-                : "bg-navy-950 text-white hover:bg-[#111111]"
-            }`}
-          >
-            {adding ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : added ? (
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+          )}
+          <p className="leading-none tabular-nums">
+            <span className={`text-xl sm:text-2xl font-extrabold tracking-tight ${muestraOferta ? "text-marca-700" : "text-navy-950"}`}>
+              {formatCLP(precioDescuento)}
+            </span>
+            {unitLabel && <span className="text-xs text-gray-500 ml-1">{unitLabel}</span>}
+          </p>
+          <p className="mt-1.5 text-xs text-gray-500 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
+            <span className="hidden sm:inline">IVA incluido · </span>
+            {unidades > 0 ? (
+              <span>{unidades} en stock</span>
             ) : (
-              <>
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"
-                  />
-                </svg>
-                <span className="hidden sm:inline">Agregar</span>
-              </>
+              <span className="font-semibold text-[#9C2B1F]">Sin stock</span>
             )}
-                    </button>
+          </p>
+
+          {comprable && (
+            <button
+              onClick={handleAdd}
+              disabled={adding}
+              aria-label={added ? `${nombre} agregado al carrito` : `Agregar ${nombre} al carrito`}
+              className={`mt-3 w-full flex items-center justify-center gap-2 px-3 min-h-[44px] text-sm font-semibold rounded-lg transition-[transform,background-color] duration-150 ease-out active:scale-[0.97] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy-950 ${
+                added ? "bg-green-700 text-white" : "bg-navy-950 text-white hover:bg-navy-800"
+              }`}
+            >
+              {added ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Agregado</span>
+                </>
+              ) : (
+                <>
+                  <span className="sm:hidden">Agregar</span>
+                  <span className="hidden sm:inline">Agregar al carrito</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

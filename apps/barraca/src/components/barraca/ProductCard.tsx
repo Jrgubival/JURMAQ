@@ -158,13 +158,13 @@ export default function ProductCard({
             /* Sin foto, la medida es la imagen: un bloque gris claro con la
                medida grande. Gris y no negro, para que la grilla no se llene
                de manchas oscuras que compiten con el precio. */
-            <div className="w-full h-full flex flex-col items-center justify-center bg-[#F3F3F1] rounded-lg px-4 text-center">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-[#F3F3F1] rounded-lg px-3 pt-6 sm:pt-0 text-center">
               {medida ? (
                 <>
-                  <span className="text-[11px] uppercase tracking-[0.14em] text-gray-500 mb-2">
+                  <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.14em] text-gray-500 mb-2 line-clamp-2">
                     {titleCase(nombreSinMedida).slice(0, 28)}
                   </span>
-                  <span className="font-[var(--font-heading)] text-2xl leading-none font-semibold text-navy-950 tabular-nums">
+                  <span className="font-[var(--font-heading)] text-lg sm:text-2xl leading-tight sm:leading-none font-semibold text-navy-950 tabular-nums">
                     {medidaTexto}
                   </span>
                 </>
@@ -268,7 +268,10 @@ export default function ProductCard({
                   <span>Agregado</span>
                 </>
               ) : (
-                <span>Agregar al carrito</span>
+                <>
+                  <span className="sm:hidden">Agregar</span>
+                  <span className="hidden sm:inline">Agregar al carrito</span>
+                </>
               )}
             </button>
           ) : !conPrecio ? (
