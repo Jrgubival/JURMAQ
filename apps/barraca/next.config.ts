@@ -89,8 +89,6 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://*.mlstatic.com https://media.falabella.com https://upload.wikimedia.org https://www.facebook.com",
               "font-src 'self' https://fonts.gstatic.com",
-              // Mapa del local en el pie (embed de Google Maps sin clave).
-              "frame-src https://www.google.com",
               "connect-src 'self' https://*.supabase.co https://wmoizhbdalvnveclenvf.supabase.co https://api.mercadopago.com https://www.google-analytics.com https://analytics.google.com https://*.googletagmanager.com https://www.facebook.com https://connect.facebook.net",
               // Allow same-origin iframes so admin can embed contract preview.
               "frame-ancestors 'self'",
