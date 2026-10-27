@@ -8,7 +8,6 @@ import HeroSlider from "@/components/barraca/HeroSlider";
 import MobileHero from "@/components/barraca/MobileHero";
 import MarcasCarrusel from "@/components/barraca/MarcasCarrusel";
 import MobileTrustStrip from "@/components/barraca/MobileTrustStrip";
-import ComoFunciona from "@/components/barraca/ComoFunciona";
 import { PROMESA, PROMESA_CORTA_META } from "@/lib/promesa";
 import PromotedProductCard from "@/components/barraca/PromotedProductCard";
 import CountdownTimer from "@/components/barraca/CountdownTimer";
@@ -585,13 +584,10 @@ export default async function BarracaHomePage() {
         </section>
       )}
 
-      {/* Cómo funciona — los tres pasos de una compra en línea. Va acá, antes
-          de las marcas y no pegado al banner: lo primero que se ve son
-          categorías y productos. */}
-      <ComoFunciona modo="tienda" className="border-t border-gray-200" />
-
-      {/* Marcas */}
-      <section className="bg-gray-50 border-t border-b border-gray-200 py-14 lg:py-20 content-auto">
+      {/* Marcas. El fondo alterna con la sección de arriba: "Recién llegados"
+          va sobre el gris de la página, así que acá blanco; si no hay
+          recién llegados, arriba queda "Más vendidos" (blanco) y acá gris. */}
+      <section className={`${(nuevos || []).length > 0 ? 'bg-white' : 'bg-gray-50'} border-t border-b border-gray-200 py-14 lg:py-20 content-auto`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-extrabold text-navy-950">Marcas que trabajamos</h2>
