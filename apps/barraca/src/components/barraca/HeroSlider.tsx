@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
-import { PROMESA_CON_ASTERISCO, NOTA_PROMESA } from "@/lib/promesa";
 
 /**
  * Banner de portada, al modo de un retail: una OFERTA por slide, con el
@@ -32,22 +31,9 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
   const slides = useMemo(
     () => [
       {
-        eyebrow: "Nuestra promesa",
-        title: PROMESA_CON_ASTERISCO,
-        sub: "Sirve la de Sodimac, Easy, Construmart u otra barraca. Sin registro, sin vueltas.",
-        // La nota del asterisco va en el mismo bloque, chica y gris.
-        nota: NOTA_PROMESA as string | null,
-        precio: null as number | null,
-        precioNota: "",
-        cta: { label: "Subir mi cotización", href: "/te-mejoramos-el-precio" },
-        image: "/images/barraca/hero/hero-fachada.webp",
-        alt: "Fachada de Barraca JURMAQ en Molina",
-      },
-      {
         eyebrow: "Fierro de construcción",
         title: "Fierro estriado A63, la barra de 6 metros",
         sub: "Desde 8 mm hasta 25 mm. Despacho desde una barra a toda la Región del Maule.",
-        nota: null,
         precio: precios.fierro ?? null,
         precioNota: "la barra de 8 mm",
         cta: { label: "Ver fierros", href: "/categorias/fierros-construccion" },
@@ -58,7 +44,6 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
         eyebrow: "Perfiles y planchas",
         title: "Tubos, ángulos y canales en todas las medidas",
         sub: "Más de 120 medidas de tubo en stock, cortados a medida en el local.",
-        nota: null,
         precio: precios.tubo ?? null,
         precioNota: "el tubo de 6 metros",
         cta: { label: "Ver perfiles", href: "/categorias/perfiles-y-planchas" },
@@ -77,10 +62,10 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
   }, []);
   const next = useCallback(() => setCurrent((c) => (c + 1) % slides.length), [slides.length]);
   useEffect(() => {
-    if (isPaused || prefersReducedMotion) return;
+    if (isPaused || prefersReducedMotion || slides.length < 2) return;
     const t = setInterval(next, 6000);
     return () => clearInterval(t);
-  }, [isPaused, prefersReducedMotion, next]);
+  }, [isPaused, prefersReducedMotion, next, slides.length]);
 
   const s = slides[current];
 
@@ -118,9 +103,6 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
             {s.title}
           </h2>
           <p className="text-[15px] text-white/80 leading-relaxed mb-5 max-w-lg">{s.sub}</p>
-          {s.nota ? (
-            <p className="-mt-3 mb-5 max-w-lg text-xs text-gray-400 leading-relaxed">{s.nota}</p>
-          ) : null}
 
           {s.precio ? (
             <p className="mb-6 flex items-baseline gap-2">
@@ -147,25 +129,27 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
         </div>
       </div>
 
-      {/* Indicadores */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2" role="tablist" aria-label="Diapositivas">
-        {slides.map((sl, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            role="tab"
-            aria-selected={i === current}
-            aria-label={`${sl.title} (${i + 1} de ${slides.length})`}
-            className="w-11 h-8 flex items-center justify-center"
-          >
-            <span
-              className={`block h-1.5 rounded-full transition-[width,background-color] duration-200 ease-out ${
-                i === current ? "w-7 bg-marca-500" : "w-2.5 bg-white/50 hover:bg-white/80"
-              }`}
-            />
-          </button>
-        ))}
-      </div>
+      {/* Indicadores: con una sola lámina no hay nada que elegir. */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2" role="tablist" aria-label="Diapositivas">
+          {slides.map((sl, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              role="tab"
+              aria-selected={i === current}
+              aria-label={`${sl.title} (${i + 1} de ${slides.length})`}
+              className="w-11 h-8 flex items-center justify-center"
+            >
+              <span
+                className={`block h-1.5 rounded-full transition-[width,background-color] duration-200 ease-out ${
+                  i === current ? "w-7 bg-marca-500" : "w-2.5 bg-white/50 hover:bg-white/80"
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
