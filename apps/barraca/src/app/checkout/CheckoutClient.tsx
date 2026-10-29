@@ -9,6 +9,7 @@ import { trackEvents } from "@/lib/analytics";
 import { useCarrito } from "@/lib/useCarrito";
 import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carrito";
 import { rutValido } from "@/lib/rut";
+import { COMUNAS, REGIONES } from "@/lib/despacho/comunas";
 
 /**
  * Checkout en una sola página, una columna: datos → entrega → pago.
@@ -18,6 +19,24 @@ import { rutValido } from "@/lib/rut";
 
 type Campo = "nombre" | "email" | "telefono" | "rut" | "direccion" | "comuna";
 type Datos = Record<Campo | "notas", string>;
+
+/** Comunas del camión propio, arriba de la lista. Deben calzar con TARIFAS_PROPIO del servidor. */
+const COMUNAS_CAMION = ["ZMO", "CCO"];
+const CODIGOS = new Set(COMUNAS.map((c) => c.codigo));
+const nombreComuna = (codigo: string) => COMUNAS.find((c) => c.codigo === codigo)?.nombre ?? "";
+/** Antes la comuna se guardaba como texto: se intenta reconocerla. */
+function codigoGuardado(v: unknown): string {
+  if (typeof v !== "string" || !v) return "";
+  if (CODIGOS.has(v)) return v;
+  const n = v.trim().toLowerCase();
+  return COMUNAS.find((c) => c.nombre.toLowerCase() === n)?.codigo ?? "";
+}
+
+type Cotizacion =
+  | { estado: "cargando" }
+  | { estado: "ok"; tipo: "propio" | "courier"; costo: number | null; detalle: string; comuna: string }
+  | { estado: "bloqueado"; motivo: string; productos: string[]; comuna: string }
+  | { estado: "sin_servicio" | "error"; motivo: string };
 
 const VACIO: Datos = { nombre: "", email: "", telefono: "", rut: "", direccion: "", comuna: "", notas: "" };
 const CLAVE_DATOS = "barraca_checkout_datos";
@@ -30,7 +49,7 @@ function validar(c: Campo, v: string, despacho: boolean): string | null {
     case "telefono": return t.replace(/\D/g, "").length >= 8 ? null : "Escribe un teléfono de al menos 8 dígitos.";
     case "rut": return !t || rutValido(t) ? null : "El RUT no es válido. Revisa el dígito verificador.";
     case "direccion": return !despacho || t.length >= 5 ? null : "Escribe la dirección de despacho.";
-    case "comuna": return !despacho || t.length >= 3 ? null : "Escribe la comuna.";
+    case "comuna": return !despacho || CODIGOS.has(t) ? null : "Elige la comuna.";
   }
 }
 
@@ -93,6 +112,54 @@ function Opcion({
   );
 }
 
+/** Lo que pasa con el despacho a la comuna elegida, justo debajo del selector. */
+function EstadoDespacho({ cotizacion, onRetiro }: { cotizacion: Cotizacion | null; onRetiro: () => void }) {
+  if (!cotizacion) return null;
+  if (cotizacion.estado === "cargando") {
+    return (
+      <p id="co-despacho-estado" aria-live="polite" className="text-[13px] text-[#787774] flex items-center gap-2">
+        <span className="w-3.5 h-3.5 border-2 border-[#C9C9C5] border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+        Calculando el despacho…
+      </p>
+    );
+  }
+  if (cotizacion.estado === "ok") {
+    const monto = cotizacion.costo == null ? "a coordinar" : cotizacion.costo === 0 ? "gratis" : formatCLP(cotizacion.costo);
+    return (
+      <div id="co-despacho-estado" aria-live="polite" className="rounded-lg bg-[#F7F7F5] border border-[#EAEAEA] px-4 py-3 text-sm">
+        <p className="font-semibold text-[#111111]">
+          {cotizacion.tipo === "propio" ? "Camión de la barraca" : "Envío por courier"} · <span className="tabular-nums">{monto}</span>
+        </p>
+        <p className="text-[13px] text-[#5A5A57] mt-0.5">{cotizacion.detalle}</p>
+      </div>
+    );
+  }
+  return (
+    <div id="co-despacho-estado" role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm">
+      <p className="font-semibold text-red-800">
+        {cotizacion.estado === "bloqueado" ? `No despachamos este carrito a ${cotizacion.comuna}` : "Despacho no disponible"}
+      </p>
+      <p className="text-[13px] text-red-800/90 mt-1">{cotizacion.motivo}</p>
+      {cotizacion.estado === "bloqueado" && cotizacion.productos.length > 0 && (
+        <ul className="mt-2 text-[13px] text-red-900 list-disc pl-5 space-y-0.5">
+          {cotizacion.productos.slice(0, 5).map((n) => <li key={n}>{n}</li>)}
+          {cotizacion.productos.length > 5 && <li>y {cotizacion.productos.length - 5} más</li>}
+        </ul>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button type="button" onClick={onRetiro} className="min-h-[40px] px-4 rounded-lg bg-white border border-red-300 text-sm font-semibold text-red-800 hover:bg-red-100">
+          Retirar en la barraca
+        </button>
+        {cotizacion.estado === "bloqueado" && (
+          <Link href="/carrito" className="min-h-[40px] inline-flex items-center px-4 rounded-lg text-sm font-semibold text-red-800 underline underline-offset-2">
+            Editar carrito
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Seccion({ n, titulo, children }: { n: number; titulo: string; children: React.ReactNode }) {
   return (
     <section className="bg-white border border-[#EAEAEA] rounded-2xl p-5 sm:p-6">
@@ -120,7 +187,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   useEffect(() => {
     try {
       const g = JSON.parse(localStorage.getItem(CLAVE_DATOS) || "{}");
-      setDatos((d) => ({ ...d, nombre: g.nombre || "", email: g.email || "", telefono: g.telefono || "", direccion: g.direccion || "", comuna: g.comuna || "" }));
+      setDatos((d) => ({ ...d, nombre: g.nombre || "", email: g.email || "", telefono: g.telefono || "", direccion: g.direccion || "", comuna: codigoGuardado(g.comuna) }));
     } catch { /* sin datos guardados */ }
   }, []);
 
@@ -131,7 +198,48 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   }, [cargando, items]);
 
   const despacho = entrega === "despacho";
-  const set = (c: keyof Datos) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Costo del despacho para la comuna elegida. Es sólo para mostrarlo: al
+  // crear el pedido el servidor lo calcula de nuevo y cobra ese. La respuesta
+  // se guarda con la consulta que la pidió, así una vieja nunca se muestra.
+  const claveItems = items.map((i) => `${i.productoId}x${i.cantidad}`).join(",");
+  const consulta = despacho && CODIGOS.has(datos.comuna) && claveItems ? `${datos.comuna}|${claveItems}` : null;
+  const [respuesta, setRespuesta] = useState<{ consulta: string; cotizacion: Cotizacion } | null>(null);
+  const cotizacion: Cotizacion | null = !consulta
+    ? null
+    : respuesta?.consulta === consulta ? respuesta.cotizacion : { estado: "cargando" };
+
+  useEffect(() => {
+    if (!consulta) return;
+    const [comuna, lista] = consulta.split("|");
+    const ctrl = new AbortController();
+    const fijar = (c: Cotizacion) => setRespuesta({ consulta, cotizacion: c });
+    fetch("/api/tienda/despacho", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        comuna,
+        items: lista.split(",").map((s) => {
+          const [id, cant] = s.split("x");
+          return { productoId: Number(id), cantidad: Number(cant) };
+        }),
+      }),
+      signal: ctrl.signal,
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        fijar(res.ok ? (data as Cotizacion) : { estado: "error", motivo: data.error || "No pudimos calcular el despacho. Intenta de nuevo." });
+      })
+      .catch((e) => {
+        if ((e as Error).name !== "AbortError") fijar({ estado: "error", motivo: "Se cortó la conexión al calcular el despacho." });
+      });
+    return () => ctrl.abort();
+  }, [consulta]);
+
+  const costoDespacho = despacho && cotizacion?.estado === "ok" ? cotizacion.costo : null;
+  const totalPedido = total + (costoDespacho ?? 0);
+  const despachoListo = !despacho || cotizacion?.estado === "ok";
+
+  const set = (c: keyof Datos) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const v = e.target.value;
     setDatos((d) => ({ ...d, [c]: v }));
     // Un error ya mostrado se va apenas el valor queda válido, no antes.
@@ -153,13 +261,22 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setErrorEnvio(null);
-    const campos: Campo[] = ["nombre", "email", "telefono", "rut", ...(despacho ? (["direccion", "comuna"] as Campo[]) : [])];
+    const campos: Campo[] = ["nombre", "email", "telefono", "rut", ...(despacho ? (["comuna", "direccion"] as Campo[]) : [])];
     const nuevos: Partial<Record<Campo, string | null>> = {};
     for (const c of campos) nuevos[c] = validar(c, datos[c], despacho);
     setErrores(nuevos);
     const primero = campos.find((c) => nuevos[c]);
     if (primero) {
       document.getElementById(`co-${primero}`)?.focus();
+      return;
+    }
+    if (!despachoListo) {
+      setErrorEnvio(
+        cotizacion?.estado === "cargando" || !cotizacion
+          ? "Espera un segundo: estamos calculando el despacho."
+          : "El despacho a esa comuna no está disponible para este carrito. Elige retiro en la barraca o cambia la comuna.",
+      );
+      document.getElementById("co-despacho-estado")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     setEnviando(true);
@@ -230,7 +347,12 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
     );
   }
 
-  const etiquetaBoton = metodo === "mercadopago" ? `Pagar ${formatCLP(total)}` : "Confirmar pedido";
+  const etiquetaBoton = metodo === "mercadopago" ? `Pagar ${formatCLP(totalPedido)}` : "Confirmar pedido";
+  const montoFila = !despacho
+    ? "Gratis"
+    : cotizacion?.estado === "ok"
+      ? cotizacion.costo == null ? "A coordinar" : cotizacion.costo === 0 ? "Gratis" : formatCLP(cotizacion.costo)
+      : cotizacion?.estado === "cargando" ? "Calculando…" : datos.comuna ? "No disponible" : "Elige comuna";
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -272,16 +394,43 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 titulo="Retiro en la barraca · gratis"
                 detalle={`Av. Poniente 2157, Molina. ${HORARIO_BARRACA.semana}.`} />
               <Opcion nombre="entrega" valor="despacho" actual={entrega} onChange={(v) => setEntrega(v as "despacho")}
-                titulo="Despacho a domicilio · a coordinar"
-                detalle="Te llamamos para acordar día y costo según comuna. El despacho se paga aparte." />
+                titulo="Despacho a domicilio"
+                detalle="Molina y Curicó en camión de la barraca. Productos chicos, a todo Chile por courier." />
             </div>
             {despacho && (
               <>
+                <CampoForm id="co-comuna" label="Comuna" error={errores.comuna}>
+                  <div className="relative">
+                    <select
+                      id="co-comuna"
+                      value={datos.comuna}
+                      onChange={set("comuna")}
+                      onBlur={blur("comuna")}
+                      autoComplete="address-level2"
+                      aria-invalid={!!errores.comuna || undefined}
+                      aria-describedby={errores.comuna ? "co-comuna-error" : "co-despacho-estado"}
+                      className={`${claseInput(errores.comuna)} appearance-none pr-10`}
+                    >
+                      <option value="">Elige tu comuna</option>
+                      <optgroup label="Camión de la barraca">
+                        {COMUNAS_CAMION.map((c) => <option key={c} value={c}>{nombreComuna(c)}</option>)}
+                      </optgroup>
+                      {Object.entries(REGIONES).map(([r, nombre]) => (
+                        <optgroup key={r} label={`Región de ${nombre}`}>
+                          {COMUNAS.filter((c) => c.region === r && !COMUNAS_CAMION.includes(c.codigo)).map((c) => (
+                            <option key={c.codigo} value={c.codigo}>{c.nombre}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                    <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#787774]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </CampoForm>
+                <EstadoDespacho cotizacion={cotizacion} onRetiro={() => setEntrega("retiro")} />
                 <CampoForm id="co-direccion" label="Dirección" error={errores.direccion}>
                   <input {...props("direccion")} type="text" autoComplete="street-address" placeholder="Calle, número, depto." />
-                </CampoForm>
-                <CampoForm id="co-comuna" label="Comuna" error={errores.comuna}>
-                  <input {...props("comuna")} type="text" autoComplete="address-level2" placeholder="Curicó" />
                 </CampoForm>
               </>
             )}
@@ -321,12 +470,15 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
             </ul>
             <div className="space-y-1.5 text-sm border-t border-gray-200 pt-3 mb-5">
               <div className="flex justify-between"><span className="text-[#5A5A57]">Productos</span><span className="tabular-nums">{formatCLP(total)}</span></div>
-              <div className="flex justify-between"><span className="text-[#5A5A57]">{despacho ? "Despacho" : "Retiro en Molina"}</span><span className="text-[#5A5A57]">{despacho ? "A coordinar" : "Gratis"}</span></div>
+              <div className="flex justify-between gap-3">
+                <span className="text-[#5A5A57]">{despacho ? `Despacho${cotizacion && "comuna" in cotizacion ? ` a ${cotizacion.comuna}` : ""}` : "Retiro en Molina"}</span>
+                <span className={`tabular-nums shrink-0 ${costoDespacho ? "text-[#111111]" : "text-[#5A5A57]"}`}>{montoFila}</span>
+              </div>
               <div className="flex justify-between items-baseline pt-2 border-t border-gray-100">
                 <span className="font-semibold text-[#111111]">Total</span>
-                <span className="text-2xl font-extrabold text-navy-950 tabular-nums">{formatCLP(total)}</span>
+                <span className="text-2xl font-extrabold text-navy-950 tabular-nums">{formatCLP(totalPedido)}</span>
               </div>
-              <p className="text-xs text-[#787774] text-right">IVA incluido{despacho ? " · despacho aparte" : ""}</p>
+              <p className="text-xs text-[#787774] text-right">IVA incluido{despacho && costoDespacho == null ? " · despacho aparte" : ""}</p>
             </div>
 
             {errorEnvio && (

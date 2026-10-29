@@ -1,0 +1,38 @@
+import { formatCLP } from '@jurmaq/shared/format';
+
+/** Lo que el comprador y la barraca leen sobre el despacho de un pedido (página, correos, panel). */
+
+interface PedidoDespacho {
+  entrega: 'retiro' | 'despacho';
+  despacho_tipo?: 'propio' | 'courier' | null;
+  costo_despacho: number | null;
+  courier?: string | null;
+  courier_seguimiento?: string | null;
+}
+
+const NOMBRE_COURIER: Record<string, string> = { bluex: 'Blue Express', simulado: 'courier (prueba)' };
+
+export function nombreCourier(id: string | null | undefined): string {
+  return (id && NOMBRE_COURIER[id]) || 'courier';
+}
+
+/** Monto para la fila "Despacho" del resumen: "$4.990", "Gratis" o "A coordinar". */
+export function montoDespacho(p: PedidoDespacho): string {
+  if (p.costo_despacho == null) return 'A coordinar';
+  return p.costo_despacho === 0 ? 'Gratis' : formatCLP(p.costo_despacho);
+}
+
+export function textoDespacho(p: PedidoDespacho): { titulo: string; detalle: string } {
+  if (p.despacho_tipo === 'courier') {
+    return {
+      titulo: `Envío por ${nombreCourier(p.courier)}`,
+      detalle: p.courier_seguimiento
+        ? `N° de seguimiento: ${p.courier_seguimiento}.`
+        : 'Te mandamos el número de seguimiento cuando lo entreguemos al courier.',
+    };
+  }
+  if (p.costo_despacho == null) {
+    return { titulo: 'Despacho a coordinar', detalle: 'Te llamamos para acordar el día y el costo del despacho.' };
+  }
+  return { titulo: 'Despacho en camión de la barraca', detalle: 'Te llamamos para acordar el día de entrega.' };
+}

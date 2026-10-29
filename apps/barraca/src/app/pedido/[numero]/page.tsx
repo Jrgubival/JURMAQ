@@ -6,6 +6,7 @@ import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
 import { logSafeError } from "@jurmaq/shared/logging";
 import { pedidos, cookiePedido, tokenValido, PATRON_NUMERO, ETIQUETA_ESTADO, type Pedido } from "@/lib/pedidos";
 import { datosTransferencia } from "@/lib/pedidos/correos";
+import { montoDespacho, textoDespacho } from "@/lib/despacho/texto";
 import { aplicarEstadoPago, pasarelaActiva, pagoEnLineaDisponible } from "@/lib/pagos";
 import AccionesPedido from "./AccionesPedido";
 
@@ -104,7 +105,7 @@ export default async function PedidoPage({
         </h1>
         <p className="text-[15px] text-[#5A5A57]">
           {pagado
-            ? `Te mandamos el detalle a ${pedido.email}. ${pedido.entrega === "retiro" ? "Te avisamos cuando esté listo para retirar." : "Te llamamos para coordinar el despacho."}`
+            ? `Te mandamos el detalle a ${pedido.email}. ${pedido.entrega === "retiro" ? "Te avisamos cuando esté listo para retirar." : pedido.despacho_tipo === "courier" ? "Te avisamos cuando lo enviemos." : "Te llamamos para coordinar el despacho."}`
             : transferencia
               ? `Transfiere ${formatCLP(pedido.total)} con estos datos e indica el número de pedido. Preparamos el pedido cuando veamos la transferencia.`
               : rechazado
@@ -151,11 +152,17 @@ export default async function PedidoPage({
             </li>
           ))}
         </ul>
+        {pedido.entrega === "despacho" && (
+          <div className="flex justify-between text-sm border-t border-gray-200 pt-3 mt-1">
+            <span className="text-[#5A5A57]">Despacho</span>
+            <span className="tabular-nums">{montoDespacho(pedido)}</span>
+          </div>
+        )}
         <div className="flex justify-between items-baseline border-t border-gray-200 pt-4 mt-1">
           <span className="font-semibold">Total</span>
           <span className="text-2xl font-extrabold text-navy-950 tabular-nums">{formatCLP(pedido.total)}</span>
         </div>
-        <p className="text-xs text-[#787774] text-right">IVA incluido{pedido.entrega === "despacho" ? " · despacho aparte" : ""}</p>
+        <p className="text-xs text-[#787774] text-right">IVA incluido{pedido.entrega === "despacho" && pedido.costo_despacho == null ? " · despacho aparte" : ""}</p>
       </div>
 
       <div className="bg-white border border-[#EAEAEA] rounded-2xl p-6 sm:p-8">
@@ -167,8 +174,8 @@ export default async function PedidoPage({
           </p>
         ) : (
           <p className="text-[15px] text-[#5A5A57]">
-            <strong className="text-[#111111]">Despacho a coordinar</strong>: {pedido.direccion}, {pedido.comuna}.<br />
-            Te llamamos al {pedido.telefono} para acordar día y costo.
+            <strong className="text-[#111111]">{textoDespacho(pedido).titulo}</strong>: {pedido.direccion}, {pedido.comuna}.<br />
+            {textoDespacho(pedido).detalle}
           </p>
         )}
       </div>

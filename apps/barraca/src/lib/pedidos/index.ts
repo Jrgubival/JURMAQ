@@ -44,6 +44,7 @@ export const ETIQUETA_ESTADO: Record<EstadoPedido, string> = {
 
 export type MetodoPago = 'mercadopago' | 'transferencia';
 export type Entrega = 'retiro' | 'despacho';
+export type TipoDespacho = 'propio' | 'courier';
 
 export interface ItemPedido {
   productoId: number;
@@ -77,6 +78,13 @@ export interface Pedido {
   items: ItemPedido[];
   subtotal: number;
   costo_despacho: number | null;
+  /** Cómo viaja el despacho: camión propio o courier. null en retiro. */
+  despacho_tipo: TipoDespacho | null;
+  /** Código de comuna (ver lib/despacho/comunas.ts). */
+  comuna_codigo: string | null;
+  /** Courier usado ('bluex', 'simulado') y su número de seguimiento. */
+  courier: string | null;
+  courier_seguimiento: string | null;
   total: number;
   stock_descontado: boolean;
   created_at: string;
@@ -85,7 +93,7 @@ export interface Pedido {
 
 export type NuevoPedido = Omit<
   Pedido,
-  'id' | 'estado' | 'pasarela' | 'pasarela_referencia' | 'pago_id' | 'pagado_at' | 'stock_descontado' | 'created_at' | 'updated_at'
+  'id' | 'estado' | 'pasarela' | 'pasarela_referencia' | 'pago_id' | 'pagado_at' | 'stock_descontado' | 'courier_seguimiento' | 'created_at' | 'updated_at'
 >;
 
 export type ResultadoPago = 'pagado' | 'ya_procesado' | 'monto_distinto' | 'no_encontrado';
@@ -99,6 +107,7 @@ export interface PedidosStore {
   /** Sólo pasa a 'pago_rechazado' si seguía pendiente. */
   marcarRechazado(numero: string, pagoId: string | null): Promise<void>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
+  guardarSeguimiento(numero: string, seguimiento: string): Promise<void>;
   listar(opts: { estado?: EstadoPedido; limite?: number }): Promise<Pedido[]>;
 }
 
@@ -143,6 +152,10 @@ const storeSupabase: PedidosStore = {
   },
   async cambiarEstado(numero, estado) {
     const { error } = await db.from('barraca_pedidos').update({ estado }).eq('numero', numero);
+    if (error) throw error;
+  },
+  async guardarSeguimiento(numero, seguimiento) {
+    const { error } = await db.from('barraca_pedidos').update({ courier_seguimiento: seguimiento }).eq('numero', numero);
     if (error) throw error;
   },
   async listar({ estado, limite = 200 }) {

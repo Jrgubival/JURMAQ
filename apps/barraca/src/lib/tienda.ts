@@ -28,6 +28,9 @@ export interface LineaRevisada {
   slug: string | null;
   medida: string | null;
   unidad: string | null;
+  categoriaId: number | null;
+  /** Kilos por unidad; null si no está cargado en la base. */
+  peso: number | null;
   stock: number;
   problema: string | null;
 }
@@ -46,7 +49,7 @@ export async function revisarLineas(lineas: LineaPedido[]): Promise<LineaRevisad
   const [{ data, error }, promoMap] = await Promise.all([
     supabaseAdmin
       .from('barraca_productos')
-      .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id, activo')
+      .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id, peso, activo')
       .in('id', ids),
     getActiveCategoryDiscountMap(),
   ]);
@@ -82,6 +85,8 @@ export async function revisarLineas(lineas: LineaPedido[]): Promise<LineaRevisad
       slug: p.slug,
       medida: p.medida,
       unidad: p.unidad,
+      categoriaId: p.categoria_id,
+      peso: Number.isFinite(p.peso) && (p.peso as number) > 0 ? (p.peso as number) : null,
       stock,
       problema,
     });

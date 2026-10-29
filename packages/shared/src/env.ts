@@ -228,6 +228,24 @@ const serverEnvSchema = z.object({
     .transform((v) => v?.trim().toLowerCase())
     .pipe(z.enum(['supabase', 'archivo']).optional()),
 
+  /**
+   * Tienda barraca: courier para lo que no va en el camión propio.
+   * 'bluex' (Blue Express, pide BLUEX_API_KEY) o 'simulado' (sólo desarrollo:
+   * cotiza y emite con datos de prueba; se rechaza en producción). Sin valor,
+   * el despacho por courier no se ofrece.
+   */
+  COURIER: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim().toLowerCase())
+    .pipe(z.enum(['bluex', 'simulado']).optional()),
+  /** Llave de la API de Blue Express (header x-api-key). La entrega el ejecutivo de Blue Express. */
+  BLUEX_API_KEY: z.string().optional(),
+  /** Nombre de la cuenta / tienda en Blue Express ("domain" en la cotización). */
+  BLUEX_CUENTA: z.string().optional(),
+  /** Base de la API. Por defecto https://eplin.api.blue.cl (la que usa el plugin oficial). */
+  BLUEX_BASE_URL: z.string().url().optional(),
+
   /** Correo que recibe el aviso de cada pedido nuevo de la tienda barraca. */
   BARRACA_PEDIDOS_EMAIL: z.string().email().optional(),
 
