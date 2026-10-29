@@ -3,7 +3,8 @@
 import { useState } from "react";
 import SelectorMedidas from "@/components/barraca/SelectorMedidas";
 import { familiaDe, tituloFamilia } from "@/lib/variantes";
-import { formatCLP } from "@jurmaq/shared/format";
+import Precio from "@/components/barraca/Precio";
+import type { VistaPrecio } from "@/lib/precio-web";
 import { agregarProducto } from "@/lib/agregar";
 import { unidadesDisponibles } from "@/lib/stock";
 
@@ -31,12 +32,12 @@ interface Variante {
 export default function AddToCartClient({
   producto,
   variantes,
-  precioVenta,
+  vista,
 }: {
   producto: Producto;
   variantes: Variante[];
-  /** Precio que se cobra (oferta o promoción ya aplicada), o 0 si no se vende en línea. */
-  precioVenta: number;
+  /** Precio web / normal ya resuelto en el servidor (lib/precio-web.ts). */
+  vista: VistaPrecio;
 }) {
   const [cantidad, setCantidad] = useState(1);
   const [adding, setAdding] = useState(false);
@@ -45,9 +46,8 @@ export default function AddToCartClient({
   // El selector de medidas navega a la ficha de cada variante: el producto
   // que se compra es siempre el de esta página.
   const unidades = unidadesDisponibles(producto.stock);
-  const comprable = precioVenta > 0 && unidades > 0;
-  const displayPrecio = precioVenta > 0 ? precioVenta : producto.precio;
-  const displayTachado = precioVenta > 0 && precioVenta < producto.precio ? producto.precio : null;
+  const comprable = vista.disponible && unidades > 0;
+  const precioVenta = vista.precioWeb;
 
   function handleAdd() {
     if (!comprable) return;
@@ -98,25 +98,14 @@ export default function AddToCartClient({
           siempre vea el costo al decidir. Antes el precio estaba arriba en
           la página y se perdía al scrollear hasta el botón. Win conversion
           mobile (~10-20% en e-commerce de catálogo según Baymard). */}
+      {/* No disponible: sin barra de compra (el bloque de precio ya lo dice). */}
+      {comprable && (
       <div className="space-y-3 fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-300 shadow-[0_-4px_16px_-4px_rgba(0,0,0,0.08)] p-4 z-40 lg:static lg:border-0 lg:shadow-none lg:p-0 lg:z-auto safe-bottom">
-        {/* Mobile-only: precio + medida visible en la barra sticky */}
-        <div className="flex items-baseline justify-between gap-3 lg:hidden border-b border-gray-200 pb-3 -mx-1 px-1">
-          <div className="min-w-0">
-            <p className="text-2xl font-extrabold text-navy-950 tabular-nums leading-none">
-              {displayTachado && (
-                <span className="text-base text-gray-400 line-through font-bold mr-2">{formatCLP(displayTachado)}</span>
-              )}
-              <span className={displayTachado ? "text-marca-600" : ""}>{formatCLP(displayPrecio)}</span>
-            </p>
-            <p className="mt-1 text-[10px] uppercase tracking-wider text-gray-500">
-              {displayTachado ? "Precio oferta · " : ""}IVA incluido{comprable ? "" : " · sin stock"}
-            </p>
-          </div>
-          {unidades > 0 && unidades <= 5 && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-amber-500 text-white">
-              <span className="w-1.5 h-1.5 bg-white" />
-              {unidades} unid.
-            </span>
+        {/* Sólo celular: el precio sigue a la vista en la barra fija. */}
+        <div className="flex items-end justify-between gap-3 lg:hidden border-b border-gray-200 pb-3 -mx-1 px-1">
+          <Precio vista={vista} unidad={producto.unidad} tamano="barra" />
+          {unidades <= 5 && (
+            <span className="shrink-0 text-xs font-semibold text-amber-700">Quedan {unidades}</span>
           )}
         </div>
         {/* Quantity selector (sólo si se puede comprar) */}
@@ -173,9 +162,7 @@ export default function AddToCartClient({
                 : "bg-marca-600 text-white hover:bg-marca-700 shadow-md shadow-marca-200"
           }`}
         >
-          {!comprable ? (
-            precioVenta > 0 ? "Sin stock" : "No disponible en línea"
-          ) : added ? (
+          {added ? (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -192,6 +179,7 @@ export default function AddToCartClient({
           )}
         </button>
       </div>
+      )}
     </div>
   );
 }

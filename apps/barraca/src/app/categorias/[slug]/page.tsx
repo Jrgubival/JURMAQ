@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { precioDeVenta, vistaPrecio } from "@/lib/precio-web";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
 import CatalogoCategoria from "@/components/barraca/CatalogoCategoria";
@@ -186,17 +187,17 @@ export default async function CategoriaPage({
   // Compute aggregate price stats so Google can show a price range in the
   // category snippet (e.g. "Fierros desde $3.750"). The lower-bound is the
   // strongest signal for shoppers comparing against homecenters.
-  const pricedProducts = (productos || []).filter((p: BarracaProductoRow) => !p.solo_cotizar && p.precio > 0);
+  const pricedProducts = (productos || []).filter((p: BarracaProductoRow) => vistaPrecio(p).disponible);
   const lowPrice = pricedProducts.reduce(
     (min: number, p: BarracaProductoRow) => {
-      const effective = p.en_oferta && p.precio_original ? p.precio_original : p.precio;
+      const effective = precioDeVenta(p);
       return effective < min ? effective : min;
     },
     Number.MAX_SAFE_INTEGER
   );
   const highPrice = pricedProducts.reduce(
     (max: number, p: BarracaProductoRow) => {
-      const effective = p.en_oferta && p.precio_original ? p.precio_original : p.precio;
+      const effective = precioDeVenta(p);
       return effective > max ? effective : max;
     },
     0
@@ -209,7 +210,7 @@ export default async function CategoriaPage({
     description: `Productos de ${categoria.nombre.toLowerCase()} disponibles en Barraca JURMAQ Curicó. ${PROMESA}. Despacho a toda la Región del Maule.`,
     numberOfItems: total,
     itemListElement: (productos || []).map((p: BarracaProductoRow, i: number) => {
-      const effective = p.en_oferta && p.precio_original ? p.precio_original : p.precio;
+      const effective = precioDeVenta(p);
       return {
         "@type": "ListItem",
         position: offset + i + 1,
@@ -218,14 +219,15 @@ export default async function CategoriaPage({
           name: p.nombre,
           url: `https://barraca.jurmaq.cl/producto/${p.slug}`,
           image: p.imagen || undefined,
-          offers: {
+          // No disponible: sin oferta (no publicar un precio que no se cobra).
+          ...(vistaPrecio(p).disponible ? { offers: {
             "@type": "Offer",
             price: effective,
             priceCurrency: "CLP",
             availability: (p.stock ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             seller: { "@id": "https://jurmaq.cl/#organization" },
             priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-          },
+          } } : {}),
         },
       };
     }),

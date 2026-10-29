@@ -4,9 +4,10 @@ import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { useState } from "react";
 import { titleCase } from "@jurmaq/shared/format";
-import { formatCLP } from "@jurmaq/shared/format";
 import { agregarProducto } from "@/lib/agregar";
-import { esComprable, tienePrecio, unidadesDisponibles } from "@/lib/stock";
+import { unidadesDisponibles } from "@/lib/stock";
+import { precioDeVenta, vistaPrecio } from "@/lib/precio-web";
+import Precio from "./Precio";
 import StarRating from "./StarRating";
 import { nombreMarca } from "@/lib/marcas";
 
@@ -99,18 +100,13 @@ export default function ProductCard({
   const fallbackImage = categoriaSlug ? (categoryImages[categoriaSlug] || null) : null;
   const displayImage = imgError ? fallbackImage : resolvedImage;
 
-  // Precio que se cobra: en oferta, el menor de los dos (mismo criterio que
-  // resolvePrice en lib/pricing.ts y que el servidor al armar el pedido).
-  const enOferta = !!(en_oferta && precio_original && precio_original > 0);
-  const precioVenta = enOferta ? Math.min(precio, precio_original as number) : precio;
-  const precioAntes = enOferta ? Math.max(precio, precio_original as number) : null;
-  // La oferta sólo se muestra si el descuento es real (≥1%). Con $40.100 →
-  // $40.000 salía "−0%" y un tachado que no ahorraba nada.
-  const pctOferta = precioAntes ? Math.round((1 - precioVenta / precioAntes) * 100) : 0;
-  const muestraOferta = pctOferta >= 1;
+  // Precio web / precio normal / No disponible: ver lib/precio-web.ts.
+  const vista = vistaPrecio({ precio, precio_original, en_oferta, stock, solo_cotizar });
+  const precioVenta = precioDeVenta({ precio, precio_original, en_oferta });
+  const muestraOferta = vista.ahorroPct != null;
+  const pctOferta = vista.ahorroPct ?? 0;
   const unidades = unidadesDisponibles(stock);
-  const conPrecio = tienePrecio({ precio: precioVenta, stock, solo_cotizar });
-  const comprable = esComprable({ precio: precioVenta, stock, solo_cotizar });
+  const comprable = vista.disponible;
 
   function handleAdd() {
     if (!comprable) return;
@@ -125,8 +121,7 @@ export default function ProductCard({
     }
   }
 
-  const unitLabel = unidad ? `/${unidad.toLowerCase()}` : '';
-  // "100 x 100 x 5.0 MM" → "100 × 100 × 5,0 mm": más fácil de leer de un golpe.
+    // "100 x 100 x 5.0 MM" → "100 × 100 × 5,0 mm": más fácil de leer de un golpe.
   const medidaTexto = medida
     ? medida.replace(/(\d)\s*[xX]\s*(?=\d)/g, '$1\u2009×\u2009').replace(/(\d)\.(\d)/g, '$1,$2').replace(/\b(MM|CM|MTS?|KG|LTS?)\b/g, (u) => u.toLowerCase())
     : null;
@@ -215,34 +210,13 @@ export default function ProductCard({
         {/* Precio + metadatos, empujados al pie para que las tarjetas de una
             fila alineen precio con precio. */}
         <div className="mt-auto pt-4">
-          {!conPrecio ? (
-            <p className="text-lg font-bold text-navy-950">Consultar precio</p>
-          ) : (
-            <>
-              {muestraOferta && precioAntes && (
-                <p className="text-xs text-gray-400 line-through tabular-nums leading-none mb-1">
-                  {formatCLP(precioAntes)}
-                </p>
-              )}
-              <p className="leading-none tabular-nums">
-                <span className={`text-xl sm:text-2xl font-extrabold tracking-tight ${muestraOferta ? 'text-marca-700' : 'text-navy-950'}`}>
-                  {formatCLP(precioVenta)}
-                </span>
-                {unitLabel && <span className="text-xs text-gray-500 ml-1">{unitLabel}</span>}
-              </p>
-            </>
-          )}
-          {conPrecio && (
+          <Precio vista={vista} unidad={unidad} />
+          {comprable && (
             /* En celular la tarjeta mide ~150 px y "IVA incluido" partía la
-               línea en dos, desalineando los botones de la fila; ahí queda
-               sólo el stock (el IVA se repite en carrito y checkout). */
+               línea en dos; ahí queda sólo el stock. */
             <p className="mt-1.5 text-xs text-gray-500 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
               <span className="hidden sm:inline">IVA incluido · </span>
-              {unidades > 0 ? (
-                <span>{unidades} en stock</span>
-              ) : (
-                <span className="font-semibold text-[#9C2B1F]">Sin stock</span>
-              )}
+              {unidades} en stock
             </p>
           )}
 
@@ -274,13 +248,6 @@ export default function ProductCard({
                 </>
               )}
             </button>
-          ) : !conPrecio ? (
-            <Link
-              href={`/producto/${slug}`}
-              className="mt-3 w-full flex items-center justify-center px-3 min-h-[44px] text-sm font-semibold text-navy-950 border border-gray-300 rounded-lg hover:border-navy-950 transition-colors"
-            >
-              Ver producto
-            </Link>
           ) : null}
         </div>
       </div>

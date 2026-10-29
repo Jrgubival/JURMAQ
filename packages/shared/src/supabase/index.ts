@@ -1,10 +1,15 @@
 import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 import { env } from '@jurmaq/shared/env';
+import { fetchConPreciosLocales } from './precios-locales';
 
 const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = env.SUPABASE_SERVICE_ROLE_KEY;
 const supabaseAnonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+// Sólo en `next dev` con PRECIOS_LOCALES (ver precios-locales.ts).
+const preciosLocales = fetchConPreciosLocales();
+const opciones = preciosLocales ? { global: { fetch: preciosLocales } } : undefined;
 
 /**
  * Admin client (RLS bypass). Usar SOLO en handlers protegidos por
@@ -19,7 +24,7 @@ const supabaseAnonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  * `supabasePublic` que respeta RLS y solo expone lo que las policies
  * permitan al rol anon.
  */
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, opciones);
 
 /**
  * Anon client (respeta RLS). Para lectores publicos: sitemaps, paginas
@@ -29,4 +34,4 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
  * Requiere que las tablas tengan RLS habilitado y policies de SELECT
  * apropiadas (ver scripts/enable-rls.sql + harden-rls.js).
  */
-export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey);
+export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey, opciones);

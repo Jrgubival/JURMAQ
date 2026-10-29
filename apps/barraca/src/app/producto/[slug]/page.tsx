@@ -12,6 +12,9 @@ import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs"
 import { getActiveCategoryDiscountMap, getDailyPromotions, applyDailyPromosToProducts } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
+import { vistaDesde } from "@/lib/precio-web";
+import { esComprable, unidadesDisponibles } from "@/lib/stock";
+import Precio from "@/components/barraca/Precio";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { describir, especificaciones } from '@/lib/ficha';
 import { PROMESA } from '@/lib/promesa';
@@ -104,23 +107,20 @@ export async function generateMetadata({
     { precio: producto.precio, precio_original: producto.precio_original, en_oferta: producto.en_oferta, solo_cotizar: producto.solo_cotizar },
     metaPromoPrecio ? (producto.precio - metaPromoPrecio) / producto.precio * 100 : null,
   );
-  const precioMostrar = metaResolved.precioFinal > 0 ? metaResolved.precioFinal : producto.precio;
-  const precioFormateado = `${formatCLP(precioMostrar)}`;
-  const stockTexto =
-    producto.stock >= 1 ? "Stock disponible" : "Sin stock";
+  // Sin stock o sin precio: "No disponible" y sin monto (ni en Google).
+  const metaDisponible = esComprable({ precio: metaResolved.precioFinal, stock: producto.stock, solo_cotizar: producto.solo_cotizar });
+  const precioFormateado = metaDisponible ? formatCLP(metaResolved.precioFinal) : "No disponible";
+  const stockTexto = metaDisponible ? "Stock disponible" : "Por ahora no disponible en línea";
   // Etiqueta corta de stock para el TÍTULO visible (lo que el usuario ve en
   // Google). Antes el título solo decía "Precio y Stock" como palabras; ahora
   // surfacea el precio real + stock → sube CTR en consultas tipo "fierro
   // estriado 18mm", "cemento talca", "perfiles curico" (rankean pos 6–8.5, 0
   // clics). El precio ya estaba solo en el OG title.
-  const stockBadge = producto.stock >= 1 ? "En stock" : "Sin stock";
-  const titlePrecio = metaResolved.tipo === "cotizar"
-    ? "Consultar precio"
-    : `${precioFormateado} · ${stockBadge}`;
+  const titlePrecio = metaDisponible ? `${precioFormateado} · En stock` : "No disponible";
 
   return {
     title: `${producto.nombre} ${titlePrecio} · Barraca JURMAQ Curicó`,
-    description: `Compra ${producto.nombre} en Barraca JURMAQ Curico. Precio: ${precioFormateado}. ${stockTexto}. Envio a Curico, Teno, Molina, Talca y toda la Region del Maule. Codigo: ${producto.codigo}.`,
+    description: `Compra ${producto.nombre} en Barraca JURMAQ Curico. ${metaDisponible ? `Precio web: ${precioFormateado}. ` : ''}${stockTexto}. Envio a Curico, Teno, Molina, Talca y toda la Region del Maule. Codigo: ${producto.codigo}.`,
     keywords: [
       producto.nombre.toLowerCase(),
       `${producto.nombre.toLowerCase()} precio`,
@@ -130,8 +130,8 @@ export async function generateMetadata({
       "materiales construccion Curico",
     ],
     openGraph: {
-      title: `${producto.nombre} - ${precioFormateado} | Barraca JURMAQ`,
-      description: `${producto.nombre} a ${precioFormateado}. ${stockTexto}. Despacho en Region del Maule.`,
+      title: `${producto.nombre} - ${titlePrecio} | Barraca JURMAQ`,
+      description: `${producto.nombre}${metaDisponible ? ` a ${precioFormateado}` : ''}. ${stockTexto}. Despacho en Region del Maule.`,
       url: `https://barraca.jurmaq.cl/producto/${producto.slug}`,
       // siteName se hereda del layout ("Barraca JURMAQ").
       locale: "es_CL",
@@ -242,6 +242,11 @@ export default async function ProductoPage({
   }
 
   const precioResuelto = resolvePrice(producto, dailyPromoDiscount, dailyPromoTitle);
+  const vista = vistaDesde(
+    esComprable({ precio: precioResuelto.precioFinal, stock: producto.stock, solo_cotizar: producto.solo_cotizar }),
+    precioResuelto.precioFinal,
+    precioResuelto.precioTachado,
+  );
   promoPrecioDescuento = precioResuelto.tipo === 'promo_dia' ? precioResuelto.precioFinal : null;
 
   // Related products (random order via Supabase -- not natively supported, so we just get recent)
@@ -300,7 +305,8 @@ export default async function ProductoPage({
           },
         }
       : {}),
-    offers: {
+    // Sin oferta cuando no se vende: no publicar un precio que no se cobra.
+    ...(vista.disponible ? { offers: {
       "@type": "Offer",
       url: `https://barraca.jurmaq.cl/producto/${producto.slug}`,
       price: precioResuelto.precioFinal,
@@ -342,7 +348,7 @@ export default async function ProductoPage({
         returnMethod: "https://schema.org/ReturnByMail",
         returnFees: "https://schema.org/FreeReturn",
       },
-    },
+    } } : {}),
   };
 
   const breadcrumbLd = {
@@ -362,7 +368,7 @@ export default async function ProductoPage({
       <ViewItemTracker
         id={producto.id}
         nombre={producto.nombre}
-        precio={promoPrecioDescuento ?? (producto.en_oferta && producto.precio_original ? producto.precio_original : producto.precio)}
+        precio={precioResuelto.precioFinal}
         categoria={categoria?.nombre}
       />
 
@@ -405,120 +411,27 @@ export default async function ProductoPage({
             </h1>
             {producto.medida && <p className="text-base text-[#5A5A57] mb-6">{producto.medida}</p>}
 
-            {/* Daily promotion discount (virtual, calculated on-the-fly) */}
-            {precioResuelto.tipo === 'promo_dia' ? (
-              <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] border border-[#956400] text-[#956400] rounded-full">
-                    {precioResuelto.label || 'Oferta del día'}
+            {/* Precio web / precio normal (tachado) / No disponible: ver lib/precio-web.ts. */}
+            <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
+              <Precio vista={vista} unidad={producto.unidad} tamano="ficha" />
+              {vista.disponible ? (
+                <p className="mt-3 text-sm text-[#5A5A57] flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span>IVA incluido</span>
+                  <span aria-hidden="true">·</span>
+                  <span className="inline-flex items-center gap-1.5 text-[#2F7F4E] font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#2F7F4E]" aria-hidden="true" />
+                    {unidadesDisponibles(producto.stock)} en stock
                   </span>
-                  {precioResuelto.porcentajeDescuento && (
-                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9C2B1F] rounded-full border border-[#9C2B1F]/40">
-                      -{precioResuelto.porcentajeDescuento}%
-                    </span>
-                  )}
-                </div>
-                {dailyPromoTitle && (
-                  <p className="text-sm text-[#956400] font-medium mb-2">{dailyPromoTitle}</p>
-                )}
-                <p className="text-base text-[#787774] mb-1">
-                  Antes <span className="line-through">{formatCLP(precioResuelto.precioTachado!)}</span>
                 </p>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <p
-                    className="text-[#111111]"
-                    style={{ fontSize: 'clamp(2rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
-                  >
-                    {formatCLP(precioResuelto.precioFinal)}
-                  </p>
-                  {producto.unidad && (
-                    <span className="text-sm text-[#787774] font-medium">/{producto.unidad}</span>
-                  )}
-                </div>
-                <p className="text-[11px] text-[#787774] mt-2">IVA incluido · valor de venta vigente últimos 30 días.</p>
-              </div>
-            ) : precioResuelto.tipo === 'oferta_real' ? (
-              <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] border border-[#9C2B1F] text-[#9C2B1F] rounded-full">
-                    {precioResuelto.label || 'Oferta'}
-                  </span>
-                  {precioResuelto.porcentajeDescuento && (
-                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9C2B1F] rounded-full border border-[#9C2B1F]/40">
-                      -{precioResuelto.porcentajeDescuento}%
-                    </span>
-                  )}
-                </div>
-                <p className="text-base text-[#787774] mb-1">
-                  Antes <span className="line-through">{formatCLP(precioResuelto.precioTachado!)}</span>
-                </p>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <p
-                    className="text-[#111111]"
-                    style={{ fontSize: 'clamp(2rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
-                  >
-                    {formatCLP(precioResuelto.precioFinal)}
-                  </p>
-                  {producto.unidad && (
-                    <span className="text-sm text-[#787774] font-medium">/{producto.unidad}</span>
-                  )}
-                </div>
-                <p className="text-[11px] text-[#787774] mt-2">IVA incluido · valor de venta vigente últimos 30 días.</p>
-              </div>
-            ) : precioResuelto.tipo === 'cotizar' ? (
-              <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
-                <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-2">
-                  A pedido
-                </p>
-                <p
-                  className="text-[#111111] font-semibold leading-none"
-                  style={{ fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 400, letterSpacing: '-0.01em' }}
-                >
-                  Consultar precio
-                </p>
-                <p className="text-[11px] text-[#787774] mt-3">No se vende en línea. Consúltanos por WhatsApp o correo, en horario de atención.</p>
-              </div>
-            ) : (
-              <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <p
-                    className="text-[#111111]"
-                    style={{ fontSize: 'clamp(2rem, 3.5vw, 2.75rem)', fontWeight: 500, letterSpacing: '-0.02em' }}
-                  >
-                    {formatCLP(precioResuelto.precioFinal)}
-                  </p>
-                  {producto.unidad && (
-                    <span className="text-sm text-[#787774] font-medium">/{producto.unidad}</span>
-                  )}
-                </div>
-                {precioResuelto.precioFinal > 0 && (
-                  <p className="text-[11px] text-[#787774] mt-2">IVA incluido.</p>
-                )}
-              </div>
-            )}
-            {producto.unidad && precioResuelto.tipo !== 'cotizar' && (
-              <p className="text-xs text-[#787774] mb-6 mt-2">Precio por {producto.unidad}</p>
-            )}
-
-            {/* Stock — editorial inline indicator */}
-            <div className="mb-8 flex items-center gap-2 text-sm">
-              {producto.stock >= 1 ? (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#2F7F4E]" aria-hidden="true" />
-                  <span className="text-[#2F7F4E] font-medium">En stock</span>
-                  <span className="text-[#787774]">· {Math.floor(producto.stock)} disponibles</span>
-                </>
               ) : (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#9C2B1F]" aria-hidden="true" />
-                  <span className="text-[#9C2B1F] font-medium">Sin stock</span>
-                </>
+                <p className="mt-2 text-sm text-[#5A5A57]">Por ahora no se puede comprar en línea. Consúltanos por WhatsApp.</p>
               )}
             </div>
+            <div className="mb-6" />
 
             {/* Variants & Add to Cart - sticky on mobile */}
             <div className="lg:relative">
-              <AddToCartClient producto={producto} variantes={variantes} precioVenta={precioResuelto.precioFinal} />
+              <AddToCartClient producto={producto} variantes={variantes} vista={vista} />
             </div>
 
             {/* Share buttons */}

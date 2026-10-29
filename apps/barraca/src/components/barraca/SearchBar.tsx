@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { formatCLP } from "@jurmaq/shared/format";
+import { vistaPrecio } from "@/lib/precio-web";
 
 interface SearchResult {
   id: number;
@@ -12,6 +13,8 @@ interface SearchResult {
   // FIX (audit jun-2026): el dropdown mostraba precio crudo, ignorando la oferta.
   precio_original?: number | null;
   en_oferta?: boolean;
+  stock?: number | null;
+  solo_cotizar?: boolean | null;
 }
 
 export default function SearchBar({
@@ -143,20 +146,22 @@ export default function SearchBar({
                 {product.nombre}
               </span>
               <span className="text-sm shrink-0 ml-3 text-right">
-                {product.en_oferta && product.precio_original && product.precio_original > 0 ? (
-                  <>
-                    <span className="block text-xs text-gray-400 line-through leading-none tabular-nums">
-                      {formatCLP(product.precio)}
-                    </span>
-                    <span className="block font-semibold text-marca-600 tabular-nums">
-                      {formatCLP(product.precio_original)}
-                    </span>
-                  </>
-                ) : (
-                  <span className="font-semibold text-marca-600 tabular-nums">
-                    {formatCLP(product.precio)}
-                  </span>
-                )}
+                {(() => {
+                  const v = vistaPrecio({ ...product, stock: product.stock ?? null });
+                  if (!v.disponible) return <span className="text-xs text-gray-500">No disponible</span>;
+                  return (
+                    <>
+                      <span className={`block font-semibold tabular-nums ${v.precioNormal ? "text-marca-700" : "text-navy-950"}`}>
+                        {formatCLP(v.precioWeb)}
+                      </span>
+                      {v.precioNormal && (
+                        <span className="block text-[11px] text-gray-500 leading-none tabular-nums">
+                          Normal <span className="line-through">{formatCLP(v.precioNormal)}</span>
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
               </span>
             </button>
           ))}

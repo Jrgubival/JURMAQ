@@ -78,3 +78,6 @@ apps/barraca/scripts/backups/*
 .pedidos-dev.json
 # Reportes de la carga de precios
 reporte-carga-precios.csv
+
+# Precios para revisar en local (scripts/cargar-precios-web.mjs --local)
+.precios-locales.json
