@@ -104,6 +104,20 @@ export default function CatalogoCategoria({
   const [productos, setProductos] = useState<ProductoGrilla[]>(inicial);
   const [total, setTotal] = useState(totalInicial);
   const [cargando, setCargando] = useState(false);
+  // Panel de filtros del celular. Abierto, la página de atrás no se desliza
+  // y Escape lo cierra.
+  const [panel, setPanel] = useState(false);
+  useEffect(() => {
+    if (!panel) return;
+    const previo = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const alTecla = (e: KeyboardEvent) => { if (e.key === "Escape") setPanel(false); };
+    window.addEventListener("keydown", alTecla);
+    return () => {
+      document.body.style.overflow = previo;
+      window.removeEventListener("keydown", alTecla);
+    };
+  }, [panel]);
   const [error, setError] = useState(false);
   const pedido = useRef(0);
   const grillaRef = useRef<HTMLDivElement>(null);
@@ -155,6 +169,7 @@ export default function CatalogoCategoria({
   }
 
   const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
+  const filtrosActivos = (filtros.stock !== "all" ? 1 : 0) + (filtros.min || filtros.max ? 1 : 0);
   const hrefDe = (cambio: Partial<Filtros>) => `/categorias/${slug}${queryDe({ ...filtros, ...cambio })}`;
   const alClick = (cambio: Partial<Filtros>, subir = false) => (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // abrir en pestaña nueva
@@ -164,29 +179,33 @@ export default function CatalogoCategoria({
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
-      {/* Filtros: <details> cerrado en celular (abierto empujaba los productos
-          casi una pantalla hacia abajo) y abierto siempre en escritorio. */}
-      <aside className="w-full lg:w-64 shrink-0">
-        <details
-          ref={(el) => { if (el && window.matchMedia("(min-width: 1024px)").matches) el.open = true; }}
-          className="bg-white border border-gray-200 rounded-xl lg:border-0 lg:bg-transparent lg:sticky lg:top-24 group"
-        >
-          <summary className="flex items-center justify-between px-4 py-3 min-h-[48px] text-sm font-semibold text-navy-950 cursor-pointer select-none touch-manipulation list-none lg:hidden [&::-webkit-details-marker]:hidden">
-            <span className="flex items-center gap-2">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              Filtros
-            </span>
-            <svg className="w-5 h-5 text-gray-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </summary>
-          <div className="bg-white border-t border-gray-200 lg:border-0 p-5 space-y-6 rounded-b-xl lg:rounded-xl lg:bg-white lg:border lg:border-gray-200">
+      {/* Filtros: en escritorio, columna fija a la izquierda. En celular, un
+          panel que sube desde abajo al tocar "Filtrar" (como en las apps de
+          las tiendas grandes): no empuja los productos ni ocupa la pantalla
+          mientras no se usa. */}
+      <div
+        aria-hidden="true"
+        onClick={() => setPanel(false)}
+        className={`lg:hidden fixed inset-0 z-[60] bg-navy-950/40 transition-opacity duration-200 ${panel ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+      />
+      <aside
+        id="panel-filtros"
+        aria-label="Filtros"
+        className={`w-full lg:w-64 shrink-0 fixed inset-x-0 bottom-0 z-[61] max-h-[85vh] overflow-y-auto overscroll-contain bg-white rounded-t-2xl shadow-[0_-12px_40px_-12px_rgba(8,20,40,0.45)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${panel ? "translate-y-0" : "translate-y-full"} lg:static lg:z-auto lg:max-h-none lg:overflow-visible lg:bg-transparent lg:rounded-none lg:shadow-none lg:translate-y-0 lg:transition-none`}
+      >
+        <div className="lg:sticky lg:top-24">
+          <div className="lg:hidden sticky top-0 bg-white flex items-center justify-between px-5 pt-3 pb-2 border-b border-gray-100">
+            <span className="absolute left-1/2 top-1.5 -translate-x-1/2 w-10 h-1 rounded-full bg-gray-300" aria-hidden="true" />
+            <p className="text-base font-bold text-navy-950 pt-2">Filtrar</p>
+            <button type="button" onClick={() => setPanel(false)} className="w-11 h-11 -mr-2 flex items-center justify-center text-gray-500" aria-label="Cerrar filtros">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <div className="p-5 space-y-6 lg:rounded-xl lg:bg-white lg:border lg:border-gray-200">
             {subcats.length > 0 && (
               <div>
                 <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider mb-3">
-                  Subcategorias
+                  Subcategorías
                 </h3>
                 <ul className="space-y-1">
                   {subcats.map((sub) => (
@@ -213,8 +232,8 @@ export default function CatalogoCategoria({
               <div className="space-y-1.5">
                 {([
                   { value: "all", label: "Todos" },
-                  { value: "instock", label: "En stock" },
-                  { value: "outofstock", label: "Sin stock" },
+                  { value: "instock", label: "Disponibles" },
+                  { value: "outofstock", label: "No disponibles" },
                 ] as { value: Stock; label: string }[]).map((opt) => (
                   <a
                     key={opt.value}
@@ -244,7 +263,7 @@ export default function CatalogoCategoria({
 
             <div>
               <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider mb-3">
-                Rango de Precio
+                Rango de precio
               </h3>
               <form
                 key={`${filtros.min}-${filtros.max}`}
@@ -300,11 +319,16 @@ export default function CatalogoCategoria({
               </form>
             </div>
           </div>
-        </details>
+          <div className="lg:hidden sticky bottom-0 bg-white border-t border-gray-100 p-4 safe-bottom">
+            <button type="button" onClick={() => setPanel(false)} className="w-full h-12 rounded-xl bg-navy-950 text-white font-semibold">
+              Ver {total} producto{total !== 1 ? "s" : ""}
+            </button>
+          </div>
+        </div>
       </aside>
 
       <div className="flex-1" ref={grillaRef} style={{ scrollMarginTop: "7rem" }}>
-        <div className="border-b border-[#EAEAEA] pb-6 mb-8">
+        <div className="lg:border-b lg:border-[#EAEAEA] pb-3 lg:pb-6 mb-4 lg:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
@@ -316,12 +340,44 @@ export default function CatalogoCategoria({
               <p className="text-sm text-[#787774]" aria-live="polite">
                 <span className="font-semibold text-[#111111] mr-1" style={{ fontWeight: 400 }}>{total}</span>
                 producto{total !== 1 ? "s" : ""}
-                {filtros.stock === "instock" ? " en stock" : filtros.stock === "outofstock" ? " sin stock" : ""}
+                {filtros.stock === "instock" ? " disponibles" : filtros.stock === "outofstock" ? " no disponibles" : ""}
               </p>
             </div>
-            <div className="shrink-0">
+            <div className="shrink-0 hidden lg:block">
               <OrdenarSelect actual={filtros.sort} onChange={(v) => aplicar({ sort: v as Orden, page: 1 })} />
             </div>
+          </div>
+          {subcats.length > 0 && (
+            <ul className="lg:hidden flex gap-2 overflow-x-auto riel -mx-4 px-4 mt-4">
+              {subcats.map((sub) => (
+                <li key={sub.id} className="shrink-0">
+                  <Link href={`/categorias/${sub.slug}`} className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white border border-gray-200 text-[13px] font-medium text-navy-950">
+                    {sub.nombre}
+                    <span className="text-gray-400 tabular-nums">{sub.product_count}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Celular: barra fija "Filtrar · Ordenar", siempre a mano al bajar. */}
+        <div className="lg:hidden sticky top-[calc(2rem+env(safe-area-inset-top))] z-30 -mx-4 px-4 py-2 mb-4 bg-[#F7F7F5]/95 backdrop-blur-md border-y border-gray-200/70 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPanel(true)}
+            aria-controls="panel-filtros"
+            aria-expanded={panel}
+            className="flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-gray-300 text-sm font-semibold text-navy-950 active:bg-gray-50"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M7 12h10M10 18h4" /></svg>
+            Filtrar
+            {filtrosActivos > 0 && (
+              <span className="min-w-5 h-5 px-1.5 rounded-full bg-marca-600 text-white text-[11px] font-bold inline-flex items-center justify-center">{filtrosActivos}</span>
+            )}
+          </button>
+          <div className="flex-1">
+            <OrdenarSelect compacto actual={filtros.sort} onChange={(v) => aplicar({ sort: v as Orden, page: 1 })} />
           </div>
         </div>
 
@@ -361,7 +417,7 @@ export default function CatalogoCategoria({
         ) : (
           <>
             <div
-              className={`grid grid-cols-2 md:grid-cols-3 gap-4 transition-opacity duration-150 ${cargando ? "opacity-50" : "opacity-100"}`}
+              className={`grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 transition-opacity duration-150 ${cargando ? "opacity-50" : "opacity-100"}`}
               aria-busy={cargando}
             >
               {productos.map((p) => (

@@ -16,6 +16,8 @@ import { titleCase } from "@jurmaq/shared/format";
 import type { ProductoPromocionado } from "@/lib/promotions";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { familiaDe } from '@/lib/variantes';
+import Revelar from '@/components/barraca/Revelar';
+import { vistaPrecio, type ProductoConPrecio } from '@/lib/precio-web';
 
 type BarracaCategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
@@ -194,6 +196,17 @@ interface Producto {
   medida: string | null;
 }
 
+// Atajos de la portada en celular: lo que más se busca en una barraca.
+const ATAJOS = [
+  { label: "Fierro estriado", q: "fierro estriado" },
+  { label: "Perfiles", q: "perfil" },
+  { label: "Zinc", q: "zinc" },
+  { label: "Cemento", q: "cemento" },
+  { label: "Planchas", q: "plancha" },
+  { label: "Tubos", q: "tubo" },
+  { label: "Malla", q: "malla" },
+];
+
 export default async function BarracaHomePage() {
   // Fetch ALL parent categories, then sort by product count (most popular first)
   const { data: rawCategorias } = await supabasePublic
@@ -257,10 +270,12 @@ export default async function BarracaHomePage() {
   // cuenta y se filtra por familia (src/lib/variantes.ts).
   const SELECT_TARJETA = 'id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id';
   const POR_FILA = 10;
-  function unaPorFamilia<T extends { id: number; nombre: string }>(lista: T[], n: number, excluir: Set<string>): T[] {
+  function unaPorFamilia<T extends { id: number; nombre: string } & ProductoConPrecio>(lista: T[], n: number, excluir: Set<string>): T[] {
     const out: T[] = [];
     if (n <= 0) return out; // con n=0 el bucle devolvía 1: la fila salía con 11
     for (const p of lista) {
+      // La portada sólo muestra lo que se puede comprar hoy.
+      if (!vistaPrecio(p).disponible) continue;
       const fam = familiaDe(p.nombre) || p.nombre.toLowerCase();
       if (excluir.has(fam)) continue;
       excluir.add(fam);
@@ -452,48 +467,58 @@ export default async function BarracaHomePage() {
         </section>
       )}
 
-      {/* === Categories: MOBILE === Compact 4-col with circular thumbs */}
-      <section id="categorias-mobile" className="lg:hidden px-4 pt-1 pb-2 scroll-mt-24">
-        <div className="flex items-center justify-between mb-3 px-1">
-          <h2 className="text-sm font-bold text-navy-950 uppercase tracking-wide">
-            Categorías principales
-          </h2>
-          <Link href="/categorias" className="text-xs font-semibold text-marca-600">
+      {/* === Celular: atajos + categorías en riel deslizable ===
+          Antes era una grilla 4+2 de miniaturas de 64 px con el nombre en
+          mayúscula cortado ("ELECTRICIDAD E…"). Ahora: una fila de atajos a lo
+          que más se busca y las categorías como tarjetas con foto que se
+          deslizan con el dedo, como en las apps de las tiendas grandes. */}
+      <section id="categorias-mobile" className="lg:hidden fondo-acero pt-4 pb-6 scroll-mt-24">
+        <nav aria-label="Lo más buscado" className="px-4 mb-5">
+          <ul className="flex gap-2 overflow-x-auto riel -mx-4 px-4">
+            {ATAJOS.map((a) => (
+              <li key={a.q} className="shrink-0">
+                <Link
+                  href={`/buscar?q=${encodeURIComponent(a.q)}`}
+                  className="inline-flex items-center h-9 px-3.5 rounded-full bg-white border border-gray-200 text-[13px] font-medium text-navy-950 active:bg-gray-100"
+                >
+                  {a.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="flex items-end justify-between mb-3 px-4">
+          <h2 className="text-lg font-extrabold text-navy-950 leading-none">Categorías</h2>
+          <Link href="/categorias" className="text-sm font-semibold text-marca-600 min-h-[32px] inline-flex items-center">
             Ver todas
           </Link>
         </div>
-        <div className="grid grid-cols-4 gap-3">
-          {categorias.slice(0, 8).map((cat) => {
-            const catImg = getCategoryImage(cat.imagen, cat.slug);
-            return (
-              <Link
-                key={cat.id}
-                href={`/categorias/${cat.slug}`}
-                className="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-white border border-gray-200 shadow-sm overflow-hidden flex items-center justify-center">
-                  {catImg ? (
-                    <Image
-                      src={catImg}
-                      alt={`${cat.nombre}`}
-                      width={120}
-                      height={120}
-                      sizes="(max-width: 768px) 16vw, 8vw"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <svg className="w-7 h-7 text-marca-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-[10px] font-semibold text-navy-950 text-center leading-tight uppercase tracking-tight line-clamp-2">
-                  {titleCase(cat.nombre)}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+        <Revelar>
+          <ul className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory px-4 scroll-px-4 pb-1">
+            {categorias.map((cat) => {
+              const catImg = getCategoryImage(cat.imagen, cat.slug);
+              return (
+                <li key={cat.id} data-revelar className="snap-start shrink-0 w-[124px]">
+                  <Link
+                    href={`/categorias/${cat.slug}`}
+                    className="block bg-white rounded-xl overflow-hidden border border-gray-200/80 active:scale-[0.97] transition-transform"
+                  >
+                    <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                      {catImg ? (
+                        <Image src={catImg} alt="" width={248} height={186} sizes="124px" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100" />
+                      )}
+                    </div>
+                    <p className="px-2.5 py-2 text-[13px] font-semibold text-navy-950 leading-tight line-clamp-2 min-h-[2.75rem]">
+                      {titleCase(cat.nombre)}
+                    </p>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </Revelar>
       </section>
 
       {/* === Categories: DESKTOP === full grid with overlay text */}
@@ -542,44 +567,46 @@ export default async function BarracaHomePage() {
 
       {/* Featured Products */}
       {(destacados || []).length > 0 && (
-        <section id="destacados" className="bg-white pt-4 pb-8 lg:py-16 scroll-mt-24 content-auto">
+        <section id="destacados" className="bg-white pt-6 pb-8 lg:py-16 scroll-mt-24 content-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-3 lg:mb-10">
-              <h2 className="text-sm lg:text-2xl font-extrabold text-navy-950 uppercase tracking-wide lg:normal-case lg:tracking-normal">
-                <span className="lg:hidden">Productos destacados</span>
-                <span className="hidden lg:inline">Los más vendidos</span>
+              <h2 className="text-lg lg:text-2xl font-extrabold text-navy-950 leading-none">
+                Los más vendidos
               </h2>
-              <Link href="/categorias" className="text-xs lg:text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors lg:inline-flex lg:items-center lg:gap-1">
+              <Link href="/categorias" className="text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors lg:inline-flex lg:items-center lg:gap-1">
                 Ver todos
                 <svg className="hidden lg:inline w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </Link>
             </div>
-            <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+            <Revelar className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
               {destacados.map((p) => (
-                <ProductCard key={p.id} id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} />
+                <div key={p.id} data-revelar className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
               ))}
-            </div>
+            </Revelar>
           </div>
         </section>
       )}
 
+      {/* Franja marina: cómo se retira, despacha y paga. */}
+      <MobileTrustStrip />
+
       {/* New Products */}
       {(nuevos || []).length > 0 && (
-        <section id="nuevos" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 scroll-mt-24 content-auto">
-          <div className="flex items-center justify-between mb-10">
+        <section id="nuevos" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16 scroll-mt-24 content-auto">
+          <div className="flex items-center justify-between mb-3 lg:mb-10">
             <div>
-              <h2 className="text-2xl font-extrabold text-navy-950 mb-1">Recién llegados</h2>
+              <h2 className="text-lg lg:text-2xl font-extrabold text-navy-950 leading-none">Recién llegados</h2>
             </div>
-            <Link href="/categorias" className="hidden sm:inline-flex items-center gap-1 text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors">
+            <Link href="/categorias" className="inline-flex items-center gap-1 text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors">
               Ver todos
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
-          <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+          <Revelar className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
             {nuevos.map((p) => (
-              <ProductCard key={p.id} id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} isNew categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} />
+              <div key={p.id} data-revelar className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} isNew categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
             ))}
-          </div>
+          </Revelar>
         </section>
       )}
 
@@ -611,8 +638,6 @@ export default async function BarracaHomePage() {
         </div>
       </section>
 
-      {/* Mobile-only trust strip — slim 3-icon bar near the bottom */}
-      <MobileTrustStrip />
     </>
   );
 }

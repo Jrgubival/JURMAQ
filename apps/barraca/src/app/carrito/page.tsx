@@ -40,7 +40,7 @@ export default function CarritoPage() {
   const neto = Math.round(total / 1.19);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 pb-28 lg:pb-12">
       {/* Breadcrumb */}
       <nav aria-label="Ruta de navegación" className="flex items-center gap-2 text-sm text-[#787774] mb-10">
         <Link href="/" className="hover:text-[#111111] transition-colors">Inicio</Link>
@@ -237,6 +237,20 @@ export default function CarritoPage() {
               </Link>
             </div>
           </div>
+
+          {/* Celular: total y "Ir a pagar" siempre a mano, sin bajar hasta el resumen. */}
+          {!hayProblemas && (
+            <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 flex items-center gap-3 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3 shadow-[0_-8px_24px_-16px_rgba(8,20,40,0.35)] safe-bottom">
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-gray-500 leading-none">Total · IVA incluido</p>
+                <p className="text-xl font-extrabold text-navy-950 tabular-nums leading-tight mt-1">{formatCLP(total)}</p>
+              </div>
+              <Link href="/checkout" className="shrink-0 inline-flex items-center gap-2 h-12 px-5 rounded-xl bg-marca-600 text-white font-bold active:scale-[0.98] transition-transform">
+                Ir a pagar
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

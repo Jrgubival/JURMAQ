@@ -20,17 +20,20 @@ const OPCIONES = [
 export default function OrdenarSelect({
   actual,
   onChange,
+  compacto = false,
 }: {
   actual: string;
   onChange: (valor: string) => void;
+  /** Barra del celular: sin rótulo visible, del alto de un botón y a lo ancho. */
+  compacto?: boolean;
 }) {
   return (
-    <label className="inline-flex items-center gap-2 text-sm text-gray-600">
-      <span className="whitespace-nowrap">Ordenar por</span>
+    <label className={compacto ? "block" : "inline-flex items-center gap-2 text-sm text-gray-600"}>
+      <span className={compacto ? "sr-only" : "whitespace-nowrap"}>Ordenar por</span>
       <select
         value={actual}
         onChange={(e) => onChange(e.target.value)}
-        className="h-10 pl-3 pr-8 text-sm font-medium text-navy-950 bg-white border border-gray-300 rounded-md hover:border-navy-950 focus:outline-none focus:ring-2 focus:ring-marca-500 transition-colors duration-150 appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23111%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')] bg-no-repeat bg-[right_0.6rem_center]"
+        className={`${compacto ? "w-full h-11 rounded-xl font-semibold" : "h-10 rounded-md font-medium"} pl-3 pr-8 text-sm text-navy-950 bg-white border border-gray-300 hover:border-navy-950 focus:outline-none focus:ring-2 focus:ring-marca-500 transition-colors duration-150 appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23111%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9l6 6 6-6%22/></svg>')] bg-no-repeat bg-[right_0.6rem_center]`}
       >
         {OPCIONES.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>

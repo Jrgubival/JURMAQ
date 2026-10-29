@@ -11,6 +11,7 @@ import { HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
 import { whatsappCtaBarracaCotizar, whatsappCtaBarracaMejorarPrecio } from "@jurmaq/shared/whatsapp";
 import { FRANJA_TIENDA } from "@/lib/promesa";
 import { cantidadEnCarrito } from "@/lib/carrito";
+import gsap from "gsap";
 
 const CartDrawer = dynamic(
   () => import("@/components/barraca/CartDrawer"),
@@ -165,9 +166,20 @@ function Navbar() {
 
   // Contador del carrito: el carrito vive en el navegador (lib/carrito.ts),
   // así que se lee de localStorage sin ir al servidor.
+  const iconoCarrito = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    const leer = () => setCartCount(cantidadEnCarrito());
-    leer();
+    let previo = cantidadEnCarrito();
+    const leer = () => {
+      const n = cantidadEnCarrito();
+      setCartCount(n);
+      // Al agregar, el ícono da un salto corto: la confirmación de que entró,
+      // aunque el carrito no se abra (en la tarjeta no se abre).
+      if (n > previo && iconoCarrito.current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        gsap.fromTo(iconoCarrito.current, { scale: 1, rotate: 0 }, { keyframes: [{ scale: 1.25, rotate: -8, duration: 0.14 }, { scale: 1, rotate: 0, duration: 0.42, ease: "elastic.out(1, 0.45)" }] });
+      }
+      previo = n;
+    };
+    setCartCount(previo);
     window.addEventListener("cart-updated", leer);
     window.addEventListener("storage", leer);
     return () => {
@@ -366,12 +378,12 @@ function Navbar() {
                 className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
                 aria-label={`Carrito${cartCount > 0 ? ` (${cartCount})` : ""}`}
               >
-                <span className="relative">
+                <span ref={iconoCarrito} className="relative inline-block">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
                   </svg>
                   {cartCount > 0 && (
-                    <span className="absolute -top-2.5 -right-2.5 min-w-[22px] h-[22px] px-1 bg-red-600 text-white text-[11px] font-black rounded-full flex items-center justify-center ring-2 ring-white animate-[pulse_2s_ease-in-out_1]">
+                    <span aria-live="polite" className="absolute -top-2.5 -right-2.5 min-w-[22px] h-[22px] px-1 bg-red-600 text-white text-[11px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
                       {cartCount}
                     </span>
                   )}
@@ -523,7 +535,8 @@ function WhatsAppFloat() {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 left-6 z-40 w-11 h-11 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-md whatsapp-float transition-colors safe-bottom"
+      // En la ficha, el celular tiene la barra fija de compra abajo: el botón sube sobre ella.
+      className={`fixed ${pathname?.startsWith("/producto/") ? "bottom-24 lg:bottom-6" : "bottom-6"} left-6 z-40 w-11 h-11 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-md whatsapp-float transition-colors safe-bottom`}
       aria-label="Contactar por WhatsApp"
     >
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">

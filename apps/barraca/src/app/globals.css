@@ -64,3 +64,31 @@
     transform: scale(0.97);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Rieles deslizables del celular (categorías, productos, atajos): sin barra
+   de scroll visible y con inercia. Se deslizan con el dedo.
+--------------------------------------------------------------------------- */
+.riel {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.riel::-webkit-scrollbar { display: none; }
+
+/* ---------------------------------------------------------------------------
+   Fondos de sección. "Acero": gris cálido con un rayado diagonal muy tenue,
+   como una plancha laminada vista de cerca. "Marino": la franja oscura de
+   marca con el mismo rayado en claro. Son fondos, no protagonistas: el
+   contraste del rayado no pasa de 3%.
+--------------------------------------------------------------------------- */
+.fondo-acero {
+  background-color: #f4f2ee;
+  background-image: repeating-linear-gradient(135deg, rgb(8 20 40 / 0.03) 0 1px, transparent 1px 9px);
+}
+.fondo-marino {
+  background-color: #081428;
+  background-image:
+    radial-gradient(120% 80% at 100% 0%, rgb(201 3 25 / 0.18), transparent 60%),
+    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 10px);
+}

@@ -373,10 +373,10 @@ export default async function ProductoPage({
       />
 
       {/* Extra bottom padding on mobile for sticky add-to-cart bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 pb-56 lg:pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12 pb-32 lg:pb-12">
         <Breadcrumbs
           variant="light"
-          className="mb-10"
+          className="mb-5 lg:mb-10"
           items={(() => {
             const items: BreadcrumbItem[] = [{ label: "Inicio", href: "/" }];
             if (categoria) {
@@ -390,7 +390,7 @@ export default async function ProductoPage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* Image — hairline frame, no shadow heavy */}
           <div className="bg-white border border-[#EAEAEA] rounded-xl overflow-hidden">
-            <div className="aspect-square bg-[#FBFBFA] relative product-image-zoom flex items-center justify-center">
+            <div className="aspect-[4/3] sm:aspect-square bg-[#FBFBFA] relative product-image-zoom flex items-center justify-center">
               <ProductDetailImage imagen={producto.imagen} nombre={producto.nombre} categoriaSlug={categoria?.slug} />
             </div>
             <p className="text-[11px] text-[#787774] mt-2 text-center pb-3">
@@ -427,7 +427,21 @@ export default async function ProductoPage({
                 <p className="mt-2 text-sm text-[#5A5A57]">Por ahora no se puede comprar en línea. Consúltanos por WhatsApp.</p>
               )}
             </div>
-            <div className="mb-6" />
+            {/* Cómo llega, en dos filas (como Sodimac e Imperial). Sin plazos ni
+                costos de despacho hasta tener las tarifas. */}
+            {vista.disponible && (
+              <ul className="my-5 divide-y divide-[#EAEAEA] rounded-xl border border-[#EAEAEA] bg-white text-sm">
+                <li className="flex items-start gap-3 px-4 py-3">
+                  <svg className="w-5 h-5 mt-0.5 text-navy-950 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  <span><span className="font-semibold text-navy-950">Retiro en Molina</span> <span className="text-[#2F7F4E] font-medium">· gratis</span><br /><span className="text-[#5A5A57]">Av. Poniente 2157, en horario de atención.</span></span>
+                </li>
+                <li className="flex items-start gap-3 px-4 py-3">
+                  <svg className="w-5 h-5 mt-0.5 text-navy-950 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8a2 2 0 012-2h7v10H5a2 2 0 01-2-2V8zm9-2h4l3 4v4a2 2 0 01-2 2h-5V6zM7 18a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z" /></svg>
+                  <span><span className="font-semibold text-navy-950">Despacho a domicilio</span><br /><span className="text-[#5A5A57]">Te llamamos para coordinar día y costo según tu comuna.</span></span>
+                </li>
+              </ul>
+            )}
+            <div className="mb-2" />
 
             {/* Variants & Add to Cart - sticky on mobile */}
             <div className="lg:relative">

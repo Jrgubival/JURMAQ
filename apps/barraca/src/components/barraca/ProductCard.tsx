@@ -136,14 +136,14 @@ export default function ProductCard({
      bloque negro: dos manchas oscuras por tarjeta compitiendo con el precio,
      más una línea divisoria y dos rótulos en mayúscula chica. */
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden group transition-[border-color,box-shadow] duration-150 ease-out hover:border-gray-300 hover:shadow-[0_8px_24px_-12px_rgba(12,29,58,0.25)] flex flex-col h-full relative">
+    <div className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden group transition-[border-color,box-shadow] duration-150 ease-out hover:border-gray-300 hover:shadow-[0_8px_24px_-12px_rgba(12,29,58,0.25)] flex flex-col h-full relative">
       <Link href={`/producto/${slug}`} className="block" aria-label={`Ver detalles de ${nombre}${medida ? ` - ${medida}` : ''}`}>
         <div className="aspect-square bg-white relative overflow-hidden p-4">
           {displayImage ? (
             <Image
               src={displayImage}
               alt={`Producto ${nombre}${medida ? ` ${medida}` : ''} disponible en Barraca JURMAQ`}
-              className="w-full h-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+              className={`w-full h-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03] ${comprable ? "" : "opacity-50 grayscale"}`}
               width={400}
               height={300}
               sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -216,7 +216,7 @@ export default function ProductCard({
                línea en dos; ahí queda sólo el stock. */
             <p className="mt-1.5 text-xs text-gray-500 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
               <span className="hidden sm:inline">IVA incluido · </span>
-              {unidades} en stock
+              {unidades <= 5 ? <span className="font-semibold text-amber-700">Quedan {unidades}</span> : `${unidades} en stock`}
             </p>
           )}
 
@@ -231,7 +231,7 @@ export default function ProductCard({
               disabled={adding}
               aria-label={added ? `${nombre} agregado al carrito` : `Agregar ${nombre} al carrito`}
               className={`mt-3 w-full flex items-center justify-center gap-2 px-3 min-h-[44px] text-sm font-semibold rounded-lg transition-[transform,background-color] duration-150 ease-out active:scale-[0.97] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy-950 ${
-                added ? "bg-green-700 text-white" : "bg-navy-950 text-white hover:bg-navy-800"
+                added ? "bg-green-700 text-white border border-green-700" : "bg-white text-navy-950 border border-navy-950/25 hover:border-navy-950 hover:bg-navy-950 hover:text-white active:bg-navy-950 active:text-white"
               }`}
             >
               {added ? (
@@ -243,6 +243,9 @@ export default function ProductCard({
                 </>
               ) : (
                 <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14m7-7H5" />
+                  </svg>
                   <span className="sm:hidden">Agregar</span>
                   <span className="hidden sm:inline">Agregar al carrito</span>
                 </>
