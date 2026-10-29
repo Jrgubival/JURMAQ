@@ -222,15 +222,15 @@ function Navbar() {
 
   return (
     <>
-      <header role="banner" className={`sticky top-[calc(2rem+env(safe-area-inset-top))] z-50 bg-white border-b border-gray-200 shadow-[0_1px_0_0_rgba(0,0,0,0.04)] transition-transform duration-300 ${navVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <header role="banner" className={`sticky top-[calc(2rem+env(safe-area-inset-top))] z-50 bg-navy-950 border-b border-navy-900 transition-transform duration-300 ${navVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20 gap-4">
             {/* Logo */}
             <Link href="/" className="flex items-baseline shrink-0">
-              <span className="text-2xl lg:text-3xl font-extrabold text-navy-950 tracking-tight">
+              <span className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
                 JURMAQ
               </span>{" "}
-              <span className="text-lg lg:text-xl font-semibold text-marca-600 ml-1">
+              <span className="text-lg lg:text-xl font-semibold text-marca-400 ml-1">
                 Barraca
               </span>
             </Link>
@@ -248,7 +248,7 @@ function Navbar() {
                   onClick={() => setCatOpen(!catOpen)}
                   aria-expanded={catOpen}
                   aria-haspopup="true"
-                  className="px-3.5 py-2 text-sm font-semibold text-white bg-navy-950 hover:bg-navy-800 rounded-md transition-colors flex items-center gap-1"
+                  className="px-3.5 py-2 text-sm font-semibold text-white bg-white/10 hover:bg-white/15 rounded-lg transition-colors flex items-center gap-1"
                 >
                   Categorías
                   <svg className={`w-3 h-3 transition-transform ${catOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -297,7 +297,7 @@ function Navbar() {
                   onClick={() => setAccountOpen(!accountOpen)}
                   aria-expanded={accountOpen}
                   aria-haspopup="true"
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -375,7 +375,7 @@ function Navbar() {
               <button
                 onClick={() => setCartOpen(true)}
                 data-magnetic
-                className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center gap-2 text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                 aria-label={`Carrito${cartCount > 0 ? ` (${cartCount})` : ""}`}
               >
                 <span ref={iconoCarrito} className="relative inline-block">
@@ -383,7 +383,7 @@ function Navbar() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
                   </svg>
                   {cartCount > 0 && (
-                    <span aria-live="polite" className="absolute -top-2.5 -right-2.5 min-w-[22px] h-[22px] px-1 bg-red-600 text-white text-[11px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
+                    <span aria-live="polite" className="absolute -top-2.5 -right-2.5 min-w-[22px] h-[22px] px-1 bg-marca-600 text-white text-[11px] font-bold rounded-full flex items-center justify-center ring-2 ring-navy-950">
                       {cartCount}
                     </span>
                   )}
@@ -394,7 +394,8 @@ function Navbar() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-300 hover:text-white hover:bg-navy-800 rounded-lg transition-colors"
+                className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-white hover:bg-white/10 rounded-lg transition-colors"
+                aria-expanded={mobileOpen}
                 aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
               >
                 {mobileOpen ? (
@@ -410,37 +411,6 @@ function Navbar() {
             </div>
           </div>
 
-          {/* Fila de categorías, bajo el buscador. La tienen Sodimac, Easy,
-              Construmart y Prodalam. Siete que caben a 1280px sin scroll: un
-              overflow-x-auto se corría con un gesto de trackpad y quedaba
-              desplazado, que fue como lo vio el dueño.
-
-              La fila se dibuja SIEMPRE (con su alto de 40px) aunque las
-              categorías todavía no hayan llegado del fetch: antes se montaba
-              recién con los datos y el banner saltaba 40px hacia abajo en cada
-              carga. */}
-          <nav aria-label="Categorías principales" className="hidden lg:block border-t border-gray-100">
-              <ul className="flex items-center h-10 overflow-hidden">
-                {[...categorias]
-                  .sort((a, b) => (b.producto_count ?? 0) - (a.producto_count ?? 0))
-                  .slice(0, 7)
-                  .map((cat) => (
-                  <li key={cat.id} className="shrink-0">
-                    <Link
-                      href={`/categorias/${cat.slug}`}
-                      className="inline-flex items-center h-10 px-3 text-[13px] font-medium text-gray-700 hover:text-navy-950 border-b-2 border-transparent hover:border-marca-600 transition-colors duration-150"
-                    >
-                      {cat.nombre}
-                    </Link>
-                  </li>
-                ))}
-                <li className="shrink-0">
-                  <Link href="/categorias" className="inline-flex items-center h-10 px-3 text-[13px] font-semibold text-marca-600 hover:text-marca-700 transition-colors duration-150">
-                    Todas las categorías →
-                  </Link>
-                </li>
-              </ul>
-          </nav>
           {/* Mobile Search */}
           <div className="lg:hidden pb-3">
             <SearchBar size="md" />
@@ -536,7 +506,7 @@ function WhatsAppFloat() {
       target="_blank"
       rel="noopener noreferrer"
       // En la ficha, el celular tiene la barra fija de compra abajo: el botón sube sobre ella.
-      className={`fixed ${pathname?.startsWith("/producto/") ? "bottom-24 lg:bottom-6" : "bottom-6"} left-6 z-40 w-11 h-11 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-md whatsapp-float transition-colors safe-bottom`}
+      className={`fixed ${pathname?.startsWith("/producto/") ? "bottom-24 lg:bottom-6" : "bottom-6"} left-4 z-40 w-11 h-11 bg-white text-[#25D366] border border-gray-200 rounded-full flex items-center justify-center shadow-[0_4px_14px_-6px_rgba(8,20,40,0.35)] hover:border-gray-300 transition-colors safe-bottom`}
       aria-label="Contactar por WhatsApp"
     >
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -548,19 +518,14 @@ function WhatsAppFloat() {
 
 
 // Comunas con landing propia (/en/[comuna]). Se enlazan desde el pie por SEO.
+// Despacho propio (camión): Molina y alrededores, a pedido del dueño (oct-2026).
+// Talca y Linares salen: el fierro no se despacha tan lejos. Los montos los
+// define el dueño en el checkout.
 const COMUNAS_DESPACHO = [
-  { slug: "curico", name: "Curicó" },
   { slug: "molina", name: "Molina" },
-  { slug: "teno", name: "Teno" },
-  { slug: "romeral", name: "Romeral" },
+  { slug: "curico", name: "Curicó" },
   { slug: "sagrada-familia", name: "Sagrada Familia" },
-  { slug: "rauco", name: "Rauco" },
-  { slug: "hualane", name: "Hualañé" },
-  { slug: "licanten", name: "Licantén" },
-  { slug: "vichuquen", name: "Vichuquén" },
-  { slug: "talca", name: "Talca" },
-  { slug: "linares", name: "Linares" },
-  { slug: "constitucion", name: "Constitución" },
+  { slug: "romeral", name: "Romeral" },
 ] as const;
 
 const CATEGORIAS_PIE = [
@@ -593,19 +558,19 @@ function Footer() {
               <span className="text-lg font-semibold text-marca-500 ml-1">Barraca</span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
-              Fierros y materiales de construcción en Molina. Despacho a Curicó, Talca y toda la Región del Maule.
+              Fierros y materiales de construcción en Molina. Retiro en el local o despacho a Molina y Curicó.
             </p>
             {/* Contacto compacto: teléfono que se toca, WhatsApp, dirección y horario. */}
             <div className="mt-5 space-y-2">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <a href="tel:+56976673577" className="text-lg font-bold text-white tabular-nums whitespace-nowrap hover:text-marca-400 transition-colors">
+                <a href="tel:+56976673577" className="text-sm font-semibold text-white tabular-nums whitespace-nowrap hover:text-marca-400 transition-colors">
                   +56 9 7667 3577
                 </a>
                 <a
                   href={whatsappCtaBarracaCotizar('footer')}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 h-8 px-3 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-md transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
@@ -644,7 +609,7 @@ function Footer() {
 
           {/* Comunas con landing propia: enlaces internos para SEO, en chico. */}
           <nav aria-label="Despacho por comuna">
-            <h3 className={titulo}>Despacho en el Maule</h3>
+            <h3 className={titulo}>Despacho</h3>
             <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs leading-relaxed">
               {COMUNAS_DESPACHO.map((c) => (
                 <li key={c.slug}>

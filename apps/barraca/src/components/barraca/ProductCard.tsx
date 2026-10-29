@@ -136,14 +136,14 @@ export default function ProductCard({
      bloque negro: dos manchas oscuras por tarjeta compitiendo con el precio,
      más una línea divisoria y dos rótulos en mayúscula chica. */
   return (
-    <div className="bg-white border border-gray-200/80 rounded-2xl overflow-hidden group transition-[border-color,box-shadow] duration-150 ease-out hover:border-gray-300 hover:shadow-[0_8px_24px_-12px_rgba(12,29,58,0.25)] flex flex-col h-full relative">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden group transition-[border-color,box-shadow] duration-150 ease-out [@media(hover:hover)]:hover:border-gray-300 [@media(hover:hover)]:hover:shadow-[0_8px_24px_-14px_rgba(12,29,58,0.3)] flex flex-col h-full relative">
       <Link href={`/producto/${slug}`} className="block" aria-label={`Ver detalles de ${nombre}${medida ? ` - ${medida}` : ''}`}>
         <div className="aspect-square bg-white relative overflow-hidden p-4">
           {displayImage ? (
             <Image
               src={displayImage}
               alt={`Producto ${nombre}${medida ? ` ${medida}` : ''} disponible en Barraca JURMAQ`}
-              className={`w-full h-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.03] ${comprable ? "" : "opacity-50 grayscale"}`}
+              className={`w-full h-full object-contain transition-transform duration-300 ease-out [@media(hover:hover)]:group-hover:scale-[1.03] ${comprable ? "" : "opacity-50 grayscale"}`}
               width={400}
               height={300}
               sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -230,8 +230,8 @@ export default function ProductCard({
               onClick={handleAdd}
               disabled={adding}
               aria-label={added ? `${nombre} agregado al carrito` : `Agregar ${nombre} al carrito`}
-              className={`mt-3 w-full flex items-center justify-center gap-2 px-3 min-h-[44px] text-sm font-semibold rounded-lg transition-[transform,background-color] duration-150 ease-out active:scale-[0.97] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy-950 ${
-                added ? "bg-green-700 text-white border border-green-700" : "bg-white text-navy-950 border border-navy-950/25 hover:border-navy-950 hover:bg-navy-950 hover:text-white active:bg-navy-950 active:text-white"
+              className={`mt-3 w-full flex items-center justify-center gap-2 px-3 min-h-[44px] text-sm font-semibold rounded-lg transition-colors duration-150 [&:active]:transform-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy-950 ${
+                added ? "bg-green-700 text-white" : "bg-navy-950 text-white hover:bg-navy-800 active:bg-navy-900"
               }`}
             >
               {added ? (

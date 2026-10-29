@@ -225,7 +225,7 @@ export default function CarritoPage() {
                   </svg>
                 </Link>
               )}
-              <p className="text-xs text-gray-500 mt-3 text-center">Mercado Pago (tarjetas) o transferencia bancaria.</p>
+              <p className="text-xs text-gray-500 mt-3 text-center">Webpay (débito y crédito) o transferencia bancaria.</p>
               <Link href="/categorias" className="block w-full py-2.5 mt-2 text-center text-sm font-medium text-gray-600 hover:text-navy-950 transition-colors">
                 Seguir comprando
               </Link>

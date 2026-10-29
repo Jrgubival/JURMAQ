@@ -5,9 +5,7 @@ import { supabasePublic } from "@jurmaq/shared/supabase";
 import type { Database } from "@jurmaq/shared/db-types";
 import ProductCard from "@/components/barraca/ProductCard";
 import HeroSlider from "@/components/barraca/HeroSlider";
-import MobileHero from "@/components/barraca/MobileHero";
 import MarcasCarrusel from "@/components/barraca/MarcasCarrusel";
-import MobileTrustStrip from "@/components/barraca/MobileTrustStrip";
 import { PROMESA, PROMESA_CORTA_META } from "@/lib/promesa";
 import PromotedProductCard from "@/components/barraca/PromotedProductCard";
 import CountdownTimer from "@/components/barraca/CountdownTimer";
@@ -16,7 +14,7 @@ import { titleCase } from "@jurmaq/shared/format";
 import type { ProductoPromocionado } from "@/lib/promotions";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { familiaDe } from '@/lib/variantes';
-import Revelar from '@/components/barraca/Revelar';
+import masVendidos from '@/data/mas-vendidos.json';
 import { vistaPrecio, type ProductoConPrecio } from '@/lib/precio-web';
 
 type BarracaCategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
@@ -196,17 +194,6 @@ interface Producto {
   medida: string | null;
 }
 
-// Atajos de la portada en celular: lo que más se busca en una barraca.
-const ATAJOS = [
-  { label: "Fierro estriado", q: "fierro estriado" },
-  { label: "Perfiles", q: "perfil" },
-  { label: "Zinc", q: "zinc" },
-  { label: "Cemento", q: "cemento" },
-  { label: "Planchas", q: "plancha" },
-  { label: "Tubos", q: "tubo" },
-  { label: "Malla", q: "malla" },
-];
-
 export default async function BarracaHomePage() {
   // Fetch ALL parent categories, then sort by product count (most popular first)
   const { data: rawCategorias } = await supabasePublic
@@ -309,9 +296,21 @@ export default async function BarracaHomePage() {
     .order('id', { ascending: false })
     .limit(80);
   const familiasUsadas = new Set<string>();
-  // "Los más vendidos": los marcados como destacados y, si no alcanzan, los
-  // de más stock (lo que más se repone es lo que más sale).
-  const destacadosBase = unaPorFamilia(destacadosRaw || [], POR_FILA, familiasUsadas);
+  // "Los más vendidos": el ranking real de ventas del mes en pesos (columna
+  // "Venta mes" de la planilla de precios, ver src/data/mas-vendidos.json),
+  // una medida por familia. Si no alcanzan, los destacados y los de más stock.
+  const ranking: string[] = masVendidos.codigos;
+  const { data: vendidosRaw } = await supabasePublic
+    .from('barraca_productos')
+    .select(SELECT_TARJETA)
+    .eq('activo', true)
+    .in('codigo', ranking);
+  const posicion = new Map(ranking.map((c, i) => [c, i]));
+  const vendidosOrden = (vendidosRaw || []).sort(
+    (a, b) => (posicion.get(String(a.codigo)) ?? 999) - (posicion.get(String(b.codigo)) ?? 999),
+  );
+  const vendidos = unaPorFamilia(vendidosOrden, POR_FILA, familiasUsadas);
+  const destacadosBase = [...vendidos, ...unaPorFamilia(destacadosRaw || [], POR_FILA - vendidos.length, familiasUsadas)];
   const relleno = unaPorFamilia(masStockRaw || [], POR_FILA - destacadosBase.length, familiasUsadas);
   const destacados = await applyDailyPromosToProducts([...destacadosBase, ...relleno]);
   const nuevos = await applyDailyPromosToProducts(unaPorFamilia(nuevosRaw || [], POR_FILA, familiasUsadas));
@@ -369,41 +368,9 @@ export default async function BarracaHomePage() {
           }),
         }}
       />
-      {/* Hero — MobileHero (lg:hidden) replaces the slider on small screens
-          so the user sees products faster. Desktop keeps the full slider.
-          El H1 vive dentro de MobileHero en mobile y abajo en desktop. */}
-      <MobileHero />
-      <div className="hidden lg:block">
-        <HeroSlider precios={{ fierro: precioFierro, tubo: precioTubo }} />
-      </div>
+      {/* Carrusel con fotos reales del local, igual en celular y escritorio. */}
+      <HeroSlider precios={{ fierro: precioFierro, tubo: precioTubo }} />
 
-      {/* Franja de confianza, como la que va bajo el banner en Sodimac y Easy:
-          cuatro hechos concretos, con ícono, sobre blanco. Reemplaza la prosa
-          con cifras en serif itálica y la banda roja de despacho. El H1 se
-          conserva para SEO pero deja de ser un titular de revista. */}
-      <section aria-label="Por qué comprar en JURMAQ" className="hidden lg:block bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ul className="grid grid-cols-3 divide-x divide-gray-200">
-            {[
-              { t: 'Despacho a todo el Maule', d: 'Curicó, Talca, Linares, Molina y más', href: '/sucursales', icon: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0' },
-              { t: 'Retiro en Molina', d: 'Av. Poniente 2157 · Lun–Sáb', href: '/sucursales', icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z' },
-              { t: 'Compra en línea, sin registro', d: 'Mercado Pago o transferencia', href: '/categorias', icon: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z' },
-            ].map((it) => (
-              <li key={it.t}>
-                <Link href={it.href} className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 transition-colors">
-                  <svg className="w-6 h-6 text-marca-600 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d={it.icon} />
-                  </svg>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-bold text-navy-950 leading-tight">{it.t}</span>
-                    <span className="block text-xs text-gray-500 leading-tight mt-0.5">{it.d}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
       <h1 className="sr-only">Barraca de fierros y materiales de construcción en Molina, con despacho a Curicó y todo el Maule</h1>
 
       {/* === OFERTAS DEL DIA === */}
@@ -467,101 +434,36 @@ export default async function BarracaHomePage() {
         </section>
       )}
 
-      {/* === Celular: atajos + categorías en riel deslizable ===
-          Antes era una grilla 4+2 de miniaturas de 64 px con el nombre en
-          mayúscula cortado ("ELECTRICIDAD E…"). Ahora: una fila de atajos a lo
-          que más se busca y las categorías como tarjetas con foto que se
-          deslizan con el dedo, como en las apps de las tiendas grandes. */}
-      <section id="categorias-mobile" className="lg:hidden fondo-acero pt-4 pb-6 scroll-mt-24">
-        <nav aria-label="Lo más buscado" className="px-4 mb-5">
-          <ul className="flex gap-2 overflow-x-auto riel -mx-4 px-4">
-            {ATAJOS.map((a) => (
-              <li key={a.q} className="shrink-0">
-                <Link
-                  href={`/buscar?q=${encodeURIComponent(a.q)}`}
-                  className="inline-flex items-center h-9 px-3.5 rounded-full bg-white border border-gray-200 text-[13px] font-medium text-navy-950 active:bg-gray-100"
-                >
-                  {a.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <div className="flex items-end justify-between mb-3 px-4">
-          <h2 className="text-lg font-extrabold text-navy-950 leading-none">Categorías</h2>
-          <Link href="/categorias" className="text-sm font-semibold text-marca-600 min-h-[32px] inline-flex items-center">
-            Ver todas
-          </Link>
-        </div>
-        <Revelar>
-          <ul className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory px-4 scroll-px-4 pb-1">
+      {/* Categorías: círculos con foto en una fila que se desliza (elegido por
+          el dueño, oct-2026: ocupa poco y no abruma). En escritorio caben todas
+          en la fila. */}
+      <section id="categorias" aria-labelledby="titulo-categorias" className="bg-white pt-6 pb-2 lg:pt-10 scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between mb-3">
+            <h2 id="titulo-categorias" className="text-lg lg:text-2xl font-bold text-navy-950 leading-none">Categorías</h2>
+            <Link href="/categorias" className="text-sm font-semibold text-marca-600 hover:text-marca-700 min-h-[32px] inline-flex items-center">
+              Ver todas
+            </Link>
+          </div>
+          <ul className="riel flex gap-4 lg:gap-5 overflow-x-auto snap-x -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 pb-3">
             {categorias.map((cat) => {
               const catImg = getCategoryImage(cat.imagen, cat.slug);
               return (
-                <li key={cat.id} data-revelar className="snap-start shrink-0 w-[124px]">
-                  <Link
-                    href={`/categorias/${cat.slug}`}
-                    className="block bg-white rounded-xl overflow-hidden border border-gray-200/80 active:scale-[0.97] transition-transform"
-                  >
-                    <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                <li key={cat.id} className="snap-start shrink-0 w-[76px] lg:w-[96px]">
+                  <Link href={`/categorias/${cat.slug}`} className="group block text-center">
+                    <span className="block w-[76px] h-[76px] lg:w-[96px] lg:h-[96px] rounded-full overflow-hidden bg-gray-100 ring-1 ring-gray-200 group-hover:ring-2 group-hover:ring-marca-600 transition-[box-shadow] duration-150">
                       {catImg ? (
-                        <Image src={catImg} alt="" width={248} height={186} sizes="124px" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100" />
-                      )}
-                    </div>
-                    <p className="px-2.5 py-2 text-[13px] font-semibold text-navy-950 leading-tight line-clamp-2 min-h-[2.75rem]">
+                        <Image src={catImg} alt="" width={192} height={192} sizes="96px" className="w-full h-full object-cover" />
+                      ) : null}
+                    </span>
+                    <span className="mt-2 block text-xs lg:text-[13px] font-medium text-navy-950 leading-tight line-clamp-2">
                       {titleCase(cat.nombre)}
-                    </p>
+                    </span>
                   </Link>
                 </li>
               );
             })}
           </ul>
-        </Revelar>
-      </section>
-
-      {/* === Categories: DESKTOP === full grid with overlay text */}
-      <section id="categorias" className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 scroll-mt-24 content-auto">
-        <div className="mb-10">
-          <h2 className="text-2xl font-extrabold text-navy-950 mb-1">Compra por categoría</h2>
-          <p className="text-gray-500">Fierro, perfiles, planchas, herramientas y más. Todo con stock y precio visible.</p>
-        </div>
-        {/* Mosaico de categorías al modo retail: tarjeta blanca, la foto con
-            aire (sin sangrar, sin degradado negro encima), el nombre debajo en
-            negrita y el conteo en gris. Es la tarjeta de categoría de Sodimac
-            y Easy, que es lo que el dueño pidió parecerse. */}
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-4">
-          {categorias.map((cat) => {
-            const catImg = getCategoryImage(cat.imagen, cat.slug);
-            return (
-              <Link key={cat.id} href={`/categorias/${cat.slug}`} className="group block bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-navy-950 transition-colors">
-                {/* Foto a sangre (560 px, recortada al cuadrado). Antes era el
-                    packshot de un producto suelto sobre blanco —un tarro de
-                    cloro para Jardín, un enchufe para Electricidad— y el dueño
-                    lo vio "pobre y feo". */}
-                <div className="aspect-square bg-gray-100 overflow-hidden">
-                  {catImg ? (
-                    <Image src={catImg} alt={`${cat.nombre} - JURMAQ Barraca`} loading="lazy" width={560} height={560} sizes="(max-width: 1024px) 33vw, 16vw" className="w-full h-full object-cover transition-transform duration-300 ease-out [@media(hover:hover)]:group-hover:scale-[1.04]" />
-                  ) : (
-                    <div className="w-full h-full bg-gray-50" />
-                  )}
-                </div>
-                <div className="px-3 pt-2.5 pb-3 text-center">
-                  <h3 className="text-[13px] font-bold text-navy-950 leading-tight group-hover:text-marca-600 transition-colors">{titleCase(cat.nombre)}</h3>
-                  <p className="text-[11px] text-gray-500 mt-0.5 tabular-nums">{cat.product_count} productos</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-        <div className="text-center mt-8">
-          <Link href="/categorias" className="inline-flex items-center gap-2 px-6 py-3 border-2 border-marca-600 text-marca-600 hover:bg-marca-600 hover:text-white font-semibold rounded-lg transition-colors">
-            Ver todas las categorias
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
         </div>
       </section>
 
@@ -578,17 +480,14 @@ export default async function BarracaHomePage() {
                 <svg className="hidden lg:inline w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
               </Link>
             </div>
-            <Revelar className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
+            <div className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
               {destacados.map((p) => (
-                <div key={p.id} data-revelar className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
+                <div key={p.id} className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
               ))}
-            </Revelar>
+            </div>
           </div>
         </section>
       )}
-
-      {/* Franja marina: cómo se retira, despacha y paga. */}
-      <MobileTrustStrip />
 
       {/* New Products */}
       {(nuevos || []).length > 0 && (
@@ -602,11 +501,11 @@ export default async function BarracaHomePage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
-          <Revelar className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
+          <div className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
             {nuevos.map((p) => (
-              <div key={p.id} data-revelar className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} isNew categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
+              <div key={p.id} className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} isNew categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
             ))}
-          </Revelar>
+          </div>
         </section>
       )}
 

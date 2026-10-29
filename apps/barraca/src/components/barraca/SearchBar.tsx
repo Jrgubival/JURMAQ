@@ -103,7 +103,7 @@ export default function SearchBar({
           onChange={(e) => setQuery(e.target.value)}
           placeholder="¿Qué necesitas?"
           aria-label="Buscar productos en la barraca"
-          className={`w-full ${sizeClasses[size]} pl-12 pr-24 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-marca-500 focus:border-marca-500 text-base text-gray-900 placeholder-gray-400 shadow-sm`}
+          className={`w-full ${sizeClasses[size]} pl-12 pr-24 bg-white border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-marca-500 text-base text-gray-900 placeholder-gray-500`}
         />
         <svg
           className={`absolute left-4 top-1/2 -translate-y-1/2 ${iconSize[size]} text-gray-500`}
@@ -120,7 +120,7 @@ export default function SearchBar({
         </svg>
         <button
           type="submit"
-          className={`absolute right-1.5 top-1/2 -translate-y-1/2 px-4 ${size === "lg" ? "h-10" : "h-8"} bg-marca-600 hover:bg-marca-700 text-white text-sm font-semibold rounded-lg transition-colors`}
+          className={`absolute right-1.5 top-1/2 -translate-y-1/2 px-4 h-10 bg-marca-600 hover:bg-marca-700 text-white text-sm font-semibold rounded-lg transition-colors`}
         >
           Buscar
         </button>
