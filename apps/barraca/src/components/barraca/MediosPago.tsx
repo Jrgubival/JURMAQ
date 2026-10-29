@@ -1,8 +1,9 @@
 /**
  * Medios de pago como fila de logos (pie de página). SVG en línea y livianos:
  * nada de imágenes externas. El dueño eligió Webpay (oct-2026) en vez de
- * Mercado Pago; la transferencia es manual. El chip de Webpay es un dibujo
- * provisorio hasta tener el logo oficial del kit de Transbank.
+ * Mercado Pago; la transferencia es manual. El logo de Webpay Plus es el
+ * oficial de transbankdevelopers.cl/brand-assets, limpiado de los datos de
+ * Illustrator (400 KB → 33 KB) en public/images/barraca/pagos/.
  */
 
 const chip = "inline-flex items-center justify-center h-8 px-2.5 bg-white rounded-md";
@@ -10,10 +11,9 @@ const chip = "inline-flex items-center justify-center h-8 px-2.5 bg-white rounde
 export default function MediosPago({ className = "" }: { className?: string }) {
   return (
     <ul className={`flex flex-wrap items-center gap-2 ${className}`} aria-label="Medios de pago">
-      <li className={chip} title="Webpay">
-        <svg viewBox="0 0 70 20" className="h-4 w-auto" role="img" aria-label="Webpay">
-          <text x="0" y="15" fontFamily="Arial, Helvetica, sans-serif" fontSize="15" fontWeight="700" fill="#1f1f1f" letterSpacing="-0.3">webpay</text>
-        </svg>
+      <li className={chip} title="Webpay Plus">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/barraca/pagos/webpay-plus.svg" alt="Webpay Plus" width={81} height={20} className="h-5 w-auto" loading="lazy" />
       </li>
       <li className={chip} title="Visa">
         <svg viewBox="0 0 44 16" className="h-3.5 w-auto" role="img" aria-label="Visa">
