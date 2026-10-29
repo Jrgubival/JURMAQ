@@ -4,6 +4,7 @@ import { useState } from "react";
 import SelectorMedidas from "@/components/barraca/SelectorMedidas";
 import { familiaDe, tituloFamilia } from "@/lib/variantes";
 import Precio from "@/components/barraca/Precio";
+import CantidadEditable from "@/components/barraca/CantidadEditable";
 import type { VistaPrecio } from "@/lib/precio-web";
 import { agregarProducto } from "@/lib/agregar";
 import { unidadesDisponibles } from "@/lib/stock";
@@ -98,42 +99,7 @@ export default function AddToCartClient({
       {comprable && (
       <div className="flex items-center gap-3">
         <span className="text-sm font-medium text-gray-700">Cantidad</span>
-        <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden">
-          <button
-            onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-            disabled={!comprable || cantidad <= 1}
-            className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-40 transition-colors"
-            aria-label="Disminuir cantidad"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-            </svg>
-          </button>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={Math.max(1, unidades)}
-            disabled={!comprable}
-            aria-label="Cantidad"
-            value={cantidad}
-            onChange={(e) => {
-              const val = parseInt(e.target.value);
-              if (!isNaN(val) && val >= 1) setCantidad(Math.min(val, Math.max(1, unidades)));
-            }}
-            className="w-14 h-11 text-center text-base font-bold text-navy-950 border-x-2 border-gray-200 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          />
-          <button
-            onClick={() => setCantidad(Math.min(Math.max(1, unidades), cantidad + 1))}
-            disabled={!comprable || cantidad >= unidades}
-            className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-40 transition-colors"
-            aria-label="Aumentar cantidad"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-        </div>
+        <CantidadEditable valor={cantidad} max={unidades} nombre={producto.nombre} onCambio={setCantidad} />
       </div>
       )}
 

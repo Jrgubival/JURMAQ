@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import CantidadEditable from "@/components/barraca/CantidadEditable";
 import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
 import { cambiarCantidad, quitarDelCarrito, vaciarCarrito, obtenerCarrito, revisarCarrito, type ItemCarrito } from "@/lib/carrito";
@@ -170,33 +171,13 @@ export default function CartDrawer({
                     {item.medida && (
                       <p className="text-xs text-gray-500">{item.medida}</p>
                     )}
-                    <p className="text-xs text-gray-500 mt-0.5 tabular-nums">{formatCLP(item.precio)} c/u</p>
+                    <p className="text-xs text-gray-500 mt-0.5 tabular-nums">{formatCLP(item.precio)} {item.unidad ? `/${item.unidad.toLowerCase()}` : "c/u"}</p>
                     {problemas[item.productoId] && (
                       <p className="text-xs font-semibold text-red-600 mt-0.5">{problemas[item.productoId]}</p>
                     )}
                     {/* Inline quantity controls */}
                     <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => cambiarCantidad(item.productoId, item.cantidad - 1)}
-                          disabled={item.cantidad <= 1}
-                          className="w-9 h-9 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-40 text-sm font-bold transition-colors"
-                          aria-label="Disminuir cantidad"
-                        >
-                          -
-                        </button>
-                        <span className="w-9 h-9 flex items-center justify-center text-xs font-bold border-x border-gray-300">
-                          {item.cantidad}
-                        </span>
-                        <button
-                          onClick={() => cambiarCantidad(item.productoId, item.cantidad + 1)}
-                          disabled={item.cantidad >= item.stock}
-                          className="w-9 h-9 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-40 text-sm font-bold transition-colors"
-                          aria-label="Aumentar cantidad"
-                        >
-                          +
-                        </button>
-                      </div>
+                      <CantidadEditable chico valor={item.cantidad} max={item.stock} nombre={item.nombre} onCambio={(n) => cambiarCantidad(item.productoId, n)} />
                       <p className="text-sm font-bold text-navy-950">
                         {formatCLP((item.precio * item.cantidad))}
                       </p>

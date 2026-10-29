@@ -15,7 +15,8 @@ export function agregarProducto(item: Omit<ItemCarrito, "cantidad">, cantidad = 
     return false;
   }
   trackEvents.addToCart({ id: item.productoId, nombre: item.nombre, precio: item.precio, cantidad });
-  showToast("Agregado al carrito", "success");
+  // Si se abre el carrito, ésa es la confirmación: el aviso encima tapaba "Ir a pagar".
   if (abrirCarrito) window.dispatchEvent(new Event("barraca:open-cart"));
+  else showToast("Agregado al carrito", "success");
   return true;
 }

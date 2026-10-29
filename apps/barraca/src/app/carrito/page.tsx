@@ -7,16 +7,10 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { trackEvents } from "@/lib/analytics";
 import { cambiarCantidad, quitarDelCarrito, vaciarCarrito, type ItemCarrito } from "@/lib/carrito";
 import { useCarrito } from "@/lib/useCarrito";
+import CantidadEditable from "@/components/barraca/CantidadEditable";
 
 function Cantidad({ item }: { item: ItemCarrito }) {
-  const enTope = item.cantidad >= item.stock;
-  return (
-    <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
-      <button onClick={() => cambiarCantidad(item.productoId, item.cantidad - 1)} disabled={item.cantidad <= 1} aria-label={`Disminuir cantidad de ${item.nombre}`} className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-40 font-bold transition-colors">-</button>
-      <span className="w-11 h-11 flex items-center justify-center text-sm font-bold border-x-2 border-gray-200 tabular-nums">{item.cantidad}</span>
-      <button onClick={() => cambiarCantidad(item.productoId, item.cantidad + 1)} disabled={enTope} aria-label={`Aumentar cantidad de ${item.nombre}`} className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-40 font-bold transition-colors">+</button>
-    </div>
-  );
+  return <CantidadEditable valor={item.cantidad} max={item.stock} nombre={item.nombre} onCambio={(n) => cambiarCantidad(item.productoId, n)} />;
 }
 
 export default function CarritoPage() {
@@ -164,7 +158,7 @@ export default function CarritoPage() {
                           </svg>
                         </button>
                       </div>
-                      <p className="text-sm font-semibold text-navy-950 mt-1 tabular-nums">{formatCLP(item.precio)} <span className="text-xs font-normal text-gray-500">c/u</span></p>
+                      <p className="text-sm font-semibold text-navy-950 mt-1 tabular-nums">{formatCLP(item.precio)} <span className="text-xs font-normal text-gray-500">{item.unidad ? `/${item.unidad.toLowerCase()}` : "c/u"}</span></p>
                       {problemas[item.productoId] && (
                         <p className="text-xs font-semibold text-red-600 mt-0.5">{problemas[item.productoId]}</p>
                       )}
