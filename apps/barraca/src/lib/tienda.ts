@@ -5,7 +5,7 @@ import { getActiveCategoryDiscountMap } from '@/lib/promotions';
 import { resolvePrice } from '@/lib/pricing';
 import { motivoNoComprable, unidadesDisponibles } from '@/lib/stock';
 import { logSafeError } from '@jurmaq/shared/logging';
-import type { TamanoEnvio } from '@/lib/despacho/tarifas';
+import { COURIER_HABILITADO, type TamanoEnvio } from '@/lib/despacho/tarifas';
 
 /**
  * Precio y stock VIGENTES de una lista de productos, leídos de la base.
@@ -58,6 +58,7 @@ const medida = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v
  * ningún producto tiene datos y nada sale por courier (fail-closed).
  */
 async function medidasEnvio(ids: number[]): Promise<Map<number, MedidasEnvio>> {
+  if (!COURIER_HABILITADO) return new Map(); // sólo las usa el courier
   const db = supabaseAdmin as unknown as SupabaseClient; // columnas aún fuera de db-types
   try {
     const { data, error } = await db

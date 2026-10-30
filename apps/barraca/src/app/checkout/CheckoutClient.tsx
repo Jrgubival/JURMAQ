@@ -413,7 +413,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 detalle={`Av. Poniente 2157, Molina. ${HORARIO_BARRACA.semana}.`} />
               <Opcion nombre="entrega" valor="despacho" actual={entrega} onChange={(v) => setEntrega(v as "despacho")}
                 titulo="Despacho a domicilio"
-                detalle="Molina, Curicó y Sagrada Familia en camión de la barraca. Lo que no es fierro ni carga pesada, a todo Chile por courier." />
+                detalle="En el camión de la barraca a Molina (incluye Lontué), Curicó y Sagrada Familia. Otras comunas: cotiza por WhatsApp." />
             </div>
             {despacho && (
               <>

@@ -13,7 +13,8 @@ import { courierActivo, type Bulto, type Paquete } from './courier';
  * Regla: un pedido viaja entero de una sola forma.
  * - Comuna del camión propio (Molina, Curicó, Sagrada Familia): todo va en el
  *   camión, con la tarifa de tarifas.ts (o "a coordinar" si no tiene monto).
- * - Otra comuna: va por courier sólo si TODO el carrito puede ir por courier.
+ * - Otra comuna, con el courier apagado (hoy): retiro o cotizar por WhatsApp.
+ * - Otra comuna, con courier: va por courier sólo si TODO el carrito puede.
  *   Si hay fierro o carga pesada, o productos sin tamaño de envío, se bloquea
  *   y se ofrece retirar en la barraca, quitar esos productos (y mandar el
  *   resto por courier) o cotizar el despacho por WhatsApp. No se parte un
@@ -113,6 +114,16 @@ export async function cotizarDespacho(lineas: LineaRevisada[], codigoComuna: str
   }
 
   const whatsapp = whatsappDespacho(comuna, lineas);
+  const courier = courierActivo();
+  if (!courier) {
+    return {
+      estado: 'sin_servicio',
+      comuna,
+      motivo: `Por ahora despachamos sólo en nuestro camión a ${listaCamion()}. Puedes retirar en la barraca o cotizar el despacho a ${comuna.nombre} por WhatsApp.`,
+      whatsapp,
+    };
+  }
+
   const camion = lineas.filter(vaEnCamion);
   if (camion.length > 0) {
     return {
@@ -145,10 +156,6 @@ export async function cotizarDespacho(lineas: LineaRevisada[], codigoComuna: str
     };
   }
 
-  const courier = courierActivo();
-  if (!courier) {
-    return { estado: 'sin_servicio', comuna, motivo: `Por ahora despachamos sólo a ${listaCamion()}. Puedes retirar en la barraca o cotizar el despacho por WhatsApp.`, whatsapp };
-  }
   const origen = comunaPorCodigo(COMUNA_ORIGEN)!;
   try {
     const c = await courier.cotizar({ origen, destino: comuna, paquete, valorDeclarado: subtotal });

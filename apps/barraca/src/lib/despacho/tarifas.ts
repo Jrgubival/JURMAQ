@@ -2,8 +2,8 @@
  * Reglas y tarifas del despacho. Es el único lugar donde se tocan los montos.
  *
  * Camión propio: el fierro y lo pesado o largo sólo se despacha a las comunas
- * de TARIFAS_PROPIO. Lo demás puede ir por courier (Envíame) a cualquier
- * comuna, siempre que el producto tenga tamaño de envío o peso y medidas.
+ * de TARIFAS_PROPIO. Con el courier encendido (COURIER_HABILITADO), lo demás
+ * puede ir por courier a cualquier comuna si el producto tiene tamaño de envío.
  */
 
 /**
@@ -26,20 +26,32 @@ export interface TarifaPropio {
   gratisDesde?: number;
 }
 
+/** Marcador de tarifa que Jorge todavía no define: el checkout muestra "a coordinar". */
+const PENDIENTE = null;
+
 /**
  * Comunas que cubre el camión propio, por código de comuna (ver comunas.ts).
- * Un costo null significa "a coordinar": se ofrece el despacho, pero el costo
- * se acuerda por teléfono y no se suma al total.
+ * Para fijar una tarifa se cambia PENDIENTE por { costo: <monto> } (o
+ * { costo: <monto>, gratisDesde: <monto> } para despacho gratis desde un monto).
+ * Con PENDIENTE se ofrece el despacho, pero el costo se acuerda por teléfono
+ * y no se suma al total. Para sumar una comuna, agregar su línea.
  *
- * TODO(Jorge): faltan los montos. Mientras sean null el checkout muestra
- * "a coordinar", como antes.
+ * TODO(Jorge): faltan los montos de cada zona y si hay despacho gratis.
  */
 export const TARIFAS_PROPIO: Record<string, TarifaPropio | null> = {
-  ZMO: null, // Molina (incluye Lontué, que es parte de la comuna)
-  CCO: null, // Curicó
-  SFA: null, // Sagrada Familia
-  // RML: null, // Romeral: Jorge lo está pensando. Talca y Linares no van.
+  ZMO: PENDIENTE, // Molina (incluye Lontué, que es parte de la comuna)
+  CCO: PENDIENTE, // Curicó
+  SFA: PENDIENTE, // Sagrada Familia
+  // RML: PENDIENTE, // Romeral: Jorge lo está pensando. Talca y Linares no van.
 };
+
+/**
+ * Despacho por courier a otras comunas (Envíame u otro, ver courier/).
+ * APAGADO por decisión de Jorge (oct-2026): por ahora sólo camión propio y
+ * retiro. El código queda guardado; con false nada lo usa aunque COURIER
+ * esté configurado. Fuera de zona se ofrece retiro o cotizar por WhatsApp.
+ */
+export const COURIER_HABILITADO = false;
 
 /** Comuna de origen de los envíos por courier (la barraca). */
 export const COMUNA_ORIGEN = 'ZMO';
