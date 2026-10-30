@@ -34,8 +34,8 @@ const schema = z
     email: z.string().trim().toLowerCase().email().max(160),
     entrega: z.enum(['retiro', 'despacho']),
     direccion: texto(200).optional().default(''),
-    // Código de comuna (ver lib/despacho/comunas.ts); el nombre sale del servidor.
-    comuna: z.string().trim().regex(/^[A-Z0-9]{2,4}$/).optional().or(z.literal('')).default(''),
+    // Id de zona del camión (lib/despacho/zonas.ts) o código de comuna; el nombre sale del servidor.
+    comuna: z.string().trim().regex(/^(?:[A-Z0-9]{2,4}|[a-z][a-z-]{1,29})$/).optional().or(z.literal('')).default(''),
     metodoPago: z.enum(['mercadopago', 'transferencia']),
     notas: texto(500).optional().default(''),
     // Fail-closed: sin la casilla marcada no hay pedido (Ley 19.496, art. 12 A).
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
           metodo_pago: d.metodoPago,
           entrega: d.entrega,
           direccion: d.entrega === 'despacho' ? d.direccion : null,
-          comuna: despacho?.comuna.nombre ?? null,
+          comuna: despacho?.estado === 'ok' && despacho.tipo === 'propio' ? despacho.lugar : (despacho?.comuna.nombre ?? null),
           comuna_codigo: despacho?.comuna.codigo ?? null,
           despacho_tipo: despacho?.estado === 'ok' ? despacho.tipo : null,
           courier: porCourier?.courier ?? null,

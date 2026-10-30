@@ -16,7 +16,8 @@ const schema = z.object({
     .array(z.object({ productoId: z.number().int().positive(), cantidad: z.number().int().positive().max(9999) }))
     .min(1)
     .max(MAX_LINEAS),
-  comuna: z.string().trim().regex(/^[A-Z0-9]{2,4}$/),
+  // Id de zona del camión (zonas.ts) o código de comuna (comunas.ts).
+  comuna: z.string().trim().regex(/^(?:[A-Z0-9]{2,4}|[a-z][a-z-]{1,29})$/),
 });
 
 export async function POST(request: NextRequest) {
@@ -41,6 +42,10 @@ export async function POST(request: NextRequest) {
     if (c.estado === 'ok' && c.tipo === 'courier') {
       const { comuna, costo, dias, detalle, simulado } = c;
       return NextResponse.json({ estado: c.estado, tipo: c.tipo, comuna: comuna.nombre, costo, dias, detalle, simulado });
+    }
+    if (c.estado === 'ok') {
+      const { comuna, lugar, ...resto } = c;
+      return NextResponse.json({ ...resto, comuna: lugar });
     }
     const { comuna, ...resto } = c;
     return NextResponse.json({ ...resto, comuna: comuna.nombre });

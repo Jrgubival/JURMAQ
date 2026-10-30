@@ -3,7 +3,8 @@ import { logSafeError } from '@jurmaq/shared/logging';
 import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from '@jurmaq/shared/whatsapp';
 import type { LineaRevisada } from '@/lib/tienda';
 import { COMUNAS, type Comuna } from './comunas';
-import { CATEGORIAS_CAMION, COMUNA_ORIGEN, LIMITE_COURIER, TAMANOS_ENVIO, TARIFAS_PROPIO } from './tarifas';
+import { CATEGORIAS_CAMION, COMUNA_ORIGEN, LIMITE_COURIER, TAMANOS_ENVIO } from './tarifas';
+import { COMUNAS_CON_ZONA, ZONAS_DESPACHO, costoZona, zonaPorId } from './zonas';
 import { courierActivo, type Bulto, type Paquete } from './courier';
 
 /**
@@ -11,8 +12,8 @@ import { courierActivo, type Bulto, type Paquete } from './courier';
  * las líneas ya revisadas contra la base: del cliente sólo llega la comuna.
  *
  * Regla: un pedido viaja entero de una sola forma.
- * - Comuna del camión propio (Molina, Curicó, Sagrada Familia): todo va en el
- *   camión, con la tarifa de tarifas.ts (o "a coordinar" si no tiene monto).
+ * - Zona del camión propio (zonas.ts: Molina, Lontué, Curicó…): todo va en el
+ *   camión, con la tarifa de esa zona.
  * - Otra comuna, con el courier apagado (hoy): retiro o cotizar por WhatsApp.
  * - Otra comuna, con courier: va por courier sólo si TODO el carrito puede.
  *   Si hay fierro o carga pesada, o productos sin tamaño de envío, se bloquea
@@ -22,7 +23,7 @@ import { courierActivo, type Bulto, type Paquete } from './courier';
  */
 
 export type CotizacionDespacho =
-  | { estado: 'ok'; tipo: 'propio'; comuna: Comuna; costo: number | null; detalle: string }
+  | { estado: 'ok'; tipo: 'propio'; comuna: Comuna; lugar: string; costo: number | null; detalle: string }
   | {
       estado: 'ok';
       tipo: 'courier';
@@ -44,11 +45,8 @@ export function comunaPorCodigo(codigo: string): Comuna | null {
   return porCodigo.get(codigo) ?? null;
 }
 
-export const comunasCamion = (): Comuna[] =>
-  Object.keys(TARIFAS_PROPIO).map((c) => porCodigo.get(c)).filter((c): c is Comuna => !!c);
-
 const listaCamion = () => {
-  const n = comunasCamion().map((c) => c.nombre);
+  const n = ZONAS_DESPACHO.map((z) => z.nombre);
   return n.length > 1 ? `${n.slice(0, -1).join(', ')} y ${n[n.length - 1]}` : n.join('');
 };
 
@@ -99,19 +97,24 @@ function whatsappDespacho(comuna: Comuna, lineas: LineaRevisada[]): string {
   });
 }
 
-export async function cotizarDespacho(lineas: LineaRevisada[], codigoComuna: string): Promise<CotizacionDespacho | null> {
-  const comuna = comunaPorCodigo(codigoComuna);
-  if (!comuna) return null;
+/**
+ * `destino` es el id de una zona del camión (zonas.ts) o, para el resto del
+ * país, un código de comuna (comunas.ts).
+ */
+export async function cotizarDespacho(lineas: LineaRevisada[], destino: string): Promise<CotizacionDespacho | null> {
   const subtotal = lineas.reduce((s, l) => s + l.precio * l.cantidad, 0);
 
-  if (codigoComuna in TARIFAS_PROPIO) {
-    const t = TARIFAS_PROPIO[codigoComuna];
-    if (!t) {
-      return { estado: 'ok', tipo: 'propio', comuna, costo: null, detalle: 'Te llamamos para acordar el día y el costo.' };
-    }
-    const gratis = t.gratisDesde != null && subtotal >= t.gratisDesde;
-    return { estado: 'ok', tipo: 'propio', comuna, costo: gratis ? 0 : t.costo, detalle: 'Te llamamos para acordar el día de entrega.' };
+  const zona = zonaPorId(destino);
+  if (zona) {
+    const comunaZona = comunaPorCodigo(zona.comuna);
+    if (!comunaZona) return null;
+    return { estado: 'ok', tipo: 'propio', comuna: comunaZona, lugar: zona.nombre, costo: costoZona(zona, subtotal), detalle: 'Te llamamos para coordinar el día de entrega.' };
   }
+
+  // Una comuna que tiene zonas se elige por zona, no por código.
+  if (COMUNAS_CON_ZONA.has(destino)) return null;
+  const comuna = comunaPorCodigo(destino);
+  if (!comuna) return null;
 
   const whatsapp = whatsappDespacho(comuna, lineas);
   const courier = courierActivo();

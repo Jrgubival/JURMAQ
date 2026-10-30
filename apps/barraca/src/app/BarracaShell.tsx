@@ -6,6 +6,7 @@ import MediosPago from "@/components/barraca/MediosPago";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
+import SelectorZona from "@/components/barraca/SelectorZona";
 import ToastContainer from "@/components/Toast";
 import { HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
 import { whatsappCtaBarracaCotizar, whatsappCtaBarracaMejorarPrecio } from "@jurmaq/shared/whatsapp";
@@ -268,8 +269,12 @@ function Navbar() {
               </div>
             </nav>
 
+            <div className="hidden lg:block ml-2 shrink-0">
+              <SelectorZona variante="escritorio" />
+            </div>
+
             {/* Desktop Search - bigger and more prominent */}
-            <div className="hidden lg:block flex-1 max-w-3xl mx-6">
+            <div className="hidden lg:block flex-1 max-w-3xl mx-4">
               <SearchBar size="lg" />
             </div>
 
@@ -396,8 +401,11 @@ function Navbar() {
           </div>
 
           {/* Mobile Search */}
-          <div className="lg:hidden pb-3">
+          <div className="lg:hidden pb-1.5">
             <SearchBar size="md" />
+            <div className="mt-1">
+              <SelectorZona variante="celular" />
+            </div>
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DespachoZonaFicha } from "@/components/barraca/SelectorZona";
 import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
@@ -446,7 +447,7 @@ export default async function ProductoPage({
                 </li>
                 <li className="flex items-start gap-3 px-4 py-3">
                   <svg className="w-5 h-5 mt-0.5 text-navy-950 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8a2 2 0 012-2h7v10H5a2 2 0 01-2-2V8zm9-2h4l3 4v4a2 2 0 01-2 2h-5V6zM7 18a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z" /></svg>
-                  <span><span className="font-semibold text-navy-950">Despacho a domicilio</span><br /><span className="text-[#5A5A57]">Te llamaremos para coordinar el día según tu comuna.</span></span>
+                  <span><span className="font-semibold text-navy-950">Despacho a domicilio</span><br /><span className="text-[#5A5A57]">Te llamaremos para coordinar el día según tu comuna.</span><DespachoZonaFicha /></span>
                 </li>
               </ul>
             )}

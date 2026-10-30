@@ -10,6 +10,7 @@ import { useCarrito } from "@/lib/useCarrito";
 import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carrito";
 import { rutValido } from "@/lib/rut";
 import { COMUNAS, REGIONES } from "@/lib/despacho/comunas";
+import { ZONAS_DESPACHO, COMUNAS_CON_ZONA, CLAVE_ZONA, zonaPorId } from "@/lib/despacho/zonas";
 
 /**
  * Checkout en una sola página, una columna: datos → entrega → pago.
@@ -20,16 +21,24 @@ import { COMUNAS, REGIONES } from "@/lib/despacho/comunas";
 type Campo = "nombre" | "email" | "telefono" | "rut" | "direccion" | "comuna";
 type Datos = Record<Campo | "notas", string>;
 
-/** Comunas del camión propio, arriba de la lista. Deben calzar con TARIFAS_PROPIO del servidor. */
-const COMUNAS_CAMION = ["ZMO", "CCO", "SFA"];
-const CODIGOS = new Set(COMUNAS.map((c) => c.codigo));
-const nombreComuna = (codigo: string) => COMUNAS.find((c) => c.codigo === codigo)?.nombre ?? "";
-/** Antes la comuna se guardaba como texto: se intenta reconocerla. */
+/** Valores válidos del selector: zonas del camión (zonas.ts) y el resto de las comunas. */
+const CODIGOS = new Set([...ZONAS_DESPACHO.map((z) => z.id), ...COMUNAS.filter((c) => !COMUNAS_CON_ZONA.has(c.codigo)).map((c) => c.codigo)]);
+/** Antes se guardaba la comuna (código o texto): se intenta reconocerla. */
 function codigoGuardado(v: unknown): string {
   if (typeof v !== "string" || !v) return "";
   if (CODIGOS.has(v)) return v;
   const n = v.trim().toLowerCase();
-  return COMUNAS.find((c) => c.nombre.toLowerCase() === n)?.codigo ?? "";
+  const zona = ZONAS_DESPACHO.find((z) => z.nombre.toLowerCase() === n || z.comuna === v);
+  if (zona) return zona.id;
+  return COMUNAS.find((c) => c.nombre.toLowerCase() === n && CODIGOS.has(c.codigo))?.codigo ?? "";
+}
+/** Zona elegida en el selector del header, si hay. */
+function zonaDelHeader(): string {
+  try {
+    return zonaPorId(localStorage.getItem(CLAVE_ZONA))?.id ?? "";
+  } catch {
+    return "";
+  }
 }
 
 type Cotizacion =
@@ -198,7 +207,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   useEffect(() => {
     try {
       const g = JSON.parse(localStorage.getItem(CLAVE_DATOS) || "{}");
-      setDatos((d) => ({ ...d, nombre: g.nombre || "", email: g.email || "", telefono: g.telefono || "", direccion: g.direccion || "", comuna: codigoGuardado(g.comuna) }));
+      setDatos((d) => ({ ...d, nombre: g.nombre || "", email: g.email || "", telefono: g.telefono || "", direccion: g.direccion || "", comuna: zonaDelHeader() || codigoGuardado(g.comuna) }));
     } catch { /* sin datos guardados */ }
   }, []);
 
@@ -413,7 +422,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 detalle={`Av. Poniente 2157, Molina. ${HORARIO_BARRACA.semana}.`} />
               <Opcion nombre="entrega" valor="despacho" actual={entrega} onChange={(v) => setEntrega(v as "despacho")}
                 titulo="Despacho a domicilio"
-                detalle="En el camión de la barraca a Molina (incluye Lontué), Curicó y Sagrada Familia. Otras comunas: cotiza por WhatsApp." />
+                detalle="En el camión de la barraca a Molina, Curicó, Sagrada Familia, Teno, Talca y alrededores. Otras comunas: cotiza por WhatsApp." />
             </div>
             {despacho && (
               <>
@@ -431,11 +440,11 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                     >
                       <option value="">Elige tu comuna</option>
                       <optgroup label="Camión de la barraca">
-                        {COMUNAS_CAMION.map((c) => <option key={c} value={c}>{nombreComuna(c)}</option>)}
+                        {ZONAS_DESPACHO.map((z) => <option key={z.id} value={z.id}>{z.nombre}</option>)}
                       </optgroup>
                       {Object.entries(REGIONES).map(([r, nombre]) => (
                         <optgroup key={r} label={`Región de ${nombre}`}>
-                          {COMUNAS.filter((c) => c.region === r && !COMUNAS_CAMION.includes(c.codigo)).map((c) => (
+                          {COMUNAS.filter((c) => c.region === r && !COMUNAS_CON_ZONA.has(c.codigo)).map((c) => (
                             <option key={c.codigo} value={c.codigo}>{c.nombre}</option>
                           ))}
                         </optgroup>

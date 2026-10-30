@@ -2,7 +2,7 @@
  * Reglas y tarifas del despacho. Es el único lugar donde se tocan los montos.
  *
  * Camión propio: el fierro y lo pesado o largo sólo se despacha a las comunas
- * de TARIFAS_PROPIO. Con el courier encendido (COURIER_HABILITADO), lo demás
+ * de ZONAS_DESPACHO (zonas.ts). Con el courier encendido (COURIER_HABILITADO), lo demás
  * puede ir por courier a cualquier comuna si el producto tiene tamaño de envío.
  */
 
@@ -19,31 +19,7 @@ export const CATEGORIAS_CAMION: Record<number, string> = {
   1: 'Áridos y Morteros',
 };
 
-export interface TarifaPropio {
-  /** Lo que se cobra por despachar el pedido a esa comuna. */
-  costo: number;
-  /** Desde este monto de productos el despacho no se cobra (opcional). */
-  gratisDesde?: number;
-}
-
-/** Marcador de tarifa que Jorge todavía no define: el checkout muestra "a coordinar". */
-const PENDIENTE = null;
-
-/**
- * Comunas que cubre el camión propio, por código de comuna (ver comunas.ts).
- * Para fijar una tarifa se cambia PENDIENTE por { costo: <monto> } (o
- * { costo: <monto>, gratisDesde: <monto> } para despacho gratis desde un monto).
- * Con PENDIENTE se ofrece el despacho, pero el costo se acuerda por teléfono
- * y no se suma al total. Para sumar una comuna, agregar su línea.
- *
- * TODO(Jorge): faltan los montos de cada zona y si hay despacho gratis.
- */
-export const TARIFAS_PROPIO: Record<string, TarifaPropio | null> = {
-  ZMO: PENDIENTE, // Molina (incluye Lontué, que es parte de la comuna)
-  CCO: PENDIENTE, // Curicó
-  SFA: PENDIENTE, // Sagrada Familia
-  // RML: PENDIENTE, // Romeral: Jorge lo está pensando. Talca y Linares no van.
-};
+/** Los montos del camión propio están en zonas.ts (ZONAS_DESPACHO). */
 
 /**
  * Despacho por courier a otras comunas (Envíame u otro, ver courier/).
