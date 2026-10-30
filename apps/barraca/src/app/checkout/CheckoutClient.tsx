@@ -181,6 +181,9 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   const [errores, setErrores] = useState<Partial<Record<Campo, string | null>>>({});
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [errorTerminos, setErrorTerminos] = useState(false);
+  const [aceptaOfertas, setAceptaOfertas] = useState(false);
   const iniciado = useRef(false);
 
   // Datos del comprador recordados en este navegador (no el RUT ni notas).
@@ -270,6 +273,11 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
       document.getElementById(`co-${primero}`)?.focus();
       return;
     }
+    if (!aceptaTerminos) {
+      setErrorTerminos(true);
+      document.getElementById("co-terminos")?.focus();
+      return;
+    }
     if (!despachoListo) {
       setErrorEnvio(
         cotizacion?.estado === "cargando" || !cotizacion
@@ -298,6 +306,8 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
           comuna: despacho ? datos.comuna : "",
           metodoPago: metodo,
           notas: datos.notas,
+          aceptaTerminos,
+          aceptaOfertas,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -481,6 +491,38 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
               <p className="text-xs text-[#787774] text-right">IVA incluido{despacho && costoDespacho == null ? " · despacho aparte" : ""}</p>
             </div>
 
+            {/* Términos: obligatoria (art. 12 A). Ofertas: aparte y opcional (Privacidad, sección 4). */}
+            <div className="space-y-3 mb-4">
+              <label className="flex items-start gap-3 text-[13px] text-[#3F3F3D] leading-snug cursor-pointer">
+                <input
+                  id="co-terminos"
+                  type="checkbox"
+                  checked={aceptaTerminos}
+                  onChange={(e) => { setAceptaTerminos(e.target.checked); if (e.target.checked) setErrorTerminos(false); }}
+                  aria-invalid={errorTerminos || undefined}
+                  aria-describedby={errorTerminos ? "co-terminos-error" : undefined}
+                  className="mt-0.5 w-5 h-5 shrink-0 accent-[#0c1d3a]"
+                />
+                <span>
+                  Acepto los{" "}
+                  <a href="/terminos" target="_blank" rel="noopener" className="underline underline-offset-2 text-[#111111]">Términos y Condiciones</a>{" "}
+                  y la{" "}
+                  <a href="/privacidad" target="_blank" rel="noopener" className="underline underline-offset-2 text-[#111111]">Política de Privacidad</a>.
+                </span>
+              </label>
+              {errorTerminos && (
+                <p id="co-terminos-error" className="text-[13px] text-red-700 -mt-1 pl-8">Para comprar tienes que aceptar los Términos y la Política de Privacidad.</p>
+              )}
+              <label className="flex items-start gap-3 text-[13px] text-[#5A5A57] leading-snug cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={aceptaOfertas}
+                  onChange={(e) => setAceptaOfertas(e.target.checked)}
+                  className="mt-0.5 w-5 h-5 shrink-0 accent-[#0c1d3a]"
+                />
+                <span>Quiero recibir recordatorios y ofertas por correo <span className="text-[#787774]">(opcional)</span>.</span>
+              </label>
+            </div>
             {errorEnvio && (
               <p role="alert" className="mb-3 text-[13px] text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{errorEnvio}</p>
             )}

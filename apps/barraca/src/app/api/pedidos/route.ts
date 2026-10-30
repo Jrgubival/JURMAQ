@@ -38,6 +38,9 @@ const schema = z
     comuna: z.string().trim().regex(/^[A-Z0-9]{2,4}$/).optional().or(z.literal('')).default(''),
     metodoPago: z.enum(['mercadopago', 'transferencia']),
     notas: texto(500).optional().default(''),
+    // Fail-closed: sin la casilla marcada no hay pedido (Ley 19.496, art. 12 A).
+    aceptaTerminos: z.literal(true),
+    aceptaOfertas: z.boolean().optional().default(false),
   })
   .superRefine((d, ctx) => {
     if (d.rut && !rutValido(d.rut)) ctx.addIssue({ code: 'custom', path: ['rut'], message: 'RUT inválido' });
@@ -60,6 +63,9 @@ export async function POST(request: NextRequest) {
 
   const parsed = parseBody(schema, await request.json().catch(() => null));
   if (!parsed.ok) {
+    if (parsed.error.startsWith('aceptaTerminos')) {
+      return NextResponse.json({ error: 'Para comprar debes aceptar los Términos y Condiciones y la Política de Privacidad.' }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Revisa los datos del formulario', detalle: parsed.error }, { status: 400 });
   }
   const d = parsed.data;
@@ -132,6 +138,8 @@ export async function POST(request: NextRequest) {
           notas: d.notas || null,
           items,
           subtotal,
+          terminos_aceptados_at: new Date().toISOString(),
+          acepta_ofertas: d.aceptaOfertas,
           costo_despacho: costoDespacho, // null = a coordinar
           total: subtotal + (costoDespacho ?? 0),
         });

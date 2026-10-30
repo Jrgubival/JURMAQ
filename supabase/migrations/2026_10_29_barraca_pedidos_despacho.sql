@@ -13,3 +13,9 @@ alter table public.barraca_pedidos
   drop constraint if exists barraca_pedidos_total_cuadra,
   add constraint barraca_pedidos_total_cuadra
     check (total = subtotal + coalesce(costo_despacho, 0));
+
+-- Aceptación de Términos y Privacidad (obligatoria, art. 12 A Ley 19.496) y
+-- consentimiento aparte para recordatorios y ofertas por correo.
+alter table public.barraca_pedidos
+  add column if not exists terminos_aceptados_at timestamptz,
+  add column if not exists acepta_ofertas        boolean not null default false;

@@ -85,6 +85,10 @@ export interface Pedido {
   /** Courier usado ('bluex', 'simulado') y su número de seguimiento. */
   courier: string | null;
   courier_seguimiento: string | null;
+  /** Cuándo aceptó los Términos y la Privacidad en el checkout (obligatorio para comprar). */
+  terminos_aceptados_at: string;
+  /** Consentimiento aparte, no obligatorio, para recordatorios y ofertas por correo. */
+  acepta_ofertas: boolean;
   total: number;
   stock_descontado: boolean;
   created_at: string;

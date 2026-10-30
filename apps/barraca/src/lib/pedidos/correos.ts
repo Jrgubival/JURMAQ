@@ -28,6 +28,9 @@ export function datosTransferencia() {
   };
 }
 
+/** Enlace permanente a los Términos: la confirmación escrita del art. 12 A. */
+const URL_TERMINOS = 'https://barraca.jurmaq.cl/terminos';
+
 function bloqueEntrega(p: Pedido): string {
   if (p.entrega === 'retiro') {
     return `<p style="margin:0 0 4px;"><strong>Retiro en la barraca</strong>: Av. Poniente 2157, Molina.</p>
@@ -60,7 +63,8 @@ ${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad,
 ${p.entrega === 'despacho' ? `<p style="margin:16px 0 0;font-size:14px;">Despacho: ${escapeHtml(montoDespacho(p))}</p>` : ''}
 <p style="margin:16px 0;font-size:16px;"><strong>Total: ${formatCLP(p.total)}</strong> <span style="color:#6b7280;font-size:13px;">IVA incluido${p.entrega === 'despacho' && p.costo_despacho == null ? ' · despacho aparte' : ''}</span></p>
 <div style="margin:0 0 16px;">${bloqueEntrega(p)}</div>
-<div style="margin:0 0 16px;">${bloquePago(p)}</div>`;
+<div style="margin:0 0 16px;">${bloquePago(p)}</div>
+<p style="margin:0;color:#6b7280;font-size:12px;">Esta compra se rige por nuestros <a href="${URL_TERMINOS}" style="color:#6b7280;">Términos y Condiciones</a> (${URL_TERMINOS}), que aceptaste al comprar. Puedes guardarlos o imprimirlos desde ese enlace.</p>`;
 }
 
 export async function correoConfirmacionComprador(p: Pedido) {
