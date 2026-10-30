@@ -21,7 +21,7 @@ type Campo = "nombre" | "email" | "telefono" | "rut" | "direccion" | "comuna";
 type Datos = Record<Campo | "notas", string>;
 
 /** Comunas del camión propio, arriba de la lista. Deben calzar con TARIFAS_PROPIO del servidor. */
-const COMUNAS_CAMION = ["ZMO", "CCO"];
+const COMUNAS_CAMION = ["ZMO", "CCO", "SFA"];
 const CODIGOS = new Set(COMUNAS.map((c) => c.codigo));
 const nombreComuna = (codigo: string) => COMUNAS.find((c) => c.codigo === codigo)?.nombre ?? "";
 /** Antes la comuna se guardaba como texto: se intenta reconocerla. */
@@ -395,7 +395,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 detalle={`Av. Poniente 2157, Molina. ${HORARIO_BARRACA.semana}.`} />
               <Opcion nombre="entrega" valor="despacho" actual={entrega} onChange={(v) => setEntrega(v as "despacho")}
                 titulo="Despacho a domicilio"
-                detalle="Molina y Curicó en camión de la barraca. Productos chicos, a todo Chile por courier." />
+                detalle="Molina, Curicó y Sagrada Familia en camión de la barraca. Productos chicos, a todo Chile por courier." />
             </div>
             {despacho && (
               <>

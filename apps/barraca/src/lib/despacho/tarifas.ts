@@ -34,8 +34,10 @@ export interface TarifaPropio {
  * "a coordinar", como antes.
  */
 export const TARIFAS_PROPIO: Record<string, TarifaPropio | null> = {
-  ZMO: null, // Molina
+  ZMO: null, // Molina (incluye Lontué, que es parte de la comuna)
   CCO: null, // Curicó
+  SFA: null, // Sagrada Familia
+  // RML: null, // Romeral: Jorge lo está pensando. Talca y Linares no van.
 };
 
 /** Comuna de origen de los envíos por courier (la barraca). */

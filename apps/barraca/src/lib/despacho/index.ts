@@ -30,7 +30,10 @@ export function comunaPorCodigo(codigo: string): Comuna | null {
 export const comunasCamion = (): Comuna[] =>
   Object.keys(TARIFAS_PROPIO).map((c) => porCodigo.get(c)).filter((c): c is Comuna => !!c);
 
-const listaCamion = () => comunasCamion().map((c) => c.nombre).join(' y ');
+const listaCamion = () => {
+  const n = comunasCamion().map((c) => c.nombre);
+  return n.length > 1 ? `${n.slice(0, -1).join(', ')} y ${n[n.length - 1]}` : n.join('');
+};
 
 export function vaEnCamion(l: Pick<LineaRevisada, 'categoriaId'>): boolean {
   return l.categoriaId != null && l.categoriaId in CATEGORIAS_CAMION;
