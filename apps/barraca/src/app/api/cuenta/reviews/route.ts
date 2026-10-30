@@ -4,21 +4,24 @@ import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
 import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
 import { parseBarracaUserToken, extractBearerToken } from '@/lib/barraca-auth';
+import { pedidos } from '@/lib/pedidos';
 
 /**
  * GET    /api/cuenta/reviews                — lista MIS reviews
  * POST   /api/cuenta/reviews { producto_id, rating, titulo?, comentario? }
  * DELETE /api/cuenta/reviews?id=...         — borrar mi propio review
  *
- * Tier 4 D2: solo clientes logueados pueden reseñar. Servidor verifica que
- * el cliente tiene al menos una cotización 'pagada' que incluye ese producto
- * para marcar `compra_verificada = true`. Si no, igual permite (review no
- * verificada) pero con badge distinto en la UI pública.
+ * GET    /api/cuenta/reviews?puede=<producto_id> — { puede } si ese cliente lo compró
+ *
+ * Sólo reseña quien COMPRÓ el producto (pedido de la tienda pagado o
+ * cotización pagada con ese producto). Decisión del dueño, oct-2026: antes se
+ * aceptaba cualquier cliente logueado y quedaba en moderación. Fail-closed:
+ * si la verificación falla, no se permite.
  */
 
 export const runtime = 'nodejs';
 
-async function requireUsuario(request: NextRequest): Promise<{ id: number; nombre: string } | null> {
+async function requireUsuario(request: NextRequest): Promise<{ id: number; nombre: string; email: string } | null> {
   // Token parsing dual-mode (audit fase 2A.1): JWT firmado o base64 legacy.
   const token = extractBearerToken(request);
   if (!token) return null;
@@ -26,16 +29,63 @@ async function requireUsuario(request: NextRequest): Promise<{ id: number; nombr
   if (userId === null) return null;
   const { data } = await supabaseAdmin
     .from('barraca_usuarios')
-    .select('id, nombre, activo')
+    .select('id, nombre, email, activo')
     .eq('id', userId)
     .eq('activo', true)
     .maybeSingle();
-  return data ? { id: data.id as number, nombre: (data.nombre as string) || 'Cliente' } : null;
+  return data
+    ? { id: data.id as number, nombre: (data.nombre as string) || 'Cliente', email: String(data.email ?? '').trim().toLowerCase() }
+    : null;
+}
+
+const ESTADOS_COMPRADO = new Set(['pagado', 'en_preparacion', 'listo_retiro', 'despachado', 'entregado']);
+
+/** ¿Este cliente compró el producto? Pedidos de la tienda (por correo) o cotizaciones pagadas. */
+async function compro(user: { id: number; email: string }, productoId: number): Promise<boolean> {
+  if (user.email) {
+    const lista = await pedidos().listar({ limite: 500 });
+    const hay = lista.some(
+      (p) =>
+        ESTADOS_COMPRADO.has(p.estado) &&
+        String(p.email).trim().toLowerCase() === user.email &&
+        p.items.some((it) => Number(it.productoId) === productoId),
+    );
+    if (hay) return true;
+  }
+  const { data: cots, error } = await supabaseAdmin
+    .from('barraca_cotizaciones')
+    .select('items')
+    .eq('usuario_id', user.id)
+    .eq('estado', 'pagada')
+    .limit(50);
+  if (error) throw error;
+  for (const c of cots ?? []) {
+    try {
+      const items = typeof c.items === 'string' ? JSON.parse(c.items) : c.items;
+      if (Array.isArray(items) && items.some((it: { producto_id?: number; id?: number }) =>
+        Number(it?.producto_id) === productoId || Number(it?.id) === productoId,
+      )) return true;
+    } catch {
+      // items mal formado en una cotización antigua; sigue buscando.
+    }
+  }
+  return false;
 }
 
 export async function GET(request: NextRequest) {
   const user = await requireUsuario(request);
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+
+  const puede = request.nextUrl.searchParams.get('puede');
+  if (puede !== null) {
+    const id = Number(puede);
+    if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ error: 'producto inválido' }, { status: 400 });
+    try {
+      return NextResponse.json({ puede: await compro(user, id) });
+    } catch {
+      return NextResponse.json({ puede: false });
+    }
+  }
 
   const { data, error } = await supabaseAdmin
     .from('barraca_reviews')
@@ -81,33 +131,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
   }
 
-  // Verifica si el cliente compró este producto (cotización 'pagada' con
-  // este producto_id en items JSON). Si sí, marca compra_verificada.
+  // Sólo quien compró puede reseñar (fail-closed: si no se puede verificar, no).
   let compraVerificada = false;
   try {
-    const { data: cots } = await supabaseAdmin
-      .from('barraca_cotizaciones')
-      .select('items')
-      .eq('usuario_id', user.id)
-      .eq('estado', 'pagada')
-      .limit(50);
-    if (cots && cots.length > 0) {
-      for (const c of cots) {
-        try {
-          const items = typeof c.items === 'string' ? JSON.parse(c.items) : c.items;
-          if (Array.isArray(items) && items.some((it: { producto_id?: number; id?: number }) =>
-            Number(it?.producto_id) === productoId || Number(it?.id) === productoId,
-          )) {
-            compraVerificada = true;
-            break;
-          }
-        } catch {
-          // items mal formado en una cotización antigua; sigue buscando.
-        }
-      }
-    }
+    compraVerificada = await compro(user, productoId);
   } catch {
-    // No bloquear creación si la verificación falla.
+    compraVerificada = false;
+  }
+  if (!compraVerificada) {
+    return NextResponse.json({ error: 'Solo puedes opinar sobre productos que compraste.' }, { status: 403 });
   }
 
   const { data, error } = await supabaseAdmin

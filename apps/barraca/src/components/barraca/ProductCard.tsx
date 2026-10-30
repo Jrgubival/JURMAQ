@@ -138,7 +138,7 @@ export default function ProductCard({
   return (
     <div className="bg-white border border-gray-200 rounded-xl overflow-hidden group transition-[border-color,box-shadow] duration-150 ease-out [@media(hover:hover)]:hover:border-gray-300 [@media(hover:hover)]:hover:shadow-[0_8px_24px_-14px_rgba(12,29,58,0.3)] flex flex-col h-full relative">
       <Link href={`/producto/${slug}`} className="block" aria-label={`Ver detalles de ${nombre}${medida ? ` - ${medida}` : ''}`}>
-        <div className="aspect-square bg-white relative overflow-hidden p-4">
+        <div className="aspect-[5/4] bg-white relative overflow-hidden p-3">
           {displayImage ? (
             <Image
               src={displayImage}
@@ -183,7 +183,7 @@ export default function ProductCard({
         </div>
       </Link>
 
-      <div className="px-4 pb-4 pt-1 flex flex-col flex-grow">
+      <div className="px-3 pb-3 sm:px-4 sm:pb-4 pt-1 flex flex-col flex-grow">
         <Link href={`/producto/${slug}`} className="block">
           {/* Marca arriba del nombre, como en la etiqueta de repisa. Sólo si el
               producto tiene una (ver src/lib/marcas.ts). */}
@@ -209,15 +209,13 @@ export default function ProductCard({
 
         {/* Precio + metadatos, empujados al pie para que las tarjetas de una
             fila alineen precio con precio. */}
-        <div className="mt-auto pt-4">
-          <Precio vista={vista} unidad={unidad} />
-          {comprable && (
-            /* En celular la tarjeta mide ~150 px y "IVA incluido" partía la
-               línea en dos; ahí queda sólo el stock. */
-            <p className="mt-1.5 text-xs text-gray-500 tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
-              <span className="hidden sm:inline">IVA incluido · </span>
-              {unidades <= 5 ? <span className="font-semibold text-amber-700">Quedan {unidades}</span> : `${unidades} en stock`}
-            </p>
+        <div className="mt-auto pt-3">
+          {comprable && <Precio vista={vista} unidad={unidad} />}
+          {/* Sin la línea "IVA incluido · N en stock": alargaba todas las
+              tarjetas. El IVA está en la ficha y el carrito; aquí sólo se
+              avisa cuando quedan pocas. */}
+          {comprable && unidades <= 5 && (
+            <p className="mt-1 text-xs font-semibold text-amber-700">Quedan {unidades}</p>
           )}
 
           {/* Una sola acción por tarjeta. Navy y no naranja: en una grilla de
@@ -251,7 +249,13 @@ export default function ProductCard({
                 </>
               )}
             </button>
-          ) : null}
+          ) : (
+            /* No disponible en el mismo lugar y alto que el botón: la fila
+               queda pareja y no se abre un hueco en la tarjeta. */
+            <p className="mt-3 w-full min-h-[44px] flex items-center justify-center rounded-lg bg-gray-100 text-sm font-medium text-gray-500">
+              No disponible
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -160,20 +160,23 @@ export default function SelectorMedidas({
                   type="button"
                   disabled={esActual}
                   aria-pressed={esActual}
-                  title={op.hayStock ? undefined : "Sobre pedido"}
+                  title={op.hayStock ? undefined : "No disponible"}
                   onClick={() => router.push(`/producto/${op.variante.slug}`)}
                   className={[
                     "min-h-[44px] min-w-[72px] px-4 py-2 text-sm rounded-lg border tabular-nums",
-                    "transition-[transform,border-color,color] duration-150 ease-out active:scale-[0.97]",
+                    "transition-[border-color,color] duration-150 ease-out",
+                    // Sin stock: en gris, como en las tiendas grandes. Se puede
+                    // tocar igual (la ficha dice "No disponible").
                     esActual
-                      ? "border-marca-600 bg-marca-50 text-marca-700 font-semibold"
-                      : "border-gray-300 bg-white text-gray-800 hover:border-navy-800 hover:text-navy-950",
+                      ? op.hayStock
+                        ? "border-navy-950 bg-navy-950 text-white font-semibold"
+                        : "border-gray-400 bg-gray-100 text-gray-500 font-semibold"
+                      : op.hayStock
+                        ? "border-gray-300 bg-white text-gray-800 hover:border-navy-950 hover:text-navy-950"
+                        : "border-gray-200 bg-gray-50 text-gray-400 line-through decoration-gray-300",
                   ].join(" ")}
                 >
                   {op.valor}
-                  {!op.hayStock && (
-                    <span className="ml-1.5 text-[10px] text-gray-500 font-normal"> s/ pedido</span>
-                  )}
                 </button>
               );
             })}
@@ -181,12 +184,6 @@ export default function SelectorMedidas({
         </div>
       ))}
 
-      {actual?.medida && (
-        <p className="text-xs text-gray-500 tabular-nums">
-          Elegido: {actual.medida}
-          {actual.stock > 0 ? ` · ${actual.stock} en stock` : " · sobre pedido"}
-        </p>
-      )}
     </div>
   );
 }

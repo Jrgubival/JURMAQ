@@ -12,7 +12,7 @@ import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs"
 import { getActiveCategoryDiscountMap, getDailyPromotions, applyDailyPromosToProducts } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
 import { resolvePrice } from "@/lib/pricing";
-import { vistaDesde } from "@/lib/precio-web";
+import { vistaDesde, vistaPrecio } from "@/lib/precio-web";
 import { esComprable, unidadesDisponibles } from "@/lib/stock";
 import Precio from "@/components/barraca/Precio";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
@@ -255,12 +255,19 @@ export default async function ProductoPage({
     .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
     .eq('categoria_id', producto.categoria_id)
     .eq('activo', true)
+    .gt('stock', 0)
+    .gt('precio', 0)
     .neq('id', producto.id)
-    .limit(4);
+    .order('stock', { ascending: false })
+    .limit(12);
   // FIX (audit jun-2026): aplicar la promo de categoría a los relacionados para
   // que muestren el MISMO precio normal+oferta que la ficha (antes mostraban el
   // precio lleno → inconsistencia $3.990 vs $3.791 de tu captura).
-  const relacionadosConPromo = await applyDailyPromosToProducts(relacionados || []);
+  // Sólo lo que se puede comprar (con los precios vigentes, no sólo los de la
+  // base): una sugerencia "No disponible" no sirve para nada.
+  const relacionadosConPromo = (await applyDailyPromosToProducts(relacionados || []))
+    .filter((p) => vistaPrecio(p).disponible)
+    .slice(0, 4);
 
   // AggregateRating REAL (no fabricado): agregado de reviews moderadas
   // ('aprobada') desde la vista barraca_productos_rating. Solo se inyecta en el
@@ -437,7 +444,7 @@ export default async function ProductoPage({
                 </li>
                 <li className="flex items-start gap-3 px-4 py-3">
                   <svg className="w-5 h-5 mt-0.5 text-navy-950 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8a2 2 0 012-2h7v10H5a2 2 0 01-2-2V8zm9-2h4l3 4v4a2 2 0 01-2 2h-5V6zM7 18a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z" /></svg>
-                  <span><span className="font-semibold text-navy-950">Despacho a domicilio</span><br /><span className="text-[#5A5A57]">Te llamamos para coordinar día y costo según tu comuna.</span></span>
+                  <span><span className="font-semibold text-navy-950">Despacho a domicilio</span><br /><span className="text-[#5A5A57]">Te llamaremos para coordinar el día según tu comuna.</span></span>
                 </li>
               </ul>
             )}
@@ -497,18 +504,10 @@ export default async function ProductoPage({
         <ReviewsList productoId={producto.id} />
 
         {/* Related Products — editorial section */}
-        {(relacionados || []).length > 0 && (
-          <section className="mt-24 lg:mt-32 pt-12 border-t border-[#EAEAEA]">
-            <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-3">
-              Productos relacionados
-            </p>
-            <h2
-              className="text-[#111111] mb-10 leading-[1.15]"
-              style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2rem)', fontWeight: 500, letterSpacing: '-0.01em' }}
-            >
-              También te puede <span className="font-semibold" style={{ fontWeight: 400 }}>interesar</span>.
-            </h2>
-            <div className="grid grid-cols-1 min-[375px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+        {relacionadosConPromo.length > 0 && (
+          <section className="mt-12 lg:mt-20 pt-8 border-t border-gray-200">
+            <h2 className="text-lg lg:text-2xl font-bold text-navy-950 mb-4 lg:mb-6">También te puede interesar</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
               {relacionadosConPromo.map((p) => (
                 <ProductCard key={p.id} id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={categoria?.slug || ''} />
               ))}

@@ -223,11 +223,11 @@ export default async function BarracaHomePage() {
     );
     for (const [id, n] of counts) productCounts[id] = n;
   }
-  // Sort by product count descending (most popular first), take top 6
+  // Por cantidad de productos; 10 llenan la fila de círculos en escritorio.
   const categorias: Categoria[] = (rawCategorias || [])
     .map((c) => ({ ...c, product_count: productCounts[c.id] || 0 }))
     .sort((a: Categoria, b: Categoria) => b.product_count - a.product_count)
-    .slice(0, 6);
+    .slice(0, 10);
 
   // Precios mínimos REALES para el banner de portada. Se consultan acá y no
   // se escriben en el slider, para que "desde $3.990" nunca sea una cifra que
@@ -287,14 +287,24 @@ export default async function BarracaHomePage() {
     .not('imagen', 'is', null)
     .order('stock', { ascending: false })
     .limit(80);
+  // Segunda fila: fierro y perfiles (lo "duro" de la barraca), no lo último
+  // que entró: así salía una tuerca. Categorías madre + sus subcategorías.
+  const { data: catsDuras } = await supabasePublic
+    .from('barraca_categorias')
+    .select('id, slug, padre_id');
+  const madresDuras = new Set(
+    (catsDuras || []).filter((c) => ['fierros-construccion', 'perfiles-y-planchas', 'techumbre'].includes(c.slug)).map((c) => c.id),
+  );
+  const idsDuras = (catsDuras || []).filter((c) => madresDuras.has(c.id) || (c.padre_id != null && madresDuras.has(c.padre_id))).map((c) => c.id);
   const { data: nuevosRaw } = await supabasePublic
     .from('barraca_productos')
     .select(SELECT_TARJETA)
     .eq('activo', true)
     .gt('stock', 0)
     .not('imagen', 'is', null)
-    .order('id', { ascending: false })
-    .limit(80);
+    .in('categoria_id', idsDuras.length ? idsDuras : [-1])
+    .order('stock', { ascending: false })
+    .limit(120);
   const familiasUsadas = new Set<string>();
   // "Los más vendidos": el ranking real de ventas del mes en pesos (columna
   // "Venta mes" de la planilla de precios, ver src/data/mas-vendidos.json),
@@ -445,13 +455,13 @@ export default async function BarracaHomePage() {
               Ver todas
             </Link>
           </div>
-          <ul className="riel flex gap-4 lg:gap-5 overflow-x-auto snap-x -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 pb-3">
+          <ul className="riel flex gap-4 lg:gap-0 lg:justify-between overflow-x-auto snap-x -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 pb-3">
             {categorias.map((cat) => {
               const catImg = getCategoryImage(cat.imagen, cat.slug);
               return (
-                <li key={cat.id} className="snap-start shrink-0 w-[76px] lg:w-[96px]">
+                <li key={cat.id} className="snap-start shrink-0 w-[76px] lg:w-[112px]">
                   <Link href={`/categorias/${cat.slug}`} className="group block text-center">
-                    <span className="block w-[76px] h-[76px] lg:w-[96px] lg:h-[96px] rounded-full overflow-hidden bg-gray-100 ring-1 ring-gray-200 group-hover:ring-2 group-hover:ring-marca-600 transition-[box-shadow] duration-150">
+                    <span className="block mx-auto w-[76px] h-[76px] lg:w-[104px] lg:h-[104px] rounded-full overflow-hidden bg-gray-100 ring-1 ring-gray-200 group-hover:ring-2 group-hover:ring-marca-600 transition-[box-shadow] duration-150">
                       {catImg ? (
                         <Image src={catImg} alt="" width={192} height={192} sizes="96px" className="w-full h-full object-cover" />
                       ) : null}
@@ -494,16 +504,16 @@ export default async function BarracaHomePage() {
         <section id="nuevos" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16 scroll-mt-24 content-auto">
           <div className="flex items-center justify-between mb-3 lg:mb-10">
             <div>
-              <h2 className="text-lg lg:text-2xl font-extrabold text-navy-950 leading-none">Recién llegados</h2>
+              <h2 className="text-lg lg:text-2xl font-extrabold text-navy-950 leading-none">Fierro, perfiles y techumbre</h2>
             </div>
-            <Link href="/categorias" className="inline-flex items-center gap-1 text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors">
+            <Link href="/categorias/fierros-construccion" className="inline-flex items-center gap-1 text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors">
               Ver todos
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
             {nuevos.map((p) => (
-              <div key={p.id} className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} isNew categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
+              <div key={p.id} className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
             ))}
           </div>
         </section>

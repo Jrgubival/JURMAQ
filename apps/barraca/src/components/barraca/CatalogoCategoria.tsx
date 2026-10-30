@@ -362,7 +362,7 @@ export default function CatalogoCategoria({
         </div>
 
         {/* Celular: barra fija "Filtrar · Ordenar", siempre a mano al bajar. */}
-        <div className="lg:hidden sticky top-[calc(2rem+env(safe-area-inset-top))] z-30 -mx-4 px-4 py-2 mb-4 bg-[#F7F7F5]/95 backdrop-blur-md border-y border-gray-200/70 flex items-center gap-2">
+        <div className="lg:hidden sticky top-[env(safe-area-inset-top)] z-30 -mx-4 px-4 py-2 mb-4 bg-[#F7F7F5]/95 backdrop-blur-md border-y border-gray-200/70 flex items-center gap-2">
           <button
             type="button"
             onClick={() => setPanel(true)}

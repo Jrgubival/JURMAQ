@@ -38,17 +38,17 @@ const SLIDES_FIJAS = {
   },
   despacho: {
     eyebrow: "Despacho",
-    title: "Te lo llevamos a Molina y Curicó",
-    sub: "Compras en línea y coordinamos contigo el día de entrega.",
+    title: "Despacho a domicilio",
+    sub: "Te llamamos para coordinar el día según tu comuna.",
     cta: { label: "Ver productos", href: "/categorias" },
     image: "/images/barraca/hero/local-despacho.webp",
     alt: "Camión de despacho de la Barraca JURMAQ en el galpón",
   },
   fachada: {
-    eyebrow: "Retiro en el local",
-    title: "Compra en línea y retira en Molina",
-    sub: "Pagas en la página y lo preparamos para que lo retires sin costo.",
-    cta: { label: "Cómo llegar", href: "/sucursales" },
+    eyebrow: "Barraca de Fierros JURMAQ · Molina",
+    title: "Fierro, perfiles y materiales, ahora en línea",
+    sub: "Compra desde el celular y retira en el local o te lo llevamos.",
+    cta: { label: "Ver productos", href: "/categorias" },
     image: "/images/barraca/hero/local-fachada.webp",
     alt: "Fachada de la Barraca de Fierros JURMAQ en Molina",
   },
@@ -63,16 +63,9 @@ const SLIDES_FIJAS = {
 export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) {
   const slides = useMemo(
     () => [
-      {
-        eyebrow: "Fierro de construcción",
-        title: "Fierro estriado A63, barra de 6 metros",
-        sub: "De 8 a 25 mm, desde una barra.",
-        precio: precios.fierro ?? null,
-        precioNota: "la barra de 8 mm",
-        cta: { label: "Ver fierros", href: "/categorias/fierros-construccion" },
-        image: "/images/barraca/hero/local-fierros.webp",
-        alt: "Rack de fierros y perfiles en la bodega de la Barraca JURMAQ",
-      },
+      // Primero el local: el dueño prefiere que la portada abra con la barraca
+      // y no con una lámina de producto (oct-2026).
+      { ...SLIDES_FIJAS.fachada, precio: null, precioNota: "" },
       {
         eyebrow: "Perfiles y planchas",
         title: "Tubos, ángulos, canales y planchas",
@@ -85,9 +78,8 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
       },
       { ...SLIDES_FIJAS.ferreteria, precio: null, precioNota: "" },
       { ...SLIDES_FIJAS.despacho, precio: null, precioNota: "" },
-      { ...SLIDES_FIJAS.fachada, precio: null, precioNota: "" },
     ],
-    [precios.fierro, precios.tubo],
+    [precios.tubo],
   );
 
   const riel = useRef<HTMLDivElement>(null);
@@ -143,7 +135,7 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
               className="object-cover object-center"
             />
             {/* Oscurece sólo donde va el texto: abajo en celular, a la izquierda en escritorio. */}
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/45 to-navy-950/0 lg:bg-gradient-to-r lg:from-navy-950/90 lg:via-navy-950/55 lg:to-navy-950/0" />
+            <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/75 via-45% to-navy-950/10 lg:bg-gradient-to-r lg:from-navy-950/95 lg:via-navy-950/65 lg:to-navy-950/0" />
             <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end lg:items-center pb-10 lg:pb-0">
               <div className="max-w-xl text-white">
                 <p className="text-xs font-semibold text-white/75 mb-1.5">{s.eyebrow}</p>

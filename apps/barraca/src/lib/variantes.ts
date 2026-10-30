@@ -63,6 +63,7 @@ const ETIQUETAS: Array<{ patron: RegExp; ejes: string[]; unidades?: (string | nu
   // Planchas y tableros: ancho × largo × espesor, en ese orden.
   { patron: /^\s*(plancha|zincalum|zinc|terciado|policarbonato|tab\b|osb)/i, ejes: ['Ancho', 'Largo', 'Espesor'] },
   { patron: /^\s*malla/i, ejes: ['Ancho', 'Largo'] },
+  { patron: /^\s*fierro/i, ejes: ['Diámetro', 'Largo'] },
   { patron: /^\s*oring/i, ejes: ['Diámetro interior', 'Grosor'] },
 ];
 
@@ -79,16 +80,27 @@ export function ejesDe(nombre: string, medida: string | null | undefined): Eje[]
   const unidadComun = colaUnidad ? colaUnidad[0].trim() : '';
 
   const valores = partes.map((p) => p.replace(new RegExp(`${UNID}\\s*$`, 'i'), '').trim());
+  // Cada parte conserva SU unidad si la trae: en "3 MM x 6 MTS" el 3 son
+  // milímetros, no metros (salía "Ancho: 3 MTS").
+  const unidadesPropias = partes.map((p) => p.match(new RegExp(`${UNID}\\s*$`, 'i'))?.[0].trim() ?? '');
+  const esLargo = (u: string) => /^(m|mt|mts)$/i.test(u);
 
   const regla = ETIQUETAS.find((e) => e.patron.test(nombre));
-  const etiquetas = regla ? [...regla.ejes] : [];
+  let etiquetas = regla ? [...regla.ejes] : [];
+  // "3 MM x 6 MTS" de un ángulo: la medida sólo trae espesor y largo (el
+  // 25x25 va en el nombre). Lo que viene en metros es el largo, y el resto
+  // toma los últimos ejes de la regla.
+  if (esLargo(unidadesPropias[unidadesPropias.length - 1]) && etiquetas.length >= valores.length - 1) {
+    const antes = valores.length - 1;
+    etiquetas = [...etiquetas.filter((e) => e !== 'Largo').slice(-antes || etiquetas.length).slice(0, antes), 'Largo'];
+  }
   while (etiquetas.length < valores.length) etiquetas.push(`Medida ${etiquetas.length + 1}`);
 
   return valores.map((v, i) => {
     // Si la regla fija una unidad para ese eje, manda esa (el diámetro de un
     // tubo redondo va en pulgadas aunque el espesor vaya en milímetros).
     const propia = regla?.unidades?.[i];
-    const u = propia !== undefined && propia !== null ? propia : unidadComun;
+    const u = propia !== undefined && propia !== null ? propia : unidadesPropias[i] || unidadComun;
     const valor = u === '"' ? `${v}"` : u ? `${v} ${u}` : v;
     return { etiqueta: etiquetas[i], valor };
   });

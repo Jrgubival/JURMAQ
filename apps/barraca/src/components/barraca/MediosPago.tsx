@@ -6,7 +6,7 @@
  * Illustrator (400 KB → 33 KB) en public/images/barraca/pagos/.
  */
 
-const chip = "inline-flex items-center justify-center h-8 px-2.5 bg-white rounded-md";
+const chip = "inline-flex items-center justify-center h-8 px-2.5 bg-white rounded-md border border-gray-200";
 
 export default function MediosPago({ className = "" }: { className?: string }) {
   return (

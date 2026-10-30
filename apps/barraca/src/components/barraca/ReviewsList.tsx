@@ -41,6 +41,16 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
   const [rating, setRating] = useState<RatingAgg | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  // Sólo quien compró el producto puede opinar (lo verifica el servidor).
+  const [puedeOpinar, setPuedeOpinar] = useState(false);
+  useEffect(() => {
+    const token = localStorage.getItem('barraca_token');
+    if (!token) return;
+    fetch(`/api/cuenta/reviews?puede=${productoId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : { puede: false }))
+      .then((d: { puede?: boolean }) => setPuedeOpinar(!!d.puede))
+      .catch(() => setPuedeOpinar(false));
+  }, [productoId]);
   const [liking, setLiking] = useState<string | null>(null);
 
   useEffect(() => {
@@ -95,7 +105,7 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
       <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6">
         {total === 0 ? (
           <p className="text-sm text-gray-500">
-            Aún no hay reseñas para este producto. Sé el primero en dejar una.
+            Aún no hay opiniones de este producto.
           </p>
         ) : (
           <div className="flex flex-col md:flex-row gap-6">
@@ -127,15 +137,19 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
           </div>
         )}
 
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="mt-4 px-4 py-2 bg-marca-600 hover:bg-marca-700 text-white text-sm font-medium rounded-xl"
-        >
-          {showForm ? 'Cancelar' : '✍️ Escribir review'}
-        </button>
+        {puedeOpinar ? (
+          <button
+            onClick={() => setShowForm((v) => !v)}
+            className="mt-4 px-4 h-10 bg-navy-950 hover:bg-navy-800 text-white text-sm font-semibold rounded-lg"
+          >
+            {showForm ? 'Cancelar' : 'Escribir una opinión'}
+          </button>
+        ) : (
+          <p className="mt-3 text-xs text-gray-500">Solo quienes compraron este producto pueden dejar su opinión.</p>
+        )}
       </div>
 
-      {showForm && (
+      {showForm && puedeOpinar && (
         <div className="mb-6">
           <ReviewForm
             productoId={productoId}
