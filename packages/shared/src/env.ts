@@ -215,7 +215,8 @@ const serverEnvSchema = z.object({
   PAGO_PASARELA: z
     .string()
     .optional()
-    .transform((v) => v?.trim().toLowerCase())
+    // Vacío = no definida (Vercel o .env.example con la variable en blanco).
+    .transform((v) => v?.trim().toLowerCase() || undefined)
     .pipe(z.enum(['webpay', 'mercadopago', 'simulado']).optional()),
 
   /**
@@ -227,12 +228,11 @@ const serverEnvSchema = z.object({
   WEBPAY_ENTORNO: z
     .string()
     .optional()
-    .transform((v) => v?.trim().toLowerCase())
+    .transform((v) => v?.trim().toLowerCase() || undefined)
     .pipe(z.enum(['integracion', 'produccion']).optional()),
-  WEBPAY_COMMERCE_CODE: z
-    .string()
-    .optional()
-    .refine((v) => !v?.trim() || /^\d{12}$/.test(v.trim()), 'código de comercio de 12 dígitos'),
+  // Sin validar acá: un valor malo no debe botar el sitio. webpayConfigurado()
+  // exige 12 dígitos y, si no calza, sólo apaga el pago en línea.
+  WEBPAY_COMMERCE_CODE: z.string().optional(),
   WEBPAY_API_KEY: z.string().optional(),
 
   /**
@@ -243,7 +243,7 @@ const serverEnvSchema = z.object({
   PEDIDOS_STORE: z
     .string()
     .optional()
-    .transform((v) => v?.trim().toLowerCase())
+    .transform((v) => v?.trim().toLowerCase() || undefined)
     .pipe(z.enum(['supabase', 'archivo']).optional()),
 
   /**
@@ -255,7 +255,7 @@ const serverEnvSchema = z.object({
   COURIER: z
     .string()
     .optional()
-    .transform((v) => v?.trim().toLowerCase())
+    .transform((v) => v?.trim().toLowerCase() || undefined)
     .pipe(z.enum(['enviame', 'simulado']).optional()),
   /** API key de Envíame (panel de Envíame → Mi empresa). */
   ENVIAME_API_KEY: z.string().optional(),

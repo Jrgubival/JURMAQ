@@ -34,7 +34,7 @@ export function entornoWebpay(): 'integracion' | 'produccion' {
 /** ¿Hay con qué cobrar? Fail-closed: producción sin credenciales de producción = no. */
 export function webpayConfigurado(): boolean {
   if (entornoWebpay() === 'produccion') {
-    return !!env.WEBPAY_COMMERCE_CODE?.trim() && !!env.WEBPAY_API_KEY?.trim();
+    return /^\d{12}$/.test(env.WEBPAY_COMMERCE_CODE?.trim() ?? '') && !!env.WEBPAY_API_KEY?.trim();
   }
   return !esProduccion();
 }
@@ -43,7 +43,7 @@ function transaccion() {
   if (entornoWebpay() === 'produccion') {
     const codigo = env.WEBPAY_COMMERCE_CODE?.trim();
     const llave = env.WEBPAY_API_KEY?.trim();
-    if (!codigo || !llave) throw new Error('Webpay de producción sin credenciales');
+    if (!codigo || !/^\d{12}$/.test(codigo) || !llave) throw new Error('Webpay de producción sin credenciales válidas');
     return WebpayPlus.Transaction.buildForProduction(codigo, llave);
   }
   if (esProduccion()) throw new Error('Webpay de integración no permitido en producción');

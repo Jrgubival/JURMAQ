@@ -27,18 +27,25 @@ const schema = z.discriminatedUnion('accion', [
 
 const pagadoConWebpay = (p: Pedido) => p.pasarela === 'webpay' && !!p.pagado_at && !!p.pasarela_referencia;
 
-async function devolverWebpay(p: Pedido) {
+/**
+ * Anula el pago en Webpay una sola vez: toma el candado del reembolso antes
+ * de llamar a Transbank, así dos clics (o un reintento) no reembolsan dos veces
+ * ni pisan un "hecho". Devuelve null si otro proceso ya lo tomó.
+ */
+async function devolverWebpay(p: Pedido): Promise<boolean | null> {
   const store = pedidos();
+  const ahora = () => new Date().toISOString();
+  if (!(await store.tomarReembolso(p.numero, { estado: 'en_curso', medio: 'webpay', monto: p.total, fecha: ahora() }))) return null;
   try {
     const r = await reembolsarWebpay(p.pasarela_referencia!, p.total);
     await store.guardarReembolso(p.numero, {
-      estado: r.ok ? 'hecho' : 'error', medio: 'webpay', monto: p.total, tipo: r.tipo, autorizacion: r.autorizacion, fecha: new Date().toISOString(),
+      estado: r.ok ? 'hecho' : 'error', medio: 'webpay', monto: p.total, tipo: r.tipo, autorizacion: r.autorizacion, fecha: ahora(),
     });
     logSafe('admin-pedido-reembolso', { numero: p.numero, ok: r.ok, tipo: r.tipo });
     return r.ok;
   } catch (error) {
     logSafeError('admin-pedido-reembolso-error', { numero: p.numero, error: String(error) });
-    await store.guardarReembolso(p.numero, { estado: 'error', medio: 'webpay', monto: p.total, fecha: new Date().toISOString() });
+    await store.guardarReembolso(p.numero, { estado: 'error', medio: 'webpay', monto: p.total, fecha: ahora() });
     return false;
   }
 }
@@ -63,6 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         return NextResponse.json({ error: 'Este pedido no tiene un reembolso de Webpay pendiente' }, { status: 409 });
       }
       const ok = await devolverWebpay(pedido);
+      if (ok === null) return NextResponse.json({ error: 'La devolución ya está en curso o hecha' }, { status: 409 });
       return NextResponse.json({ ok, reembolso: ok ? 'hecho' : 'error' }, { status: ok ? 200 : 502 });
     }
 
@@ -70,12 +78,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (r !== 'ok') {
       return NextResponse.json({ error: 'Este pedido ya salió o está cerrado: no se puede rechazar' }, { status: 409 });
     }
+    // Se relee después de cerrar: el pago pudo confirmarse justo antes.
+    const cerrado = (await store.porNumero(numero)) ?? pedido;
     let reembolso: 'hecho' | 'error' | 'transferencia' | null = null;
-    if (pedido.pagado_at) {
-      if (pagadoConWebpay(pedido)) {
-        reembolso = (await devolverWebpay(pedido)) ? 'hecho' : 'error';
+    if (cerrado.pagado_at) {
+      if (pagadoConWebpay(cerrado)) {
+        reembolso = (await devolverWebpay(cerrado)) ? 'hecho' : 'error';
       } else {
-        await store.guardarReembolso(numero, { estado: 'pendiente', medio: 'transferencia', monto: pedido.total, fecha: new Date().toISOString() });
+        await store.guardarReembolso(numero, { estado: 'pendiente', medio: 'transferencia', monto: cerrado.total, fecha: new Date().toISOString() });
         reembolso = 'transferencia';
       }
     }

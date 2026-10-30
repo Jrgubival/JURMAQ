@@ -49,7 +49,8 @@ export { MOTIVOS_RECHAZO, type MotivoRechazo } from './motivos';
 import type { MotivoRechazo } from './motivos';
 
 export interface Reembolso {
-  estado: 'hecho' | 'pendiente' | 'error';
+  /** 'en_curso' = candado mientras se pide la anulación a Webpay. */
+  estado: 'hecho' | 'pendiente' | 'error' | 'en_curso';
   medio: 'webpay' | 'transferencia';
   monto: number;
   tipo?: string | null;
@@ -149,6 +150,11 @@ export interface PedidosStore {
   /** Cancela o rechaza un pedido que no ha salido y devuelve su stock. Atómico. */
   cerrar(numero: string, estado: 'cancelado' | 'rechazado', motivo: MotivoRechazo | null, nota: string | null): Promise<'ok' | 'no_encontrado' | 'estado_invalido'>;
   guardarReembolso(numero: string, r: Reembolso): Promise<void>;
+  /**
+   * Toma el candado del reembolso: sólo si no hay uno, o el anterior falló.
+   * Devuelve false si otro proceso ya lo está haciendo o ya está hecho.
+   */
+  tomarReembolso(numero: string, r: Reembolso): Promise<boolean>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
   /** Guarda el envío generado. Sólo si el pedido aún no tenía seguimiento (devuelve false si ya lo tenía). */
   guardarEnvio(numero: string, envio: EnvioEmitido): Promise<boolean>;
@@ -211,6 +217,17 @@ const storeSupabase: PedidosStore = {
   async guardarReembolso(numero, r) {
     const { error } = await db.from('barraca_pedidos').update({ reembolso: r }).eq('numero', numero);
     if (error) throw error;
+  },
+  async tomarReembolso(numero, r) {
+    // Update condicional: una sola fila gana aunque lleguen dos clics a la vez.
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({ reembolso: r })
+      .eq('numero', numero)
+      .or('reembolso.is.null,reembolso->>estado.eq.error')
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
   },
   async cambiarEstado(numero, estado) {
     const { error } = await db.from('barraca_pedidos').update({ estado }).eq('numero', numero);

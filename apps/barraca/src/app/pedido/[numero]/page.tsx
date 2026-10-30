@@ -30,6 +30,7 @@ const MOTIVO_PAGO: Record<string, string> = {
   anulado: "Anulaste el pago en Webpay. No se hizo ningún cobro.",
   tiempo: "Se acabó el tiempo para pagar en Webpay. No se hizo ningún cobro.",
   rechazado: "Webpay rechazó el pago. No se hizo ningún cobro.",
+  cerrado: "Este pedido ya estaba cerrado cuando se aprobó el pago, así que anulamos el cobro en Webpay. Escríbenos si quieres comprar de nuevo.",
   error: "No pudimos confirmar el pago con Webpay. Si se descontó de tu cuenta, escríbenos antes de pagar de nuevo.",
 };
 
@@ -154,7 +155,7 @@ export default async function PedidoPage({
                 ? `${motivo ?? "No se hizo ningún cobro."} Puedes intentar de nuevo, con la misma u otra tarjeta. Si prefieres transferir, escríbenos y te mandamos los datos.`
                 : esperandoPago
                   ? motivo ?? "Si ya pagaste, la confirmación puede tardar unos minutos: recarga esta página. Si no, puedes pagar ahora."
-                  : `Estado: ${ETIQUETA_ESTADO[pedido.estado]}.`}
+                  : `Estado: ${ETIQUETA_ESTADO[pedido.estado]}.${sp.pago === "cerrado" ? ` ${MOTIVO_PAGO.cerrado}` : ""}`}
         </p>
 
         <AccionesPedido

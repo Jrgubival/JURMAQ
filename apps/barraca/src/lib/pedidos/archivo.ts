@@ -112,6 +112,13 @@ export function crearStoreArchivo(): PedidosStore {
     async guardarReembolso(numero, r) {
       editar(numero, (p) => { p.reembolso = r; });
     },
+    async tomarReembolso(numero, r) {
+      let tomado = false;
+      editar(numero, (p) => {
+        if (!p.reembolso || p.reembolso.estado === 'error') { p.reembolso = r; tomado = true; }
+      });
+      return tomado;
+    },
     async cambiarEstado(numero, estado) {
       editar(numero, (p) => { p.estado = estado; });
     },

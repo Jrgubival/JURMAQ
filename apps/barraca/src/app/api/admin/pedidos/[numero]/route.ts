@@ -32,6 +32,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const pedido = await store.porNumero(numero);
     if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
 
+    // Sólo transiciones razonables: un pedido cerrado no revive y uno sin pago no se salta el pago.
+    const desde: Record<string, string[]> = {
+      pagado: ['pendiente_pago', 'pago_rechazado'],
+      en_preparacion: ['pagado'],
+      listo_retiro: ['en_preparacion'],
+      despachado: ['en_preparacion'],
+      entregado: ['listo_retiro', 'despachado'],
+      cancelado: ['pendiente_pago', 'pago_rechazado', 'pago_discrepancia'],
+    };
+    if (!desde[parsed.data.estado]?.includes(pedido.estado)) {
+      return NextResponse.json({ error: 'Ese cambio de estado no corresponde para este pedido' }, { status: 409 });
+    }
+    // "Marcar pagado" a mano es sólo para transferencias: un pago en línea lo confirma Webpay.
+    if (parsed.data.estado === 'pagado' && pedido.metodo_pago !== 'transferencia') {
+      return NextResponse.json({ error: 'Los pagos con Webpay se confirman solos. Si el cliente prefiere transferir, cancela este pedido y que haga uno nuevo eligiendo transferencia.' }, { status: 409 });
+    }
+
     if (parsed.data.estado === 'pagado') {
       const r = await store.marcarPagado(numero, pedido.total, `MANUAL-${Date.now()}`, pedido.metodo_pago);
       if (r !== 'pagado') {

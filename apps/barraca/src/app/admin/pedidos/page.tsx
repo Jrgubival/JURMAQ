@@ -62,7 +62,7 @@ interface Pedido {
   pagado_at?: string | null;
   rechazo_motivo?: MotivoRechazo | null;
   rechazo_nota?: string | null;
-  reembolso?: { estado: "hecho" | "pendiente" | "error"; medio: "webpay" | "transferencia"; monto: number } | null;
+  reembolso?: { estado: "hecho" | "pendiente" | "error" | "en_curso"; medio: "webpay" | "transferencia"; monto: number } | null;
   total: number;
   pago_id: string | null;
   created_at: string;
@@ -77,7 +77,7 @@ function acciones(p: Pedido): Array<{ estado: Estado; label: string; principal?:
     case "pendiente_pago":
     case "pago_rechazado":
       return [
-        ...(p.metodo_pago === "transferencia" || p.estado === "pago_rechazado"
+        ...(p.metodo_pago === "transferencia"
           ? [{ estado: "pagado" as Estado, label: "Marcar pagado", principal: true }]
           : []),
         { estado: "cancelado", label: "Cancelar pedido" },
@@ -295,7 +295,7 @@ export default function PedidosAdminPage() {
                       {p.reembolso && (
                         <p className="mt-0.5">
                           Devolución {p.reembolso.medio === "webpay" ? "Webpay" : "por transferencia"} de {fmt(p.reembolso.monto)}:{" "}
-                          <strong>{p.reembolso.estado === "hecho" ? "hecha" : p.reembolso.estado === "pendiente" ? "pendiente (hacerla a mano)" : "falló"}</strong>
+                          <strong>{p.reembolso.estado === "hecho" ? "hecha" : p.reembolso.estado === "pendiente" ? "pendiente (hacerla a mano)" : p.reembolso.estado === "en_curso" ? "en curso" : "falló"}</strong>
                         </p>
                       )}
                       {p.reembolso?.medio === "webpay" && p.reembolso.estado === "error" && (

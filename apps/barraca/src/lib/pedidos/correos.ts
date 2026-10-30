@@ -119,8 +119,10 @@ export async function correoRechazoComprador(p: Pedido) {
   const pagado = !!p.pagado_at;
   const devolucion = !pagado
     ? '<p style="margin:0 0 12px;">No se hizo ningún cobro, así que no tienes que hacer nada más.</p>'
-    : p.reembolso?.medio === 'webpay'
-      ? `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>. Ya pedimos la anulación del cobro en Webpay; el abono aparece en tu tarjeta según los plazos de tu banco.</p>`
+    : p.reembolso?.medio === 'webpay' && p.reembolso.estado === 'hecho'
+      ? `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>. Ya anulamos el cobro en Webpay; el abono aparece en tu tarjeta según los plazos de tu banco.</p>`
+      : p.reembolso?.medio === 'webpay'
+      ? `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>, anulando el cobro en Webpay. Te avisamos cuando esté hecho; el abono aparece en tu tarjeta según los plazos de tu banco.</p>`
       : `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>, por transferencia, dentro de 10 días hábiles. Respóndenos este correo o escríbenos por WhatsApp con tus datos bancarios.</p>`;
   const retiro = p.rechazo_motivo === 'sin_despacho'
     ? '<p style="margin:0 0 12px;">Si te sirve, puedes retirar el pedido en la barraca (Av. Poniente 2157, Molina) en vez de la devolución: respóndenos este correo.</p>'

@@ -4,7 +4,7 @@ import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { pedidos, PATRON_NUMERO } from '@/lib/pedidos';
 import { aplicarEstadoPago, origenTienda } from '@/lib/pagos';
-import { confirmarWebpay, sesionWebpay } from '@/lib/pagos/webpay';
+import { confirmarWebpay, reembolsarWebpay, sesionWebpay } from '@/lib/pagos/webpay';
 
 /**
  * Retorno de Webpay Plus: /api/pagos/webpay/retorno?pedido=<numero>.
@@ -84,6 +84,25 @@ async function atender(request: NextRequest) {
       await store.guardarDetallePago(numero, { ...r.detalle, pasarela: 'webpay' });
       const resultado = await aplicarEstadoPago(r.estado, 'webpay');
       logSafe('webpay-retorno', { numero, resultado, codigo: r.detalle.codigoRespuesta });
+      // Carrera: la barraca canceló o no aprobó el pedido mientras se pagaba.
+      // El cobro ya se aprobó en Transbank: se anula de inmediato.
+      if (r.aprobado && resultado === 'ya_procesado') {
+        const actual = await store.porNumero(numero);
+        if (actual && (actual.estado === 'cancelado' || actual.estado === 'rechazado')) {
+          const fecha = () => new Date().toISOString();
+          if (await store.tomarReembolso(numero, { estado: 'en_curso', medio: 'webpay', monto: r.detalle.monto, fecha: fecha() })) {
+            let ok = false;
+            try {
+              ok = (await reembolsarWebpay(tokenWs, r.detalle.monto)).ok;
+            } catch (e) {
+              logSafeError('webpay-reembolso-pedido-cerrado', { numero, error: String(e) });
+            }
+            await store.guardarReembolso(numero, { estado: ok ? 'hecho' : 'error', medio: 'webpay', monto: r.detalle.monto, fecha: fecha() });
+            logSafeError('webpay-pago-sobre-pedido-cerrado', { numero, reembolsado: ok });
+          }
+          return volver(request, numero, 'cerrado');
+        }
+      }
       return volver(request, numero, resultado === 'rechazado' ? 'rechazado' : undefined);
     } catch (error) {
       logSafeError('webpay-confirmar-error', { numero, error: String(error) });

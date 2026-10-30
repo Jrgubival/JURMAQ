@@ -22,6 +22,7 @@ import { VERSION_TERMINOS } from '@/lib/vigencia';
  */
 
 const texto = (max: number) => z.string().trim().max(max);
+const MAX_TRANSFERENCIAS_PENDIENTES = 2;
 
 const schema = z
   .object({
@@ -76,6 +77,21 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Un pedido por transferencia reserva stock: tope de pedidos sin pagar por
+    // persona, para que nadie pueda dejar productos "tomados" sin comprarlos.
+    if (d.metodoPago === 'transferencia') {
+      const tel = d.telefono.replace(/\D/g, '');
+      const pendientes = (await pedidos().listar({ estado: 'pendiente_pago', limite: 500 })).filter(
+        (p) => p.metodo_pago === 'transferencia' && (p.email === d.email || p.telefono.replace(/\D/g, '') === tel),
+      );
+      if (pendientes.length >= MAX_TRANSFERENCIAS_PENDIENTES) {
+        return NextResponse.json(
+          { error: 'Ya tienes pedidos esperando la transferencia. Págalos o escríbenos por WhatsApp antes de hacer otro.' },
+          { status: 429 },
+        );
+      }
+    }
+
     // Precio y stock vigentes. Si algo cambió desde que el cliente armó el
     // carrito, se le devuelve el carrito revisado para que lo vea antes de pagar.
     const lineas = await revisarLineas(d.items);
