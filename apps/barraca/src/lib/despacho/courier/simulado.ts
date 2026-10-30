@@ -3,25 +3,26 @@ import crypto from 'crypto';
 import type { Courier } from './tipos';
 
 /**
- * Courier simulado, SÓLO para desarrollo (COURIER=simulado). Cotiza con una
- * fórmula de prueba (no son precios reales de nadie) y emite un número de
- * seguimiento inventado, para recorrer el flujo completo sin cuenta en
- * Blue Express. index.ts lo niega en producción.
+ * Courier simulado, SÓLO para desarrollo (COURIER=simulado). Cotiza con TARIFAS
+ * DE EJEMPLO (una fórmula de prueba, no son precios de ningún courier) y emite
+ * un número de seguimiento inventado, para recorrer el flujo completo sin
+ * cuenta en Envíame. index.ts lo niega en producción y el checkout lo marca
+ * como "tarifa de ejemplo".
  */
 export const courierSimulado: Courier = {
   id: 'simulado',
   nombre: 'Courier de prueba',
+  simulado: true,
 
-  async cotizar({ origen, destino, bultos }) {
-    const kilos = bultos.reduce((s, b) => s + Math.max(b.pesoKg, (b.largoCm * b.anchoCm * b.altoCm) / 4000) * b.cantidad, 0);
+  async cotizar({ origen, destino, paquete }) {
     const misma = origen.region === destino.region;
-    const base = misma ? 3000 : 5000;
-    const costo = Math.round((base + Math.ceil(kilos) * 700) / 10) * 10;
-    return { costo, dias: misma ? 2 : 4, servicio: 'Express (prueba)' };
+    const base = misma ? 3500 : 5500;
+    const costo = Math.round((base + Math.ceil(paquete.pesoKg) * 400) / 10) * 10;
+    return { costo, dias: misma ? 2 : 4, servicio: 'Courier de prueba', servicioCodigo: 'SIM:prueba' };
   },
 
   async emitir() {
-    return { seguimiento: `SIM${crypto.randomInt(10_000_000, 99_999_999)}`, etiquetaUrl: null };
+    return { seguimiento: `SIM${crypto.randomInt(10_000_000, 99_999_999)}`, etiquetaUrl: null, envioId: null };
   },
 
   async seguimiento() {

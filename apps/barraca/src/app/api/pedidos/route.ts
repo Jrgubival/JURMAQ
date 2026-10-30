@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
       if (despacho.estado !== 'ok') return NextResponse.json({ error: despacho.motivo }, { status: 409 });
     }
     const costoDespacho = despacho?.estado === 'ok' ? despacho.costo : null;
+    const porCourier = despacho?.estado === 'ok' && despacho.tipo === 'courier' ? despacho : null;
     if (costoDespacho != null && (!Number.isInteger(costoDespacho) || costoDespacho < 0)) {
       return NextResponse.json({ error: 'No pudimos calcular el despacho. Intenta de nuevo.' }, { status: 409 });
     }
@@ -130,7 +131,9 @@ export async function POST(request: NextRequest) {
           comuna: despacho?.comuna.nombre ?? null,
           comuna_codigo: despacho?.comuna.codigo ?? null,
           despacho_tipo: despacho?.estado === 'ok' ? despacho.tipo : null,
-          courier: despacho?.estado === 'ok' && despacho.tipo === 'courier' ? despacho.courier : null,
+          courier: porCourier?.courier ?? null,
+          courier_servicio: porCourier?.servicioCodigo ?? null,
+          courier_paquete: porCourier?.paquete ?? null,
           nombre: d.nombre,
           rut: d.rut ? formatearRut(d.rut) : null,
           telefono: d.telefono,

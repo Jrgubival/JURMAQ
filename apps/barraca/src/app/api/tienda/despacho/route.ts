@@ -37,6 +37,11 @@ export async function POST(request: NextRequest) {
     const lineas = await revisarLineas(parsed.data.items);
     const c = await cotizarDespacho(lineas, parsed.data.comuna);
     if (!c) return NextResponse.json({ error: 'Comuna no encontrada' }, { status: 400 });
+    // Al navegador sólo lo que muestra: nada del paquete ni del servicio interno.
+    if (c.estado === 'ok' && c.tipo === 'courier') {
+      const { comuna, costo, dias, detalle, simulado } = c;
+      return NextResponse.json({ estado: c.estado, tipo: c.tipo, comuna: comuna.nombre, costo, dias, detalle, simulado });
+    }
     const { comuna, ...resto } = c;
     return NextResponse.json({ ...resto, comuna: comuna.nombre });
   } catch (error) {

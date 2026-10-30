@@ -49,6 +49,8 @@ export function crearStoreArchivo(): PedidosStore {
         pagado_at: null,
         stock_descontado: false,
         courier_seguimiento: null,
+        courier_etiqueta_url: null,
+        courier_envio_id: null,
         created_at: ahora,
         updated_at: ahora,
       };
@@ -87,8 +89,16 @@ export function crearStoreArchivo(): PedidosStore {
     async cambiarEstado(numero, estado) {
       editar(numero, (p) => { p.estado = estado; });
     },
-    async guardarSeguimiento(numero, seguimiento) {
-      editar(numero, (p) => { p.courier_seguimiento = seguimiento; });
+    async guardarEnvio(numero, envio) {
+      let guardado = false;
+      editar(numero, (p) => {
+        if (p.courier_seguimiento) return;
+        p.courier_seguimiento = envio.seguimiento;
+        p.courier_etiqueta_url = envio.etiquetaUrl;
+        p.courier_envio_id = envio.envioId;
+        guardado = true;
+      });
+      return guardado;
     },
     async listar({ estado, limite = 200 }) {
       return leer().filter((p) => !estado || p.estado === estado).slice(0, limite);

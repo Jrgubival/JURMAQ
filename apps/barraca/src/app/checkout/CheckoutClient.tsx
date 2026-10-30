@@ -34,9 +34,9 @@ function codigoGuardado(v: unknown): string {
 
 type Cotizacion =
   | { estado: "cargando" }
-  | { estado: "ok"; tipo: "propio" | "courier"; costo: number | null; detalle: string; comuna: string }
-  | { estado: "bloqueado"; motivo: string; productos: string[]; comuna: string }
-  | { estado: "sin_servicio" | "error"; motivo: string };
+  | { estado: "ok"; tipo: "propio" | "courier"; costo: number | null; detalle: string; comuna: string; dias?: number | null; simulado?: boolean }
+  | { estado: "bloqueado"; motivo: string; productos: string[]; comuna: string; whatsapp?: string }
+  | { estado: "sin_servicio" | "error"; motivo: string; whatsapp?: string };
 
 const VACIO: Datos = { nombre: "", email: "", telefono: "", rut: "", direccion: "", comuna: "", notas: "" };
 const CLAVE_DATOS = "barraca_checkout_datos";
@@ -129,6 +129,9 @@ function EstadoDespacho({ cotizacion, onRetiro }: { cotizacion: Cotizacion | nul
       <div id="co-despacho-estado" aria-live="polite" className="rounded-lg bg-[#F7F7F5] border border-[#EAEAEA] px-4 py-3 text-sm">
         <p className="font-semibold text-[#111111]">
           {cotizacion.tipo === "propio" ? "Camión de la barraca" : "Envío por courier"} · <span className="tabular-nums">{monto}</span>
+          {cotizacion.simulado && (
+            <span className="ml-2 align-middle text-[11px] font-semibold uppercase tracking-wide rounded bg-amber-100 text-amber-800 px-1.5 py-0.5">Tarifa de ejemplo</span>
+          )}
         </p>
         <p className="text-[13px] text-[#5A5A57] mt-0.5">{cotizacion.detalle}</p>
       </div>
@@ -150,6 +153,11 @@ function EstadoDespacho({ cotizacion, onRetiro }: { cotizacion: Cotizacion | nul
         <button type="button" onClick={onRetiro} className="min-h-[40px] px-4 rounded-lg bg-white border border-red-300 text-sm font-semibold text-red-800 hover:bg-red-100">
           Retirar en la barraca
         </button>
+        {"whatsapp" in cotizacion && cotizacion.whatsapp?.startsWith("https://wa.me/") && (
+          <a href={cotizacion.whatsapp} target="_blank" rel="noopener noreferrer" className="min-h-[40px] inline-flex items-center px-4 rounded-lg bg-white border border-red-300 text-sm font-semibold text-red-800 hover:bg-red-100">
+            Cotizar despacho por WhatsApp
+          </a>
+        )}
         {cotizacion.estado === "bloqueado" && (
           <Link href="/carrito" className="min-h-[40px] inline-flex items-center px-4 rounded-lg text-sm font-semibold text-red-800 underline underline-offset-2">
             Editar carrito
@@ -405,7 +413,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 detalle={`Av. Poniente 2157, Molina. ${HORARIO_BARRACA.semana}.`} />
               <Opcion nombre="entrega" valor="despacho" actual={entrega} onChange={(v) => setEntrega(v as "despacho")}
                 titulo="Despacho a domicilio"
-                detalle="Molina, Curicó y Sagrada Familia en camión de la barraca. Productos chicos, a todo Chile por courier." />
+                detalle="Molina, Curicó y Sagrada Familia en camión de la barraca. Lo que no es fierro ni carga pesada, a todo Chile por courier." />
             </div>
             {despacho && (
               <>

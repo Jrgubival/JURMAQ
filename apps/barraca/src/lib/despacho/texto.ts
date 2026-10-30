@@ -10,7 +10,7 @@ interface PedidoDespacho {
   courier_seguimiento?: string | null;
 }
 
-const NOMBRE_COURIER: Record<string, string> = { bluex: 'Blue Express', simulado: 'courier (prueba)' };
+const NOMBRE_COURIER: Record<string, string> = { enviame: 'Envíame', simulado: 'courier (prueba)' };
 
 export function nombreCourier(id: string | null | undefined): string {
   return (id && NOMBRE_COURIER[id]) || 'courier';
@@ -25,7 +25,8 @@ export function montoDespacho(p: PedidoDespacho): string {
 export function textoDespacho(p: PedidoDespacho): { titulo: string; detalle: string } {
   if (p.despacho_tipo === 'courier') {
     return {
-      titulo: `Envío por ${nombreCourier(p.courier)}`,
+      // Al comprador no le dice nada "Envíame" (es el agregador): basta "courier".
+      titulo: p.courier === 'simulado' ? 'Envío por courier (prueba)' : 'Envío por courier',
       detalle: p.courier_seguimiento
         ? `N° de seguimiento: ${p.courier_seguimiento}.`
         : 'Te mandamos el número de seguimiento cuando lo entreguemos al courier.',

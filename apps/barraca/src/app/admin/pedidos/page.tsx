@@ -54,6 +54,7 @@ interface Pedido {
   despacho_tipo?: "propio" | "courier" | null;
   courier?: string | null;
   courier_seguimiento?: string | null;
+  courier_etiqueta_url?: string | null;
   total: number;
   pago_id: string | null;
   created_at: string;
@@ -132,6 +133,8 @@ export default function PedidosAdminPage() {
       const v = prompt(`N° de seguimiento de ${nombreCourier(p.courier)} para ${p.numero}:`);
       if (!v?.trim()) return;
       seguimiento = v.trim();
+    } else if (!confirm(`¿Crear el envío de ${p.numero} en ${nombreCourier(p.courier)}? El courier lo cobra a la cuenta de la barraca.`)) {
+      return;
     }
     setGuardando(p.numero);
     const res = await fetch(`/api/admin/pedidos/${p.numero}/envio`, {
@@ -201,6 +204,11 @@ export default function PedidosAdminPage() {
                       <p className="mt-1">
                         {p.despacho_tipo === "courier" ? `Courier (${nombreCourier(p.courier)})` : "Camión"}: {p.direccion}, {p.comuna} · {montoDespacho(p)}
                         {p.courier_seguimiento && <span className="block text-xs text-gray-600">Seguimiento: <span className="font-mono">{p.courier_seguimiento}</span></span>}
+                        {p.courier_etiqueta_url?.startsWith("https://") && (
+                          <a className="block text-xs text-blue-700 underline" href={p.courier_etiqueta_url} target="_blank" rel="noopener noreferrer">
+                            Imprimir etiqueta (PDF)
+                          </a>
+                        )}
                       </p>
                     )}
                     {p.notas && <p className="mt-1 text-gray-600">Nota: {p.notas}</p>}

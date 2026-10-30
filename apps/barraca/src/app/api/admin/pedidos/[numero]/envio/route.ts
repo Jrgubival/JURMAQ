@@ -4,15 +4,17 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { pedidos, PATRON_NUMERO } from '@/lib/pedidos';
 import { comunaPorCodigo } from '@/lib/despacho';
-import { BULTO_POR_DEFECTO, COMUNA_ORIGEN } from '@/lib/despacho/tarifas';
+import { COMUNA_ORIGEN } from '@/lib/despacho/tarifas';
 import { courierPorId } from '@/lib/despacho/courier';
 import { z, parseBody } from '@jurmaq/shared/validation';
 
 /**
- * POST /api/admin/pedidos/[numero]/envio — genera el envío con el courier del
- * pedido y guarda el número de seguimiento. Sólo pedidos por courier, pagados
- * o en preparación, y una sola vez. Si llega { seguimiento } (envío hecho a
- * mano en el portal del courier) sólo se guarda ese número.
+ * POST /api/admin/pedidos/[numero]/envio — crea el envío en el courier del
+ * pedido (Envíame) con la misma caja y servicio que se cotizaron, y guarda el
+ * número de seguimiento y la etiqueta. Sólo pedidos por courier, pagados o en
+ * preparación, y una sola vez. Es manual: nada lo dispara solo. Si llega
+ * { seguimiento } (envío hecho a mano en el panel del courier) sólo se guarda
+ * ese número.
  */
 const schema = z.object({ seguimiento: z.string().trim().regex(/^[A-Za-z0-9-]{4,40}$/).optional() });
 
@@ -43,24 +45,32 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: 'Genera el envío cuando el pedido esté pagado' }, { status: 409 });
     }
     if (parsed.data.seguimiento) {
-      await store.guardarSeguimiento(numero, parsed.data.seguimiento);
+      const ok = await store.guardarEnvio(numero, { seguimiento: parsed.data.seguimiento, etiquetaUrl: null, envioId: null });
+      if (!ok) return NextResponse.json({ error: 'El envío ya está generado' }, { status: 409 });
       logSafe('admin-pedido-envio-manual', { numero, por: session.user?.id ?? null });
       return NextResponse.json({ ok: true, seguimiento: parsed.data.seguimiento, etiquetaUrl: null });
     }
     const courier = courierPorId(pedido.courier);
     const destino = comunaPorCodigo(pedido.comuna_codigo ?? '');
     const origen = comunaPorCodigo(COMUNA_ORIGEN);
-    if (!courier || !destino || !origen) {
-      return NextResponse.json({ error: 'El courier de este pedido no está disponible. Genera el envío en su portal.' }, { status: 409 });
+    if (!courier || !destino || !origen || !pedido.courier_paquete) {
+      return NextResponse.json({ error: 'El courier de este pedido no está disponible. Genera el envío en su panel.' }, { status: 409 });
     }
-    // El pedido guarda las líneas sin peso: se usa el bulto por defecto.
-    const bultos = pedido.items.map((i) => ({ ...BULTO_POR_DEFECTO, cantidad: i.cantidad }));
-    const envio = await courier.emitir(pedido, { origen, destino, bultos });
-    await store.guardarSeguimiento(numero, envio.seguimiento);
+    const envio = await courier.emitir(pedido, {
+      origen,
+      destino,
+      paquete: pedido.courier_paquete,
+      servicioCodigo: pedido.courier_servicio,
+    });
+    if (!(await store.guardarEnvio(numero, envio))) {
+      // Otro clic ganó la carrera: el envío recién creado queda duplicado en el courier.
+      logSafeError('admin-pedido-envio-duplicado', { numero, courier: courier.id });
+      return NextResponse.json({ error: 'El envío ya estaba generado. Anula el duplicado en el panel del courier.' }, { status: 409 });
+    }
     logSafe('admin-pedido-envio', { numero, courier: courier.id, por: session.user?.id ?? null });
     return NextResponse.json({ ok: true, seguimiento: envio.seguimiento, etiquetaUrl: envio.etiquetaUrl });
   } catch (error) {
     logSafeError('admin-pedido-envio-error', { numero, error: String(error) });
-    return NextResponse.json({ error: 'No se pudo generar el envío. Hazlo en el portal del courier.' }, { status: 502 });
+    return NextResponse.json({ error: 'No se pudo generar el envío. Hazlo en el panel del courier.' }, { status: 502 });
   }
 }
