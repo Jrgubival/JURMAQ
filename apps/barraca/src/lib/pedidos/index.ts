@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { env } from '@jurmaq/shared/env';
 import { crearStoreArchivo } from './archivo';
+import type { EnvioEmitido, Paquete } from '@/lib/despacho/courier/tipos';
 
 /**
  * Pedidos de la tienda (tabla `barraca_pedidos`, ver
@@ -44,6 +45,7 @@ export const ETIQUETA_ESTADO: Record<EstadoPedido, string> = {
 
 export type MetodoPago = 'mercadopago' | 'transferencia';
 export type Entrega = 'retiro' | 'despacho';
+export type TipoDespacho = 'propio' | 'courier';
 
 export interface ItemPedido {
   productoId: number;
@@ -77,6 +79,24 @@ export interface Pedido {
   items: ItemPedido[];
   subtotal: number;
   costo_despacho: number | null;
+  /** Cómo viaja el despacho: camión propio o courier. null en retiro. */
+  despacho_tipo: TipoDespacho | null;
+  /** Código de comuna (ver lib/despacho/comunas.ts). */
+  comuna_codigo: string | null;
+  /** Courier usado ('enviame', 'simulado') y su número de seguimiento. */
+  courier: string | null;
+  /** Transportista y servicio cotizados (ej. "BLX:priority"), para crear el envío con lo mismo. */
+  courier_servicio: string | null;
+  /** La caja cotizada (peso y medidas), para que el envío salga igual. */
+  courier_paquete: Paquete | null;
+  courier_seguimiento: string | null;
+  /** URL de la etiqueta PDF del courier y id del envío en el courier. */
+  courier_etiqueta_url: string | null;
+  courier_envio_id: string | null;
+  /** Cuándo aceptó los Términos y la Privacidad en el checkout (obligatorio para comprar). */
+  terminos_aceptados_at: string;
+  /** Consentimiento aparte, no obligatorio, para recordatorios y ofertas por correo. */
+  acepta_ofertas: boolean;
   total: number;
   stock_descontado: boolean;
   created_at: string;
@@ -85,7 +105,7 @@ export interface Pedido {
 
 export type NuevoPedido = Omit<
   Pedido,
-  'id' | 'estado' | 'pasarela' | 'pasarela_referencia' | 'pago_id' | 'pagado_at' | 'stock_descontado' | 'created_at' | 'updated_at'
+  'id' | 'estado' | 'pasarela' | 'pasarela_referencia' | 'pago_id' | 'pagado_at' | 'stock_descontado' | 'courier_seguimiento' | 'courier_etiqueta_url' | 'courier_envio_id' | 'created_at' | 'updated_at'
 >;
 
 export type ResultadoPago = 'pagado' | 'ya_procesado' | 'monto_distinto' | 'no_encontrado';
@@ -99,6 +119,8 @@ export interface PedidosStore {
   /** Sólo pasa a 'pago_rechazado' si seguía pendiente. */
   marcarRechazado(numero: string, pagoId: string | null): Promise<void>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
+  /** Guarda el envío generado. Sólo si el pedido aún no tenía seguimiento (devuelve false si ya lo tenía). */
+  guardarEnvio(numero: string, envio: EnvioEmitido): Promise<boolean>;
   listar(opts: { estado?: EstadoPedido; limite?: number }): Promise<Pedido[]>;
 }
 
@@ -144,6 +166,20 @@ const storeSupabase: PedidosStore = {
   async cambiarEstado(numero, estado) {
     const { error } = await db.from('barraca_pedidos').update({ estado }).eq('numero', numero);
     if (error) throw error;
+  },
+  async guardarEnvio(numero, envio) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({
+        courier_seguimiento: envio.seguimiento,
+        courier_etiqueta_url: envio.etiquetaUrl,
+        courier_envio_id: envio.envioId,
+      })
+      .eq('numero', numero)
+      .is('courier_seguimiento', null)
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
   },
   async listar({ estado, limite = 200 }) {
     let q = db.from('barraca_pedidos').select('*').order('created_at', { ascending: false }).limit(limite);

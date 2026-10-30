@@ -228,6 +228,26 @@ const serverEnvSchema = z.object({
     .transform((v) => v?.trim().toLowerCase())
     .pipe(z.enum(['supabase', 'archivo']).optional()),
 
+  /**
+   * Tienda barraca: courier para lo que no va en el camión propio.
+   * 'enviame' (Envíame, pide ENVIAME_API_KEY) o 'simulado' (sólo desarrollo:
+   * cotiza con tarifas de ejemplo y emite datos de prueba; se rechaza en
+   * producción). Sin valor, el despacho por courier no se ofrece.
+   */
+  COURIER: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim().toLowerCase())
+    .pipe(z.enum(['enviame', 'simulado']).optional()),
+  /** API key de Envíame (panel de Envíame → Mi empresa). */
+  ENVIAME_API_KEY: z.string().optional(),
+  /** Id de la empresa (seller) en Envíame, mismo lugar que la API key. Se usa al crear envíos. */
+  ENVIAME_SELLER_ID: z.string().optional(),
+  /** Código de la bodega de origen (warehouse_code) creada en Envíame. */
+  ENVIAME_BODEGA: z.string().optional(),
+  /** Base de la API. Por defecto https://api.enviame.io/api (pruebas: https://stage.api.enviame.io/api). */
+  ENVIAME_BASE_URL: z.string().url().optional(),
+
   /** Correo que recibe el aviso de cada pedido nuevo de la tienda barraca. */
   BARRACA_PEDIDOS_EMAIL: z.string().email().optional(),
 

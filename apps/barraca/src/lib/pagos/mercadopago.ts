@@ -23,20 +23,26 @@ export const mercadoPago: PasarelaPago = {
   id: 'mercadopago',
 
   async iniciar(pedido, urls) {
-    // CLP no tiene decimales. Los ítems suman exactamente el total (no hay
-    // descuentos en el checkout y el despacho se coordina aparte); si algún
-    // día no cuadran, se manda una sola línea por el total para que Mercado
-    // Pago cobre exactamente lo mismo que valida el webhook.
-    const suma = pedido.items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+    // CLP no tiene decimales. Los ítems (más el despacho, si se cobra) suman
+    // exactamente el total; si algún día no cuadran, se manda una sola línea
+    // por el total para que Mercado Pago cobre exactamente lo mismo que valida
+    // el webhook.
+    const despacho = pedido.costo_despacho ?? 0;
+    const suma = pedido.items.reduce((s, i) => s + i.precio * i.cantidad, 0) + despacho;
     const items =
       suma === pedido.total
-        ? pedido.items.map((i) => ({
-            id: String(i.productoId),
-            title: i.nombre.slice(0, 250),
-            quantity: i.cantidad,
-            unit_price: i.precio,
-            currency_id: 'CLP',
-          }))
+        ? [
+            ...pedido.items.map((i) => ({
+              id: String(i.productoId),
+              title: i.nombre.slice(0, 250),
+              quantity: i.cantidad,
+              unit_price: i.precio,
+              currency_id: 'CLP',
+            })),
+            ...(despacho > 0
+              ? [{ id: 'despacho', title: `Despacho a ${pedido.comuna ?? 'domicilio'}`, quantity: 1, unit_price: despacho, currency_id: 'CLP' }]
+              : []),
+          ]
         : [{ id: pedido.numero, title: `Pedido ${pedido.numero}`, quantity: 1, unit_price: pedido.total, currency_id: 'CLP' }];
 
     const https = urls.retorno.startsWith('https://');

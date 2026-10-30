@@ -10,6 +10,7 @@ import {
 import { correoAvisoBarraca, correoConfirmacionComprador } from '@/lib/pedidos/correos';
 import { pasarelaActiva, pagoEnLineaDisponible, origenTienda } from '@/lib/pagos';
 import { rutValido, formatearRut } from '@/lib/rut';
+import { cotizarDespacho } from '@/lib/despacho';
 
 /**
  * POST /api/pedidos — crea un pedido desde el checkout.
@@ -33,16 +34,20 @@ const schema = z
     email: z.string().trim().toLowerCase().email().max(160),
     entrega: z.enum(['retiro', 'despacho']),
     direccion: texto(200).optional().default(''),
-    comuna: texto(80).optional().default(''),
+    // Código de comuna (ver lib/despacho/comunas.ts); el nombre sale del servidor.
+    comuna: z.string().trim().regex(/^[A-Z0-9]{2,4}$/).optional().or(z.literal('')).default(''),
     metodoPago: z.enum(['mercadopago', 'transferencia']),
     notas: texto(500).optional().default(''),
+    // Fail-closed: sin la casilla marcada no hay pedido (Ley 19.496, art. 12 A).
+    aceptaTerminos: z.literal(true),
+    aceptaOfertas: z.boolean().optional().default(false),
   })
   .superRefine((d, ctx) => {
     if (d.rut && !rutValido(d.rut)) ctx.addIssue({ code: 'custom', path: ['rut'], message: 'RUT inválido' });
     if (d.telefono.replace(/\D/g, '').length < 8) ctx.addIssue({ code: 'custom', path: ['telefono'], message: 'Teléfono inválido' });
     if (d.entrega === 'despacho') {
       if (d.direccion.length < 5) ctx.addIssue({ code: 'custom', path: ['direccion'], message: 'Falta la dirección' });
-      if (d.comuna.length < 3) ctx.addIssue({ code: 'custom', path: ['comuna'], message: 'Falta la comuna' });
+      if (!d.comuna) ctx.addIssue({ code: 'custom', path: ['comuna'], message: 'Falta la comuna' });
     }
   });
 
@@ -58,6 +63,9 @@ export async function POST(request: NextRequest) {
 
   const parsed = parseBody(schema, await request.json().catch(() => null));
   if (!parsed.ok) {
+    if (parsed.error.startsWith('aceptaTerminos')) {
+      return NextResponse.json({ error: 'Para comprar debes aceptar los Términos y Condiciones y la Política de Privacidad.' }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Revisa los datos del formulario', detalle: parsed.error }, { status: 400 });
   }
   const d = parsed.data;
@@ -96,6 +104,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'El carrito no tiene un total válido' }, { status: 409 });
     }
 
+    // El despacho también se calcula acá: lo que mostró el checkout es sólo una vista previa.
+    let despacho: Awaited<ReturnType<typeof cotizarDespacho>> = null;
+    if (d.entrega === 'despacho') {
+      despacho = await cotizarDespacho(lineas, d.comuna);
+      if (!despacho) return NextResponse.json({ error: 'Elige una comuna de la lista.' }, { status: 400 });
+      if (despacho.estado !== 'ok') return NextResponse.json({ error: despacho.motivo }, { status: 409 });
+    }
+    const costoDespacho = despacho?.estado === 'ok' ? despacho.costo : null;
+    const porCourier = despacho?.estado === 'ok' && despacho.tipo === 'courier' ? despacho : null;
+    if (costoDespacho != null && (!Number.isInteger(costoDespacho) || costoDespacho < 0)) {
+      return NextResponse.json({ error: 'No pudimos calcular el despacho. Intenta de nuevo.' }, { status: 409 });
+    }
+
     const { token, hash } = nuevoTokenAcceso();
     const store = pedidos();
     let pedido: Pedido | null = null;
@@ -107,7 +128,12 @@ export async function POST(request: NextRequest) {
           metodo_pago: d.metodoPago,
           entrega: d.entrega,
           direccion: d.entrega === 'despacho' ? d.direccion : null,
-          comuna: d.entrega === 'despacho' ? d.comuna : null,
+          comuna: despacho?.comuna.nombre ?? null,
+          comuna_codigo: despacho?.comuna.codigo ?? null,
+          despacho_tipo: despacho?.estado === 'ok' ? despacho.tipo : null,
+          courier: porCourier?.courier ?? null,
+          courier_servicio: porCourier?.servicioCodigo ?? null,
+          courier_paquete: porCourier?.paquete ?? null,
           nombre: d.nombre,
           rut: d.rut ? formatearRut(d.rut) : null,
           telefono: d.telefono,
@@ -115,8 +141,10 @@ export async function POST(request: NextRequest) {
           notas: d.notas || null,
           items,
           subtotal,
-          costo_despacho: null, // despacho a coordinar
-          total: subtotal,
+          terminos_aceptados_at: new Date().toISOString(),
+          acepta_ofertas: d.aceptaOfertas,
+          costo_despacho: costoDespacho, // null = a coordinar
+          total: subtotal + (costoDespacho ?? 0),
         });
       } catch (e) {
         if ((e as { code?: string }).code !== '23505') throw e; // número repetido: otro intento

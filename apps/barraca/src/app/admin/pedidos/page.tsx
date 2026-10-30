@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { montoDespacho, nombreCourier } from "@/lib/despacho/texto";
 
 /**
  * /admin/pedidos — pedidos de la tienda en línea.
@@ -49,6 +50,11 @@ interface Pedido {
   email: string;
   notas: string | null;
   items: Array<{ productoId: number; codigo: string | null; nombre: string; cantidad: number; precio: number; subtotal: number }>;
+  costo_despacho: number | null;
+  despacho_tipo?: "propio" | "courier" | null;
+  courier?: string | null;
+  courier_seguimiento?: string | null;
+  courier_etiqueta_url?: string | null;
   total: number;
   pago_id: string | null;
   created_at: string;
@@ -121,6 +127,31 @@ export default function PedidosAdminPage() {
     void cargar();
   }
 
+  async function generarEnvio(p: Pedido, manual: boolean) {
+    let seguimiento: string | undefined;
+    if (manual) {
+      const v = prompt(`N° de seguimiento de ${nombreCourier(p.courier)} para ${p.numero}:`);
+      if (!v?.trim()) return;
+      seguimiento = v.trim();
+    } else if (!confirm(`¿Crear el envío de ${p.numero} en ${nombreCourier(p.courier)}? El courier lo cobra a la cuenta de la barraca.`)) {
+      return;
+    }
+    setGuardando(p.numero);
+    const res = await fetch(`/api/admin/pedidos/${p.numero}/envio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(seguimiento ? { seguimiento } : {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    setGuardando(null);
+    if (!res.ok) {
+      alert(data.error || "No se pudo generar el envío");
+      return;
+    }
+    if (data.etiquetaUrl) window.open(data.etiquetaUrl, "_blank", "noopener");
+    void cargar();
+  }
+
   const porCobrar = lista.filter((p) => p.estado === "pendiente_pago").length;
   const porPreparar = lista.filter((p) => p.estado === "pagado").length;
 
@@ -169,7 +200,17 @@ export default function PedidosAdminPage() {
                     <p className="font-semibold text-gray-900 mb-1">Comprador</p>
                     <p>{p.nombre}{p.rut ? ` · RUT ${p.rut}` : ""}</p>
                     <p><a className="text-blue-700 underline" href={`tel:${p.telefono}`}>{p.telefono}</a> · <a className="text-blue-700 underline" href={`mailto:${p.email}`}>{p.email}</a></p>
-                    {p.entrega === "despacho" && <p className="mt-1">Despacho: {p.direccion}, {p.comuna}</p>}
+                    {p.entrega === "despacho" && (
+                      <p className="mt-1">
+                        {p.despacho_tipo === "courier" ? `Courier (${nombreCourier(p.courier)})` : "Camión"}: {p.direccion}, {p.comuna} · {montoDespacho(p)}
+                        {p.courier_seguimiento && <span className="block text-xs text-gray-600">Seguimiento: <span className="font-mono">{p.courier_seguimiento}</span></span>}
+                        {p.courier_etiqueta_url?.startsWith("https://") && (
+                          <a className="block text-xs text-blue-700 underline" href={p.courier_etiqueta_url} target="_blank" rel="noopener noreferrer">
+                            Imprimir etiqueta (PDF)
+                          </a>
+                        )}
+                      </p>
+                    )}
                     {p.notas && <p className="mt-1 text-gray-600">Nota: {p.notas}</p>}
                     {p.pago_id && <p className="mt-1 text-xs text-gray-500">Pago: {p.pago_id}</p>}
                   </div>
@@ -184,6 +225,24 @@ export default function PedidosAdminPage() {
                       ))}
                     </ul>
                   </div>
+                  {p.despacho_tipo === "courier" && !p.courier_seguimiento && (p.estado === "pagado" || p.estado === "en_preparacion") && (
+                    <div className="md:col-span-2 flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+                      <button
+                        disabled={guardando === p.numero}
+                        onClick={() => generarEnvio(p, false)}
+                        className="min-h-[40px] px-4 rounded-lg text-sm font-semibold bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-60"
+                      >
+                        Generar envío {nombreCourier(p.courier)}
+                      </button>
+                      <button
+                        disabled={guardando === p.numero}
+                        onClick={() => generarEnvio(p, true)}
+                        className="min-h-[40px] px-4 rounded-lg text-sm font-semibold border border-gray-300 text-gray-800 disabled:opacity-60"
+                      >
+                        Ingresar seguimiento a mano
+                      </button>
+                    </div>
+                  )}
                   {acciones(p).length > 0 && (
                     <div className="md:col-span-2 flex flex-wrap gap-2 pt-2 border-t border-gray-100">
                       {acciones(p).map((a) => (

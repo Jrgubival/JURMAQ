@@ -3,6 +3,7 @@ import { env } from '@jurmaq/shared/env';
 import { transporter, renderEmailLayout, renderOrderItems, escapeHtml, formatCLP } from '@jurmaq/shared/mail/email';
 import { logSafeError } from '@jurmaq/shared/logging';
 import { HORARIO_BARRACA } from '@jurmaq/shared/seo';
+import { montoDespacho, textoDespacho } from '@/lib/despacho/texto';
 import { ETIQUETA_ESTADO, type Pedido } from './index';
 
 /**
@@ -27,13 +28,17 @@ export function datosTransferencia() {
   };
 }
 
+/** Enlace permanente a los Términos: la confirmación escrita del art. 12 A. */
+const URL_TERMINOS = 'https://barraca.jurmaq.cl/terminos';
+
 function bloqueEntrega(p: Pedido): string {
   if (p.entrega === 'retiro') {
     return `<p style="margin:0 0 4px;"><strong>Retiro en la barraca</strong>: Av. Poniente 2157, Molina.</p>
 <p style="margin:0;color:#6b7280;font-size:13px;">${escapeHtml(HORARIO_BARRACA.semana)}. ${escapeHtml(HORARIO_BARRACA.sabado)}. Te avisamos cuando esté listo.</p>`;
   }
-  return `<p style="margin:0 0 4px;"><strong>Despacho a coordinar</strong>: ${escapeHtml(p.direccion || '')}, ${escapeHtml(p.comuna || '')}.</p>
-<p style="margin:0;color:#6b7280;font-size:13px;">Te contactamos para acordar el día y el costo del despacho.</p>`;
+  const d = textoDespacho(p);
+  return `<p style="margin:0 0 4px;"><strong>${escapeHtml(d.titulo)}</strong>: ${escapeHtml(p.direccion || '')}, ${escapeHtml(p.comuna || '')}.</p>
+<p style="margin:0;color:#6b7280;font-size:13px;">${escapeHtml(d.detalle)}</p>`;
 }
 
 function bloquePago(p: Pedido): string {
@@ -55,9 +60,11 @@ function cuerpo(p: Pedido, intro: string): string {
   return `
 <p style="margin:0 0 16px;">${intro}</p>
 ${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio })))}
-<p style="margin:16px 0;font-size:16px;"><strong>Total: ${formatCLP(p.total)}</strong> <span style="color:#6b7280;font-size:13px;">IVA incluido${p.entrega === 'despacho' ? ' · despacho aparte' : ''}</span></p>
+${p.entrega === 'despacho' ? `<p style="margin:16px 0 0;font-size:14px;">Despacho: ${escapeHtml(montoDespacho(p))}</p>` : ''}
+<p style="margin:16px 0;font-size:16px;"><strong>Total: ${formatCLP(p.total)}</strong> <span style="color:#6b7280;font-size:13px;">IVA incluido${p.entrega === 'despacho' && p.costo_despacho == null ? ' · despacho aparte' : ''}</span></p>
 <div style="margin:0 0 16px;">${bloqueEntrega(p)}</div>
-<div style="margin:0 0 16px;">${bloquePago(p)}</div>`;
+<div style="margin:0 0 16px;">${bloquePago(p)}</div>
+<p style="margin:0;color:#6b7280;font-size:12px;">Esta compra se rige por nuestros <a href="${URL_TERMINOS}" style="color:#6b7280;">Términos y Condiciones</a> (${URL_TERMINOS}), que aceptaste al comprar. Puedes guardarlos o imprimirlos desde ese enlace.</p>`;
 }
 
 export async function correoConfirmacionComprador(p: Pedido) {
