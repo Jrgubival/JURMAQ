@@ -4,6 +4,7 @@ import { sendReviewRequestEmail } from '@jurmaq/shared/mail/templates/review-req
 import { sendReplenishmentEmail } from '@jurmaq/shared/mail/templates/replenishment';
 import { env } from '@jurmaq/shared/env';
 import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
+import { estaDeBaja, urlBaja } from '@/lib/baja-correos';
 
 /**
  * POST /api/cron/post-purchase
@@ -115,12 +116,16 @@ export async function POST(request: NextRequest) {
           .map((it) => ({ nombre: String(it.nombre), slug: String(it.slug) }));
       }
 
-      await sendReviewRequestEmail({
-        to: c.email,
-        nombre: c.nombre || 'Cliente',
-        numero: c.numero,
-        productos,
-      });
+      // Pidió la baja: no se envía, pero se marca para no reintentar.
+      if (!(await estaDeBaja(c.email))) {
+        await sendReviewRequestEmail({
+          to: c.email,
+          nombre: c.nombre || 'Cliente',
+          numero: c.numero,
+          productos,
+          urlBaja: urlBaja(c.email),
+        });
+      }
 
       await supabaseAdmin
         .from('barraca_cotizaciones')
@@ -134,39 +139,12 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // ---- Replenishment: ventana [pagada_at + 55d, pagada_at + 75d] ----
-  const replWindowStart = new Date(now.getTime() - 75 * 24 * 3600 * 1000).toISOString();
-  const replWindowEnd = new Date(now.getTime() - 55 * 24 * 3600 * 1000).toISOString();
-
-  const { data: candidatosRepl } = await supabaseAdmin
-    .from('barraca_cotizaciones')
-    .select('id, email, nombre, numero, pagada_at')
-    .eq('estado', 'pagada')
-    .is('replenishment_sent_at', null)
-    .gte('pagada_at', replWindowStart)
-    .lte('pagada_at', replWindowEnd)
-    .not('email', 'is', null)
-    .limit(BATCH);
-
-  for (const c of (candidatosRepl ?? []) as CotizacionRow[]) {
-    try {
-      await sendReplenishmentEmail({
-        to: c.email,
-        nombre: c.nombre || 'Cliente',
-        numero: c.numero,
-      });
-
-      await supabaseAdmin
-        .from('barraca_cotizaciones')
-        .update({ replenishment_sent_at: new Date().toISOString() })
-        .eq('id', c.id);
-
-      stats.replenishments_sent++;
-    } catch (err) {
-      console.error('[post-purchase-replenish-fail]', { id: c.id, err: String(err) });
-      stats.errors++;
-    }
-  }
+  // ---- Replenishment: APAGADO ----
+  // El recordatorio de reposición es publicidad: según la Política de
+  // Privacidad (sección 4) sólo se envía con una casilla de consentimiento en
+  // el checkout, que todavía no existe. Reactivar cuando esté y respete la
+  // baja (lib/baja-correos.ts). sendReplenishmentEmail se conserva.
+  void sendReplenishmentEmail;
 
   return NextResponse.json({ ok: true, ...stats });
 }

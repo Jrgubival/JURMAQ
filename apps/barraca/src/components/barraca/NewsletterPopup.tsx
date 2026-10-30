@@ -162,7 +162,7 @@ export default function NewsletterPopup() {
                 />
                 <span>
                   Acepto recibir promociones por email y la{" "}
-                  <a href="https://jurmaq.cl/privacidad" target="_blank" rel="noopener noreferrer" className="underline">
+                  <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="underline">
                     Política de Privacidad
                   </a>
                   . Puedo darme de baja desde el pie de cada email.

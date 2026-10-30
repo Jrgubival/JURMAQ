@@ -2,10 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/carrito-recovery",
-      "schedule": "0 10 * * *"
-    },
-    {
       "path": "/api/cron/post-purchase",
       "schedule": "0 9 * * *"
     }

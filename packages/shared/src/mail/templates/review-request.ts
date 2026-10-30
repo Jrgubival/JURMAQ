@@ -19,6 +19,8 @@ export async function sendReviewRequestEmail(args: {
   nombre: string;
   numero: string;
   productos: ProductoSimple[];
+  /** Enlace para dejar de recibir estos correos (art. 28 B Ley 19.496). */
+  urlBaja?: string;
 }) {
   // Limito a 3 productos featured para no spamear el email.
   const featured = (args.productos || []).slice(0, 3);
@@ -65,7 +67,9 @@ export async function sendReviewRequestEmail(args: {
       featured.length > 0
         ? `${BARRACA_URL}/producto/${encodeURIComponent(featured[0].slug)}#reviews`
         : `${BARRACA_URL}/cuenta/cotizaciones/${args.numero}`,
-    footerNote: 'Solo enviamos un recordatorio. No insistimos.',
+    footerNote: args.urlBaja
+      ? `Solo enviamos un recordatorio. No insistimos. <a href="${args.urlBaja}" style="color:#9ca3af;text-decoration:underline;">No quiero recibir más correos</a>.`
+      : 'Solo enviamos un recordatorio. No insistimos.',
   });
 
   await sendPostPurchaseEmail({

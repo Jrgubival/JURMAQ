@@ -56,6 +56,7 @@ export default function AddToCartClient({
     const ok = agregarProducto(
       {
         productoId: producto.id,
+        codigo: producto.codigo,
         nombre: producto.nombre,
         precio: precioVenta,
         imagen: producto.imagen,

@@ -84,6 +84,7 @@ export default function ProductCard({
   precio_original,
   en_oferta,
   solo_cotizar,
+  codigo,
   rating,
   rating_count,
 }: ProductCardProps) {
@@ -112,7 +113,7 @@ export default function ProductCard({
     if (!comprable) return;
     setAdding(true);
     const ok = agregarProducto({
-      productoId: id, nombre, precio: precioVenta, imagen, slug, medida, unidad, stock: unidades,
+      productoId: id, nombre, precio: precioVenta, imagen, slug, medida, unidad, stock: unidades, codigo,
     });
     setAdding(false);
     if (ok) {

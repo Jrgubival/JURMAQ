@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 /**
  * CookieBanner — Consent Mode v2 implementation compartida entre apps.
@@ -88,13 +88,25 @@ export interface CookieBannerProps {
   productLabel?: string;
   /** Override del className para el botón "Aceptar todo" (default `bg-navy-950`). */
   acceptButtonClassName?: string;
+  /** Texto propio del aviso (la barraca usa el de su Política de Privacidad). */
+  mensaje?: ReactNode;
 }
+
+/** Vuelve a mostrar el aviso para cambiar la elección ("Configurar cookies"). */
+export const EVENTO_CONFIGURAR_COOKIES = "jurmaq:configurar-cookies";
 
 export default function CookieBanner({
   productLabel = "productos",
   acceptButtonClassName = "bg-navy-950 hover:bg-[#111111]",
+  mensaje,
 }: CookieBannerProps = {}) {
   const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const abrir = () => setVisible(true);
+    window.addEventListener(EVENTO_CONFIGURAR_COOKIES, abrir);
+    return () => window.removeEventListener(EVENTO_CONFIGURAR_COOKIES, abrir);
+  }, []);
 
   useEffect(() => {
     const existing = getStoredConsent();
@@ -132,7 +144,7 @@ export default function CookieBanner({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
         <p className="text-[13px] leading-snug text-white/85 sm:flex-1">
-          Usamos cookies para medir qué {productLabel} se buscan y mejorar el sitio. Sin datos personales identificables.
+          {mensaje ?? <>Usamos cookies para medir qué {productLabel} se buscan y mejorar el sitio. Sin datos personales identificables.</>}
         </p>
         <div className="flex items-center gap-2 shrink-0">
           <button

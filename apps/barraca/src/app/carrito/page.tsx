@@ -8,6 +8,7 @@ import { trackEvents } from "@/lib/analytics";
 import { cambiarCantidad, quitarDelCarrito, vaciarCarrito, type ItemCarrito } from "@/lib/carrito";
 import { useCarrito } from "@/lib/useCarrito";
 import CantidadEditable from "@/components/barraca/CantidadEditable";
+import AvisoSinRetracto from "@/components/barraca/AvisoSinRetracto";
 
 function Cantidad({ item }: { item: ItemCarrito }) {
   return <CantidadEditable valor={item.cantidad} max={item.stock} nombre={item.nombre} onCambio={(n) => cambiarCantidad(item.productoId, n)} />;
@@ -158,6 +159,7 @@ export default function CarritoPage() {
                           </svg>
                         </button>
                       </div>
+                      <AvisoSinRetracto codigo={item.codigo} tamano="carrito" />
                       <p className="text-sm font-semibold text-navy-950 mt-1 tabular-nums">{formatCLP(item.precio)} <span className="text-xs font-normal text-gray-500">{item.unidad ? `/${item.unidad.toLowerCase()}` : "c/u"}</span></p>
                       {problemas[item.productoId] && (
                         <p className="text-xs font-semibold text-red-600 mt-0.5">{problemas[item.productoId]}</p>

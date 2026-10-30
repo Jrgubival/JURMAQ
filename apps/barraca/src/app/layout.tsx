@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono, Newsreader, Oswald } from "next/font/google";
 import BarracaShell from "./BarracaShell";
-import Analytics from "@jurmaq/shared/ui/Analytics";
+import AnalyticsConConsentimiento from "@/components/AnalyticsConConsentimiento";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
 import MetaPixel from "@/components/MetaPixel";
 import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
@@ -206,10 +206,13 @@ export default function BarracaLayout({
       <body className="min-h-screen bg-[#FBFBFA] text-[#111111] antialiased font-[var(--font-sans)]">
         {/* P0 audit-analytics fix: Analytics no estaba en el árbol, todo trackEvents.*
             quedaba no-op (0 datos GA4). Esta línea repara el bug. */}
-        <Analytics />
+        <AnalyticsConConsentimiento />
         <MetaPixel />
         <BarracaShell>{children}</BarracaShell>
-        <CookieBanner productLabel="productos" />
+        <CookieBanner
+          productLabel="productos"
+          mensaje={<>Usamos cookies propias y de Google y Meta para medir visitas y mostrar publicidad. Puedes aceptarlas o usar solo las esenciales. <a href="/privacidad" className="underline underline-offset-2 hover:text-white">Ver Política de Privacidad</a>.</>}
+        />
       </body>
     </html>
   );

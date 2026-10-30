@@ -251,11 +251,11 @@ export default function RegistroPage() {
             />
             <span>
               He leido y acepto los{" "}
-              <Link href="https://jurmaq.cl/terminos" target="_blank" className="text-marca-600 hover:underline font-medium">
+              <Link href="/terminos" target="_blank" className="text-marca-600 hover:underline font-medium">
                 Terminos y Condiciones
               </Link>{" "}
               y la{" "}
-              <Link href="https://jurmaq.cl/privacidad" target="_blank" className="text-marca-600 hover:underline font-medium">
+              <Link href="/privacidad" target="_blank" className="text-marca-600 hover:underline font-medium">
                 Politica de Privacidad
               </Link>
               , y autorizo el tratamiento de mis datos personales conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>

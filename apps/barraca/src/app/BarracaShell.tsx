@@ -11,6 +11,7 @@ import { HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
 import { whatsappCtaBarracaCotizar, whatsappCtaBarracaMejorarPrecio } from "@jurmaq/shared/whatsapp";
 import { cantidadEnCarrito } from "@/lib/carrito";
 import gsap from "gsap";
+import { EVENTO_CONFIGURAR_COOKIES } from "@jurmaq/shared/ui/CookieBanner";
 
 const CartDrawer = dynamic(
   () => import("@/components/barraca/CartDrawer"),
@@ -630,9 +631,13 @@ function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-center sm:text-left">{buildFooterCopyright('barraca')}</p>
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-              <a href="https://jurmaq.cl/terminos" className="hover:text-navy-950 transition-colors duration-150">Términos y condiciones</a>
-              <span className="text-navy-700" aria-hidden="true">|</span>
-              <a href="https://jurmaq.cl/privacidad" className="hover:text-navy-950 transition-colors duration-150">Política de privacidad</a>
+              <Link href="/terminos" className="hover:text-navy-950 transition-colors duration-150">Términos y condiciones</Link>
+              <span className="text-gray-300" aria-hidden="true">|</span>
+              <Link href="/privacidad" className="hover:text-navy-950 transition-colors duration-150">Política de privacidad</Link>
+              <span className="text-gray-300" aria-hidden="true">|</span>
+              <button type="button" onClick={() => window.dispatchEvent(new Event(EVENTO_CONFIGURAR_COOKIES))} className="hover:text-navy-950 transition-colors duration-150">
+                Configurar cookies
+              </button>
             </div>
           </div>
         </div>

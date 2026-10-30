@@ -15,6 +15,7 @@ import { resolvePrice } from "@/lib/pricing";
 import { vistaDesde, vistaPrecio } from "@/lib/precio-web";
 import { esComprable, unidadesDisponibles } from "@/lib/stock";
 import Precio from "@/components/barraca/Precio";
+import AvisoSinRetracto from "@/components/barraca/AvisoSinRetracto";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { describir, especificaciones } from '@/lib/ficha';
 import { PROMESA } from '@/lib/promesa';
@@ -421,6 +422,7 @@ export default async function ProductoPage({
             {/* Precio web / precio normal (tachado) / No disponible: ver lib/precio-web.ts. */}
             <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
               <Precio vista={vista} unidad={producto.unidad} tamano="ficha" />
+              {vista.disponible && <AvisoSinRetracto codigo={producto.codigo} />}
               {vista.disponible ? (
                 <p className="mt-3 text-sm text-[#5A5A57] flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span>IVA incluido</span>

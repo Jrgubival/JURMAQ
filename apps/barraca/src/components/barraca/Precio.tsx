@@ -2,6 +2,15 @@ import { formatCLP } from "@jurmaq/shared/format";
 import type { VistaPrecio } from "@/lib/precio-web";
 
 /**
+ * Vigencia de los precios web (Ley 19.496: toda promoción informa su
+ * duración). Se configura con NEXT_PUBLIC_PRECIO_WEB_VALIDO_HASTA (por ejemplo
+ * "30 de noviembre de 2026"). No se inventa: si falta, en desarrollo se marca
+ * en amarillo para que se vea que falta el dato, y en producción no se muestra.
+ */
+const VALIDO_HASTA = process.env.NEXT_PUBLIC_PRECIO_WEB_VALIDO_HASTA?.trim() || null;
+const EN_DESARROLLO = process.env.NODE_ENV !== "production";
+
+/**
  * Bloque de precio de la tienda, igual en tarjeta, ficha y barra del celular:
  *   Precio web  $7.910 /un  −29%
  *   Precio normal $11.210   (tachado)
@@ -53,6 +62,12 @@ export default function Precio({
       {conOferta && (
         <p className={`mt-1.5 text-gray-500 leading-none ${tamano === "ficha" ? "text-sm" : "text-xs"}`}>
           Precio normal <span className="line-through">{formatCLP(vista.precioNormal!)}</span>
+        </p>
+      )}
+      {conOferta && (VALIDO_HASTA || EN_DESARROLLO) && (
+        <p className={`mt-1 leading-tight text-gray-500 ${tamano === "ficha" ? "text-xs" : "text-[11px]"}`}>
+          {tamano === "tarjeta" ? "Precio exclusivo online" : "Precio exclusivo de compra online"}, válido hasta{" "}
+          {VALIDO_HASTA ?? <mark className="bg-amber-100 text-amber-900 rounded px-0.5">[COMPLETAR fecha]</mark>}
         </p>
       )}
     </div>

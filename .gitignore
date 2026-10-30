@@ -76,6 +76,7 @@ apps/barraca/scripts/backups/*
 
 # Pedidos de prueba de la tienda (PEDIDOS_STORE=archivo)
 .pedidos-dev.json
+.bajas-dev.json
 # Reportes de la carga de precios
 reporte-carga-precios.csv
 

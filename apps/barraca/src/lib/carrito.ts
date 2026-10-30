@@ -28,6 +28,8 @@ export interface ItemCarrito {
   unidad: string | null;
   /** Stock conocido al agregar; el servidor lo vuelve a revisar. */
   stock: number;
+  /** Código Softmad (para el aviso de "sin derecho a retracto"). */
+  codigo?: string | null;
 }
 
 const CLAVE = "barraca_carrito_v2";
