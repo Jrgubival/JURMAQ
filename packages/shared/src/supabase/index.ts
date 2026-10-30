@@ -7,7 +7,7 @@ const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = env.SUPABASE_SERVICE_ROLE_KEY;
 const supabaseAnonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Sólo en `next dev` con PRECIOS_LOCALES (ver precios-locales.ts).
+// Sólo en `next dev` con PRECIOS_LOCALES o IMAGENES_LOCALES (ver precios-locales.ts).
 const preciosLocales = fetchConPreciosLocales();
 const opciones = preciosLocales ? { global: { fetch: preciosLocales } } : undefined;
 

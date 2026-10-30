@@ -1,0 +1,222 @@
+{
+  "_nota": "Correcciones de fotos de productos (fierros, perfiles, techumbre). antes = imagen en la base al revisar; imagen = la nueva (null = placa de medida). Aplicar con scripts/corregir-fotos.mjs.",
+  "productos": {
+    "132": {
+      "slug": "angulo-perforado-30x30x0-4-132",
+      "nombre": "Angulo Perforado 30x30x0.4",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_790673-MLC76371002159_052024-E.webp",
+      "imagen": "https://media.falabella.com/sodimacCL/485446_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba ángulo liso sin perforaciones (esquinero sin foto)"
+    },
+    "307": {
+      "slug": "cadenas-14x20x8x4-5mts-307",
+      "nombre": "Cadenas 14x20x8x4.5mts",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_645897-MLC69664857285_052023-E.webp",
+      "imagen": "https://media.falabella.com/sodimacCL/711136_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba cadena de eslabones; es cadena armada de fierro estriado"
+    },
+    "308": {
+      "slug": "cadenas-15x20x8x4-5mts-308",
+      "nombre": "Cadenas 15x20x8x4,5mts",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_645897-MLC69664857285_052023-E.webp",
+      "imagen": "https://media.falabella.com/sodimacCL/711136_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba cadena de eslabones; es cadena armada de fierro estriado"
+    },
+    "309": {
+      "slug": "cadenas-15x30x9-2x4-5mts-309",
+      "nombre": "Cadenas 15x30x9.2x4,5mts",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_645897-MLC69664857285_052023-E.webp",
+      "imagen": "https://media.falabella.com/sodimacCL/711136_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba cadena de eslabones; es cadena armada de fierro estriado"
+    },
+    "324": {
+      "slug": "canal-ne-100-x-50-x-2-0-mm-324",
+      "nombre": "Canal Negro 100 x 50 x 2.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "325": {
+      "slug": "canal-ne-100-x-50-x-3-0-mm-325",
+      "nombre": "Canal Negro 100 x 50 x 3.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "326": {
+      "slug": "canal-ne-125-x-50-x-2-0-mm-326",
+      "nombre": "Canal Negro 125 x 50 x 2.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "327": {
+      "slug": "canal-ne-125-x-50-x-3-0-mm-327",
+      "nombre": "Canal Negro 125 x 50 x 3.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "328": {
+      "slug": "canal-ne-150-x-50-x-2-0-mm-328",
+      "nombre": "Canal Negro 150 x 50 x 2.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "329": {
+      "slug": "canal-ne-150-x-50-x-3-0-mm-329",
+      "nombre": "Canal Negro 150 x 50 x 3.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "330": {
+      "slug": "canal-ne-150-x-50-x-4mm-330",
+      "nombre": "Canal Negro 150 x 50 x 4mm",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "331": {
+      "slug": "canal-ne-150-x-50-x-5mm-331",
+      "nombre": "Canal Negro 150 x 50 x 5mm",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "332": {
+      "slug": "canal-ne-150-x-75-x-3-0-mm-332",
+      "nombre": "Canal Negro 150 x 75 x 3.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "333": {
+      "slug": "canal-ne-175-x-50-x-3-0mm-333",
+      "nombre": "Canal Negro 175 x 50 x 3.0mm",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "334": {
+      "slug": "canal-ne-200-x-50-x-2-0-mm-334",
+      "nombre": "Canal Negro 200 x 50 x 2.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "335": {
+      "slug": "canal-ne-200-x-50-x-3-0-mm-335",
+      "nombre": "Canal Negro 200 x 50 x 3.0 MM",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_736722-MLC80053839750_102024-E.webp",
+      "motivo": "Mostraba perfil galvanizado con pestañas; se usa la del canal negro (U negro)"
+    },
+    "608": {
+      "slug": "escalerillas-24-un-x-5m-608",
+      "nombre": "Escalerillas 24 UN x 5m",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_883964-MLC96891014452_112025-E.webp",
+      "imagen": "https://media.falabella.com/sodimacCL/155411_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba canaleta eléctrica plástica; es escalerilla de fierro"
+    },
+    "609": {
+      "slug": "escalerillas-8-5cm-x5-mts-por-unidad-609",
+      "nombre": "Escalerillas 8,5cm X5 Mts por Unidad",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_883964-MLC96891014452_112025-E.webp",
+      "imagen": "https://media.falabella.com/sodimacCL/155411_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba canaleta eléctrica plástica; es escalerilla de fierro"
+    },
+    "668": {
+      "slug": "fe-estriado-a63-8-mm-x-6-0-m-668",
+      "nombre": "Fierro Estriado A63 8 MM x 6.0 M",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_617136-MLC112528677063_052026-E-fierro-estriado-16-mm-x-6-mts.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_893993-MLC82290776861_022025-E.webp",
+      "motivo": "Foto de celular con bordes negros; se usa la misma del resto de la familia"
+    },
+    "705": {
+      "slug": "galvatec-esq-30x30x0-40-perf-2-4m-705",
+      "nombre": "Galvatec Esquinero 30x30x0.40 Perforado 2.4m",
+      "antes": null,
+      "imagen": "https://media.falabella.com/sodimacCL/485446_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba ángulo liso sin perforaciones (esquinero sin foto)"
+    },
+    "707": {
+      "slug": "galvatec-p-cielo-40x18x10x0-5-3m-707",
+      "nombre": "Galvatec Perfil Cielo 40x18x10x0.5 3m",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_692015-MLC108184390825_032026-E.webp",
+      "imagen": "https://media.falabella.com/sodimacCL/771708_01/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba perfil omega con flechas de MercadoLibre"
+    },
+    "708": {
+      "slug": "galvatec-u-62x25x0-85-6m-708",
+      "nombre": "Galvatec U 62x25x0.85 6m",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": null,
+      "motivo": "Mostraba perfil C con pestañas, no un U: queda la placa de medida"
+    },
+    "709": {
+      "slug": "galvatec-u-92x30x0-85-6m-709",
+      "nombre": "Galvatec U 92x30x0.85 6m",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_709255-MLC109463341453_032026-E-perfil-metalcon-canal-u-62x25x085mm-de-6m.webp",
+      "imagen": null,
+      "motivo": "Mostraba perfil C con pestañas, no un U: queda la placa de medida"
+    },
+    "1035": {
+      "slug": "perfil-cuad-macizo-10mm-x-6mts-1035",
+      "nombre": "Perfil Cuadrado Macizo 10mm x 6mts",
+      "antes": null,
+      "imagen": "https://media.falabella.com/sodimacCL/729256_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "No tenía foto"
+    },
+    "1036": {
+      "slug": "perfil-cuad-macizo-12mm-x-6mts-1036",
+      "nombre": "Perfil Cuadrado Macizo 12mm x 6mts",
+      "antes": null,
+      "imagen": "https://media.falabella.com/sodimacCL/729256_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "No tenía foto"
+    },
+    "1086": {
+      "slug": "pilares-15x15x8x3mts-1086",
+      "nombre": "Pilares 15x15x8x3mts",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_799751-MLC112196957083_052026-E.webp",
+      "imagen": "https://media.falabella.com/sodimacCL/133906_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba un tubo cuadrado; es pilar armado de fierro estriado"
+    },
+    "1667": {
+      "slug": "angulo-perforado-30x30x0-4-133",
+      "nombre": "Angulo Perforado 30x30x0.4",
+      "antes": "https://http2.mlstatic.com/D_922568-MLC53828525180_022023-O.jpg",
+      "imagen": "https://media.falabella.com/sodimacCL/485446_001/w=800,h=800,f=webp,fit=contain,q=85",
+      "motivo": "Mostraba ángulo liso sin perforaciones (esquinero sin foto)"
+    },
+    "2335": {
+      "slug": "zincalum-onda-0-35x2000mm-1700",
+      "nombre": "ZINCALUM Onda 0,35x2000mm",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_785136-MLC89109680134_082025-E.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_832440-MLC97111772875_112025-E.webp",
+      "motivo": "Mostraba planchas de colores; se usa la de zincalum onda gris"
+    },
+    "2336": {
+      "slug": "zincalum-onda-0-35x2500mm-1701",
+      "nombre": "ZINCALUM Onda 0,35x2500mm",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_785136-MLC89109680134_082025-E.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_832440-MLC97111772875_112025-E.webp",
+      "motivo": "Mostraba planchas de colores; se usa la de zincalum onda gris"
+    },
+    "2337": {
+      "slug": "zincalum-onda-0-35x3000mm-1702",
+      "nombre": "ZINCALUM Onda 0.35x3000mm",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_785136-MLC89109680134_082025-E.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_832440-MLC97111772875_112025-E.webp",
+      "motivo": "Mostraba planchas de colores; se usa la de zincalum onda gris"
+    },
+    "2338": {
+      "slug": "zincalum-onda-0-35x3660mm-1703",
+      "nombre": "ZINCALUM Onda 0.35x3660mm",
+      "antes": "https://http2.mlstatic.com/D_Q_NP_2X_785136-MLC89109680134_082025-E.webp",
+      "imagen": "https://http2.mlstatic.com/D_Q_NP_2X_832440-MLC97111772875_112025-E.webp",
+      "motivo": "Mostraba planchas de colores; se usa la de zincalum onda gris"
+    }
+  }
+}

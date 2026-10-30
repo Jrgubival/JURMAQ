@@ -81,3 +81,4 @@ reporte-carga-precios.csv
 
 # Precios para revisar en local (scripts/cargar-precios-web.mjs --local)
 .precios-locales.json
+.imagenes-locales.json
