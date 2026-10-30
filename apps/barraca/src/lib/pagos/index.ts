@@ -5,26 +5,26 @@ import { pedidos, esProduccion, type ResultadoPago } from '@/lib/pedidos';
 import { correoAvisoBarraca, correoConfirmacionComprador } from '@/lib/pedidos/correos';
 import { mercadoPago } from './mercadopago';
 import { pagoSimulado } from './simulado';
+import { webpay, webpayConfigurado } from './webpay';
 import type { EstadoPagoPasarela, PasarelaPago } from './tipos';
 
 export type { PasarelaPago } from './tipos';
 
-/**
- * Pasarela de "Pagar en línea" según PAGO_PASARELA. Para cambiar a Webpay Plus:
- * agregar webpay.ts (ver tipos.ts) y su caso acá.
- */
+/** Pasarela de "Pagar en línea" según PAGO_PASARELA (por defecto, Webpay Plus). */
 export function pasarelaActiva(): PasarelaPago {
   if (env.PAGO_PASARELA === 'simulado') {
     if (esProduccion()) throw new Error('PAGO_PASARELA=simulado no está permitido en producción');
     return pagoSimulado;
   }
-  return mercadoPago;
+  if (env.PAGO_PASARELA === 'mercadopago') return mercadoPago;
+  return webpay;
 }
 
 /** ¿Se puede ofrecer "Pagar en línea"? (hay credenciales o es la simulada). */
 export function pagoEnLineaDisponible(): boolean {
   if (env.PAGO_PASARELA === 'simulado') return !esProduccion();
-  return !!env.MERCADOPAGO_ACCESS_TOKEN?.trim();
+  if (env.PAGO_PASARELA === 'mercadopago') return !!env.MERCADOPAGO_ACCESS_TOKEN?.trim();
+  return webpayConfigurado();
 }
 
 /** Origen público de la tienda, para armar URLs de retorno y notificación. */

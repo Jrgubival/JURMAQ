@@ -36,7 +36,7 @@ const schema = z
     direccion: texto(200).optional().default(''),
     // Id de zona del camión (lib/despacho/zonas.ts) o código de comuna; el nombre sale del servidor.
     comuna: z.string().trim().regex(/^(?:[A-Z0-9]{2,4}|[a-z][a-z-]{1,29})$/).optional().or(z.literal('')).default(''),
-    metodoPago: z.enum(['mercadopago', 'transferencia']),
+    metodoPago: z.enum(['webpay', 'transferencia']),
     notas: texto(500).optional().default(''),
     // Fail-closed: sin la casilla marcada no hay pedido (Ley 19.496, art. 12 A).
     aceptaTerminos: z.literal(true),
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   }
   const d = parsed.data;
 
-  if (d.metodoPago === 'mercadopago' && !pagoEnLineaDisponible()) {
+  if (d.metodoPago === 'webpay' && !pagoEnLineaDisponible()) {
     return NextResponse.json({ error: 'El pago en línea no está disponible. Elige transferencia.' }, { status: 409 });
   }
 
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
     logSafe('pedido-creado', { numero: pedido.numero, metodo: d.metodoPago, total: pedido.total, email: maskEmail(d.email) });
 
     let redirect = `/pedido/${pedido.numero}`;
-    if (d.metodoPago === 'mercadopago') {
+    if (d.metodoPago === 'webpay') {
       const origen = origenTienda(request.url);
       try {
         const pasarela = pasarelaActiva();
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
     const res = NextResponse.json({ numero: pedido.numero, total: pedido.total, redirect }, { status: 201 });
     res.cookies.set(cookiePedido(pedido.numero), token, {
       httpOnly: true,
-      sameSite: 'lax', // viaja en el retorno top-level desde Mercado Pago
+      sameSite: 'lax', // viaja en el retorno top-level desde Webpay (GET); el POST de Webpay lo atiende /api/pagos/webpay/retorno sin cookie
       secure: origenTienda(request.url).startsWith('https://'),
       path: '/',
       maxAge: 60 * 60 * 24 * 90,

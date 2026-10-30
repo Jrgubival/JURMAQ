@@ -93,7 +93,8 @@ const nextConfig: NextConfig = {
               // Allow same-origin iframes so admin can embed contract preview.
               "frame-ancestors 'self'",
               "base-uri 'self'",
-              "form-action 'self'",
+              // El pago con Webpay Plus se abre con un formulario POST a Transbank.
+              "form-action 'self' https://webpay3g.transbank.cl https://webpay3gint.transbank.cl",
             ].join("; "),
           },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },

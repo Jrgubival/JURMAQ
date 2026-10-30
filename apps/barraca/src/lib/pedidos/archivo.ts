@@ -46,6 +46,7 @@ export function crearStoreArchivo(): PedidosStore {
         pasarela: null,
         pasarela_referencia: null,
         pago_id: null,
+        pago_detalle: null,
         pagado_at: null,
         stock_descontado: false,
         courier_seguimiento: null,
@@ -85,6 +86,9 @@ export function crearStoreArchivo(): PedidosStore {
       editar(numero, (p) => {
         if (p.estado === 'pendiente_pago') { p.estado = 'pago_rechazado'; p.pago_id = pagoId; }
       });
+    },
+    async guardarDetallePago(numero, detalle) {
+      editar(numero, (p) => { p.pago_detalle = detalle; });
     },
     async cambiarEstado(numero, estado) {
       editar(numero, (p) => { p.estado = estado; });

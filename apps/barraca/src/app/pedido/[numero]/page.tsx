@@ -7,7 +7,8 @@ import { logSafeError } from "@jurmaq/shared/logging";
 import { pedidos, cookiePedido, tokenValido, PATRON_NUMERO, ETIQUETA_ESTADO, type Pedido } from "@/lib/pedidos";
 import { datosTransferencia } from "@/lib/pedidos/correos";
 import { montoDespacho, textoDespacho } from "@/lib/despacho/texto";
-import { aplicarEstadoPago, pasarelaActiva, pagoEnLineaDisponible } from "@/lib/pagos";
+import { aplicarEstadoPago, pagoEnLineaDisponible } from "@/lib/pagos";
+import { mercadoPago } from "@/lib/pagos/mercadopago";
 import AccionesPedido from "./AccionesPedido";
 
 export const dynamic = "force-dynamic";
@@ -19,10 +20,44 @@ export const metadata: Metadata = {
 
 /**
  * Confirmación del pedido. Sólo la ve quien tiene la cookie httpOnly que se
- * dejó al crear el pedido (mismo navegador). Al volver de Mercado Pago con
- * ?payment_id=..., el pago se consulta a Mercado Pago (no se cree en la URL)
- * por si la notificación del webhook todavía no llegó.
+ * dejó al crear el pedido (mismo navegador). El pago con Webpay ya llega
+ * confirmado desde /api/pagos/webpay/retorno (?pago=anulado|tiempo|rechazado
+ * sólo elige el mensaje; el estado sale siempre del pedido guardado). Para
+ * pedidos antiguos de Mercado Pago, ?payment_id=... se consulta a Mercado Pago.
  */
+
+const MOTIVO_PAGO: Record<string, string> = {
+  anulado: "Anulaste el pago en Webpay. No se hizo ningún cobro.",
+  tiempo: "Se acabó el tiempo para pagar en Webpay. No se hizo ningún cobro.",
+  rechazado: "Webpay rechazó el pago. No se hizo ningún cobro.",
+  error: "No pudimos confirmar el pago con Webpay. Si se descontó de tu cuenta, escríbenos antes de pagar de nuevo.",
+};
+
+/** Comprobante de Webpay que se guarda al confirmar el pago (lo pide Transbank). */
+function Comprobante({ d }: { d: Record<string, unknown> }) {
+  const texto = (v: unknown) => (typeof v === "string" && v ? v : null);
+  const fecha = texto(d.fecha);
+  const filas: Array<[string, string | null]> = [
+    ["Orden de compra", texto(d.ordenCompra)],
+    ["Monto", typeof d.monto === "number" ? formatCLP(d.monto) : null],
+    ["Código de autorización", texto(d.autorizacion)],
+    ["Fecha", fecha ? new Date(fecha).toLocaleString("es-CL", { timeZone: "America/Santiago", dateStyle: "short", timeStyle: "short" }) : null],
+    ["Tipo de pago", texto(d.tipoPago)],
+    ["Cuotas", typeof d.cuotas === "number" && d.cuotas > 0 ? String(d.cuotas) : "Sin cuotas"],
+    ["Tarjeta", texto(d.tarjeta) ? `**** ${d.tarjeta}` : null],
+  ];
+  return (
+    <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[14px] bg-[#F7F7F5] border border-[#EAEAEA] rounded-xl p-5">
+      <dt className="col-span-2 text-[11px] font-semibold uppercase tracking-wide text-[#787774] mb-1">Comprobante Webpay</dt>
+      {filas.filter(([, v]) => v).map(([k, v]) => (
+        <div key={k} className="contents">
+          <dt className="text-[#787774]">{k}</dt>
+          <dd className="font-semibold text-[#111111] tabular-nums [overflow-wrap:anywhere]">{v}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 export default async function PedidoPage({
   params,
   searchParams,
@@ -59,7 +94,7 @@ export default async function PedidoPage({
   const pagoId = typeof sp.payment_id === "string" ? sp.payment_id : typeof sp.collection_id === "string" ? sp.collection_id : null;
   if (pagoId && (pedido.estado === "pendiente_pago" || pedido.estado === "pago_rechazado") && pedido.pasarela === "mercadopago") {
     try {
-      const estado = await pasarelaActiva().consultarPago(pagoId);
+      const estado = await mercadoPago.consultarPago(pagoId);
       if (estado && estado.numero === pedido.numero) {
         await aplicarEstadoPago(estado, "mercadopago");
         pedido = (await pedidos().porNumero(numero)) ?? pedido;
@@ -72,7 +107,9 @@ export default async function PedidoPage({
   const pagado = pedido.estado === "pagado" || ["en_preparacion", "listo_retiro", "despachado", "entregado"].includes(pedido.estado);
   const transferencia = pedido.metodo_pago === "transferencia" && pedido.estado === "pendiente_pago";
   const rechazado = pedido.estado === "pago_rechazado";
-  const esperandoPago = pedido.metodo_pago === "mercadopago" && pedido.estado === "pendiente_pago";
+  const esperandoPago = pedido.metodo_pago !== "transferencia" && pedido.estado === "pendiente_pago";
+  const motivo = typeof sp.pago === "string" && !pagado ? MOTIVO_PAGO[sp.pago] ?? null : null;
+  const detallePago = pedido.pasarela === "webpay" && pedido.pago_detalle ? pedido.pago_detalle : null;
   const t = datosTransferencia();
 
   const titulo = pagado
@@ -109,9 +146,9 @@ export default async function PedidoPage({
             : transferencia
               ? `Transfiere ${formatCLP(pedido.total)} con estos datos e indica el número de pedido. Preparamos el pedido cuando veamos la transferencia.`
               : rechazado
-                ? "No se hizo ningún cobro. Puedes intentar de nuevo, con la misma u otra tarjeta. Si prefieres transferir, escríbenos y te mandamos los datos."
+                ? `${motivo ?? "No se hizo ningún cobro."} Puedes intentar de nuevo, con la misma u otra tarjeta. Si prefieres transferir, escríbenos y te mandamos los datos.`
                 : esperandoPago
-                  ? "Si ya pagaste, la confirmación puede tardar unos minutos: recarga esta página. Si no, puedes pagar ahora."
+                  ? motivo ?? "Si ya pagaste, la confirmación puede tardar unos minutos: recarga esta página. Si no, puedes pagar ahora."
                   : `Estado: ${ETIQUETA_ESTADO[pedido.estado]}.`}
         </p>
 
@@ -121,6 +158,8 @@ export default async function PedidoPage({
           pagado={pagado}
           puedeReintentar={(rechazado || esperandoPago) && pagoEnLineaDisponible()}
         />
+
+        {pagado && detallePago && <Comprobante d={detallePago} />}
 
         {transferencia && (
           <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px] bg-[#F7F7F5] border border-[#EAEAEA] rounded-xl p-5">

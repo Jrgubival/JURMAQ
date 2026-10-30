@@ -49,7 +49,7 @@ export default function AccionesPedido({
         disabled={abriendo}
         className="w-full sm:w-auto min-h-[52px] px-8 py-3 bg-marca-600 hover:bg-marca-700 disabled:opacity-70 text-white text-base font-bold rounded-lg shadow-md shadow-marca-200 transition-colors"
       >
-        {abriendo ? "Abriendo Mercado Pago…" : `Pagar ${formatCLP(total)} con Mercado Pago`}
+        {abriendo ? "Abriendo Webpay…" : `Pagar ${formatCLP(total)} con Webpay`}
       </button>
       {error && <p role="alert" className="mt-2 text-[13px] text-red-700">{error}</p>}
     </div>

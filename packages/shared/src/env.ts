@@ -208,14 +208,32 @@ const serverEnvSchema = z.object({
 
   /**
    * Tienda barraca: pasarela de pago para "Pagar en línea".
-   * 'mercadopago' (Checkout Pro, por defecto) o 'simulado' (sólo desarrollo:
-   * una página local que aprueba el pago; se rechaza en producción).
+   * 'webpay' (Webpay Plus de Transbank, por defecto), 'mercadopago' (Checkout
+   * Pro, ya no se usa) o 'simulado' (sólo desarrollo: una página local que
+   * aprueba el pago; se rechaza en producción).
    */
   PAGO_PASARELA: z
     .string()
     .optional()
     .transform((v) => v?.trim().toLowerCase())
-    .pipe(z.enum(['mercadopago', 'simulado']).optional()),
+    .pipe(z.enum(['webpay', 'mercadopago', 'simulado']).optional()),
+
+  /**
+   * Webpay Plus. Con WEBPAY_ENTORNO=produccion se usan WEBPAY_COMMERCE_CODE y
+   * WEBPAY_API_KEY (la "API Key secreta" que entrega Transbank). Sin él, el
+   * ambiente de integración con las credenciales públicas de prueba (nunca en
+   * producción).
+   */
+  WEBPAY_ENTORNO: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim().toLowerCase())
+    .pipe(z.enum(['integracion', 'produccion']).optional()),
+  WEBPAY_COMMERCE_CODE: z
+    .string()
+    .optional()
+    .refine((v) => !v?.trim() || /^\d{12}$/.test(v.trim()), 'código de comercio de 12 dígitos'),
+  WEBPAY_API_KEY: z.string().optional(),
 
   /**
    * Tienda barraca: dónde se guardan los pedidos. 'supabase' (por defecto,

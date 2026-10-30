@@ -19,7 +19,7 @@ const PASOS_COTIZACION = [
 
 const PASOS_TIENDA = [
   { t: "Elige tus productos", d: "El precio publicado es el que pagas, IVA incluido." },
-  { t: "Paga en línea o por transferencia", d: "Tarjeta con Mercado Pago, o transferencia bancaria." },
+  { t: "Paga en línea o por transferencia", d: "Tarjeta de débito o crédito con Webpay, o transferencia bancaria." },
   { t: "Retira en Molina o pide despacho", d: "El despacho lo coordinamos contigo según la comuna." },
 ];
 

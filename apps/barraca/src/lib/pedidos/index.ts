@@ -43,7 +43,8 @@ export const ETIQUETA_ESTADO: Record<EstadoPedido, string> = {
   cancelado: 'Cancelado',
 };
 
-export type MetodoPago = 'mercadopago' | 'transferencia';
+/** 'webpay' = pago en línea con Webpay Plus; 'mercadopago' queda por pedidos antiguos. */
+export type MetodoPago = 'webpay' | 'mercadopago' | 'transferencia';
 export type Entrega = 'retiro' | 'despacho';
 export type TipoDespacho = 'propio' | 'courier';
 
@@ -67,6 +68,8 @@ export interface Pedido {
   pasarela: string | null;
   pasarela_referencia: string | null;
   pago_id: string | null;
+  /** Comprobante del pago en línea (Webpay: orden, autorización, tarjeta, cuotas). */
+  pago_detalle: Record<string, unknown> | null;
   pagado_at: string | null;
   entrega: Entrega;
   direccion: string | null;
@@ -105,7 +108,7 @@ export interface Pedido {
 
 export type NuevoPedido = Omit<
   Pedido,
-  'id' | 'estado' | 'pasarela' | 'pasarela_referencia' | 'pago_id' | 'pagado_at' | 'stock_descontado' | 'courier_seguimiento' | 'courier_etiqueta_url' | 'courier_envio_id' | 'created_at' | 'updated_at'
+  'id' | 'estado' | 'pasarela' | 'pasarela_referencia' | 'pago_id' | 'pago_detalle' | 'pagado_at' | 'stock_descontado' | 'courier_seguimiento' | 'courier_etiqueta_url' | 'courier_envio_id' | 'created_at' | 'updated_at'
 >;
 
 export type ResultadoPago = 'pagado' | 'ya_procesado' | 'monto_distinto' | 'no_encontrado';
@@ -118,6 +121,8 @@ export interface PedidosStore {
   marcarPagado(numero: string, monto: number, pagoId: string, pasarela: string): Promise<ResultadoPago>;
   /** Sólo pasa a 'pago_rechazado' si seguía pendiente. */
   marcarRechazado(numero: string, pagoId: string | null): Promise<void>;
+  /** Guarda el comprobante del último intento de pago en línea. */
+  guardarDetallePago(numero: string, detalle: Record<string, unknown>): Promise<void>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
   /** Guarda el envío generado. Sólo si el pedido aún no tenía seguimiento (devuelve false si ya lo tenía). */
   guardarEnvio(numero: string, envio: EnvioEmitido): Promise<boolean>;
@@ -161,6 +166,10 @@ const storeSupabase: PedidosStore = {
       .update({ estado: 'pago_rechazado', pago_id: pagoId })
       .eq('numero', numero)
       .eq('estado', 'pendiente_pago');
+    if (error) throw error;
+  },
+  async guardarDetallePago(numero, detalle) {
+    const { error } = await db.from('barraca_pedidos').update({ pago_detalle: detalle }).eq('numero', numero);
     if (error) throw error;
   },
   async cambiarEstado(numero, estado) {

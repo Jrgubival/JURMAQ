@@ -194,7 +194,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   const { items, total, cantidad, cargando, hayProblemas } = useCarrito({ revisar: true });
   const [datos, setDatos] = useState<Datos>(VACIO);
   const [entrega, setEntrega] = useState<"retiro" | "despacho">("retiro");
-  const [metodo, setMetodo] = useState<"mercadopago" | "transferencia">(pagoEnLinea ? "mercadopago" : "transferencia");
+  const [metodo, setMetodo] = useState<"webpay" | "transferencia">(pagoEnLinea ? "webpay" : "transferencia");
   const [errores, setErrores] = useState<Partial<Record<Campo, string | null>>>({});
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
@@ -374,7 +374,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
     );
   }
 
-  const etiquetaBoton = metodo === "mercadopago" ? `Pagar ${formatCLP(totalPedido)}` : "Confirmar pedido";
+  const etiquetaBoton = metodo === "webpay" ? `Pagar ${formatCLP(totalPedido)}` : "Confirmar pedido";
   const montoFila = !despacho
     ? "Gratis"
     : cotizacion?.estado === "ok"
@@ -465,9 +465,9 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
 
           <Seccion n={3} titulo="Pago">
             <div className="grid gap-3" role="radiogroup" aria-label="Forma de pago">
-              <Opcion nombre="pago" valor="mercadopago" actual={metodo} onChange={(v) => setMetodo(v as "mercadopago")}
+              <Opcion nombre="pago" valor="webpay" actual={metodo} onChange={(v) => setMetodo(v as "webpay")}
                 deshabilitada={!pagoEnLinea}
-                titulo="Pagar en línea con Mercado Pago"
+                titulo="Pagar en línea con Webpay"
                 detalle={pagoEnLinea ? "Tarjeta de débito o crédito. El pedido queda confirmado al pagar." : "No disponible por ahora."} />
               <Opcion nombre="pago" valor="transferencia" actual={metodo} onChange={(v) => setMetodo(v as "transferencia")}
                 titulo="Transferencia bancaria"
@@ -551,12 +551,12 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
               {enviando ? (
                 <>
                   <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true" />
-                  {metodo === "mercadopago" ? "Abriendo Mercado Pago…" : "Registrando pedido…"}
+                  {metodo === "webpay" ? "Abriendo Webpay…" : "Registrando pedido…"}
                 </>
               ) : etiquetaBoton}
             </button>
             <p className="text-xs text-[#787774] mt-3 text-center">
-              {metodo === "mercadopago" ? "Te llevamos a Mercado Pago para pagar de forma segura." : "No se cobra nada ahora."}
+              {metodo === "webpay" ? "Te llevamos a Webpay (Transbank) para pagar de forma segura." : "No se cobra nada ahora."}
             </p>
             <Link href="/carrito" className="block mt-3 text-center text-sm text-[#5A5A57] hover:text-[#111111]">Volver al carrito</Link>
           </div>

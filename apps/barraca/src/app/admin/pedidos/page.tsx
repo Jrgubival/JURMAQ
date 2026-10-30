@@ -40,7 +40,7 @@ const COLOR: Record<Estado, string> = {
 interface Pedido {
   numero: string;
   estado: Estado;
-  metodo_pago: "mercadopago" | "transferencia";
+  metodo_pago: "webpay" | "mercadopago" | "transferencia";
   entrega: "retiro" | "despacho";
   direccion: string | null;
   comuna: string | null;
@@ -190,7 +190,7 @@ export default function PedidosAdminPage() {
                 <span className="font-mono text-sm font-semibold text-gray-900">{p.numero}</span>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${COLOR[p.estado]}`}>{ETIQUETA[p.estado]}</span>
                 <span className="text-sm text-gray-700 flex-1 min-w-[140px] truncate">{p.nombre}</span>
-                <span className="text-xs text-gray-500">{p.metodo_pago === "transferencia" ? "Transferencia" : "Mercado Pago"} · {p.entrega === "retiro" ? "Retiro" : `Despacho ${p.comuna ?? ""}`}</span>
+                <span className="text-xs text-gray-500">{p.metodo_pago === "transferencia" ? "Transferencia" : p.metodo_pago === "webpay" ? "Webpay" : "Mercado Pago"} · {p.entrega === "retiro" ? "Retiro" : `Despacho ${p.comuna ?? ""}`}</span>
                 <span className="text-sm font-bold text-gray-900 tabular-nums">{fmt(p.total)}</span>
                 <span className="text-xs text-gray-400 tabular-nums">{fecha(p.created_at)}</span>
               </button>
