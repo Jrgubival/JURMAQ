@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       suscripcion_newsletter: suscripcion ?? null,
       notas: [
         'Los contratos firmados se conservan por 6 anos (Codigo Tributario art. 17). Para solicitar acceso a contratos antiguos contactar al DPO: contacto@jurmaq.cl',
-        'Los pagos procesados via MercadoPago no estan incluidos: solicita esos datos directamente a MercadoPago como controlador independiente.',
+        'Los pagos procesados vía Webpay no están incluidos: solicita esos datos directamente a Transbank (Webpay) como controlador independiente.',
       ],
     };
 

@@ -24,11 +24,12 @@ export type EstadoPedido =
   | 'listo_retiro'
   | 'despachado'
   | 'entregado'
-  | 'cancelado';
+  | 'cancelado'
+  | 'rechazado';
 
 export const ESTADOS_PEDIDO: EstadoPedido[] = [
   'pendiente_pago', 'pagado', 'pago_rechazado', 'pago_discrepancia',
-  'en_preparacion', 'listo_retiro', 'despachado', 'entregado', 'cancelado',
+  'en_preparacion', 'listo_retiro', 'despachado', 'entregado', 'cancelado', 'rechazado',
 ];
 
 export const ETIQUETA_ESTADO: Record<EstadoPedido, string> = {
@@ -41,7 +42,20 @@ export const ETIQUETA_ESTADO: Record<EstadoPedido, string> = {
   despachado: 'Despachado',
   entregado: 'Entregado',
   cancelado: 'Cancelado',
+  rechazado: 'No aprobado (devolución)',
 };
+
+export { MOTIVOS_RECHAZO, type MotivoRechazo } from './motivos';
+import type { MotivoRechazo } from './motivos';
+
+export interface Reembolso {
+  estado: 'hecho' | 'pendiente' | 'error';
+  medio: 'webpay' | 'transferencia';
+  monto: number;
+  tipo?: string | null;
+  autorizacion?: string | null;
+  fecha: string;
+}
 
 /** 'webpay' = pago en línea con Webpay Plus; 'mercadopago' queda por pedidos antiguos. */
 export type MetodoPago = 'webpay' | 'mercadopago' | 'transferencia';
@@ -98,6 +112,13 @@ export interface Pedido {
   courier_envio_id: string | null;
   /** Cuándo aceptó los Términos y la Privacidad en el checkout (obligatorio para comprar). */
   terminos_aceptados_at: string;
+  /** Versión de los Términos aceptada (lib/vigencia.ts). */
+  terminos_version: string | null;
+  /** Pedido no aprobado por la barraca: motivo (lista cerrada), nota y devolución. */
+  rechazo_motivo?: MotivoRechazo | null;
+  rechazo_nota?: string | null;
+  rechazado_at?: string | null;
+  reembolso?: Reembolso | null;
   /** Consentimiento aparte, no obligatorio, para recordatorios y ofertas por correo. */
   acepta_ofertas: boolean;
   total: number;
@@ -123,6 +144,11 @@ export interface PedidosStore {
   marcarRechazado(numero: string, pagoId: string | null): Promise<void>;
   /** Guarda el comprobante del último intento de pago en línea. */
   guardarDetallePago(numero: string, detalle: Record<string, unknown>): Promise<void>;
+  /** Reserva (descuenta) el stock de un pedido por transferencia. Idempotente. */
+  reservarStock(numero: string): Promise<'reservado' | 'ya_reservado' | 'no_encontrado'>;
+  /** Cancela o rechaza un pedido que no ha salido y devuelve su stock. Atómico. */
+  cerrar(numero: string, estado: 'cancelado' | 'rechazado', motivo: MotivoRechazo | null, nota: string | null): Promise<'ok' | 'no_encontrado' | 'estado_invalido'>;
+  guardarReembolso(numero: string, r: Reembolso): Promise<void>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
   /** Guarda el envío generado. Sólo si el pedido aún no tenía seguimiento (devuelve false si ya lo tenía). */
   guardarEnvio(numero: string, envio: EnvioEmitido): Promise<boolean>;
@@ -170,6 +196,20 @@ const storeSupabase: PedidosStore = {
   },
   async guardarDetallePago(numero, detalle) {
     const { error } = await db.from('barraca_pedidos').update({ pago_detalle: detalle }).eq('numero', numero);
+    if (error) throw error;
+  },
+  async reservarStock(numero) {
+    const { data, error } = await db.rpc('barraca_pedido_reservar_stock', { p_numero: numero });
+    if (error) throw error;
+    return data as 'reservado' | 'ya_reservado' | 'no_encontrado';
+  },
+  async cerrar(numero, estado, motivo, nota) {
+    const { data, error } = await db.rpc('barraca_pedido_cerrar', { p_numero: numero, p_estado: estado, p_motivo: motivo, p_nota: nota });
+    if (error) throw error;
+    return data as 'ok' | 'no_encontrado' | 'estado_invalido';
+  },
+  async guardarReembolso(numero, r) {
+    const { error } = await db.from('barraca_pedidos').update({ reembolso: r }).eq('numero', numero);
     if (error) throw error;
   },
   async cambiarEstado(numero, estado) {

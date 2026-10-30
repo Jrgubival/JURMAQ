@@ -9,7 +9,8 @@ import SearchBar from "@/components/barraca/SearchBar";
 import SelectorZona from "@/components/barraca/SelectorZona";
 import ToastContainer from "@/components/Toast";
 import { HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
-import { whatsappCtaBarracaCotizar, whatsappCtaBarracaMejorarPrecio } from "@jurmaq/shared/whatsapp";
+import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
+import { precioWebHasta } from "@/lib/vigencia";
 import { cantidadEnCarrito } from "@/lib/carrito";
 import gsap from "gsap";
 import { EVENTO_CONFIGURAR_COOKIES } from "@jurmaq/shared/ui/CookieBanner";
@@ -481,17 +482,13 @@ function WhatsAppFloat() {
   // WhatsApp FAB reubicado a left-6 (esquina opuesta a ADIA) y reducido a
   // w-11 h-11 para no competir visualmente con el botón ADIA primary.
   // Verde mantenido por reconocimiento de marca WhatsApp.
-  // En /te-mejoramos-el-precio lleva el mismo texto que los botones de esa
-  // página ("quiero que me mejoren esta cotización"); en el resto, el default.
   const pathname = usePathname();
   // En la compra (carrito, checkout, confirmación) el botón flotante tapaba
   // campos y el botón de pagar en celular; ahí no se muestra.
   if (pathname === "/carrito" || pathname === "/checkout" || pathname?.startsWith("/pedido/") || pathname?.startsWith("/pago/")) {
     return null;
   }
-  const href = pathname === "/te-mejoramos-el-precio"
-    ? whatsappCtaBarracaMejorarPrecio('shell_fab')
-    : whatsappCtaBarracaCotizar('shell_fab');
+  const href = whatsappCtaBarracaCotizar('shell_fab');
   return (
     <a
       href={href}
@@ -550,7 +547,7 @@ function Footer() {
               <span className="text-lg font-semibold text-marca-500 ml-1">Barraca</span>
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed max-w-xs">
-              Fierros y materiales de construcción en Molina. Retiro en el local o despacho a Molina y Curicó.
+              Fierros y materiales de construcción en Molina. Retiro en el local o despacho en camión a Molina, Curicó, Talca y alrededores.
             </p>
             {/* Contacto compacto: teléfono que se toca, WhatsApp, dirección y horario. */}
             <div className="mt-5 space-y-2">
@@ -636,6 +633,12 @@ function Footer() {
               </span>
             ))}
           </nav>
+          {precioWebHasta() && (
+            <p className="mb-3 text-center sm:text-left">
+              Precio web: precio de la tienda online, válido hasta el {precioWebHasta()}. Precio normal: el de nuestro local en Molina.{" "}
+              <Link href="/terminos#5-precios" className="underline underline-offset-2 hover:text-navy-950">Condiciones</Link>
+            </p>
+          )}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-center sm:text-left">{buildFooterCopyright('barraca')}</p>
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">

@@ -68,7 +68,7 @@ const BRAND_CONFIG: Record<JsonLdBrand, BrandConfig> = {
     url: 'https://barraca.jurmaq.cl',
     localBusinessName: 'JURMAQ Barraca — Fierros y Materiales de Construcción',
     localBusinessDescription:
-      'Barraca de fierros, perfiles, planchas, tubos, mallas Acma, pinturas y materiales de construcción con despacho en Curicó, Molina y toda la Región del Maule.',
+      'Barraca de fierros, perfiles, planchas, tubos, mallas Acma, pinturas y materiales de construcción en Molina. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.',
     localBusinessType: 'HardwareStore',
   },
 };

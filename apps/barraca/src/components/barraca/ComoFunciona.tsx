@@ -6,7 +6,7 @@
  *
  * Sin plazos ni promesas nuevas: los pasos dicen lo que pasa, no cuánto tarda.
  * Dos versiones: `modo="tienda"` (portada: cómo se compra en línea) y
- * `modo="cotizacion"` (en /te-mejoramos-el-precio: mandar otra cotización).
+ * `modo="cotizacion"` (mandar otra cotización; ya no se usa).
  */
 
 import Link from "@/components/barraca/Enlace";

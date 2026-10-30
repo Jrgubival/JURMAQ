@@ -63,7 +63,7 @@ export default function NewsletterPopup() {
     e.preventDefault();
     if (!email.trim()) return;
     if (!consent) {
-      setError("Marca el casillero de consentimiento para recibir el cupón.");
+      setError("Marca el casillero de consentimiento para recibir novedades.");
       return;
     }
     setLoading(true);
@@ -95,7 +95,7 @@ export default function NewsletterPopup() {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-24 right-4 sm:bottom-20 sm:right-24 z-[90] max-w-xs w-[calc(100vw-2rem)] sm:w-full animate-slide-in-right" data-popup-variant="A" data-popup-trigger="newsletter-discount">
+    <div className="fixed bottom-24 right-4 sm:bottom-20 sm:right-24 z-[90] max-w-xs w-[calc(100vw-2rem)] sm:w-full animate-slide-in-right" data-popup-variant="A" data-popup-trigger="newsletter">
       {/* Corner popup - small and non-aggressive */}
       <div className="relative bg-white rounded-xl shadow-lg border border-gray-200 p-5">
         {/* Close */}
@@ -115,19 +115,16 @@ export default function NewsletterPopup() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-sm font-medium text-navy-950">
-              ¡Listo! Revisa tu email para tu código de 5% de descuento.
+              ¡Listo! Te avisaremos de las novedades de la barraca.
             </p>
           </div>
         ) : (
           <>
-            <div className="inline-block px-2 py-0.5 bg-marca-100 text-marca-700 text-xs font-bold rounded mb-1.5">
-              5% OFF en tu primera compra
-            </div>
             <h3 className="text-sm font-bold text-navy-950 mb-1 pr-6">
-              Suscríbete y recibe tu descuento
+              Recibe novedades y precios de la barraca
             </h3>
             <p className="text-xs text-gray-500 mb-3">
-              Además te avisamos de ofertas exclusivas. Sin spam.
+              Te escribimos por email cuando haya novedades. Sin spam.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-2">
@@ -158,10 +155,10 @@ export default function NewsletterPopup() {
                   onChange={(e) => setConsent(e.target.checked)}
                   required
                   className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-marca-600 focus:ring-marca-500"
-                  aria-label="Acepto recibir promociones por email"
+                  aria-label="Acepto recibir novedades por email"
                 />
                 <span>
-                  Acepto recibir promociones por email y la{" "}
+                  Acepto recibir novedades por email y la{" "}
                   <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="underline">
                     Política de Privacidad
                   </a>

@@ -53,13 +53,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://barraca.jurmaq.cl"),
   title: {
-    default: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y el Maule",
+    default: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y Talca",
     // Sin template — las páginas ya incluyen la marca en sus title individuales.
     // El template duplicaba "Barraca JURMAQ" en muchas URLs (audit fase 4.8).
     template: "%s",
   },
   description:
-    "Fierros, perfiles, planchas, tubos, mallas, pinturas y materiales de construcción con despacho en Curicó, Molina y toda la Región del Maule.",
+    "Fierros, perfiles, planchas, tubos, mallas, pinturas y materiales de construcción. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.",
   keywords: [
     // Marca + barraca
     "Barraca JURMAQ",
@@ -104,12 +104,8 @@ export const metadata: Metadata = {
     "Teno",
     "Romeral",
     "Sagrada Familia",
-    "Hualañé",
-    "Licantén",
-    "Vichuquén",
     "Rauco",
     "Talca",
-    "Linares",
     "Región del Maule",
     "Provincia de Curicó",
   ],
@@ -126,9 +122,9 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y el Maule",
+    title: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y Talca",
     description:
-      "Fierros, perfiles, planchas, tubos, mallas, pinturas y materiales de construcción con despacho en Curicó, Molina y toda la Región del Maule.",
+      "Fierros, perfiles, planchas, tubos, mallas, pinturas y materiales de construcción. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.",
     url: "https://barraca.jurmaq.cl",
     siteName: "Barraca JURMAQ",
     locale: "es_CL",
@@ -154,7 +150,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Barraca JURMAQ · Fierros y Materiales en Curicó",
     description:
-      "Fierros, perfiles, planchas, tubos, mallas y pinturas con despacho en Curicó, Molina y toda la Región del Maule.",
+      "Fierros, perfiles, planchas, tubos, mallas y pinturas. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.",
   },
   // Search-engine ownership verification (Google Search Console + Bing Webmaster).
   // Tokens vienen de env (no hardcodear). Si ambas vars están vacías, el field

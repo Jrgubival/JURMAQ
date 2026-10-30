@@ -160,3 +160,18 @@ export const webpay: PasarelaPago = {
     return leerRespuesta(await transaccion().status(token))?.estado ?? null;
   },
 };
+
+/**
+ * Devuelve un pago aprobado (pedido no aprobado por la barraca). Por el total,
+ * dentro de plazo Transbank lo reversa (como si no se hubiera cobrado); fuera
+ * de plazo lo anula y el abono llega según el banco emisor. Sólo lo llama el
+ * panel, con confirmación previa del administrador.
+ */
+export async function reembolsarWebpay(token: string, monto: number): Promise<{ ok: boolean; tipo: string | null; autorizacion: string | null }> {
+  if (!Number.isInteger(monto) || monto <= 0) throw new Error('Monto inválido');
+  const r = (await transaccion().refund(token, monto)) as Record<string, unknown> | null;
+  const tipo = typeof r?.type === 'string' ? r.type : null;
+  const codigo = typeof r?.response_code === 'number' ? r.response_code : null;
+  const ok = tipo === 'REVERSED' || (tipo === 'NULLIFIED' && codigo === 0);
+  return { ok, tipo, autorizacion: typeof r?.authorization_code === 'string' ? r.authorization_code : null };
+}

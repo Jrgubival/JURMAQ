@@ -92,11 +92,11 @@ function ExitoContent() {
         : 'Pago Recibido';
 
   const detalle = estado === 'pagada'
-    ? 'Tu pago fue confirmado por MercadoPago. Nos comunicaremos contigo para coordinar la entrega.'
+    ? 'Tu pago fue confirmado por Webpay. Nos comunicaremos contigo para coordinar la entrega.'
     : estado === 'pendiente' || estado === 'cargando'
-      ? 'Estamos esperando la confirmacion de MercadoPago. Esto puede tardar unos minutos. No cierres esta pagina; te enviaremos un email apenas se confirme.'
+      ? 'Estamos esperando la confirmación de Webpay. Esto puede tardar unos minutos. No cierres esta pagina; te enviaremos un email apenas se confirme.'
       : estado === 'no_confirmada'
-        ? 'Aun no hemos recibido la confirmacion del pago desde MercadoPago. Si pagaste correctamente, recibiras un email apenas se procese. No es necesario que pagues de nuevo.'
+        ? 'Aun no hemos recibido la confirmación del pago desde Webpay. Si pagaste correctamente, recibiras un email apenas se procese. No es necesario que pagues de nuevo.'
         : 'Hubo un problema al confirmar el estado del pago. Te enviaremos un email apenas se aclare.';
 
   const colorBadge = estado === 'pagada'

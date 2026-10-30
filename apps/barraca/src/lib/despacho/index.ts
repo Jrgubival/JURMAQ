@@ -108,7 +108,7 @@ export async function cotizarDespacho(lineas: LineaRevisada[], destino: string):
   if (zona) {
     const comunaZona = comunaPorCodigo(zona.comuna);
     if (!comunaZona) return null;
-    return { estado: 'ok', tipo: 'propio', comuna: comunaZona, lugar: zona.nombre, costo: costoZona(zona, subtotal), detalle: 'Te llamamos para coordinar el día de entrega.' };
+    return { estado: 'ok', tipo: 'propio', comuna: comunaZona, lugar: zona.nombre, costo: costoZona(zona, subtotal), detalle: 'Lo preparamos en 1 a 5 días hábiles y te contactamos para coordinar el día de entrega.' };
   }
 
   // Una comuna que tiene zonas se elige por zona, no por código.

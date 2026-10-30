@@ -15,7 +15,8 @@ import { estaDeBaja, urlBaja } from '@/lib/baja-correos';
  * Recupera carritos abandonados. Envía hasta 3 emails escalonados:
  *   - recovery 1: 1h después de la última actividad (sin descuento, "te olvidaste algo")
  *   - recovery 2: 24h después (social proof, "otros también compraron esto")
- *   - recovery 3: 72h después (cupón generado +10% como último incentivo)
+ *   - recovery 3: 72h después (último recordatorio, sin descuento: la barraca
+ *     no tiene cupones; revisión legal oct-2026)
  *
  * Cuando el cliente completa la compra, otra parte del código marca
  * converted_at — esto los excluye del flujo.
@@ -50,9 +51,18 @@ interface Carrito {
 // es vía CRON_SECRET en isAuthorized(), no por el método HTTP.
 export const GET = (request: NextRequest) => POST(request);
 
+const CARRITO_RECOVERY_APAGADO = true;
+
 export async function POST(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
+  // APAGADO (revisión legal 30-10-2026, Privacidad 8.1): sólo puede enviarse a
+  // correos con consentimiento previo registrado (casilla de ofertas en una
+  // compra anterior o suscripción) y que no estén dados de baja. Este envío no
+  // lo revisa: no se ejecuta aunque alguien lo agregue a vercel.json.
+  if (CARRITO_RECOVERY_APAGADO) {
+    return NextResponse.json({ ok: true, enviados: 0, desactivado: true });
   }
 
   const ahora = Date.now();
@@ -90,27 +100,7 @@ export async function POST(request: NextRequest) {
             ? '¿Olvidaste algo en tu carrito?'
             : recoveryNum === 2
               ? `Tus productos siguen esperándote — JURMAQ Barraca`
-              : `Última oportunidad: 10% de descuento en tu carrito`;
-
-        let cuponGenerado: string | null = null;
-
-        // Recovery 3: generar cupón único para este carrito.
-        if (recoveryNum === 3) {
-          cuponGenerado = `RECOVERY-${c.id.slice(0, 8).toUpperCase()}`;
-          await supabaseAdmin.from('barraca_cupones').insert({
-            codigo: cuponGenerado,
-            descripcion: `Recovery automatico carrito ${c.id.slice(0, 8)}`,
-            tipo: 'porcentaje',
-            valor: 10,
-            monto_minimo_compra: 0,
-            max_usos_total: 1,
-            max_usos_por_usuario: 1,
-            valido_hasta: new Date(ahora + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            activo: true,
-          }).then(() => undefined, (err) => {
-            console.warn('[carrito-recovery-cupon-fail]', err);
-          });
-        }
+              : `Último recordatorio: tu carrito en JURMAQ Barraca`;
 
         await transporter.sendMail({
           to: c.email,
@@ -124,7 +114,6 @@ export async function POST(request: NextRequest) {
           .update({
             recovery_count: recoveryNum,
             recovery_last_at: new Date().toISOString(),
-            cupon_generado: cuponGenerado,
           })
           .eq('id', c.id);
 
@@ -162,20 +151,14 @@ function renderRecoveryEmail(c: Carrito, recoveryNum: number, enlaceBaja: string
     recoveryNum === 1
       ? '¿Te olvidaste de algo? Tu carrito en JURMAQ Barraca te está esperando:'
       : recoveryNum === 2
-        ? 'Tus productos siguen disponibles, pero el stock se mueve rápido. Vuelve y completa tu compra:'
-        : 'Última oportunidad — usa el código <strong>10% OFF</strong> que generamos automáticamente para tu carrito.';
-
-  const cupon =
-    recoveryNum === 3
-      ? `<p style="background:#fef3c7;padding:12px;border-radius:8px;text-align:center;font-size:14px"><strong>Código de descuento exclusivo:</strong> automático al volver a tu carrito.</p>`
-      : '';
+        ? 'Tus productos siguen en tu carrito. Si todavía los necesitas, puedes completar tu compra:'
+        : 'Este es el último recordatorio. Si todavía necesitas estos productos, tu carrito sigue guardado:';
 
   return `<!doctype html><html><body style="font-family:-apple-system,sans-serif;max-width:560px;margin:24px auto;color:#0c1d3a;padding:0 16px">
-<h2 style="margin:0 0 12px 0">${recoveryNum === 1 ? 'Tu carrito te espera' : recoveryNum === 2 ? 'No pierdas tus productos' : '¡10% de descuento para tu carrito!'}</h2>
+<h2 style="margin:0 0 12px 0">${recoveryNum === 1 ? 'Tu carrito te espera' : recoveryNum === 2 ? 'No pierdas tus productos' : 'Tu carrito sigue guardado'}</h2>
 <p>${intro}</p>
 <ul style="background:#f5f5f5;padding:12px 24px;border-radius:8px;font-size:14px">${itemsHtml}</ul>
 <p style="font-size:16px"><strong>Total: $${c.total.toLocaleString('es-CL')}</strong></p>
-${cupon}
 <p style="margin:24px 0"><a href="${carritoUrl}" style="display:inline-block;padding:12px 24px;background:#ea580c;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Volver a mi carrito</a></p>
 <hr style="border:0;border-top:1px solid #e5e5e5;margin:32px 0 16px"/>
 <p style="font-size:11px;color:#999">Si ya completaste tu compra, ignora este mensaje. Barraca de Fierros JURMAQ SpA · Av. Poniente 2157, Molina. <a href="${enlaceBaja}" style="color:#999">No quiero recibir más correos</a>.</p>

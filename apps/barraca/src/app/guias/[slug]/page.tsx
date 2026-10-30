@@ -177,7 +177,7 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
               ¿Necesitas {guia.categoriaNombre.toLowerCase()} para tu obra?
             </h2>
             <p className="text-gray-700 mb-8">
-              Cotiza con barraca JURMAQ y te despachamos a todo el Maule.
+              Compra en barraca JURMAQ con retiro en Molina o despacho en camión a Molina, Curicó, Talca y alrededores.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link

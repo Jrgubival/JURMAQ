@@ -9,7 +9,7 @@ import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { whatsappCtaBarracaCiudad } from "@jurmaq/shared/whatsapp";
-import { PROMESA, PROMESA_CON_ASTERISCO, PROMESA_CORTA_META, NOTA_PROMESA, CONDICIONES_PROMESA } from "@/lib/promesa";
+import { despachaA, LUGARES_DESPACHO, COBERTURA_CORTA } from "@/lib/cobertura";
 
 interface Categoria {
   id: number;
@@ -29,10 +29,15 @@ export async function generateMetadata({
   const { ciudad } = await params;
   const c = CIUDADES.find((x) => x.slug === ciudad);
   if (!c) return { title: "Ciudad no encontrada" };
+  const cubre = despachaA(c.nombre);
+  const km = DISTANCIAS_BARRACA[c.slug].km;
+  const entrega = cubre
+    ? `Despacho en camión desde Molina (${km} km).`
+    : `Retiro en Molina (${km} km). ${COBERTURA_CORTA}`;
 
   return {
-    title: `Barraca de Fierros y Materiales en ${c.nombre} · ${PROMESA_CORTA_META} · JURMAQ`,
-    description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y +1.600 productos en ${c.nombre} (${c.region}). Despacho desde Molina (${DISTANCIAS_BARRACA[c.slug].km} km). ${PROMESA}.`,
+    title: `Barraca de Fierros y Materiales en ${c.nombre} · JURMAQ`,
+    description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y +1.600 productos para ${c.nombre} (${c.region}). ${entrega}`,
     keywords: [
       `barraca de fierros ${c.nombre}`,
       `barraca fierros ${c.nombre}`,
@@ -45,8 +50,6 @@ export async function generateMetadata({
       `planchas zinc ${c.nombre}`,
       `malla acma ${c.nombre}`,
       `pinturas ${c.nombre}`,
-      `te mejoramos el precio ${c.nombre}`,
-      `súbenos tu cotización ${c.nombre}`,
       `comprar fierros ${c.nombre}`,
       `comprar materiales ${c.nombre}`,
       `barraca despacho ${c.nombre}`,
@@ -54,8 +57,8 @@ export async function generateMetadata({
       "JURMAQ Barraca",
     ],
     openGraph: {
-      title: `Barraca JURMAQ en ${c.nombre} · ${PROMESA_CORTA_META}`,
-      description: `+1.600 productos. Despacho a ${c.nombre} (${DISTANCIAS_BARRACA[c.slug].km} km desde Molina). ${PROMESA}.`,
+      title: `Barraca JURMAQ para ${c.nombre}`,
+      description: `+1.600 productos. ${entrega}`,
       url: `https://barraca.jurmaq.cl/en/${c.slug}`,
       siteName: "Barraca JURMAQ",
       locale: "es_CL",
@@ -81,6 +84,9 @@ export default async function BarracaEnCiudadPage({
   const { ciudad } = await params;
   const c = CIUDADES.find((x) => x.slug === ciudad);
   if (!c) notFound();
+  // Solo se promete despacho a los lugares de ZONAS_DESPACHO (camión propio).
+  const cubre = despachaA(c.nombre);
+  const km = DISTANCIAS_BARRACA[c.slug].km;
 
   const { data: catsRaw } = await supabasePublic
     .from("barraca_categorias")
@@ -94,7 +100,7 @@ export default async function BarracaEnCiudadPage({
   // Helpers SEO local: ciudades vecinas con landing propia (cluster cluster)
   const vecinasConLanding = c.comunasVecinas
     .map((nombre) => CIUDADES.find((x) => x.nombre === nombre))
-    .filter((x): x is NonNullable<typeof x> => !!x && x.slug !== c.slug);
+    .filter((x): x is NonNullable<typeof x> => !!x && x.slug !== c.slug && despachaA(x.nombre));
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -102,9 +108,10 @@ export default async function BarracaEnCiudadPage({
       {
         "@type": "HardwareStore",
         "@id": `https://barraca.jurmaq.cl/en/${c.slug}#store`,
-        name: `Barraca JURMAQ — Despacho a ${c.nombre}`,
-        slogan: PROMESA,
-        description: `Barraca de fierros y materiales de construcción con despacho a ${c.nombre} desde Molina. +1.600 productos disponibles. ${PROMESA}.`,
+        name: cubre ? `Barraca JURMAQ — Despacho a ${c.nombre}` : `Barraca JURMAQ — Molina`,
+        description: cubre
+          ? `Barraca de fierros y materiales de construcción con despacho en camión a ${c.nombre} desde Molina. +1.600 productos disponibles.`
+          : `Barraca de fierros y materiales de construcción en Molina. ${COBERTURA_CORTA}`,
         url: `https://barraca.jurmaq.cl/en/${c.slug}`,
         telephone: HQ.telefono,
         priceRange: "$$",
@@ -135,7 +142,9 @@ export default async function BarracaEnCiudadPage({
             name: `¿Despachan a ${c.nombre}?`,
             acceptedAnswer: {
               "@type": "Answer",
-              text: `Sí. Despachamos a ${c.nombre} desde nuestra barraca en Molina (${DISTANCIAS_BARRACA[c.slug].km} km). El día de entrega se coordina al confirmar el pedido. También cubrimos comunas vecinas: ${c.comunasVecinas.join(", ")}.`,
+              text: cubre
+                ? `Sí. Despachamos a ${c.nombre} en nuestro camión desde la barraca en Molina (${km} km). El día de entrega se coordina al confirmar el pedido.`
+                : `No. Nuestro camión despacha solo a ${LUGARES_DESPACHO}. Desde ${c.nombre} puedes comprar en línea y retirar en Av. Poniente 2157, Molina (${km} km).`,
             },
           },
           {
@@ -143,20 +152,14 @@ export default async function BarracaEnCiudadPage({
             name: `¿Cuánto cuesta el despacho a ${c.nombre}?`,
             acceptedAnswer: {
               "@type": "Answer",
-              text: `El costo de despacho varía según volumen y peso del pedido. Súbenos tu cotización en la página y te indicamos el precio total con despacho incluido a ${c.nombre}.`,
+              text: cubre
+                ? `El costo depende del lugar de entrega y se muestra en el carrito antes de pagar.`
+                : `No despachamos a ${c.nombre}. El retiro en Molina no tiene costo.`,
             },
           },
           {
             "@type": "Question",
-            name: "¿Cómo funciona 'Te mejoramos el precio'?",
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: `Nos mandas foto o PDF de tu cotización de Sodimac, Easy, Construmart u otra barraca. La revisamos y te enviamos nuestra contraoferta JURMAQ. Si te conviene, aceptas; si no, no pasa nada. ${CONDICIONES_PROMESA}`,
-            },
-          },
-          {
-            "@type": "Question",
-            name: `¿Qué materiales tienen disponibles para despacho a ${c.nombre}?`,
+            name: `¿Qué materiales tienen disponibles?`,
             acceptedAnswer: {
               "@type": "Answer",
               text: "Fierros estriados, perfiles, planchas zinc/galvanizadas, tubos, mallas Acma, cementos, áridos, pinturas y +1.600 productos de barraca. Todos con stock real y precio publicado en línea.",
@@ -168,7 +171,7 @@ export default async function BarracaEnCiudadPage({
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Barraca JURMAQ", item: "https://barraca.jurmaq.cl" },
-          { "@type": "ListItem", position: 2, name: `Despacho a ${c.nombre}`, item: `https://barraca.jurmaq.cl/en/${c.slug}` },
+          { "@type": "ListItem", position: 2, name: cubre ? `Despacho a ${c.nombre}` : `Barraca para ${c.nombre}`, item: `https://barraca.jurmaq.cl/en/${c.slug}` },
         ],
       },
     ],
@@ -186,21 +189,19 @@ export default async function BarracaEnCiudadPage({
               className="mb-4"
               items={[
                 { label: "Inicio", href: "/" },
-                { label: `Despacho a ${c.nombre}` },
+                { label: cubre ? `Despacho a ${c.nombre}` : `Barraca para ${c.nombre}` },
               ]}
             />
             <div className="inline-block px-3 py-1 mb-4 bg-marca-600 text-white text-xs font-bold uppercase tracking-wider rounded">
-              ✓ Despacho a {c.nombre} · {DISTANCIAS_BARRACA[c.slug].km} km desde Molina
+              {cubre ? `✓ Despacho a ${c.nombre}` : "Retiro en Molina"} · {km} km desde Molina
             </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
               Barraca de Fierros y Materiales de Construcción en {c.nombre}
             </h1>
-            <p className="text-lg text-gray-200 max-w-3xl mb-1">
-              <strong className="text-marca-400">{PROMESA_CON_ASTERISCO}</strong>
-            </p>
-            <p className="text-xs text-gray-400 max-w-3xl mb-3">{NOTA_PROMESA}</p>
             <p className="text-lg text-gray-200 max-w-3xl mb-2">
-              Despacho desde Molina a {c.nombre} ({DISTANCIAS_BARRACA[c.slug].km} km).
+              {cubre
+                ? `Despacho en camión desde Molina a ${c.nombre} (${km} km).`
+                : `Retiro en Av. Poniente 2157, Molina (${km} km). Nuestro camión despacha solo a ${LUGARES_DESPACHO}.`}
             </p>
             <p className="text-gray-300 max-w-3xl mb-8">{c.contextoLocal}</p>
             <div className="flex flex-wrap gap-3">
@@ -220,42 +221,11 @@ export default async function BarracaEnCiudadPage({
           </div>
         </header>
 
-        {/* Cómo funciona el price-match */}
-        <section className="py-16 bg-marca-50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-2">
-              {PROMESA_CON_ASTERISCO}
-            </h2>
-            <p className="text-xs text-gray-500 mb-3">{NOTA_PROMESA}</p>
-            <p className="text-gray-700 mb-8">
-              Si tienes cotización de Sodimac, Easy, Construmart u otra barraca, te respondemos
-              con contraoferta JURMAQ por correo.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-xl border border-marca-200">
-                <div className="text-3xl font-bold text-marca-600 mb-2">1</div>
-                <h3 className="font-bold text-navy-950 mb-2">Saca foto/PDF de tu cotización</h3>
-                <p className="text-sm text-gray-700">Cualquier barraca o homecenter — Sodimac, Easy, Construmart, otra ferretería.</p>
-              </div>
-              <div className="bg-white p-6 rounded-xl border border-marca-200">
-                <div className="text-3xl font-bold text-marca-600 mb-2">2</div>
-                <h3 className="font-bold text-navy-950 mb-2">Súbela en barraca.jurmaq.cl</h3>
-                <p className="text-sm text-gray-700">En la sección &quot;Sube tu cotización&quot;, o mándala por WhatsApp.</p>
-              </div>
-              <div className="bg-white p-6 rounded-xl border border-marca-200">
-                <div className="text-3xl font-bold text-marca-600 mb-2">3</div>
-                <h3 className="font-bold text-navy-950 mb-2">Recibe nuestra contraoferta</h3>
-                <p className="text-sm text-gray-700">Te llega al correo con cuánto ahorras. Si te conviene, aceptas. Si no, no pasa nada.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Categorías destacadas */}
         <section className="py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-2">
-              Materiales que despachamos a {c.nombre}
+              {cubre ? `Materiales que despachamos a ${c.nombre}` : "Materiales de la barraca"}
             </h2>
             <p className="text-gray-700 mb-8">
               Más de 1.600 productos con precio publicado y stock real.
@@ -278,7 +248,7 @@ export default async function BarracaEnCiudadPage({
         <section className="py-16 bg-gray-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-8">
-              Lo que más despachamos a {c.nombre}
+              {cubre ? `Lo que más despachamos a ${c.nombre}` : "Lo más pedido"}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {TOP_PRODUCTOS_BARRACA.map((p) => (
@@ -302,20 +272,24 @@ export default async function BarracaEnCiudadPage({
         <section className="py-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy-950 mb-8">
-              Despacho a {c.nombre} desde Molina
+              {cubre ? `Despacho a ${c.nombre} desde Molina` : `Retiro en Molina, a ${km} km de ${c.nombre}`}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-marca-600 mb-2">{DISTANCIAS_BARRACA[c.slug].km} km</div>
+                <div className="text-3xl font-bold text-marca-600 mb-2">{km} km</div>
                 <p className="text-gray-700">Distancia desde la barraca</p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-3xl font-bold text-marca-600 mb-2">A la obra</div>
-                <p className="text-gray-700">El día de entrega se coordina al confirmar el pedido</p>
+                <div className="text-3xl font-bold text-marca-600 mb-2">{cubre ? "En camión" : "Retiro"}</div>
+                <p className="text-gray-700">
+                  {cubre
+                    ? "El día de entrega se coordina al confirmar el pedido"
+                    : "En Av. Poniente 2157, Molina"}
+                </p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-gray-200">
-                <div className="text-lg font-bold text-navy-950 mb-2">También despachamos a</div>
-                <p className="text-gray-700 text-sm">{c.comunasVecinas.join(", ")}</p>
+                <div className="text-lg font-bold text-navy-950 mb-2">Nuestro camión despacha a</div>
+                <p className="text-gray-700 text-sm">{LUGARES_DESPACHO}</p>
               </div>
             </div>
           </div>
@@ -331,26 +305,21 @@ export default async function BarracaEnCiudadPage({
               <div>
                 <dt className="font-semibold text-navy-950 mb-1">¿Despachan a {c.nombre}?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Sí. Despachamos a {c.nombre} desde nuestra barraca en Molina ({DISTANCIAS_BARRACA[c.slug].km} km). El día de
-                  entrega se coordina al confirmar el pedido. También cubrimos {c.comunasVecinas.join(", ")}.
+                  {cubre
+                    ? `Sí. Despachamos a ${c.nombre} en nuestro camión desde la barraca en Molina (${km} km). El día de entrega se coordina al confirmar el pedido.`
+                    : `No. Nuestro camión despacha solo a ${LUGARES_DESPACHO}. Desde ${c.nombre} puedes comprar en línea y retirar en Av. Poniente 2157, Molina (${km} km).`}
                 </dd>
               </div>
               <div>
                 <dt className="font-semibold text-navy-950 mb-1">¿Cuánto cuesta el despacho?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Varía según volumen y peso del pedido. Súbenos tu cotización en la página y te indicamos
-                  el precio total con despacho incluido a {c.nombre}.
+                  {cubre
+                    ? "Depende del lugar de entrega y se muestra en el carrito antes de pagar."
+                    : `No despachamos a ${c.nombre}. El retiro en Molina no tiene costo.`}
                 </dd>
               </div>
               <div>
-                <dt className="font-semibold text-navy-950 mb-1">¿Cómo funciona &quot;Te mejoramos el precio&quot;?</dt>
-                <dd className="text-gray-700 text-sm">
-                  Nos mandas foto o PDF de tu cotización de Sodimac, Easy, Construmart u otra barraca. La revisamos y
-                  te enviamos nuestra contraoferta JURMAQ. Si te conviene, aceptas; si no, no pasa nada. {CONDICIONES_PROMESA}
-                </dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-navy-950 mb-1">¿Qué materiales despachan?</dt>
+                <dt className="font-semibold text-navy-950 mb-1">¿Qué materiales tienen?</dt>
                 <dd className="text-gray-700 text-sm">
                   Fierros estriados, perfiles, planchas zinc, tubos, mallas Acma, cementos, áridos, pinturas y
                   +1.600 productos. Todos con stock real y precio publicado.
@@ -368,7 +337,7 @@ export default async function BarracaEnCiudadPage({
                 También despachamos a estas comunas
               </h2>
               <p className="text-sm text-gray-600 mb-6">
-                Misma cobertura, mismo despacho desde Molina.
+                Despacho en camión desde Molina.
               </p>
               <div className="flex flex-wrap gap-3">
                 {vecinasConLanding.map((v) => (
@@ -392,10 +361,9 @@ export default async function BarracaEnCiudadPage({
             <h2 className="text-2xl sm:text-3xl font-bold mb-4">
               ¿Tienes una obra en {c.nombre}?
             </h2>
-            <p className="text-gray-200 mb-1">
-              {PROMESA_CON_ASTERISCO}
+            <p className="text-gray-200 mb-8">
+              Compra en línea con Webpay o transferencia. {cubre ? "Te lo llevamos en camión o lo retiras en Molina." : "Retiras en Molina."}
             </p>
-            <p className="text-xs text-gray-400 mb-8">{NOTA_PROMESA}</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <Link
                 href="/categorias"
@@ -416,11 +384,11 @@ export default async function BarracaEnCiudadPage({
         </section>
 
         <CrossLinksGrid
-          title="También despachamos a otras ciudades del Maule"
-          subtitle="Materiales de construcción y barraca de fierros con despacho directo desde Molina a toda la región."
+          title="Ciudades a las que despachamos"
+          subtitle={`Despacho en camión desde Molina a ${LUGARES_DESPACHO}.`}
           eyebrow="Cobertura · Maule"
           variant="light"
-          items={CIUDADES.filter((x) => x.slug !== c.slug)
+          items={CIUDADES.filter((x) => x.slug !== c.slug && despachaA(x.nombre))
             .slice(0, 11)
             .map((x) => ({
               label: `Despacho a ${x.nombre}`,

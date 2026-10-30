@@ -9,6 +9,7 @@ import { trackEvents } from "@/lib/analytics";
 import { useCarrito } from "@/lib/useCarrito";
 import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carrito";
 import { rutValido } from "@/lib/rut";
+import { precioWebHasta } from "@/lib/vigencia";
 import { COMUNAS, REGIONES } from "@/lib/despacho/comunas";
 import { ZONAS_DESPACHO, COMUNAS_CON_ZONA, CLAVE_ZONA, zonaPorId } from "@/lib/despacho/zonas";
 
@@ -506,6 +507,9 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 <span className="text-2xl font-extrabold text-navy-950 tabular-nums">{formatCLP(totalPedido)}</span>
               </div>
               <p className="text-xs text-[#787774] text-right">IVA incluido{despacho && costoDespacho == null ? " · despacho aparte" : ""}</p>
+              <p className="text-xs text-[#787774] mt-2 leading-snug">
+                {precioWebHasta() ? `Precio web válido hasta el ${precioWebHasta()}; puede cambiar. ` : "Precios web vigentes hoy. "}Tu compra queda con el precio que confirmas. {"Lo preparamos en 1 a 5 días hábiles y te contactamos por WhatsApp o teléfono para coordinar el retiro o la entrega."}
+              </p>
             </div>
 
             {/* Términos: obligatoria (art. 12 A). Ofertas: aparte y opcional (Privacidad, sección 4). */}

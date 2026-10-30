@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { montoDespacho, nombreCourier } from "@/lib/despacho/texto";
+import { MOTIVOS_RECHAZO, type MotivoRechazo } from "@/lib/pedidos/motivos";
 
 /**
  * /admin/pedidos — pedidos de la tienda en línea.
@@ -11,7 +12,7 @@ import { montoDespacho, nombreCourier } from "@/lib/despacho/texto";
 
 type Estado =
   | "pendiente_pago" | "pagado" | "pago_rechazado" | "pago_discrepancia"
-  | "en_preparacion" | "listo_retiro" | "despachado" | "entregado" | "cancelado";
+  | "en_preparacion" | "listo_retiro" | "despachado" | "entregado" | "cancelado" | "rechazado";
 
 const ETIQUETA: Record<Estado, string> = {
   pendiente_pago: "Pendiente de pago",
@@ -23,6 +24,7 @@ const ETIQUETA: Record<Estado, string> = {
   despachado: "Despachado",
   entregado: "Entregado",
   cancelado: "Cancelado",
+  rechazado: "No aprobado",
 };
 
 const COLOR: Record<Estado, string> = {
@@ -35,6 +37,7 @@ const COLOR: Record<Estado, string> = {
   despachado: "bg-indigo-100 text-indigo-800",
   entregado: "bg-gray-200 text-gray-700",
   cancelado: "bg-gray-200 text-gray-500",
+  rechazado: "bg-red-100 text-red-800",
 };
 
 interface Pedido {
@@ -55,6 +58,11 @@ interface Pedido {
   courier?: string | null;
   courier_seguimiento?: string | null;
   courier_etiqueta_url?: string | null;
+  pasarela?: string | null;
+  pagado_at?: string | null;
+  rechazo_motivo?: MotivoRechazo | null;
+  rechazo_nota?: string | null;
+  reembolso?: { estado: "hecho" | "pendiente" | "error"; medio: "webpay" | "transferencia"; monto: number } | null;
   total: number;
   pago_id: string | null;
   created_at: string;
@@ -97,6 +105,7 @@ export default function PedidosAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [abierto, setAbierto] = useState<string | null>(null);
   const [guardando, setGuardando] = useState<string | null>(null);
+  const [rechazando, setRechazando] = useState<{ numero: string; motivo: MotivoRechazo | ""; nota: string } | null>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -124,6 +133,43 @@ export default function PedidosAdminPage() {
       alert(data.error || "No se pudo actualizar");
       return;
     }
+    void cargar();
+  }
+
+  /** No aprobar un pedido: motivo de la lista cerrada, con confirmación (anula el pago en Webpay si se pagó). */
+  async function rechazar(p: Pedido, motivo: MotivoRechazo, nota: string) {
+    const webpay = p.pasarela === "webpay" && !!p.pagado_at;
+    const devolucion = !p.pagado_at
+      ? "No hubo cobro."
+      : webpay
+        ? `Se anulará el pago en Webpay por ${fmt(p.total)} (devolución automática a la tarjeta).`
+        : `Hay que devolver ${fmt(p.total)} por transferencia (a mano).`;
+    if (!confirm(`¿No aprobar el pedido ${p.numero}?\n\nMotivo: ${MOTIVOS_RECHAZO[motivo]}\n${devolucion}\nSe devuelve el stock y se avisa al cliente por correo.`)) return;
+    setGuardando(p.numero);
+    const res = await fetch(`/api/admin/pedidos/${p.numero}/rechazar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accion: "rechazar", motivo, nota: nota || undefined }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setGuardando(null);
+    if (!res.ok) { alert(data.error || "No se pudo rechazar"); return; }
+    if (data.reembolso === "error") alert("El pedido quedó como no aprobado, pero Webpay no confirmó la anulación. Usa \"Reintentar devolución\" o revisa el portal de Transbank.");
+    setRechazando(null);
+    void cargar();
+  }
+
+  async function reintentarReembolso(p: Pedido) {
+    if (!confirm(`¿Anular en Webpay el pago de ${fmt(p.total)} del pedido ${p.numero}?`)) return;
+    setGuardando(p.numero);
+    const res = await fetch(`/api/admin/pedidos/${p.numero}/rechazar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accion: "reembolsar" }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setGuardando(null);
+    if (!res.ok) alert(data.error || "Webpay no confirmó la anulación");
     void cargar();
   }
 
@@ -241,6 +287,50 @@ export default function PedidosAdminPage() {
                       >
                         Ingresar seguimiento a mano
                       </button>
+                    </div>
+                  )}
+                  {p.estado === "rechazado" && (
+                    <div className="md:col-span-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-900">
+                      <p><strong>No aprobado:</strong> {p.rechazo_motivo ? MOTIVOS_RECHAZO[p.rechazo_motivo] : "—"}{p.rechazo_nota ? ` · ${p.rechazo_nota}` : ""}</p>
+                      {p.reembolso && (
+                        <p className="mt-0.5">
+                          Devolución {p.reembolso.medio === "webpay" ? "Webpay" : "por transferencia"} de {fmt(p.reembolso.monto)}:{" "}
+                          <strong>{p.reembolso.estado === "hecho" ? "hecha" : p.reembolso.estado === "pendiente" ? "pendiente (hacerla a mano)" : "falló"}</strong>
+                        </p>
+                      )}
+                      {p.reembolso?.medio === "webpay" && p.reembolso.estado === "error" && (
+                        <button disabled={guardando === p.numero} onClick={() => reintentarReembolso(p)} className="mt-2 min-h-[36px] px-3 rounded-lg bg-red-700 text-white text-sm font-semibold disabled:opacity-60">
+                          Reintentar devolución en Webpay
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {["pendiente_pago", "pago_rechazado", "pago_discrepancia", "pagado", "en_preparacion", "listo_retiro"].includes(p.estado) && (
+                    <div className="md:col-span-2 pt-2 border-t border-gray-100">
+                      {rechazando?.numero !== p.numero ? (
+                        <button onClick={() => setRechazando({ numero: p.numero, motivo: "", nota: "" })} className="text-sm font-semibold text-red-700 hover:underline">
+                          No aprobar este pedido…
+                        </button>
+                      ) : (
+                        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto] items-end">
+                          <label className="text-xs text-gray-600">Motivo
+                            <select value={rechazando.motivo} onChange={(e) => setRechazando({ ...rechazando, motivo: e.target.value as MotivoRechazo })} className="mt-1 w-full min-h-[40px] border border-gray-300 rounded-lg px-2 text-sm text-gray-900">
+                              <option value="">Elige el motivo</option>
+                              {(Object.keys(MOTIVOS_RECHAZO) as MotivoRechazo[]).map((m) => <option key={m} value={m}>{MOTIVOS_RECHAZO[m]}</option>)}
+                            </select>
+                          </label>
+                          <label className="text-xs text-gray-600">Nota interna (opcional)
+                            <input value={rechazando.nota} maxLength={500} onChange={(e) => setRechazando({ ...rechazando, nota: e.target.value })} className="mt-1 w-full min-h-[40px] border border-gray-300 rounded-lg px-2 text-sm text-gray-900" />
+                          </label>
+                          <button disabled={!rechazando.motivo || guardando === p.numero} onClick={() => rechazando.motivo && rechazar(p, rechazando.motivo, rechazando.nota)} className="min-h-[40px] px-4 rounded-lg bg-red-700 text-white text-sm font-semibold disabled:opacity-50">
+                            No aprobar
+                          </button>
+                          <button onClick={() => setRechazando(null)} className="min-h-[40px] px-3 text-sm text-gray-600">Volver</button>
+                          {rechazando.motivo === "sin_despacho" && (
+                            <p className="sm:col-span-4 text-xs text-gray-600">Antes de rechazar, ofrécele al cliente retirar en la barraca. El correo también se lo ofrece.</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                   {acciones(p).length > 0 && (

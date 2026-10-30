@@ -638,7 +638,7 @@ export const TOP_PRODUCTOS_BARRACA: ProductoBarracaSEO[] = [
       },
       {
         q: "¿En cuánto tiempo despachan?",
-        a: "En Curicó, Molina y Teno despachamos el mismo día o al siguiente. Para Talca, Romeral y Sagrada Familia entre 24-48h. Confirma stock por WhatsApp.",
+        a: "Preparamos el pedido en 1 a 5 días hábiles y te contactamos por WhatsApp o teléfono para coordinar el día de entrega. Despachamos en camión a Molina, Curicó, Talca y alrededores.",
       },
       {
         q: "¿Tienen otro calibre diferente al publicado?",
@@ -654,7 +654,7 @@ export const TOP_PRODUCTOS_BARRACA: ProductoBarracaSEO[] = [
     descripcionCorta:
       "Cemento Polpaico Especial y Melón Extra en sacos de 25 kg y 42,5 kg. Despacho a obra el mismo día.",
     descripcionLarga:
-      "El cemento es la base de cualquier obra. En JURMAQ Barraca trabajamos las marcas más confiables del mercado chileno (Polpaico Especial, Melón Extra) en los formatos más vendidos: saco de 25 kg para obra menor y 42,5 kg para obra estructural. Stock siempre, precio publicado y despacho a Curicó, Molina, Teno, Romeral, Talca y toda la Región del Maule.",
+      "El cemento es la base de cualquier obra. En JURMAQ Barraca trabajamos las marcas más confiables del mercado chileno (Polpaico Especial, Melón Extra) en los formatos más vendidos: saco de 25 kg para obra menor y 42,5 kg para obra estructural. Stock siempre, precio publicado, retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.",
     usosTipicos: [
       "Hormigón armado para columnas, vigas y muros estructurales",
       "Radier y sobrelosa de hormigón",

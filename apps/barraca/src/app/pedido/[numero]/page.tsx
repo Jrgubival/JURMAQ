@@ -4,7 +4,7 @@ import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
 import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
 import { logSafeError } from "@jurmaq/shared/logging";
-import { pedidos, cookiePedido, tokenValido, PATRON_NUMERO, ETIQUETA_ESTADO, type Pedido } from "@/lib/pedidos";
+import { pedidos, cookiePedido, tokenValido, PATRON_NUMERO, ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type Pedido } from "@/lib/pedidos";
 import { datosTransferencia } from "@/lib/pedidos/correos";
 import { montoDespacho, textoDespacho } from "@/lib/despacho/texto";
 import { aplicarEstadoPago, pagoEnLineaDisponible } from "@/lib/pagos";
@@ -112,7 +112,10 @@ export default async function PedidoPage({
   const detallePago = pedido.pasarela === "webpay" && pedido.pago_detalle ? pedido.pago_detalle : null;
   const t = datosTransferencia();
 
-  const titulo = pagado
+  const noAprobado = pedido.estado === "rechazado";
+  const titulo = noAprobado
+    ? "No pudimos aprobar tu pedido"
+    : pagado
     ? "¡Gracias! Tu pago está confirmado"
     : transferencia
       ? "Pedido recibido: falta la transferencia"
@@ -125,10 +128,10 @@ export default async function PedidoPage({
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
       <div className="bg-white border border-[#EAEAEA] rounded-2xl p-6 sm:p-8 mb-5">
-        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-5 ${pagado ? "bg-green-100 text-green-700" : rechazado ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`} aria-hidden="true">
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-5 ${pagado ? "bg-green-100 text-green-700" : (rechazado || noAprobado) ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`} aria-hidden="true">
           {pagado ? (
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-          ) : rechazado ? (
+          ) : (rechazado || noAprobado) ? (
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
           ) : (
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -141,10 +144,12 @@ export default async function PedidoPage({
           {titulo}
         </h1>
         <p className="text-[15px] text-[#5A5A57]">
-          {pagado
-            ? `Te mandamos el detalle a ${pedido.email}. ${pedido.entrega === "retiro" ? "Te avisamos cuando esté listo para retirar." : pedido.despacho_tipo === "courier" ? "Te avisamos cuando lo enviemos." : "Te llamamos para coordinar el despacho."}`
+          {noAprobado
+            ? `Motivo: ${pedido.rechazo_motivo ? MOTIVOS_RECHAZO[pedido.rechazo_motivo] : "no pudimos cumplirlo"}. ${pedido.pagado_at ? `Te devolvemos el 100% de lo pagado (${formatCLP(pedido.total)}), despacho incluido. Te escribimos al correo con el detalle.` : "No se hizo ningún cobro."}`
+            : pagado
+            ? `Te mandamos el detalle a ${pedido.email}. Lo preparamos en 1 a 5 días hábiles y te contactamos por WhatsApp o teléfono para coordinar el retiro o la entrega.`
             : transferencia
-              ? `Transfiere ${formatCLP(pedido.total)} con estos datos e indica el número de pedido. Preparamos el pedido cuando veamos la transferencia.`
+              ? `Transfiere ${formatCLP(pedido.total)} con estos datos e indica el número de pedido. Cuando veamos la transferencia lo preparamos en 1 a 5 días hábiles y te contactamos para coordinar el retiro o la entrega.`
               : rechazado
                 ? `${motivo ?? "No se hizo ningún cobro."} Puedes intentar de nuevo, con la misma u otra tarjeta. Si prefieres transferir, escríbenos y te mandamos los datos.`
                 : esperandoPago

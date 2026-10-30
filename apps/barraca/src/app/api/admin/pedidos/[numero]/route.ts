@@ -39,6 +39,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
       const actualizado = await store.porNumero(numero);
       if (actualizado) await correoConfirmacionComprador(actualizado);
+    } else if (parsed.data.estado === 'cancelado') {
+      // Devuelve al stock lo reservado o descontado (transferencia o pagado).
+      const r = await store.cerrar(numero, 'cancelado', null, null);
+      if (r !== 'ok') return NextResponse.json({ error: 'Este pedido ya salió o está cerrado: no se puede cancelar' }, { status: 409 });
     } else {
       await store.cambiarEstado(numero, parsed.data.estado);
     }

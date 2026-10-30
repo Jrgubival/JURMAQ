@@ -42,7 +42,18 @@ export interface ProductoPromocionado {
  * Get daily promotions using a deterministic seed based on today's date (Chile time UTC-4).
  * Same date always returns the same promotions, enabling caching.
  */
+/**
+ * APAGADAS (30-10-2026, revisión legal): hoy no hay promociones aparte del
+ * precio web (Términos 16), y el tachado que mostraban ("Precio normal") era
+ * el precio web, no el del local. Con esto la portada no muestra "Ofertas del
+ * día" y ni la ficha ni el carrito aplican rebajas por categoría. Para
+ * volver a usarlas: tachar el precio del local, mostrar fechas reales de
+ * inicio y término (art. 35) y agregarlas a los Términos antes de ofrecerlas.
+ */
+const PROMOCIONES_APAGADAS = true;
+
 export async function getDailyPromotions(count: number = 4): Promise<Promocion[]> {
+  if (PROMOCIONES_APAGADAS) return [];
   const { data: promos } = await supabasePublic
     .from('barraca_promociones')
     .select('*, barraca_categorias(nombre, slug)')
@@ -121,6 +132,7 @@ export async function getPromotedProducts(
  */
 export async function getActiveCategoryDiscountMap(): Promise<Map<number, number>> {
   const map = new Map<number, number>();
+  if (PROMOCIONES_APAGADAS) return map;
   const { data: activePromos } = await supabasePublic
     .from('barraca_promociones')
     .select('id, categoria_id, descuento_porcentaje, activa')
@@ -176,7 +188,6 @@ export async function applyDailyPromosToProducts<
   T extends { id: number; categoria_id: number | null; precio: number; en_oferta?: boolean | null; precio_original?: number | null }
 >(productos: T[]): Promise<T[]> {
   if (!productos || productos.length === 0) return productos;
-
   const promoByCatId = await getActiveCategoryDiscountMap();
   if (promoByCatId.size === 0) return productos;
 

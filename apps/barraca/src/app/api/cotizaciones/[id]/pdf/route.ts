@@ -567,7 +567,7 @@ export async function GET(
             <span>Datos enviados por correo al aprobar</span>
           </div>
           <div class="payment-method">
-            <strong>MercadoPago</strong>
+            <strong>Webpay</strong>
             <span>Tarjeta de credito/debito</span>
           </div>
           <div class="payment-method">

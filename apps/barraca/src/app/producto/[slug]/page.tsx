@@ -19,7 +19,6 @@ import Precio from "@/components/barraca/Precio";
 import AvisoSinRetracto from "@/components/barraca/AvisoSinRetracto";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { describir, especificaciones } from '@/lib/ficha';
-import { PROMESA } from '@/lib/promesa';
 
 // ISR: la ficha de producto es pública (precio/stock).
 //
@@ -296,7 +295,7 @@ export default async function ProductoPage({
     "@context": "https://schema.org",
     "@type": "Product",
     name: producto.nombre,
-    description: `${producto.nombre}${producto.medida ? ` (${producto.medida})` : ""} en Barraca JURMAQ Curicó · Molina. Despacho a toda la Región del Maule. ${PROMESA}.`,
+    description: `${producto.nombre}${producto.medida ? ` (${producto.medida})` : ""} en Barraca JURMAQ, Molina. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.`,
     image: producto.imagen || undefined,
     sku: producto.codigo,
     mpn: producto.codigo,

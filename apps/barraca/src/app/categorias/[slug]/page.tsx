@@ -14,7 +14,7 @@ import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs"
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import { CIUDADES } from "@jurmaq/shared/seo";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import { PROMESA, PROMESA_CORTA_META } from "@/lib/promesa";
+import { despachaA, COBERTURA_CORTA, LUGARES_DESPACHO } from "@/lib/cobertura";
 
 type BarracaCategoriaRow = Pick<
   Database['public']['Tables']['barraca_categorias']['Row'],
@@ -82,8 +82,8 @@ export async function generateMetadata({
 
   const lowerName = cat.nombre.toLowerCase();
   return {
-    title: `${cat.nombre} en Molina · Despacho a Curicó y el Maule · Barraca JURMAQ`,
-    description: `${productCount.total} productos de ${lowerName} con precio publicado en Barraca JURMAQ Curicó · Molina. Despacho a Teno, Romeral, Talca y toda la Región del Maule. ${PROMESA}.`,
+    title: `${cat.nombre} en Molina · Despacho a Curicó y Talca · Barraca JURMAQ`,
+    description: `${productCount.total} productos de ${lowerName} con precio publicado en Barraca JURMAQ Curicó · Molina. ${COBERTURA_CORTA}`,
     keywords: [
       `${lowerName} Curicó`,
       `${lowerName} Molina`,
@@ -94,15 +94,13 @@ export async function generateMetadata({
       `comprar ${lowerName} Curicó`,
       `comprar ${lowerName} online Maule`,
       "barraca JURMAQ",
-      "te mejoramos el precio",
-      "súbenos tu cotización",
       "materiales de construcción Curicó",
       "materiales de construcción Molina",
       "ferretería online Maule",
     ],
     openGraph: {
-      title: `${cat.nombre} · Barraca JURMAQ Curicó · ${PROMESA_CORTA_META}`,
-      description: `${productCount.total} productos de ${lowerName} con precio publicado y stock. Despacho a toda la Región del Maule. Cotiza online. ${PROMESA}.`,
+      title: `${cat.nombre} · Barraca JURMAQ Curicó · Molina`,
+      description: `${productCount.total} productos de ${lowerName} con precio publicado y stock. ${COBERTURA_CORTA}`,
       url: `https://barraca.jurmaq.cl/categorias/${cat.slug}`,
       siteName: "Barraca JURMAQ",
       locale: "es_CL",
@@ -119,7 +117,7 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
       title: `${cat.nombre} · Barraca JURMAQ Curicó`,
-      description: `${productCount.total} productos. ${PROMESA}.`,
+      description: `${productCount.total} productos. ${COBERTURA_CORTA}`,
     },
     // Sin bloque `icons:`: en Next la página REEMPLAZA el del layout en vez
     // de fusionarse, y este declaraba solo 2 de los 6 iconos, apuntando
@@ -207,7 +205,7 @@ export default async function CategoriaPage({
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: `${categoria.nombre} - Barraca JURMAQ`,
-    description: `Productos de ${categoria.nombre.toLowerCase()} disponibles en Barraca JURMAQ Curicó. ${PROMESA}. Despacho a toda la Región del Maule.`,
+    description: `Productos de ${categoria.nombre.toLowerCase()} disponibles en Barraca JURMAQ Curicó. ${COBERTURA_CORTA}`,
     numberOfItems: total,
     itemListElement: (productos || []).map((p: BarracaProductoRow, i: number) => {
       const effective = precioDeVenta(p);
@@ -323,11 +321,11 @@ export default async function CategoriaPage({
       />
     </div>
     <CrossLinksGrid
-      title="Despacho a todo el Maule"
-      subtitle={`Llevamos ${categoria.nombre.toLowerCase()} y todo lo que necesitas para tu obra a Curicó, Talca, Linares y comunas vecinas.`}
-      eyebrow="Cobertura · Maule"
+      title="Despacho en camión desde Molina"
+      subtitle={`Llevamos ${categoria.nombre.toLowerCase()} y todo lo que necesitas para tu obra a ${LUGARES_DESPACHO}.`}
+      eyebrow="Cobertura"
       variant="light"
-      items={CIUDADES.slice(0, 12).map((ciudad) => ({
+      items={CIUDADES.filter((x) => despachaA(x.nombre)).slice(0, 12).map((ciudad) => ({
         label: `Despacho a ${ciudad.nombre}`,
         href: `/en/${ciudad.slug}`,
       }))}

@@ -30,7 +30,7 @@ export default function RegistroPage() {
       return;
     }
     if (!aceptaTerminos) {
-      setError("Debes aceptar los Terminos y Condiciones y la Politica de Privacidad para crear tu cuenta");
+      setError("Debes aceptar los Términos y Condiciones y la Política de Privacidad para crear tu cuenta");
       return;
     }
     if (form.password !== form.confirmPassword) {
@@ -42,7 +42,7 @@ export default function RegistroPage() {
       return;
     }
     if (!/[A-Z]/.test(form.password) || !/[0-9]/.test(form.password)) {
-      setError("La contraseña debe incluir al menos una letra mayuscula y un numero");
+      setError("La contraseña debe incluir al menos una letra mayúscula y un número");
       return;
     }
     setLoading(true);
@@ -250,15 +250,15 @@ export default function RegistroPage() {
               className="mt-1 w-4 h-4 rounded border-gray-300 text-marca-600 focus:ring-marca-500"
             />
             <span>
-              He leido y acepto los{" "}
+              He leído y acepto los{" "}
               <Link href="/terminos" target="_blank" className="text-marca-600 hover:underline font-medium">
-                Terminos y Condiciones
+                Términos y Condiciones
               </Link>{" "}
               y la{" "}
               <Link href="/privacidad" target="_blank" className="text-marca-600 hover:underline font-medium">
-                Politica de Privacidad
+                Política de Privacidad
               </Link>
-              , y autorizo el tratamiento de mis datos personales conforme a la Ley N&deg; 19.628. <span className="text-red-500">*</span>
+              . <span className="text-red-500">*</span>
             </span>
           </label>
 

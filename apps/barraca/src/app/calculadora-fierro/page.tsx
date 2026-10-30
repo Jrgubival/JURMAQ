@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "@/components/barraca/Enlace";
 import CalculadoraFierroClient from "./CalculadoraFierroClient";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
+import { LUGARES_DESPACHO } from '@/lib/cobertura';
 
 /**
  * pSEO landing — calculadora de quintales de fierro para losa, sobrelosa,
@@ -16,7 +17,7 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 export const metadata: Metadata = {
   title: "Calculadora de Fierro para Losa, Muros y Radier · JURMAQ Barraca",
   description:
-    "Calcula cuántos quintales de fierro necesitas para tu obra: losa, sobrelosa, muros de hormigón armado, radier. Cuantías típicas chilenas (kg/m²). Cotiza en barraca.jurmaq.cl con despacho a todo el Maule.",
+    "Calcula cuántos quintales de fierro necesitas para tu obra: losa, sobrelosa, muros de hormigón armado, radier. Cuantías típicas chilenas (kg/m²). Compra en barraca.jurmaq.cl con retiro en Molina o despacho en camión a Molina, Curicó, Talca y alrededores.",
   keywords: [
     "calculadora fierro",
     "cuantos quintales de fierro por m2",
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Calculadora de Fierro para Construcción · Quintales por m²",
     description:
-      "Calcula los quintales de fierro que necesitas para tu losa, muro o radier. Cotiza con barraca JURMAQ y te despachamos a todo el Maule.",
+      "Calcula los quintales de fierro que necesitas para tu losa, muro o radier. Compra en barraca JURMAQ con retiro en Molina o despacho a Curicó, Talca y alrededores.",
     url: "https://barraca.jurmaq.cl/calculadora-fierro",
     siteName: "Barraca JURMAQ",
     locale: "es_CL",
@@ -179,10 +180,10 @@ export default function CalculadoraFierroPage() {
           },
           {
             "@type": "Question",
-            name: "¿Despachan fierro al Maule?",
+            name: "¿A dónde despachan el fierro?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Sí. JURMAQ Barraca despacha fierro estriado, perfiles, mallas Acma y +1.600 productos a todo el Maule desde Molina. El día de entrega se coordina al confirmar el pedido.",
+              text: `JURMAQ Barraca despacha en su camión desde Molina solo a ${LUGARES_DESPACHO}. También puedes retirar en Av. Poniente 2157, Molina. El día de entrega se coordina al confirmar el pedido.`,
             },
           },
         ],
@@ -289,10 +290,10 @@ export default function CalculadoraFierroPage() {
                 </dd>
               </div>
               <div>
-                <dt className="font-semibold text-navy-950 mb-1">¿Despachan fierro al Maule?</dt>
+                <dt className="font-semibold text-navy-950 mb-1">¿A dónde despachan el fierro?</dt>
                 <dd className="text-gray-700 text-sm">
-                  Sí. Despachamos desde Molina a todo el Maule: Curicó, Talca, Linares y
-                  más. <Link href="/categorias/fierros" className="text-marca-600 hover:underline">
+                  En nuestro camión desde Molina, solo a {LUGARES_DESPACHO}. También
+                  puedes retirar en Molina. <Link href="/categorias/fierros" className="text-marca-600 hover:underline">
                     Ver catálogo de fierros
                   </Link>.
                 </dd>

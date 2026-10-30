@@ -59,8 +59,8 @@ function PendienteContent() {
 
         <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800">
-            Si pagas con transferencia bancaria o efectivo, recuerda completar
-            el pago en el plazo indicado por MercadoPago para que no se cancele.
+            Si pagas con transferencia bancaria, recuerda completar el pago en
+            el plazo indicado para que el pedido no se cancele.
           </p>
         </div>
       </div>

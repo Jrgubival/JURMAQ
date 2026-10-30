@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
 import { whatsappCtaSucursal } from '@jurmaq/shared/whatsapp';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import { LEGAL_INFO, CIUDADES, DISTANCIAS_BARRACA, HORARIO_BARRACA } from '@jurmaq/shared/seo';
+import { LEGAL_INFO, DISTANCIAS_BARRACA, HORARIO_BARRACA } from '@jurmaq/shared/seo';
+import { ZONAS_DESPACHO } from '@/lib/despacho/zonas';
+import { LUGARES_DESPACHO } from '@/lib/cobertura';
 
 /**
  * /sucursales — dónde estamos físicamente y hasta dónde despachamos.
@@ -36,9 +38,9 @@ import { LEGAL_INFO, CIUDADES, DISTANCIAS_BARRACA, HORARIO_BARRACA } from '@jurm
 const BARRACA = LEGAL_INFO.brands.barraca;
 const CONSTRUCTORA = LEGAL_INFO.brands.constructora;
 
-const TITLE = 'Dónde estamos · Barraca en Molina y despacho a todo el Maule · JURMAQ';
+const TITLE = 'Dónde estamos · Barraca en Molina · Despacho a Curicó, Talca y alrededores · JURMAQ';
 const DESCRIPTION =
-  'Nuestra barraca de fierros está en Av. Poniente 2157, Molina. Despachamos a Curicó, Teno, Romeral, Sagrada Familia, Talca, Linares y toda la Región del Maule. Horarios, teléfono y WhatsApp directo.';
+  `Nuestra barraca de fierros está en Av. Poniente 2157, Molina. Retiro en el local y despacho en camión a ${LUGARES_DESPACHO}. Horarios, teléfono y WhatsApp directo.`;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -54,17 +56,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * Ciudades donde despachamos, ordenadas por cercanía real.
- *
- * Sale de `DISTANCIAS_BARRACA`, calculado con OSRM desde Molina — no son
- * números inventados. Se excluye la propia Molina (0 km) porque va aparte como
- * la ubicación física.
+ * Lugares donde despacha el camión: SOLO los de ZONAS_DESPACHO (no hay
+ * courier ni despacho al resto de la región). La distancia sale de
+ * `DISTANCIAS_BARRACA` (OSRM desde Molina) cuando el lugar tiene landing; si
+ * no, se muestra sin distancia.
  */
 function ciudadesDespacho() {
-  return CIUDADES
-    .map((c) => ({ ...c, d: DISTANCIAS_BARRACA[c.slug] }))
-    .filter((c) => c.d && c.d.km > 0)
-    .sort((a, b) => a.d!.km - b.d!.km);
+  return ZONAS_DESPACHO.map((z) => ({ slug: z.id, nombre: z.nombre, d: DISTANCIAS_BARRACA[z.id] ?? null }));
 }
 
 export default function SucursalesPage() {
@@ -130,11 +128,12 @@ export default function SucursalesPage() {
           </nav>
 
           <h1 className="mt-6 text-3xl sm:text-4xl font-bold text-navy-950 leading-tight">
-            Estamos en Molina y despachamos a todo el Maule
+            Estamos en Molina y despachamos en camión a Curicó, Talca y alrededores
           </h1>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl leading-relaxed">
-            Tenemos un local: la barraca de fierros en Molina. Desde ahí sale el
-            despacho a Curicó, Talca, Linares y el resto de la región.
+            Tenemos un local: la barraca de fierros en Molina. Puedes retirar
+            ahí o pedir despacho en nuestro camión a {LUGARES_DESPACHO}. No
+            despachamos a otros lugares.
           </p>
         </div>
       </div>
@@ -224,9 +223,8 @@ export default function SucursalesPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <h2 className="text-2xl font-bold text-navy-950">Hasta dónde despachamos</h2>
           <p className="mt-3 text-gray-600 max-w-2xl leading-relaxed">
-            Distancia por carretera desde Molina. No necesitas ir al local:
-            cotizas online y te llega a la obra. El día de entrega se coordina
-            al confirmar el pedido.
+            Despachamos solo en nuestro camión y solo a estos lugares. El día
+            de entrega se coordina al confirmar el pedido.
           </p>
 
           <div className="mt-8 overflow-x-auto">
@@ -241,7 +239,7 @@ export default function SucursalesPage() {
                 {despacho.map((c) => (
                   <tr key={c.slug}>
                     <td className="py-2.5 font-medium text-navy-950">{c.nombre}</td>
-                    <td className="py-2.5 text-gray-600">{c.d!.km} km</td>
+                    <td className="py-2.5 text-gray-600">{c.d ? `${c.d.km} km` : '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -249,8 +247,8 @@ export default function SucursalesPage() {
           </div>
 
           <p className="mt-6 text-xs text-gray-500">
-            El costo de despacho depende del volumen y la distancia; se calcula
-            al cotizar.
+            El costo de despacho depende del lugar de entrega y se muestra en el
+            carrito antes de pagar.
           </p>
         </div>
       </div>

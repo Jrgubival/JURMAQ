@@ -6,9 +6,7 @@ import type { Database } from "@jurmaq/shared/db-types";
 import ProductCard from "@/components/barraca/ProductCard";
 import HeroSlider from "@/components/barraca/HeroSlider";
 import MarcasCarrusel from "@/components/barraca/MarcasCarrusel";
-import { PROMESA, PROMESA_CORTA_META } from "@/lib/promesa";
 import PromotedProductCard from "@/components/barraca/PromotedProductCard";
-import CountdownTimer from "@/components/barraca/CountdownTimer";
 import { applyDailyPromosToProducts, getDailyPromotions, getPromotedProducts } from "@/lib/promotions";
 import { titleCase } from "@jurmaq/shared/format";
 import type { ProductoPromocionado } from "@/lib/promotions";
@@ -16,6 +14,7 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { familiaDe } from '@/lib/variantes';
 import masVendidos from '@/data/mas-vendidos.json';
 import { vistaPrecio, type ProductoConPrecio } from '@/lib/precio-web';
+import { ZONAS_DESPACHO } from '@/lib/despacho/zonas';
 
 type BarracaCategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
@@ -52,11 +51,10 @@ export const metadata: Metadata = {
   title:
     "Barraca de Fierros y Materiales · Curicó · JURMAQ",
   description:
-    `Fierro estriado, perfiles, planchas, tubos, mallas Acma, pinturas y +1.600 productos en Barraca JURMAQ Curicó · Molina. Despacho a Teno, Romeral, Talca y toda la Región del Maule. ${PROMESA}.`,
+    `Fierro estriado, perfiles, planchas, tubos, mallas Acma, pinturas y +1.600 productos en Barraca JURMAQ Curicó · Molina. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.`,
   keywords: [
     // Brand + value prop
     "barraca jurmaq",
-    "te mejoramos el precio",
     "comprar fierro en línea",
     "mejor precio fierros Curicó",
     // Geo · barraca
@@ -114,20 +112,14 @@ export const metadata: Metadata = {
     "Cintac Curicó",
     "Inchalam Curicó",
     "CAP Acero Maule",
-    // Localidades servidas
-    "Sagrada Familia",
-    "Hualañé",
-    "Licantén",
-    "Vichuquén",
-    "Rauco",
-    "Linares",
-    "Constitución",
+    // Localidades servidas (solo las de ZONAS_DESPACHO)
+    ...ZONAS_DESPACHO.map((z) => z.nombre),
   ],
   openGraph: {
     title:
-      `Barraca de Fierros JURMAQ · Molina · Despacho a Curicó y todo el Maule · ${PROMESA_CORTA_META}`,
+      "Barraca de Fierros JURMAQ · Molina · Despacho a Curicó, Talca y alrededores",
     description:
-      `+1.600 productos: fierros, perfiles, planchas, tubos, mallas, pinturas. Despacho a toda la Región del Maule. ${PROMESA}.`,
+      "+1.600 productos: fierros, perfiles, planchas, tubos, mallas, pinturas. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.",
     url: "https://barraca.jurmaq.cl",
     siteName: "Barraca JURMAQ",
     locale: "es_CL",
@@ -137,7 +129,7 @@ export const metadata: Metadata = {
         url: "/og-image-barraca-1200x630.png",
         width: 1200,
         height: 630,
-        alt: "Barraca de Fierros JURMAQ — Curicó, Molina y Región del Maule",
+        alt: "Barraca de Fierros JURMAQ — Molina, Curicó y Talca",
       },
       {
         url: "/icon-512.png",
@@ -149,9 +141,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y el Maule",
+    title: "Barraca JURMAQ · Fierros y Materiales en Molina · Despacho a Curicó y Talca",
     description:
-      `${PROMESA}. Despacho a toda la Región del Maule.`,
+      "Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.",
   },
   // Sin bloque `icons:` ni `manifest:` a propósito.
   //
@@ -381,7 +373,7 @@ export default async function BarracaHomePage() {
       {/* Carrusel con fotos reales del local, igual en celular y escritorio. */}
       <HeroSlider precios={{ fierro: precioFierro, tubo: precioTubo }} />
 
-      <h1 className="sr-only">Barraca de fierros y materiales de construcción en Molina, con despacho a Curicó y todo el Maule</h1>
+      <h1 className="sr-only">Barraca de fierros y materiales de construcción en Molina, con despacho a Curicó, Talca y alrededores</h1>
 
       {/* === OFERTAS DEL DIA === */}
       {dailyPromo && promotedProducts.length > 0 && (
@@ -411,12 +403,6 @@ export default async function BarracaHomePage() {
                     </p>
                   )}
                 </div>
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em]">
-                  Termina en
-                </span>
-                <CountdownTimer />
               </div>
             </div>
 

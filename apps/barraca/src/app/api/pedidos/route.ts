@@ -11,6 +11,7 @@ import { correoAvisoBarraca, correoConfirmacionComprador } from '@/lib/pedidos/c
 import { pasarelaActiva, pagoEnLineaDisponible, origenTienda } from '@/lib/pagos';
 import { rutValido, formatearRut } from '@/lib/rut';
 import { cotizarDespacho } from '@/lib/despacho';
+import { VERSION_TERMINOS } from '@/lib/vigencia';
 
 /**
  * POST /api/pedidos — crea un pedido desde el checkout.
@@ -142,6 +143,7 @@ export async function POST(request: NextRequest) {
           items,
           subtotal,
           terminos_aceptados_at: new Date().toISOString(),
+          terminos_version: VERSION_TERMINOS,
           acepta_ofertas: d.aceptaOfertas,
           costo_despacho: costoDespacho, // null = a coordinar
           total: subtotal + (costoDespacho ?? 0),
@@ -172,6 +174,14 @@ export async function POST(request: NextRequest) {
         redirect = `/pedido/${pedido.numero}`;
       }
     } else {
+      // Transferencia: el stock se reserva ahora, no al pagar, para no vender
+      // dos veces lo mismo mientras llega la transferencia. Se devuelve si el
+      // pedido se cancela o no se aprueba (barraca_pedido_cerrar).
+      try {
+        await store.reservarStock(pedido.numero);
+      } catch (e) {
+        logSafeError('pedido-reservar-stock-error', { numero: pedido.numero, error: String(e) });
+      }
       await Promise.all([correoConfirmacionComprador(pedido), correoAvisoBarraca(pedido, 'nuevo')]);
     }
 

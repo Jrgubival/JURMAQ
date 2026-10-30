@@ -90,6 +90,28 @@ export function crearStoreArchivo(): PedidosStore {
     async guardarDetallePago(numero, detalle) {
       editar(numero, (p) => { p.pago_detalle = detalle; });
     },
+    // Desarrollo: el stock de la base no se toca; sólo se lleva la marca.
+    async reservarStock(numero) {
+      const p = leer().find((x) => x.numero === numero);
+      if (!p) return 'no_encontrado';
+      if (p.stock_descontado) return 'ya_reservado';
+      editar(numero, (x) => { x.stock_descontado = true; });
+      return 'reservado';
+    },
+    async cerrar(numero, estado, motivo, nota) {
+      const p = leer().find((x) => x.numero === numero);
+      if (!p) return 'no_encontrado';
+      if (!['pendiente_pago', 'pago_rechazado', 'pago_discrepancia', 'pagado', 'en_preparacion', 'listo_retiro'].includes(p.estado)) return 'estado_invalido';
+      editar(numero, (x) => {
+        x.estado = estado;
+        x.stock_descontado = false;
+        if (estado === 'rechazado') { x.rechazo_motivo = motivo; x.rechazo_nota = nota; x.rechazado_at = new Date().toISOString(); }
+      });
+      return 'ok';
+    },
+    async guardarReembolso(numero, r) {
+      editar(numero, (p) => { p.reembolso = r; });
+    },
     async cambiarEstado(numero, estado) {
       editar(numero, (p) => { p.estado = estado; });
     },
