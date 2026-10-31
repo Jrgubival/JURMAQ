@@ -17,13 +17,19 @@ function modoPrueba(): boolean {
   return env.PEDIDOS_STORE === 'archivo';
 }
 
+/**
+ * Cuenta para transferencias (datos que entregó Jorge el 30-10-2026). Se
+ * muestran a todo comprador, así que no son secretos; las variables BANK_*
+ * sólo sirven para cambiarlos sin tocar el código. El tipo de cuenta falta
+ * confirmarlo: sin él, esa fila no se muestra.
+ */
 export function datosTransferencia() {
   return {
-    banco: env.BANK_NAME?.trim() || null,
-    tipo: env.BANK_ACCOUNT_TYPE?.trim() || 'Cuenta corriente',
-    cuenta: env.BANK_ACCOUNT?.trim() || null,
-    titular: env.BANK_HOLDER?.trim() || 'JURMAQ SpA',
-    rut: env.BANK_RUT?.trim() || null,
+    banco: env.BANK_NAME?.trim() || 'BancoEstado',
+    tipo: env.BANK_ACCOUNT_TYPE?.trim() || null,
+    cuenta: env.BANK_ACCOUNT?.trim() || '42500240045',
+    titular: env.BANK_HOLDER?.trim() || 'Barraca de Fierros JURMAQ SpA',
+    rut: env.BANK_RUT?.trim() || '77.722.788-2',
     email: env.BANK_EMAIL?.trim() || 'contacto@jurmaq.cl',
   };
 }

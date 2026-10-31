@@ -170,7 +170,7 @@ export default async function PedidoPage({
         {transferencia && (
           <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-[15px] bg-[#F7F7F5] border border-[#EAEAEA] rounded-xl p-5">
             {t.banco && (<><dt className="text-[#787774]">Banco</dt><dd className="font-semibold text-[#111111]">{t.banco}</dd></>)}
-            <dt className="text-[#787774]">Tipo</dt><dd className="font-semibold text-[#111111]">{t.tipo}</dd>
+            {t.tipo && (<><dt className="text-[#787774]">Tipo</dt><dd className="font-semibold text-[#111111]">{t.tipo}</dd></>)}
             {t.cuenta && (<><dt className="text-[#787774]">N° de cuenta</dt><dd className="font-semibold text-[#111111] tabular-nums">{t.cuenta}</dd></>)}
             <dt className="text-[#787774]">Titular</dt><dd className="font-semibold text-[#111111]">{t.titular}</dd>
             {t.rut && (<><dt className="text-[#787774]">RUT</dt><dd className="font-semibold text-[#111111] tabular-nums">{t.rut}</dd></>)}

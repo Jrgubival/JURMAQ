@@ -233,9 +233,9 @@ El checkout muestra solo los medios de pago que están activos el día de tu com
 
 14.2. **Transferencia bancaria:** al confirmar el pedido te mostramos y enviamos por correo los datos de la cuenta. Debes transferir el total indicando el número de pedido y enviar el comprobante a contacto@jurmaq.cl.
 
-- Banco: [COMPLETAR: banco]
-- Tipo de cuenta: [COMPLETAR: tipo de cuenta]
-- Número de cuenta: [COMPLETAR: número de cuenta]
+- Banco: BancoEstado (Banco del Estado de Chile)
+- Tipo de cuenta: [COMPLETAR: tipo de cuenta por confirmar]
+- Número de cuenta: 42500240045
 - Titular: BARRACA DE FIERROS JURMAQ SPA
 - RUT: 77.722.788-2
 - Correo para el comprobante: contacto@jurmaq.cl
