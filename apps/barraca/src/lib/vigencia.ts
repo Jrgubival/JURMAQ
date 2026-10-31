@@ -12,7 +12,7 @@
  */
 export const PRECIO_WEB: { desde: string | null; hasta: string | null } = {
   desde: null, // TODO(Jorge): fecha de publicación
-  hasta: null, // TODO(Jorge): fecha de término de la prueba
+  hasta: '2026-12-01', // Jorge, 30-10-2026: prueba de un mes, inclusive
 };
 
 export const VERSION_TERMINOS: string | null = null; // TODO(Jorge): ej. '2026-11'
@@ -25,3 +25,15 @@ export function fechaLarga(iso: string | null): string | null {
 }
 
 export const precioWebHasta = (): string | null => fechaLarga(PRECIO_WEB.hasta);
+
+/** "01-12" para la etiqueta corta junto al precio. */
+export function precioWebHastaCorto(): string | null {
+  const h = PRECIO_WEB.hasta;
+  return h && /^\d{4}-\d{2}-\d{2}$/.test(h) ? `${h.slice(8, 10)}-${h.slice(5, 7)}` : null;
+}
+
+/** "01-12-2026" para las frases completas. */
+export function precioWebHastaNumerico(): string | null {
+  const h = PRECIO_WEB.hasta;
+  return h && /^\d{4}-\d{2}-\d{2}$/.test(h) ? `${h.slice(8, 10)}-${h.slice(5, 7)}-${h.slice(0, 4)}` : null;
+}

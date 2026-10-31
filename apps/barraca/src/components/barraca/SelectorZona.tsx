@@ -41,6 +41,9 @@ export function useZonaDespacho(): [ZonaDespacho | null, (z: ZonaDespacho) => vo
   return [zona, elegir];
 }
 
+/** Aviso entre menús del header: el que se abre cierra a los demás. */
+export const EVENTO_MENU = "barraca:menu-abierto";
+
 export function resumenZona(z: ZonaDespacho): string {
   return z.gratisDesde != null
     ? `${formatCLP(z.costo)} · gratis desde ${formatCLP(z.gratisDesde)}`
@@ -63,6 +66,15 @@ export default function SelectorZona({ variante }: { variante: "escritorio" | "c
   const [abierto, setAbierto] = useState(false);
   const raiz = useRef<HTMLDivElement>(null);
   const idLista = useId();
+
+  useEffect(() => {
+    if (abierto) window.dispatchEvent(new CustomEvent(EVENTO_MENU, { detail: idLista }));
+    const otro = (e: Event) => {
+      if ((e as CustomEvent<string>).detail !== idLista) setAbierto(false);
+    };
+    window.addEventListener(EVENTO_MENU, otro);
+    return () => window.removeEventListener(EVENTO_MENU, otro);
+  }, [abierto, idLista]);
 
   useEffect(() => {
     if (!abierto) return;
@@ -130,7 +142,7 @@ export default function SelectorZona({ variante }: { variante: "escritorio" | "c
           }`}
         >
           <div className="px-4 pt-3 pb-2 border-b border-gray-100">
-            <p className="text-sm font-semibold text-navy-950">Despacho en camión de la barraca</p>
+            <p className="text-sm font-semibold text-navy-950">Despacho a domicilio</p>
             <p className="text-xs text-gray-500 mt-0.5">Elige tu zona para ver cuánto cuesta. Te llamamos para coordinar el día.</p>
           </div>
           <ul role="listbox" aria-label="Zona de despacho" className="max-h-[min(60vh,22rem)] overflow-y-auto py-1">
@@ -144,7 +156,7 @@ export default function SelectorZona({ variante }: { variante: "escritorio" | "c
                       elegir(z);
                       setAbierto(false);
                     }}
-                    className={`w-full flex items-center justify-between gap-3 px-4 min-h-[40px] text-sm text-left transition-colors duration-100 ${
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-1.5 min-h-[44px] text-sm text-left transition-colors duration-100 ${
                       actual ? "bg-gray-50 font-semibold text-navy-950" : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
@@ -152,16 +164,17 @@ export default function SelectorZona({ variante }: { variante: "escritorio" | "c
                       <span className={`w-4 text-marca-600 ${actual ? "" : "invisible"}`} aria-hidden="true">✓</span>
                       {z.nombre}
                     </span>
-                    <span className="text-xs text-gray-500 tabular-nums">{formatCLP(z.costo)}</span>
+                    <span className="text-right leading-tight tabular-nums">
+                      <span className="block text-xs text-gray-600">{formatCLP(z.costo)}</span>
+                      {z.gratisDesde != null && <span className="block text-[11px] text-gray-400">gratis desde {formatCLP(z.gratisDesde)}</span>}
+                    </span>
                   </button>
                 </li>
               );
             })}
           </ul>
           <p className="px-4 py-2.5 border-t border-gray-100 text-xs text-gray-500">
-            {zona && zona.gratisDesde != null
-              ? `A ${zona.nombre}: gratis en compras desde ${formatCLP(zona.gratisDesde)}.`
-              : "¿Otra comuna? Retira gratis en Molina o cotiza por WhatsApp."}
+            ¿Otra comuna? Retira gratis en Molina o cotiza por WhatsApp.
           </p>
         </div>
       )}
@@ -176,7 +189,7 @@ export function DespachoZonaFicha() {
   return (
     <>
       <br />
-      <span className="text-navy-950 tabular-nums">A {zona.nombre}: {resumenZona(zona)}</span>
+      <span className="text-navy-950 tabular-nums">Despacho a {zona.nombre} {resumenZona(zona)}</span>
     </>
   );
 }

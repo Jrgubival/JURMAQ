@@ -1,6 +1,6 @@
 import { formatCLP } from "@jurmaq/shared/format";
 import type { VistaPrecio } from "@/lib/precio-web";
-import { precioWebHasta } from "@/lib/vigencia";
+import { precioWebHastaCorto } from "@/lib/vigencia";
 
 /**
  * Bloque de precio de la tienda, igual en tarjeta, ficha y barra del celular:
@@ -35,8 +35,14 @@ export default function Precio({
 
   return (
     <div className="tabular-nums">
-      {conOferta && (
-        <p className={`font-semibold text-marca-700 leading-none mb-1 ${tamano === "ficha" ? "text-sm" : "text-[11px] uppercase tracking-wide"}`}>
+      {tamano === "ficha" ? (
+        // En la ficha la duración va junto al precio (art. 35), en chico y gris.
+        <p className="text-sm leading-none mb-1.5">
+          <span className={`font-semibold ${conOferta ? "text-marca-700" : "text-gray-500"}`}>Precio web</span>
+          {precioWebHastaCorto() && <span className="text-xs text-gray-500"> · hasta {precioWebHastaCorto()}</span>}
+        </p>
+      ) : conOferta && (
+        <p className="font-semibold text-marca-700 leading-none mb-1 text-[11px] uppercase tracking-wide">
           Precio web
         </p>
       )}
@@ -54,12 +60,6 @@ export default function Precio({
       {conOferta && (
         <p className={`mt-1.5 text-gray-500 leading-none ${tamano === "ficha" ? "text-sm" : "text-xs"}`}>
           Precio normal <span className="line-through">{formatCLP(vista.precioNormal!)}</span>
-        </p>
-      )}
-      {/* Duración del precio web (art. 35): sólo en la ficha, no en las tarjetas. */}
-      {tamano === "ficha" && (
-        <p className="mt-2 text-xs text-gray-500 leading-snug">
-          {precioWebHasta() ? `Precio web válido hasta el ${precioWebHasta()}; puede cambiar.` : "Precio web vigente hoy."} Tu compra queda con el precio que confirmas. <a href="/terminos#5-precios" className="underline underline-offset-2 hover:text-navy-950">Condiciones</a>
         </p>
       )}
     </div>

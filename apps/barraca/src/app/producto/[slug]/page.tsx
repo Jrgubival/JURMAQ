@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { precioWebHastaNumerico } from "@/lib/vigencia";
 import { DespachoZonaFicha } from "@/components/barraca/SelectorZona";
 import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
@@ -498,6 +499,12 @@ export default async function ProductoPage({
                   </div>
                 ))}
               </dl>
+              {precioWebHastaNumerico() && (
+                <p className="mt-6 text-xs text-[#787774] leading-relaxed">
+                  Precio web válido hasta el {precioWebHastaNumerico()}. Tu compra queda con el precio que confirmas.{" "}
+                  <Link href="/terminos#5-precios" className="underline underline-offset-2 hover:text-navy-950">Términos y condiciones</Link>
+                </p>
+              )}
             </div>
           </div>
         </div>

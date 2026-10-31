@@ -6,7 +6,7 @@ import MediosPago from "@/components/barraca/MediosPago";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
-import SelectorZona from "@/components/barraca/SelectorZona";
+import SelectorZona, { EVENTO_MENU } from "@/components/barraca/SelectorZona";
 import ToastContainer from "@/components/Toast";
 import { HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
 import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
@@ -63,12 +63,9 @@ const VERTICALES = [
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [user, setUser] = useState<{ nombre: string; rol?: string } | null>(null);
-  const accountRef = useRef<HTMLDivElement>(null);
   const [navVisible, setNavVisible] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -77,7 +74,7 @@ function Navbar() {
     function handleScroll() {
       const currentY = window.scrollY;
       if (currentY < 100) { setNavVisible(true); }
-      else if (currentY > lastScrollY.current + 10) { setNavVisible(false); setCatOpen(false); setAccountOpen(false); }
+      else if (currentY > lastScrollY.current + 10) { setNavVisible(false); setCatOpen(false); }
       else if (currentY < lastScrollY.current - 10) { setNavVisible(true); }
       lastScrollY.current = currentY;
     }
@@ -100,45 +97,6 @@ function Navbar() {
       .then((r) => r.json())
       .then((d) => setCategorias(Array.isArray(d) ? d : d.categorias || []))
       .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    // Read user from localStorage. Token format is base64 (not JWT) so we
-    // only fall back to it as "logged-in" signal; the real user data lives in
-    // barraca_user.
-    function syncUser() {
-      const storedUser = localStorage.getItem("barraca_user");
-      if (storedUser) {
-        try {
-          const parsed = JSON.parse(storedUser);
-          setUser({ nombre: parsed.nombre || "Usuario", rol: parsed.rol });
-          return;
-        } catch { /* invalid JSON */ }
-      }
-      const token = localStorage.getItem("barraca_token");
-      if (!token) {
-        setUser(null);
-        return;
-      }
-      // Token present but no user JSON: show a generic logged-in badge until
-      // the cuenta page loads the full profile.
-      setUser({ nombre: "Mi Cuenta" });
-    }
-
-    syncUser();
-
-    // Re-sync when another tab logs in/out, or when we dispatch the custom
-    // event ourselves (e.g. after login on the same tab).
-    function onStorage(e: StorageEvent) {
-      if (e.key === "barraca_user" || e.key === "barraca_token" || e.key === null) syncUser();
-    }
-    function onAuthChange() { syncUser(); }
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("barraca-auth-changed", onAuthChange);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("barraca-auth-changed", onAuthChange);
-    };
   }, []);
 
   // Contador del carrito: el carrito vive en el navegador (lib/carrito.ts),
@@ -173,15 +131,17 @@ function Navbar() {
     return () => window.removeEventListener("barraca:open-cart", onOpenCart);
   }, []);
 
-  // Close account dropdown on outside click
+  // Un solo menú abierto a la vez: Categorías avisa al abrirse y se cierra
+  // cuando se abre otro (el selector "Despacho a").
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
-        setAccountOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    if (catOpen) window.dispatchEvent(new CustomEvent(EVENTO_MENU, { detail: "categorias" }));
+  }, [catOpen]);
+  useEffect(() => {
+    const otro = (e: Event) => {
+      if ((e as CustomEvent<string>).detail !== "categorias") setCatOpen(false);
+    };
+    window.addEventListener(EVENTO_MENU, otro);
+    return () => window.removeEventListener(EVENTO_MENU, otro);
   }, []);
 
   // Close dropdowns and mobile menu on Escape key
@@ -189,13 +149,12 @@ function Navbar() {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         if (catOpen) setCatOpen(false);
-        if (accountOpen) setAccountOpen(false);
         if (mobileOpen) setMobileOpen(false);
       }
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [catOpen, accountOpen, mobileOpen]);
+  }, [catOpen, mobileOpen]);
 
   return (
     <>
@@ -281,87 +240,6 @@ function Navbar() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2">
-              {/* Mi Cuenta Dropdown */}
-              <div ref={accountRef} className="relative hidden sm:block">
-                <button
-                  onClick={() => setAccountOpen(!accountOpen)}
-                  aria-expanded={accountOpen}
-                  aria-haspopup="true"
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span className="hidden xl:inline">{user ? user.nombre : "Mi Cuenta"}</span>
-                  {user?.rol === 'admin' && (
-                    <svg className="w-3.5 h-3.5 text-marca-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  )}
-                  <svg className={`w-3 h-3 transition-transform ${accountOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {accountOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
-                    {user ? (
-                      <>
-                        <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                          <p className="text-sm font-semibold text-gray-900">{user.nombre}</p>
-                        </div>
-                        <Link href="/cuenta" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
-                          Mi Cuenta
-                        </Link>
-                        {user?.rol === 'admin' && (
-                          // Full URL to main domain (admin panel lives only on jurmaq.cl).
-                          // Using <a> instead of <Link> so the browser does a full cross-subdomain
-                          // navigation — the NextAuth session cookie has Domain=.jurmaq.cl so the
-                          // session carries over from barraca.jurmaq.cl.
-                          <a
-                            href="https://jurmaq.cl/admin"
-                            onClick={() => setAccountOpen(false)}
-                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-indigo-700 hover:bg-indigo-50 transition-colors font-medium"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            Panel Admin
-                          </a>
-                        )}
-                        <div className="border-t border-gray-100 mt-1 pt-1">
-                          <button
-                            onClick={() => {
-                              localStorage.removeItem("barraca_token");
-                              localStorage.removeItem("barraca_user");
-                              localStorage.removeItem("barraca_session_id");
-                              window.dispatchEvent(new Event("barraca-auth-changed"));
-                              setUser(null);
-                              setAccountOpen(false);
-                              window.location.href = "/";
-                            }}
-                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                          >
-                            Cerrar sesión
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Link href="/cuenta/login" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
-                          Iniciar sesión
-                        </Link>
-                        <Link href="/cuenta/registro" onClick={() => setAccountOpen(false)} className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-marca-50 hover:text-marca-600 transition-colors">
-                          Crear cuenta
-                        </Link>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Cart */}
               <button
                 onClick={() => setCartOpen(true)}
                 data-magnetic
@@ -439,34 +317,6 @@ function Navbar() {
                 >
                   Carrito ({cartCount})
                 </Link>
-                {user ? (
-                  <>
-                    <Link
-                      href="/cuenta"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      Mi Cuenta
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/cuenta/login"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center px-4 min-h-[48px] py-3 text-base font-medium text-gray-700 hover:text-navy-950 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                      Ingresar
-                    </Link>
-                    <Link
-                      href="/cuenta/registro"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center justify-center min-h-[48px] px-5 py-3 bg-marca-600 hover:bg-marca-700 text-white font-semibold rounded-lg transition-colors"
-                    >
-                      Crear cuenta
-                    </Link>
-                  </>
-                )}
               </div>
             </div>
           </div>
@@ -547,7 +397,7 @@ function Footer() {
               <span className="text-lg font-semibold text-marca-500 ml-1">Barraca</span>
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed max-w-xs">
-              Fierros y materiales de construcción en Molina. Retiro en el local o despacho en camión a Molina, Curicó, Talca y alrededores.
+              Fierros y materiales de construcción en Molina. Retiro en el local o despacho a domicilio en Molina, Curicó, Talca y alrededores.
             </p>
             {/* Contacto compacto: teléfono que se toca, WhatsApp, dirección y horario. */}
             <div className="mt-5 space-y-2">

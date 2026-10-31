@@ -9,9 +9,9 @@ import { trackEvents } from "@/lib/analytics";
 import { useCarrito } from "@/lib/useCarrito";
 import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carrito";
 import { rutValido } from "@/lib/rut";
-import { precioWebHasta } from "@/lib/vigencia";
-import { COMUNAS, REGIONES } from "@/lib/despacho/comunas";
-import { ZONAS_DESPACHO, COMUNAS_CON_ZONA, CLAVE_ZONA, zonaPorId } from "@/lib/despacho/zonas";
+import { precioWebHastaNumerico } from "@/lib/vigencia";
+import { ZONAS_DESPACHO, CLAVE_ZONA, zonaPorId } from "@/lib/despacho/zonas";
+import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from "@jurmaq/shared/whatsapp";
 
 /**
  * Checkout en una sola página, una columna: datos → entrega → pago.
@@ -22,17 +22,21 @@ import { ZONAS_DESPACHO, COMUNAS_CON_ZONA, CLAVE_ZONA, zonaPorId } from "@/lib/d
 type Campo = "nombre" | "email" | "telefono" | "rut" | "direccion" | "comuna";
 type Datos = Record<Campo | "notas", string>;
 
-/** Valores válidos del selector: zonas del camión (zonas.ts) y el resto de las comunas. */
-const CODIGOS = new Set([...ZONAS_DESPACHO.map((z) => z.id), ...COMUNAS.filter((c) => !COMUNAS_CON_ZONA.has(c.codigo)).map((c) => c.codigo)]);
+/** El selector muestra sólo las zonas de despacho (zonas.ts) y "mi comuna no está". */
+const OTRA_COMUNA = "otra";
+const CODIGOS = new Set([...ZONAS_DESPACHO.map((z) => z.id), OTRA_COMUNA]);
 /** Antes se guardaba la comuna (código o texto): se intenta reconocerla. */
 function codigoGuardado(v: unknown): string {
   if (typeof v !== "string" || !v) return "";
   if (CODIGOS.has(v)) return v;
   const n = v.trim().toLowerCase();
-  const zona = ZONAS_DESPACHO.find((z) => z.nombre.toLowerCase() === n || z.comuna === v);
-  if (zona) return zona.id;
-  return COMUNAS.find((c) => c.nombre.toLowerCase() === n && CODIGOS.has(c.codigo))?.codigo ?? "";
+  return ZONAS_DESPACHO.find((z) => z.nombre.toLowerCase() === n || z.comuna === v)?.id ?? "";
 }
+const WHATSAPP_OTRA_COMUNA = buildWhatsappUrl({
+  text: `${SALUDO_WEB_BARRACA} y quiero cotizar un despacho a mi comuna`,
+  utm_content: "barraca_checkout_otra_comuna",
+  utm_campaign: "barraca_despacho",
+});
 /** Zona elegida en el selector del header, si hay. */
 function zonaDelHeader(): string {
   try {
@@ -138,7 +142,7 @@ function EstadoDespacho({ cotizacion, onRetiro }: { cotizacion: Cotizacion | nul
     return (
       <div id="co-despacho-estado" aria-live="polite" className="rounded-lg bg-[#F7F7F5] border border-[#EAEAEA] px-4 py-3 text-sm">
         <p className="font-semibold text-[#111111]">
-          {cotizacion.tipo === "propio" ? "Camión de la barraca" : "Envío por courier"} · <span className="tabular-nums">{monto}</span>
+          {cotizacion.tipo === "propio" ? "Despacho a domicilio" : "Envío por courier"} · <span className="tabular-nums">{monto}</span>
           {cotizacion.simulado && (
             <span className="ml-2 align-middle text-[11px] font-semibold uppercase tracking-wide rounded bg-amber-100 text-amber-800 px-1.5 py-0.5">Tarifa de ejemplo</span>
           )}
@@ -175,6 +179,18 @@ function EstadoDespacho({ cotizacion, onRetiro }: { cotizacion: Cotizacion | nul
         )}
       </div>
     </div>
+  );
+}
+
+/** "Te faltan $X para despacho gratis" o "Despacho gratis", según la zona elegida. */
+function AvisoGratis({ zonaId, subtotal, alineado = "derecha" }: { zonaId: string; subtotal: number; alineado?: "derecha" | "izquierda" }) {
+  const z = zonaPorId(zonaId);
+  if (!z || z.gratisDesde == null) return null;
+  const falta = z.gratisDesde - subtotal;
+  return (
+    <p className={`text-xs mt-1.5 tabular-nums ${alineado === "derecha" ? "text-right" : "-mt-1"} ${falta <= 0 ? "text-[#2F7F4E] font-medium" : "text-[#787774]"}`}>
+      {falta <= 0 ? `Despacho gratis a ${z.nombre}` : `Gratis desde ${formatCLP(z.gratisDesde)} · te faltan ${formatCLP(falta)}`}
+    </p>
   );
 }
 
@@ -223,9 +239,12 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   // crear el pedido el servidor lo calcula de nuevo y cobra ese. La respuesta
   // se guarda con la consulta que la pidió, así una vieja nunca se muestra.
   const claveItems = items.map((i) => `${i.productoId}x${i.cantidad}`).join(",");
-  const consulta = despacho && CODIGOS.has(datos.comuna) && claveItems ? `${datos.comuna}|${claveItems}` : null;
+  const otraComuna = despacho && datos.comuna === OTRA_COMUNA;
+  const consulta = despacho && !otraComuna && CODIGOS.has(datos.comuna) && claveItems ? `${datos.comuna}|${claveItems}` : null;
   const [respuesta, setRespuesta] = useState<{ consulta: string; cotizacion: Cotizacion } | null>(null);
-  const cotizacion: Cotizacion | null = !consulta
+  const cotizacion: Cotizacion | null = otraComuna
+    ? { estado: "sin_servicio", motivo: "Por ahora despachamos sólo a las zonas de la lista. Puedes retirar gratis en la barraca o cotizar el despacho a tu comuna por WhatsApp.", whatsapp: WHATSAPP_OTRA_COMUNA }
+    : !consulta
     ? null
     : respuesta?.consulta === consulta ? respuesta.cotizacion : { estado: "cargando" };
 
@@ -380,7 +399,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
     ? "Gratis"
     : cotizacion?.estado === "ok"
       ? cotizacion.costo == null ? "A coordinar" : cotizacion.costo === 0 ? "Gratis" : formatCLP(cotizacion.costo)
-      : cotizacion?.estado === "cargando" ? "Calculando…" : datos.comuna ? "No disponible" : "Elige comuna";
+      : cotizacion?.estado === "cargando" ? "Calculando…" : datos.comuna ? "No disponible" : "Elige zona";
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -423,11 +442,11 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 detalle={`Av. Poniente 2157, Molina. ${HORARIO_BARRACA.semana}.`} />
               <Opcion nombre="entrega" valor="despacho" actual={entrega} onChange={(v) => setEntrega(v as "despacho")}
                 titulo="Despacho a domicilio"
-                detalle="En el camión de la barraca a Molina, Curicó, Sagrada Familia, Teno, Talca y alrededores. Otras comunas: cotiza por WhatsApp." />
+                detalle="A Molina, Curicó, Sagrada Familia, Teno, Talca y alrededores. Otras comunas: cotiza por WhatsApp." />
             </div>
             {despacho && (
               <>
-                <CampoForm id="co-comuna" label="Comuna" error={errores.comuna}>
+                <CampoForm id="co-comuna" label="Zona de despacho" error={errores.comuna}>
                   <div className="relative">
                     <select
                       id="co-comuna"
@@ -439,17 +458,13 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                       aria-describedby={errores.comuna ? "co-comuna-error" : "co-despacho-estado"}
                       className={`${claseInput(errores.comuna)} appearance-none pr-10`}
                     >
-                      <option value="">Elige tu comuna</option>
-                      <optgroup label="Camión de la barraca">
-                        {ZONAS_DESPACHO.map((z) => <option key={z.id} value={z.id}>{z.nombre}</option>)}
-                      </optgroup>
-                      {Object.entries(REGIONES).map(([r, nombre]) => (
-                        <optgroup key={r} label={`Región de ${nombre}`}>
-                          {COMUNAS.filter((c) => c.region === r && !COMUNAS_CON_ZONA.has(c.codigo)).map((c) => (
-                            <option key={c.codigo} value={c.codigo}>{c.nombre}</option>
-                          ))}
-                        </optgroup>
+                      <option value="">Elige tu zona</option>
+                      {ZONAS_DESPACHO.map((z) => (
+                        <option key={z.id} value={z.id}>
+                          {z.nombre} · {formatCLP(z.costo)}
+                        </option>
                       ))}
+                      <option value={OTRA_COMUNA}>Mi comuna no está en la lista</option>
                     </select>
                     <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#787774]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                       <path fillRule="evenodd" d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z" clipRule="evenodd" />
@@ -457,6 +472,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                   </div>
                 </CampoForm>
                 <EstadoDespacho cotizacion={cotizacion} onRetiro={() => setEntrega("retiro")} />
+                {cotizacion?.estado === "ok" && <AvisoGratis zonaId={datos.comuna} subtotal={total} alineado="izquierda" />}
                 <CampoForm id="co-direccion" label="Dirección" error={errores.direccion}>
                   <input {...props("direccion")} type="text" autoComplete="street-address" placeholder="Calle, número, depto." />
                 </CampoForm>
@@ -507,8 +523,9 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 <span className="text-2xl font-extrabold text-navy-950 tabular-nums">{formatCLP(totalPedido)}</span>
               </div>
               <p className="text-xs text-[#787774] text-right">IVA incluido{despacho && costoDespacho == null ? " · despacho aparte" : ""}</p>
+              {despacho && <AvisoGratis zonaId={datos.comuna} subtotal={total} />}
               <p className="text-xs text-[#787774] mt-2 leading-snug">
-                {precioWebHasta() ? `Precio web válido hasta el ${precioWebHasta()}; puede cambiar. ` : "Precios web vigentes hoy. "}Tu compra queda con el precio que confirmas. {"Lo preparamos en 1 a 5 días hábiles y te contactamos por WhatsApp o teléfono para coordinar el retiro o la entrega."}
+                {precioWebHastaNumerico() ? `Precio web válido hasta el ${precioWebHastaNumerico()}. ` : ""}Tu compra queda con el precio que confirmas. {"Lo preparamos en 1 a 5 días hábiles y te contactamos por WhatsApp o teléfono para coordinar el retiro o la entrega."}
               </p>
             </div>
 

@@ -35,5 +35,5 @@ export function textoDespacho(p: PedidoDespacho): { titulo: string; detalle: str
   if (p.costo_despacho == null) {
     return { titulo: 'Despacho a coordinar', detalle: 'Te llamamos para acordar el día y el costo del despacho.' };
   }
-  return { titulo: 'Despacho en camión de la barraca', detalle: 'Te contactamos por WhatsApp o teléfono para coordinar el día de entrega.' };
+  return { titulo: 'Despacho a domicilio', detalle: 'Te contactamos por WhatsApp o teléfono para coordinar el día de entrega.' };
 }

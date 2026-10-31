@@ -61,7 +61,7 @@ BARRACA DE FIERROS JURMAQ SPA es una sociedad distinta de otras empresas que usa
 
 5.3. **Vigencia del precio web (artículo 35 de la Ley del Consumidor):**
 
-- Los precios web son una **prueba de un mes**. Rigen desde el **[COMPLETAR: fecha de publicación]** hasta el **[COMPLETAR: fecha de término]**, ambas fechas incluidas, o hasta agotar el stock publicado de cada producto.
+- Los precios web son una **prueba de un mes**. Rigen desde el **[COMPLETAR: fecha de publicación]** hasta el **1 de diciembre de 2026**, ambas fechas incluidas, o hasta agotar el stock publicado de cada producto.
 - Después de la fecha de término, los precios web pueden extenderse o cambiar. Si se extienden, publicaremos la nueva fecha de término en esta sección y en la página antes de que venza la anterior. Si cambian, el nuevo precio se verá en la ficha del producto antes de que compres.
 - **Cada compra se cobra al precio web que se mostraba al confirmarla, y ese precio queda fijo para esa compra**, aunque después el precio cambie, salvo error evidente (ver sección 6).
 - Valen solo para compras hechas y pagadas en la Tienda, con retiro en el local o despacho.

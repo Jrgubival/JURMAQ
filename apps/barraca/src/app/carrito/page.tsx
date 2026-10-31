@@ -9,6 +9,33 @@ import { cambiarCantidad, quitarDelCarrito, vaciarCarrito, type ItemCarrito } fr
 import { useCarrito } from "@/lib/useCarrito";
 import CantidadEditable from "@/components/barraca/CantidadEditable";
 import AvisoSinRetracto from "@/components/barraca/AvisoSinRetracto";
+import { useZonaDespacho } from "@/components/barraca/SelectorZona";
+
+/** Entrega según la zona elegida en el header: costo y cuánto falta para despacho gratis. */
+function EntregaZona({ subtotal }: { subtotal: number }) {
+  const [zona] = useZonaDespacho();
+  if (!zona) {
+    return (
+      <div className="flex justify-between gap-3">
+        <span className="text-gray-600">Entrega</span>
+        <span className="text-gray-500 text-right">Retiro gratis en Molina o despacho a domicilio</span>
+      </div>
+    );
+  }
+  const gratis = zona.gratisDesde != null && subtotal >= zona.gratisDesde;
+  return (
+    <div>
+      <div className="flex justify-between gap-3">
+        <span className="text-gray-600">Despacho a {zona.nombre}</span>
+        <span className={`tabular-nums ${gratis ? "text-[#2F7F4E] font-medium" : ""}`}>{gratis ? "Gratis" : formatCLP(zona.costo)}</span>
+      </div>
+      {!gratis && zona.gratisDesde != null && (
+        <p className="text-xs text-gray-500 text-right mt-0.5 tabular-nums">Te faltan {formatCLP(zona.gratisDesde - subtotal)} para despacho gratis</p>
+      )}
+      <p className="text-xs text-gray-400 text-right mt-0.5">O retiro gratis en Molina. Lo eliges al pagar.</p>
+    </div>
+  );
+}
 
 function Cantidad({ item }: { item: ItemCarrito }) {
   return <CantidadEditable valor={item.cantidad} max={item.stock} nombre={item.nombre} onCambio={(n) => cambiarCantidad(item.productoId, n)} />;
@@ -198,10 +225,7 @@ export default function CarritoPage() {
                   <span className="text-gray-600">IVA (19%)</span>
                   <span className="tabular-nums">{formatCLP(total - neto)}</span>
                 </div>
-                <div className="flex justify-between gap-3">
-                  <span className="text-gray-600">Entrega</span>
-                  <span className="text-gray-500 text-right">Retiro en Molina o despacho a coordinar</span>
-                </div>
+                <EntregaZona subtotal={total} />
                 <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
                   <span>Total (IVA incluido)</span>
                   <span className="text-marca-600 tabular-nums">{formatCLP(total)}</span>
