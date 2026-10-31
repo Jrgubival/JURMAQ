@@ -7,6 +7,8 @@ import Precio from "@/components/barraca/Precio";
 import CantidadEditable from "@/components/barraca/CantidadEditable";
 import type { VistaPrecio } from "@/lib/precio-web";
 import { agregarProducto } from "@/lib/agregar";
+import { cambiarCantidad, quitarDelCarrito } from "@/lib/carrito";
+import { useEnCarrito, PAUSA_AGREGAR_MS } from "@/lib/useEnCarrito";
 import { unidadesDisponibles } from "@/lib/stock";
 
 interface Producto {
@@ -42,7 +44,10 @@ export default function AddToCartClient({
 }) {
   const [cantidad, setCantidad] = useState(1);
   const [adding, setAdding] = useState(false);
-  const [added, setAdded] = useState(false);
+  // Si el producto ya está en el carrito, la cantidad de la ficha ES la del
+  // carrito: se ve la que ya agregaste y cambiarla actualiza el carrito.
+  const enCarrito = useEnCarrito(producto.id);
+  const yaEnCarrito = enCarrito > 0;
 
   // El selector de medidas navega a la ficha de cada variante: el producto
   // que se compra es siempre el de esta página.
@@ -51,9 +56,15 @@ export default function AddToCartClient({
   const precioVenta = vista.precioWeb;
 
   function handleAdd() {
-    if (!comprable) return;
+    if (!comprable || adding) return;
+    if (yaEnCarrito) {
+      window.dispatchEvent(new Event("barraca:open-cart"));
+      return;
+    }
+    // "Agregando…" un instante para que se note que se guardó.
     setAdding(true);
-    const ok = agregarProducto(
+    setTimeout(() => {
+    agregarProducto(
       {
         productoId: producto.id,
         codigo: producto.codigo,
@@ -69,10 +80,7 @@ export default function AddToCartClient({
       { abrirCarrito: true },
     );
     setAdding(false);
-    if (ok) {
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
-    }
+    }, PAUSA_AGREGAR_MS);
   }
 
   return (
@@ -89,7 +97,7 @@ export default function AddToCartClient({
         />
       )}
 
-      {comprable && cantidad > unidades && (
+      {comprable && !yaEnCarrito && cantidad > unidades && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
           Solo quedan {unidades} unidades.
         </div>
@@ -98,9 +106,18 @@ export default function AddToCartClient({
       {/* Cantidad en la página (no en la barra fija): así la barra del
           celular queda en una fila, precio y botón, y no tapa media pantalla. */}
       {comprable && (
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-gray-700">Cantidad</span>
-        <CantidadEditable valor={cantidad} max={unidades} nombre={producto.nombre} onCambio={setCantidad} />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span className="text-sm font-medium text-gray-700">{yaEnCarrito ? "En tu carrito" : "Cantidad"}</span>
+        {yaEnCarrito ? (
+          <>
+            <CantidadEditable valor={enCarrito} max={unidades} nombre={producto.nombre} onCambio={(n) => cambiarCantidad(producto.id, n)} />
+            <button type="button" onClick={() => quitarDelCarrito(producto.id)} className="text-sm text-gray-500 underline underline-offset-2 hover:text-red-700">
+              Quitar
+            </button>
+          </>
+        ) : (
+          <CantidadEditable valor={cantidad} max={unidades} nombre={producto.nombre} onCambio={setCantidad} />
+        )}
       </div>
       )}
 
@@ -120,18 +137,23 @@ export default function AddToCartClient({
           className={`shrink-0 px-5 lg:w-full min-h-[52px] flex items-center justify-center gap-2 font-bold rounded-xl text-base transition-[transform,background-color] duration-150 ease-out active:scale-[0.98] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-marca-600 ${
             !comprable
               ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : added
-                ? "bg-green-700 text-white"
+              : yaEnCarrito
+                ? "bg-navy-950 text-white hover:bg-navy-800"
                 : "bg-marca-600 text-white hover:bg-marca-700 shadow-md shadow-marca-200"
           }`}
         >
-          {added ? (
+          {adding ? (
+            <>
+              <span className="w-5 h-5 border-2 border-white/90 border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+              <span>Agregando…</span>
+            </>
+          ) : yaEnCarrito ? (
             <>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span className="lg:hidden">Listo</span>
-              <span className="hidden lg:inline">Agregado al carrito</span>
+              <span className="lg:hidden">Ver carrito ({enCarrito})</span>
+              <span className="hidden lg:inline">En el carrito ({enCarrito}) · Ver carrito</span>
             </>
           ) : (
             <>

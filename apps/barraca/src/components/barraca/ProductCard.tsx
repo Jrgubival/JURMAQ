@@ -2,10 +2,11 @@
 
 import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { titleCase } from "@jurmaq/shared/format";
 import { agregarProducto } from "@/lib/agregar";
-import { cambiarCantidad, obtenerCarrito, quitarDelCarrito } from "@/lib/carrito";
+import { cambiarCantidad, quitarDelCarrito } from "@/lib/carrito";
+import { useEnCarrito, PAUSA_AGREGAR_MS } from "@/lib/useEnCarrito";
 import { unidadesDisponibles } from "@/lib/stock";
 import { precioDeVenta, vistaPrecio } from "@/lib/precio-web";
 import Precio from "./Precio";
@@ -98,17 +99,9 @@ export default function ProductCard({
   const [adding, setAdding] = useState(false);
   // Cuántas unidades de este producto hay en el carrito: con 1 o más, el
   // botón pasa a ser − n + para ajustar sin salir de la grilla.
-  const [enCarrito, setEnCarrito] = useState(0);
-  useEffect(() => {
-    const leer = () => setEnCarrito(obtenerCarrito().find((i) => i.productoId === id)?.cantidad ?? 0);
-    leer();
-    window.addEventListener("cart-updated", leer);
-    window.addEventListener("storage", leer);
-    return () => {
-      window.removeEventListener("cart-updated", leer);
-      window.removeEventListener("storage", leer);
-    };
-  }, [id]);
+  const enCarrito = useEnCarrito(id);
+  // Texto del número del medio mientras se escribe (se aplica al salir o con Enter).
+  const [texto, setTexto] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
 
   const fallbackImage = categoriaSlug ? (categoryImages[categoriaSlug] || null) : null;
@@ -123,13 +116,23 @@ export default function ProductCard({
   const comprable = vista.disponible;
 
   function handleAdd() {
-    if (!comprable) return;
+    if (!comprable || adding) return;
+    // "Agregando…" un instante: se nota que se guardó antes de que cambie el botón.
     setAdding(true);
-    const ok = agregarProducto({
-      productoId: id, nombre, precio: precioVenta, imagen, slug, medida, unidad, stock: unidades, codigo,
-    });
-    setAdding(false);
-    if (ok) setEnCarrito((n) => Math.max(n, 1));
+    setTimeout(() => {
+      agregarProducto({
+        productoId: id, nombre, precio: precioVenta, imagen, slug, medida, unidad, stock: unidades, codigo,
+      });
+      setAdding(false);
+    }, PAUSA_AGREGAR_MS);
+  }
+
+  function fijar(bruto: string) {
+    setTexto(null);
+    const n = Number.parseInt(bruto, 10);
+    if (!Number.isFinite(n) || n < 0) return;
+    if (n === 0) quitarDelCarrito(id);
+    else cambiarCantidad(id, Math.min(n, unidades));
   }
 
   function cambiar(delta: number) {
@@ -243,7 +246,7 @@ export default function ProductCard({
           {comprable && enCarrito > 0 ? (
             /* Ya está en el carrito: se ajusta la cantidad ahí mismo. En 1, el
                "−" lo quita (ícono de basurero para que se entienda). */
-            <div className="mt-3 w-full flex items-center justify-between min-h-[44px] rounded-lg border border-navy-950 bg-white overflow-hidden" role="group" aria-label={`Cantidad de ${nombre} en el carrito`}>
+            <div className="entra-suave mt-3 w-full flex items-center justify-between min-h-[44px] rounded-lg border border-navy-950 bg-white overflow-hidden" role="group" aria-label={`Cantidad de ${nombre} en el carrito`}>
               <button
                 type="button"
                 onClick={() => cambiar(-1)}
@@ -256,10 +259,22 @@ export default function ProductCard({
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeWidth={2.2} d="M20 12H4" /></svg>
                 )}
               </button>
-              <span className="flex-1 text-center leading-tight tabular-nums" aria-live="polite">
-                <span className="block text-base font-bold text-navy-950">{enCarrito}</span>
-                <span className="block text-[10px] text-gray-500">en el carrito</span>
-              </span>
+              <label className="flex-1 min-w-0 text-center leading-tight tabular-nums cursor-text">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  max={unidades}
+                  value={texto ?? String(enCarrito)}
+                  aria-label={`Cantidad de ${nombre} en el carrito`}
+                  onFocus={(e) => { setTexto(String(enCarrito)); e.target.select(); }}
+                  onChange={(e) => setTexto(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  onBlur={(e) => fijar(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+                  className="block w-full bg-transparent text-center text-base font-bold text-navy-950 focus:outline-none focus:bg-marca-50 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <span className="block text-[10px] text-gray-500" aria-live="polite">{enCarrito >= unidades ? "máximo" : "en el carrito"}</span>
+              </label>
               <button
                 type="button"
                 onClick={() => cambiar(1)}
@@ -277,11 +292,20 @@ export default function ProductCard({
               aria-label={`Agregar ${nombre} al carrito`}
               className="mt-3 w-full flex items-center justify-center gap-2 px-3 min-h-[44px] text-sm font-semibold rounded-lg transition-colors duration-150 [&:active]:transform-none touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-navy-950 bg-navy-950 text-white hover:bg-navy-800 active:bg-navy-900"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14m7-7H5" />
-              </svg>
-              <span className="sm:hidden">Agregar</span>
-              <span className="hidden sm:inline">Agregar al carrito</span>
+              {adding ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/90 border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                  <span>Agregando…</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14m7-7H5" />
+                  </svg>
+                  <span className="sm:hidden">Agregar</span>
+                  <span className="hidden sm:inline">Agregar al carrito</span>
+                </>
+              )}
             </button>
           ) : (
             /* No disponible en el mismo lugar y alto que el botón: la fila
