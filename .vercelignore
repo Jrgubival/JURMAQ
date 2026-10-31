@@ -11,3 +11,5 @@ docs
 faviconbarraca.png
 faviconjurmaq.png
 *.md
+# Los textos legales de la barraca son .md y se leen al compilar.
+!apps/barraca/src/content/legal/*.md
