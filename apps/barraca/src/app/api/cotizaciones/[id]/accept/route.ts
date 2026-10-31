@@ -173,10 +173,8 @@ export async function POST(
       if (!authorizedVia) {
         return NextResponse.json({ error: 'Token invalido' }, { status: 401 });
       }
-    } else if (emailMatches && !cotizacion.accept_token) {
-      // Solo permitir email-match si NO hay token (cotizacion legacy).
-      authorizedVia = 'email';
     } else {
+      // Sin la rama "por correo": el correo no es credencial.
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 

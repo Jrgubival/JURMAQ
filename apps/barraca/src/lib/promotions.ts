@@ -1,4 +1,5 @@
 import 'server-only';
+import { COLUMNAS_PRODUCTO_PUBLICAS } from '@/lib/columnas-publicas';
 // Reads only public slices (activa promotions, activo products, top-level
 // categories). All three tables have RLS policies that allow anon SELECT
 // on these slices, so we use supabasePublic — principle of least privilege.
@@ -99,7 +100,7 @@ export async function getPromotedProducts(
   // mostrar productos agotados (el botón quedaría desactivado y confunde).
   const { data: products } = await supabasePublic
     .from('barraca_productos')
-    .select('*')
+    .select(COLUMNAS_PRODUCTO_PUBLICAS)
     .in('categoria_id', catIds)
     .eq('activo', true)
     .gt('precio', 0)

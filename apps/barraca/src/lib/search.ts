@@ -1,4 +1,5 @@
 import 'server-only';
+import { COLUMNAS_PRODUCTO_PUBLICAS } from '@/lib/columnas-publicas';
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import type { Database } from "@jurmaq/shared/db-types";
 // SECURITY (audit jun-2026, L-OR): escapeOrFilter neutraliza `,()` además de
@@ -8,7 +9,8 @@ import { escapeOrFilter } from "@jurmaq/shared/sanitize";
 import { applyDailyPromosToProducts } from './promotions';
 
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
-type ProductoConCategoria = BarracaProductoRow & {
+// Sin `costo`: la llave pública no puede leerlo (lib/columnas-publicas.ts).
+type ProductoConCategoria = Omit<BarracaProductoRow, 'costo'> & {
   barraca_categorias?: { nombre: string | null; slug: string | null } | null;
 };
 type ProductoAplanado = Omit<BarracaProductoRow, 'costo'> & {
@@ -109,7 +111,7 @@ export async function searchProducts(q: string, limit: number = 48) {
   // Strategy 1: exact substring match
   const { data: exactResults } = await supabasePublic
     .from('barraca_productos')
-    .select('*, barraca_categorias!left(nombre, slug)')
+    .select(`${COLUMNAS_PRODUCTO_PUBLICAS}, barraca_categorias!left(nombre, slug)`)
     .eq('activo', true)
     .gte('stock', 0)
     .or(`nombre.ilike.${fullPattern},codigo.ilike.${fullPattern}`)
@@ -125,7 +127,7 @@ export async function searchProducts(q: string, limit: number = 48) {
   // tubo -> "tub" y por lo tanto sin mostrar ninguno de los 122 tubos.
   const tieneExpansion = words.some((w) => SYNONYMS[w] !== undefined);
   if (exactResults && exactResults.length >= 5 && !tieneExpansion) {
-    return applyDailyPromosToProducts(rankResults(flattenProducts(exactResults), q, words));
+    return applyDailyPromosToProducts(rankResults(flattenProducts(exactResults as unknown as ProductoConCategoria[]), q, words));
   }
   const partialResults = exactResults || [];
 
@@ -139,7 +141,7 @@ export async function searchProducts(q: string, limit: number = 48) {
   if (words.length > 1) {
     let query = supabasePublic
       .from('barraca_productos')
-      .select('*, barraca_categorias!left(nombre, slug)')
+      .select(`${COLUMNAS_PRODUCTO_PUBLICAS}, barraca_categorias!left(nombre, slug)`)
       .eq('activo', true)
       .gte('stock', 0);
 
@@ -153,7 +155,7 @@ export async function searchProducts(q: string, limit: number = 48) {
       .limit(limit);
 
     if (data && data.length > 0) {
-      return applyDailyPromosToProducts(rankResults(mergeResults(partialResults, data, limit), q, words));
+      return applyDailyPromosToProducts(rankResults(mergeResults(partialResults as unknown as ProductoConCategoria[], data as unknown as ProductoConCategoria[], limit), q, words));
     }
   }
 
@@ -161,7 +163,7 @@ export async function searchProducts(q: string, limit: number = 48) {
   const allConditions = wordFilters.flat().concat([`codigo.ilike.${fullPattern}`]);
   const { data } = await supabasePublic
     .from('barraca_productos')
-    .select('*, barraca_categorias!left(nombre, slug)')
+    .select(`${COLUMNAS_PRODUCTO_PUBLICAS}, barraca_categorias!left(nombre, slug)`)
     .eq('activo', true)
     .gte('stock', 0)
     .or(allConditions.join(','))
@@ -169,7 +171,7 @@ export async function searchProducts(q: string, limit: number = 48) {
     .order('nombre', { ascending: true })
     .limit(limit);
 
-  return applyDailyPromosToProducts(rankResults(mergeResults(partialResults, data || [], limit), q, words));
+  return applyDailyPromosToProducts(rankResults(mergeResults((partialResults ?? []) as unknown as ProductoConCategoria[], (data ?? []) as unknown as ProductoConCategoria[], limit), q, words));
 }
 
 /** Reordena por relevancia; empates conservan el orden que traía la consulta. */
@@ -273,7 +275,7 @@ function mergeResults(primary: ProductoConCategoria[], secondary: ProductoConCat
 
 function flattenProducts(rawProductos: ProductoConCategoria[]): ProductoAplanado[] {
   return rawProductos.map((p) => {
-    const { barraca_categorias, costo, ...rest } = p;
+    const { barraca_categorias, ...rest } = p;
     return {
       ...rest,
       categoria_nombre: barraca_categorias?.nombre || null,

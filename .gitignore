@@ -90,5 +90,9 @@ reporte-carga-precios.csv
 # Precios para revisar en local (scripts/cargar-precios-web.mjs --local)
 .precios-locales.json
 .combos-locales.json
+.correos-dev/
 .precios-liquidacion.json
 .imagenes-locales.json
+
+# Respaldos locales de fotos (scripts/corregir-fotos.mjs)
+apps/barraca/respaldo-fotos-*.json

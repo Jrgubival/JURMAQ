@@ -45,11 +45,10 @@ export async function GET(
     // Grant full access (with PII) only to admin OR when email query matches.
     // For anonymous lookups (public share link), return a PII-stripped version
     // so the customer can still see items and estado/total without leaking phone/RUT/notas.
+    // El correo NO es credencial (cualquiera puede saberlo): el detalle
+    // completo es sólo para el panel. El público ve una lista blanca.
     const session = await requirePermission('barraca_cotizaciones', 'read');
-    const isAdmin = !!session;
-    const emailParam = request.nextUrl.searchParams.get('email')?.trim().toLowerCase() || null;
-    const emailMatches = !!emailParam && !!data.email && emailParam === String(data.email).trim().toLowerCase();
-    const fullAccess = isAdmin || emailMatches;
+    const fullAccess = !!session;
 
     // items vive como TEXT (JSON) en barraca_cotizaciones; la pagina llama
     // parseItems() para deserializar. No hay tabla separada de items.
@@ -57,13 +56,12 @@ export async function GET(
       return NextResponse.json(data);
     }
 
-    // Public (limited) response: strip PII
-    const {
-      email: _e, telefono: _t, rut: _r, notas: _n,
-      razon_social: _rs, giro: _g, direccion_factura: _df,
-      nombre_competencia: _nc, cotizacion_competencia: _cc,
-      ...safe
-    } = data as any;
+    // Respuesta pública: lista blanca (nunca accept_token, usuario_id ni datos personales).
+    const d = data as Record<string, unknown>;
+    const safe = Object.fromEntries(
+      ['id', 'numero', 'estado', 'items', 'total', 'created_at', 'empresa', 'payment_url',
+        'contraoferta_total', 'contraoferta_mensaje', 'contraoferta_items'].map((k) => [k, d[k] ?? null]),
+    );
 
     return NextResponse.json({
       ...safe,

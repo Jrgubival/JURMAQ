@@ -89,14 +89,14 @@ async function db(): Promise<SupabaseClient> {
 }
 
 /** true = permitido. Cualquier error → false (fail-closed). */
-async function dentroDelLimite(clave: string, max: number): Promise<boolean> {
+async function dentroDelLimite(clave: string, max: number, ventana = VENTANA_LIMITES): Promise<boolean> {
   try {
     if (usarArchivo()) {
-      return rateLimit(clave, { maxAttempts: max, windowSeconds: VENTANA_LIMITES }).success;
+      return rateLimit(clave, { maxAttempts: max, windowSeconds: ventana }).success;
     }
     const r = await rateLimitPersistent(await db(), clave, {
       maxAttempts: max,
-      windowSeconds: VENTANA_LIMITES,
+      windowSeconds: ventana,
       failClosedOnError: true,
     });
     return r.success;
@@ -348,6 +348,13 @@ export async function verificarCodigo(
   if (!email || !/^\d{6}$/.test(codigo)) return { ok: false, motivo: 'invalido' };
 
   const emailHash = hashCorreo(email);
+  // Tope por correo, sume las IPs que sume: 6 intentos por hora entre todos
+  // los códigos. Contra un código de 6 dígitos deja la fuerza bruta en
+  // menos de 0,1% al mes aunque se intente sin parar.
+  if (!(await dentroDelLimite(`login-codigo-verifica-correo:${emailHash}`, 6, 60 * 60))) {
+    console.warn('[login-codigo] verificación limitada por correo', { email: maskEmail(email), ip: maskIp(ip) });
+    return { ok: false, motivo: 'limite' };
+  }
   let ok = false;
   try {
     ok = await consumirCodigo(emailHash, hashCodigo(emailHash, codigo));

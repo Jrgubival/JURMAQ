@@ -75,7 +75,7 @@ export async function generateMetadata({
 
   const { count: productTotal } = await supabasePublic
     .from('barraca_productos')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('activo', true)
     .in('categoria_id', allCatIds);
   const productCount = { total: productTotal || 0 };

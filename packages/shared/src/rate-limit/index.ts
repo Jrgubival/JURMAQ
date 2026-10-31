@@ -138,7 +138,10 @@ export async function rateLimitPersistent(
       const code = error.code || '';
       const msg = error.message || '';
       if (code === 'PGRST202' || /rate_limit_check_and_increment|rate_limit_attempts/.test(msg)) {
-        console.warn('[rate-limit] funcion DB no existe, fallback a limiter en memoria. Ejecuta migrate-rate-limit-persistente.sql');
+        console.warn('[rate-limit] funcion DB no existe. Ejecuta migrate-rate-limit-persistente.sql');
+        // En paths críticos no se cae a memoria: en serverless cada instancia
+        // tiene su propio contador y el límite dejaría de proteger.
+        if (options.failClosedOnError) return { success: false, remaining: 0, resetAt: Date.now() + options.windowSeconds * 1000 };
         return rateLimit(key, options);
       }
       // Otros errores DB inesperados. En paths críticos (failClosedOnError)
@@ -153,6 +156,7 @@ export async function rateLimitPersistent(
     // data es un array por la signatura RETURNS TABLE de la funcion.
     const row = Array.isArray(data) ? (data as Array<{ count: number; reset_at: string; allowed: boolean }>)[0] : null;
     if (!row) {
+      if (options.failClosedOnError) return { success: false, remaining: 0, resetAt: Date.now() + options.windowSeconds * 1000 };
       return rateLimit(key, options);
     }
     const resetAtMs = new Date(row.reset_at).getTime();
@@ -162,7 +166,8 @@ export async function rateLimitPersistent(
       resetAt: resetAtMs,
     };
   } catch (err) {
-    console.error('[rate-limit] excepcion no esperada, fallback memoria:', err);
+    console.error('[rate-limit] excepcion no esperada:', err);
+    if (options.failClosedOnError) return { success: false, remaining: 0, resetAt: Date.now() + options.windowSeconds * 1000 };
     return rateLimit(key, options);
   }
 }

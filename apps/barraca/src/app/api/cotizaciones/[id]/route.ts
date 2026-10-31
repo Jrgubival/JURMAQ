@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
+import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
@@ -44,10 +45,9 @@ export async function GET(
       if (!limiter.success) {
         return NextResponse.json({ error: 'Demasiados intentos' }, { status: 429 });
       }
-      const { searchParams } = new URL(request.url);
-      const email = (searchParams.get('email') || '').trim().toLowerCase();
-      const stored = String(cotizacion.email || '').trim().toLowerCase();
-      if (!email || !stored || email !== stored) {
+      // Sin sesión del panel, sólo con el token del enlace del correo (el correo no es credencial).
+      const token = new URL(request.url).searchParams.get('token');
+      if (!token || !cotizacion.accept_token || !safeSecretEquals(token, String(cotizacion.accept_token))) {
         return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
       }
     }

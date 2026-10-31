@@ -58,7 +58,7 @@
     "@supabase/supabase-js": "^2.103.0",
     "bcryptjs": "^3.0.3",
     "cmdk": "^1.1.1",
-    "next-auth": "5.0.0-beta.31",
+    "next-auth": "5.0.0-beta.32",
     "nodemailer": "^7.0.13",
     "react": "^19.2.6",
     "resend": "^6.11.0",
@@ -71,7 +71,7 @@
     "@types/nodemailer": "^8.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "next": "^16.2.3",
+    "next": "16.4.3",
     "typescript": "^5"
   },
   "peerDependencies": {

@@ -23,6 +23,13 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+// Seguridad: sin AUTH_SCOPE=barraca la app montaría el login antiguo (Google y
+// contraseña) en vez del código por correo. En Vercel, sin esa variable no se
+// publica (fail-closed).
+if (process.env.VERCEL && process.env.AUTH_SCOPE?.trim().toLowerCase() !== "barraca") {
+  throw new Error("AUTH_SCOPE debe ser 'barraca' en este proyecto de Vercel");
+}
+
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   serverExternalPackages: ['bcryptjs', 'xlsx'],
