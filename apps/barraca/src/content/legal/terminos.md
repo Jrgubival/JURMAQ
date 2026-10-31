@@ -1,7 +1,7 @@
 # Términos y Condiciones de la tienda online barraca.jurmaq.cl
 
-**Vigentes desde:** [COMPLETAR: fecha de publicación]
-**Versión:** [COMPLETAR: número o fecha de versión, por ejemplo 2026-11]
+**Vigentes desde:** 31 de octubre de 2026
+**Versión:** 1.0
 
 Lee estos Términos y Condiciones antes de comprar. En el checkout, antes de confirmar tu pedido, tienes un enlace a estos Términos y a la Política de Privacidad y una casilla para aceptarlos. Sin marcar esa casilla no se puede comprar. Al marcarla declaras que los leíste y los aceptas, y guardamos la fecha y hora en que lo hiciste. Puedes descargarlos o imprimirlos desde esta misma página, y el correo de confirmación de tu compra trae el enlace para volver a verlos.
 
@@ -36,7 +36,7 @@ BARRACA DE FIERROS JURMAQ SPA es una sociedad distinta de otras empresas que usa
 
 3.1. Para comprar debes ser mayor de 18 años y tener capacidad legal para contratar.
 
-3.2. Puedes comprar como invitado o con una cuenta. Si creas una cuenta, eres responsable de mantener tu contraseña en reserva y de los datos que ingreses. Avísanos de inmediato a contacto@jurmaq.cl si crees que alguien usó tu cuenta sin permiso.
+3.2. No necesitas crear una cuenta: todas las compras se hacen como invitado, con tus datos de contacto. Para seguir tu pedido y, si quieres, opinar sobre lo que compraste, te enviamos al correo **enlaces personales**. Esos enlaces son solo para ti: no los compartas. Si crees que otra persona usó uno de tus enlaces, avísanos de inmediato a contacto@jurmaq.cl.
 
 3.3. Los datos que entregues deben ser verdaderos. Si un dato está mal (por ejemplo, la dirección o el teléfono) podemos no lograr coordinar la entrega.
 
@@ -57,11 +57,11 @@ BARRACA DE FIERROS JURMAQ SPA es una sociedad distinta de otras empresas que usa
 5.2. En la Tienda puedes ver dos precios:
 
 - **"Precio web":** es el precio que pagas al comprar y pagar en barraca.jurmaq.cl. Es el único precio que se cobra en la Tienda.
-- **"Precio normal"** (tachado): es el precio de venta al público que se cobra en nuestro local de Av. Poniente 2157, Molina, para ese mismo producto, en la misma fecha y sin descuentos especiales. Solo lo mostramos cuando el precio web es al menos un 5% más bajo que el precio normal, y el porcentaje que aparece junto al precio es la diferencia entre ambos. [COMPLETAR: el dueño debe confirmar que el precio normal es el que de verdad paga el cliente común en el mesón; si en el local se dan descuentos habituales sobre ese precio, hay que cambiar el precio que se muestra tachado o dejar de mostrarlo. Ver REVISION_TERCER_ABOGADO.md, hallazgo A2].
+- **"Precio normal"** (tachado): es el **precio de lista** de ese mismo producto en nuestro local de Av. Poniente 2157, Molina, en la misma fecha. Solo lo mostramos cuando el precio web es al menos un 5% más bajo que el precio normal, y el porcentaje que aparece junto al precio es la diferencia entre ambos.
 
 5.3. **Vigencia del precio web (artículo 35 de la Ley del Consumidor):**
 
-- Los precios web son una **prueba de un mes**. Rigen desde el **[COMPLETAR: fecha de publicación]** hasta el **1 de diciembre de 2026**, ambas fechas incluidas, o hasta agotar el stock publicado de cada producto.
+- Los precios web son una **prueba de un mes**. Rigen desde el **31 de octubre de 2026** hasta el **1 de diciembre de 2026**, ambas fechas incluidas, o hasta agotar el stock publicado de cada producto.
 - Después de la fecha de término, los precios web pueden extenderse o cambiar. Si se extienden, publicaremos la nueva fecha de término en esta sección y en la página antes de que venza la anterior. Si cambian, el nuevo precio se verá en la ficha del producto antes de que compres.
 - **Cada compra se cobra al precio web que se mostraba al confirmarla, y ese precio queda fijo para esa compra**, aunque después el precio cambie, salvo error evidente (ver sección 6).
 - Valen solo para compras hechas y pagadas en la Tienda, con retiro en el local o despacho.
@@ -76,7 +76,7 @@ BARRACA DE FIERROS JURMAQ SPA es una sociedad distinta de otras empresas que usa
 
 6.1. Un precio es **manifiestamente erróneo** cuando el error es evidente para cualquier persona, por un error de digitación o de sistema: por ejemplo, un precio de $0, o un precio que es una fracción mínima del precio habitual del producto (como $1.000 por un producto que normalmente cuesta $100.000).
 
-6.2. Si un pedido tiene un precio manifiestamente erróneo, te avisaremos por correo o WhatsApp **antes de entregar o despachar el pedido**, y a más tardar dentro de [COMPLETAR: plazo, sugerido 2 días hábiles] desde la compra. Te explicaremos el error y te daremos a elegir entre:
+6.2. Si un pedido tiene un precio manifiestamente erróneo, te avisaremos por correo o WhatsApp **antes de entregar o despachar el pedido**, y a más tardar dentro de 2 días hábiles desde la compra. Te explicaremos el error y te daremos a elegir entre:
 
 - a) mantener la compra al precio correcto (si ya pagaste, pagas solo la diferencia), o
 - b) anular el pedido con devolución íntegra de lo que hayas pagado, según la sección 12.
@@ -91,7 +91,7 @@ Si no respondes, no despacharemos el pedido y te devolveremos todo lo pagado. Nu
 
 7.2. El stock de la Tienda se actualiza a partir del inventario del local, que también vende en forma presencial. Por eso, en casos puntuales, el stock físico puede ser menor que el publicado.
 
-7.3. Si después de confirmar tu pedido nos falta todo o parte de un producto, te avisaremos dentro de [COMPLETAR: plazo, por ejemplo 1 día hábil] y podrás elegir:
+7.3. Si después de confirmar tu pedido nos falta todo o parte de un producto, te avisaremos dentro de 2 días hábiles y podrás elegir:
 
 - a) esperar la reposición, si podemos darte una fecha cierta;
 - b) cambiarlo por otro producto equivalente que aceptes expresamente (si cuesta menos, te devolvemos la diferencia; si cuesta más, pagas la diferencia solo si estás de acuerdo); o
@@ -99,18 +99,18 @@ Si no respondes, no despacharemos el pedido y te devolveremos todo lo pagado. Nu
 
 7.4. Nunca reemplazaremos un producto por otro sin tu autorización.
 
-7.5. En los pedidos pagados por transferencia, el stock se reserva cuando recibimos el pago. Si en el tiempo que demora la transferencia el producto se agota, te avisamos y puedes elegir entre las opciones del punto 7.3. Si todavía no transferiste, no debes pagar lo que falte; si ya transferiste, te devolvemos lo que corresponda según la sección 12.
+7.5. En los pedidos por transferencia, el stock se reserva para ti cuando confirmas el pedido, así nadie más se lo lleva mientras haces la transferencia. Si el pedido se anula (por ejemplo, porque no recibimos el pago dentro del plazo del punto 8.3), la reserva se libera y los productos vuelven a quedar disponibles para la venta. Si, pese a la reserva, el stock físico resulta menor (punto 7.2), te avisamos y puedes elegir entre las opciones del punto 7.3.
 
 ## 8. Cómo se compra y cuándo queda cerrada la venta
 
 8.1. Para comprar: agregas productos al carrito, completas tus datos, eliges la forma de entrega y la forma de pago, marcas la casilla de aceptación de estos Términos y de la Política de Privacidad, y confirmas el pedido. La casilla para recibir recordatorios y ofertas por correo es aparte y **opcional**: puedes comprar sin marcarla.
 
-8.2. Antes de confirmar puedes revisar y corregir tu pedido. Al confirmar recibirás un **número de pedido** (formato BJ-AAMMDD-XXXX) y un **correo de confirmación** con el detalle de los productos, precios, costo del despacho (o "a coordinar"), total, forma de entrega y forma de pago, y el enlace a estos Términos. Guarda ese correo.
+8.2. Antes de confirmar puedes revisar y corregir tu pedido. Al confirmar recibirás un **número de pedido** (formato BJ-AAMMDD-XXXX) y un **correo de confirmación** con el detalle de los productos, precios, costo del despacho (o "a coordinar"), total, forma de entrega y forma de pago, el enlace a estos Términos y un enlace personal para ver el estado de tu pedido. Guarda ese correo.
 
 8.3. **Momento en que se perfecciona (cierra) la venta:**
 
 - **Pago en línea (Webpay):** la compraventa queda perfeccionada cuando Transbank aprueba el pago. Si el pago es rechazado o lo anulas, no hay compra.
-- **Pago por transferencia:** la compraventa queda perfeccionada cuando confirmas el pedido en la Tienda. Debes pagar dentro de [COMPLETAR: plazo, por ejemplo 48 horas]. Si no recibimos el pago en ese plazo, podremos anular el pedido sin costo para ti, y te lo avisaremos por correo.
+- **Pago por transferencia:** la compraventa queda perfeccionada cuando confirmas el pedido en la Tienda. Debes pagar dentro de **48 horas** desde que confirmas el pedido. Si no recibimos el pago en ese plazo, el pedido se anula sin costo para ti, los productos vuelven a quedar disponibles para la venta y te lo avisamos por correo.
 
 Desde ese momento la compra te obliga a ti y nos obliga a nosotros: debemos entregarte los productos al precio confirmado.
 
@@ -123,7 +123,7 @@ Desde ese momento la compra te obliga a ti y nos obliga a nosotros: debemos entr
 - e) **datos falsos o incompletos** que impidan la entrega o la facturación y que no corrijas cuando te los pidamos; o
 - f) pedidos que superan la cantidad máxima por pedido que indique la ficha del producto.
 
-Si ocurre alguno de estos casos: te avisaremos por correo y por WhatsApp o teléfono, explicándote el motivo, dentro de [COMPLETAR: plazo, sugerido 2 días hábiles] desde que confirmaste el pedido o desde que se acreditó el pago, y siempre antes de la fecha de entrega acordada. Si aplican las alternativas de las secciones 6 y 7 (pagar el precio correcto, esperar la reposición o cambiar por otro producto), podrás elegirlas; si no eliges ninguna o no aplican, **te devolvemos el 100% de lo pagado por lo que no se entrega, incluido el despacho**, sin cargos ni descuentos, dentro del plazo del punto 12.1. Esto no afecta tu derecho a reclamar ante el SERNAC o el Juzgado de Policía Local si crees que el motivo no se justificaba.
+Si ocurre alguno de estos casos: te avisaremos por correo y por WhatsApp o teléfono, explicándote el motivo, dentro de 2 días hábiles desde que confirmaste el pedido o desde que se acreditó el pago, y siempre antes de la fecha de entrega acordada. Si aplican las alternativas de las secciones 6 y 7 (pagar el precio correcto, esperar la reposición o cambiar por otro producto), podrás elegirlas; si no eliges ninguna o no aplican, **te devolvemos el 100% de lo pagado por lo que no se entrega, incluido el despacho**, sin cargos ni descuentos, dentro del plazo del punto 12.1. Esto no afecta tu derecho a reclamar ante el SERNAC o el Juzgado de Policía Local si crees que el motivo no se justificaba.
 
 ## 9. Formas de entrega
 
@@ -135,30 +135,30 @@ Por ahora entregamos de dos formas: **retiro en el local** y **despacho en el ca
 - Horario: lunes a viernes de 8:30 a 13:00 y de 14:30 a 18:00; sábado de 9:00 a 13:00.
 - **Preparación:** de 1 a 5 días hábiles desde que se aprueba o se acredita el pago. Cuando el pedido esté listo te avisamos y coordinamos contigo el retiro por WhatsApp o teléfono.
 - Para retirar debes presentar el número de pedido y tu cédula de identidad. Si retira otra persona, debe presentar el número de pedido, su cédula y una autorización simple tuya (puede ser un correo o WhatsApp desde el contacto del pedido).
-- Guardamos tu pedido por [COMPLETAR: plazo, por ejemplo 30 días corridos]. Si no lo retiras en ese plazo, te contactaremos; si no logramos contactarte, podremos anular el pedido y devolverte lo pagado según la sección 12.
+- Guardamos tu pedido por **7 días hábiles** desde que te avisamos que está listo. Si no lo retiras en ese plazo, te contactaremos; si no logramos contactarte o no lo retiras en el nuevo plazo que acordemos, podremos anular el pedido y devolverte el 100% de lo pagado según la sección 12.
 - Para retirar productos pesados o largos (por ejemplo, tiras de fierro de 6 o 12 metros) debes venir en un vehículo adecuado. Nuestro personal ayuda con la carga en el local, pero la estiba y el amarre en tu vehículo son de tu responsabilidad. JURMAQ sí responde por los daños que cause su personal durante la carga.
 
-### 9.2. Despacho en el camión de la barraca
+### 9.2. Despacho a domicilio
 
-- **Zonas:** despachamos solo a las comunas que el checkout muestra en el grupo "Camión de la barraca". Hoy son: [COMPLETAR: lista final de zonas confirmadas, elegidas entre Molina (con Lontué e Itahue), Sagrada Familia (con Villa Prat), Curicó, Romeral, Teno, Rauco, Río Claro (Cumpeo), San Rafael, Pelarco y Talca; e indicar si se excluyen sectores rurales lejanos dentro de una comuna].
-- **Tarifa:** cada zona tiene su propio valor de despacho y, si corresponde, su propio monto de **despacho gratis desde**. El checkout te muestra el valor de tu zona antes de pagar y lo suma al total. El monto para el despacho gratis se calcula sobre el valor de los productos del pedido, sin contar el despacho. Si una zona todavía no tiene tarifa publicada, el checkout dice "A coordinar" y se aplica la regla del punto 5.4.
+- **Zonas:** despachamos en el camión de la barraca a 13 zonas: Molina, Lontué, Itahue, Cumpeo, Curicó, Sagrada Familia, Villa Prat, Rauco, San Rafael, Romeral, Teno, Pelarco y Talca. En el checkout eliges tu zona en la lista "Zona de despacho"; cada zona tiene su propia tarifa y su monto de "despacho gratis desde", que ves antes de pagar. Si tu comuna no está en la lista, puedes retirar en el local o cotizar el despacho por WhatsApp (punto 2.4). Si tu dirección está en un sector apartado al que el camión no puede llegar de forma segura, te avisaremos y se aplicará el punto 8.4, letra c).
+- **Tarifa:** cada zona tiene su propio valor de despacho y, si corresponde, su propio monto de **despacho gratis desde**, que son los que muestra el checkout. El checkout te muestra el valor de tu zona antes de pagar y lo suma al total. El monto para el despacho gratis se calcula sobre el valor de los productos del pedido, sin contar el despacho. Si una zona todavía no tiene tarifa publicada, el checkout dice "A coordinar" y se aplica la regla del punto 5.4.
 - **Si tu dirección está fuera de las zonas:** el checkout no permite elegir despacho. Puedes elegir retiro en el local o cotizar el despacho por WhatsApp; esa cotización es un acuerdo aparte, con el precio y el plazo que te informemos por escrito.
 - **Preparación y entrega:** preparamos el pedido en 1 a 5 días hábiles desde que se aprueba o se acredita el pago. Después coordinamos contigo la entrega por WhatsApp o teléfono, y procuramos hacerla lo antes posible según tu zona y la disponibilidad del camión. No comprometemos una hora exacta, pero sí el día que acordemos contigo.
-- La fecha acordada es un compromiso; si no podemos cumplirla, te avisaremos antes y acordaremos una nueva fecha. Si no te entregamos dentro de [COMPLETAR: plazo máximo, sugerido 10 días hábiles desde el pago], o no aceptas la nueva fecha, puedes anular el pedido y te devolvemos el 100% de lo pagado, incluido el despacho.
+- La fecha acordada es un compromiso; si no podemos cumplirla, te avisaremos antes y acordaremos una nueva fecha. Si no te entregamos dentro de **10 días hábiles** desde que se aprueba o se acredita el pago, o no aceptas la nueva fecha, puedes anular el pedido y te devolvemos el 100% de lo pagado, incluido el despacho.
 - Un pedido viaja completo en un solo despacho.
 
 ## 10. Recepción de la carga: lo que debes revisar
 
 10.1. **Acceso para el camión.** Al pedir despacho debes asegurar que:
 
-- la dirección sea correcta y tenga acceso para un camión [COMPLETAR: tipo o tamaño del camión];
+- la dirección sea correcta y tenga acceso para un camión de carga;
 - el camino y el lugar de descarga sean transitables y seguros;
 - haya una persona mayor de edad para recibir; y
 - nos avises en el comentario del pedido o por WhatsApp cualquier restricción (portón angosto, calle sin salida, horario de condominio, pendiente fuerte, etc.).
 
-10.2. **Descarga.** [COMPLETAR: indicar si el despacho incluye la descarga a nivel de calle o solo la entrega sobre el camión, y si incluye o no el traslado al interior del predio]. Nuestro personal no está obligado a descargar en lugares que pongan en riesgo su seguridad.
+10.2. **Descarga.** La forma de descarga (por ejemplo, si se baja la carga a nivel de calle o en otro punto del predio) se coordina contigo al acordar la entrega, según el tipo y la cantidad de productos. Nuestro personal no está obligado a descargar en lugares que pongan en riesgo su seguridad.
 
-10.3. **Si no se puede entregar.** Si al llegar no hay nadie para recibir o el camión no puede acceder por causas que no dependen de JURMAQ, coordinaremos contigo una nueva visita, que podrá tener un costo de [COMPLETAR: valor o regla, por ejemplo, el mismo valor del despacho a tu zona], que te informaremos antes de la nueva visita. Nunca dejaremos la carga en la vía pública sin tu autorización.
+10.3. **Si no se puede entregar.** Si al llegar no hay nadie para recibir o el camión no puede acceder por causas que no dependen de JURMAQ, coordinaremos contigo una nueva visita. Si esa nueva visita tiene costo, te lo informaremos antes y solo la haremos si lo aceptas; si no lo aceptas, puedes retirar el pedido en el local. Nunca dejaremos la carga en la vía pública sin tu autorización.
 
 10.4. **Revisa al recibir.** Te pedimos revisar la cantidad y el estado visible de los productos al momento de la entrega y dejar anotada cualquier observación (faltantes, golpes, sacos rotos, planchas dobladas) en la guía de despacho o enviarnos fotos por WhatsApp el mismo día.
 
@@ -177,7 +177,7 @@ Por ahora entregamos de dos formas: **retiro en el local** y **despacho en el ca
 11.4. **Condiciones de la devolución:**
 
 - Debes devolver el producto sin deterioro imputable a ti, con sus accesorios, manuales y etiquetas y, si corresponde, con su envase o embalaje original en buen estado. Los materiales a granel o de acero deben estar en el mismo estado en que se entregaron (sin cortes, soldaduras, perforaciones, pintura ni óxido por mala guarda).
-- Puedes devolver el producto en nuestro local de Molina. Si prefieres que lo retiremos nosotros dentro de nuestras zonas de despacho, [COMPLETAR: elegir una opción: "lo retiramos sin costo" (recomendado) o "el retiro cuesta lo mismo que el despacho a tu zona, y te lo informamos antes"; ver REVISION_TERCER_ABOGADO.md, hallazgo M6].
+- Puedes devolver el producto en nuestro local de Molina. Si la dirección está dentro de nuestras zonas de despacho, también podemos retirarlo nosotros **sin costo para ti**, en un día que coordinemos contigo.
 - Recibido y revisado el producto, te devolvemos lo pagado según la sección 12.
 
 11.5. **Productos sin derecho a retracto.** Según la Ley del Consumidor y el Decreto 52 de 2022, no podrás ejercer el derecho a retracto en estos casos, siempre que te lo hayamos advertido antes de pagar:
@@ -221,9 +221,9 @@ Tampoco procede el retracto si el producto se deterioró por un hecho imputable 
 
 13.4. **Lo que no cubre la garantía:** daños causados por uso indebido, mala instalación, mala guarda (por ejemplo, cemento humedecido o fierro oxidado por quedar a la intemperie después de la entrega), cortes o modificaciones hechas por ti o terceros, o desgaste normal de uso. Las tolerancias de fabricación del punto 4.3 no son defecto.
 
-13.5. **Faltantes o daños en la entrega:** si recibiste menos productos de los que pagaste o productos dañados en el transporte, avísanos dentro de [COMPLETAR: por ejemplo, 5 días hábiles] para que podamos revisarlo. Pasado ese plazo igual puedes reclamar, pero se hace más difícil acreditar lo ocurrido. Esto no reduce el plazo de garantía legal.
+13.5. **Faltantes o daños en la entrega:** si recibiste menos productos de los que pagaste o productos dañados en el transporte, avísanos lo antes posible, idealmente el mismo día de la entrega, para que podamos revisarlo. Si avisas después igual puedes reclamar, pero se hace más difícil acreditar lo ocurrido. Esto no reduce el plazo de garantía legal.
 
-13.6. **Garantía del fabricante o voluntaria:** algunos productos (por ejemplo, herramientas eléctricas) tienen además una garantía del fabricante o importador, que se informa en la ficha o en el empaque. Esa garantía se suma a la legal y no la reemplaza. Mientras dure la garantía voluntaria, rige lo que ella diga, siempre que no sea menos favorable que la garantía legal. [COMPLETAR: indicar si JURMAQ ofrece alguna garantía voluntaria propia; si no, borrar esta frase].
+13.6. **Garantía del fabricante:** JURMAQ no ofrece una garantía voluntaria propia; se aplica la garantía legal de esta sección. Algunos productos (por ejemplo, herramientas eléctricas) tienen además una garantía del fabricante o importador, que se informa en la ficha o en el empaque. Esa garantía se suma a la legal y no la reemplaza, y rige lo que ella diga siempre que no sea menos favorable que la garantía legal.
 
 ## 14. Formas de pago
 
@@ -242,13 +242,13 @@ El checkout muestra solo los medios de pago que están activos el día de tu com
 
 **Importante:** solo transfiere a una cuenta a nombre de BARRACA DE FIERROS JURMAQ SPA, RUT 77.722.788-2. Nunca te pediremos transferir a una cuenta de una persona natural ni a otro RUT. Si alguien te pide algo distinto, no transfieras y avísanos.
 
-14.3. Preparamos el pedido cuando el pago está acreditado. Si el despacho quedó "a coordinar", su costo se paga aparte, una vez que lo aceptes, por transferencia [COMPLETAR: u otro medio que se defina].
+14.3. Preparamos el pedido cuando el pago está acreditado. Si el despacho quedó "a coordinar", su costo se paga aparte, una vez que lo aceptes, por transferencia a la cuenta del punto 14.2.
 
 ## 15. Boleta y factura
 
 15.1. Por cada compra emitimos un documento tributario electrónico: **boleta electrónica** o, si la pides, **factura electrónica**, según la normativa del Servicio de Impuestos Internos (SII), y te lo enviamos al correo que indicaste en el pedido.
 
-15.2. **Si necesitas factura:** ingresa el RUT de la empresa en el checkout y envíanos, antes de que se emita el documento, la razón social, el giro, la dirección y el correo para la factura, a contacto@jurmaq.cl o por WhatsApp, indicando tu número de pedido. [COMPLETAR: plazo para pedirla, por ejemplo, el mismo día de la compra]. Si no recibimos esos datos a tiempo, emitiremos boleta.
+15.2. **Si necesitas factura:** pídela en el checkout ingresando el RUT de la empresa, o escríbenos a contacto@jurmaq.cl o por WhatsApp **dentro del mismo mes calendario de la compra**, indicando tu número de pedido. Para emitirla necesitamos la razón social, el giro, la dirección y el correo de la empresa; si nos faltan, te los pediremos. Si no pides factura, emitimos boleta.
 
 15.3. Una vez emitido el documento, solo podremos modificarlo en los casos y en la forma que permite la normativa del SII (por ejemplo, con nota de crédito).
 
@@ -260,13 +260,13 @@ El checkout muestra solo los medios de pago que están activos el día de tu com
 
 ## 17. Opiniones (reseñas)
 
-17.1. Solo pueden opinar sobre un producto quienes lo compraron, con una cuenta registrada.
+17.1. Solo pueden opinar sobre un producto quienes lo compraron en la Tienda. Unos días después de que recibes tu pedido te enviamos al correo, una sola vez, un enlace personal para dejar tu opinión sobre cada producto del pedido.
 
 17.2. Las opiniones deben referirse al producto y a la experiencia de compra. No publicamos opiniones con insultos, datos personales de terceros, publicidad, contenido ilegal o que no tenga relación con el producto.
 
 17.3. No eliminamos ni ocultamos opiniones por ser negativas. Podemos responderlas.
 
-17.4. Al publicar una opinión nos autorizas a mostrarla en la Tienda junto a tu nombre de pila o el nombre que elijas. Puedes eliminarla cuando quieras desde tu cuenta o escribiéndonos.
+17.4. Al publicar una opinión nos autorizas a mostrarla en la Tienda junto a tu nombre de pila y la inicial de tu apellido. Puedes pedirnos que la eliminemos cuando quieras, escribiendo a contacto@jurmaq.cl.
 
 ## 18. Propiedad intelectual
 
@@ -279,12 +279,12 @@ El checkout muestra solo los medios de pago que están activos el día de tu com
 No está permitido:
 
 - usar el sitio para fines ilegales o para suplantar a otra persona;
-- intentar acceder a áreas restringidas, al panel de administración o a cuentas de otros usuarios;
+- intentar acceder a áreas restringidas, al panel de administración o a pedidos de otras personas;
 - extraer de forma masiva el catálogo o los precios con programas automáticos (scraping) sin autorización;
 - introducir virus o código malicioso, o realizar acciones que sobrecarguen el sitio;
 - hacer pedidos falsos o usar medios de pago de terceros sin autorización.
 
-Si detectamos estas conductas podremos bloquear la cuenta o anular los pedidos afectados, con devolución de lo pagado cuando corresponda.
+Si detectamos estas conductas podremos bloquear el acceso o anular los pedidos afectados, con devolución de lo pagado cuando corresponda.
 
 ## 20. Responsabilidad
 
@@ -296,7 +296,7 @@ Si detectamos estas conductas podremos bloquear la cuenta o anular los pedidos a
 
 ## 21. Reclamos
 
-21.1. **Canal de la empresa:** puedes hacer consultas o reclamos a contacto@jurmaq.cl, por WhatsApp al +56 9 7667 3577 o en el local. Indica tu nombre, número de pedido y el problema. Te responderemos dentro de [COMPLETAR: plazo, por ejemplo 5 días hábiles].
+21.1. **Canal de la empresa:** puedes hacer consultas o reclamos a contacto@jurmaq.cl, por WhatsApp al +56 9 7667 3577 o en el local. Indica tu nombre, número de pedido y el problema. Te confirmaremos que recibimos tu reclamo y te responderemos lo antes posible.
 
 21.2. **SERNAC:** en cualquier momento puedes presentar un reclamo ante el Servicio Nacional del Consumidor en www.sernac.cl, llamando al 800 700 100 o en sus oficinas. No necesitas reclamar primero ante nosotros.
 

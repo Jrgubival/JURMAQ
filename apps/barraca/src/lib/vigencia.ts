@@ -11,11 +11,11 @@
  * la "Versión" escrita en src/content/legal/terminos.md.
  */
 export const PRECIO_WEB: { desde: string | null; hasta: string | null } = {
-  desde: null, // TODO(Jorge): fecha de publicación
+  desde: '2026-10-31',
   hasta: '2026-12-01', // Jorge, 30-10-2026: prueba de un mes, inclusive
 };
 
-export const VERSION_TERMINOS: string | null = null; // TODO(Jorge): ej. '2026-11'
+export const VERSION_TERMINOS: string | null = '1.0';
 
 /** "30 de noviembre de 2026", o null si no hay fecha. */
 export function fechaLarga(iso: string | null): string | null {
