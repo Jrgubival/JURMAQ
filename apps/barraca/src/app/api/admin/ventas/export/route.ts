@@ -49,13 +49,14 @@ export async function GET(request: NextRequest) {
       'Entrega / zona': celda(textoEntrega(p)),
       'Medio de pago': medioPago(p.metodo_pago),
       Subtotal: p.subtotal,
+      'Descuento transferencia': p.descuento_transferencia ?? 0,
       Despacho: p.entrega === 'despacho' ? (p.costo_despacho ?? 'A coordinar') : 0,
       Total: p.total,
       'Documento tributario': celda(documento(p)),
       'Boleta/factura subida': rutaDocumentoValida(p.documento_path, p.numero) ? 'Sí' : 'No',
     }));
     const ws = XLSX.utils.json_to_sheet(filas);
-    ws['!cols'] = [16, 16, 22, 28, 14, 30, 16, 22, 14, 12, 12, 12, 60, 12].map((wch) => ({ wch }));
+    ws['!cols'] = [16, 16, 22, 28, 14, 30, 16, 22, 14, 12, 12, 12, 12, 60, 12].map((wch) => ({ wch }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
     const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;

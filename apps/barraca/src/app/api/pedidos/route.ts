@@ -4,6 +4,7 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafe, logSafeError, maskEmail } from '@jurmaq/shared/logging';
 import { revisarLineas, MAX_LINEAS } from '@/lib/tienda';
+import { descuentoTransferencia } from '@/lib/pagos/descuento-transferencia';
 import {
   pedidos, nuevoNumeroPedido, nuevoTokenAcceso, cookiePedido, type ItemPedido, type Pedido,
 } from '@/lib/pedidos';
@@ -158,6 +159,8 @@ export async function POST(request: NextRequest) {
       if (despacho.estado !== 'ok') return NextResponse.json({ error: despacho.motivo }, { status: 409 });
     }
     const costoDespacho = despacho?.estado === 'ok' ? despacho.costo : null;
+    // 2% por transferencia, sólo sobre los productos (lib/pagos/descuento-transferencia.ts).
+    const descuento = d.metodoPago === 'transferencia' ? descuentoTransferencia(subtotal) : 0;
     const porCourier = despacho?.estado === 'ok' && despacho.tipo === 'courier' ? despacho : null;
     if (costoDespacho != null && (!Number.isInteger(costoDespacho) || costoDespacho < 0)) {
       return NextResponse.json({ error: 'No pudimos calcular el despacho. Intenta de nuevo.' }, { status: 409 });
@@ -191,7 +194,8 @@ export async function POST(request: NextRequest) {
           terminos_version: VERSION_TERMINOS,
           acepta_ofertas: d.aceptaOfertas,
           costo_despacho: costoDespacho, // null = a coordinar
-          total: subtotal + (costoDespacho ?? 0),
+          ...(descuento > 0 ? { descuento_transferencia: descuento } : {}),
+          total: subtotal - descuento + (costoDespacho ?? 0),
           // Sólo se mandan las columnas de factura cuando la piden: un pedido
           // con boleta usa el default de la base ('boleta').
           ...(d.documento === 'factura'

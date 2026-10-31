@@ -165,6 +165,7 @@ export interface PedidoVenta {
   telefono: string;
   email: string;
   subtotal: number;
+  descuento_transferencia?: number;
   costo_despacho: number | null;
   total: number;
   created_at: string;

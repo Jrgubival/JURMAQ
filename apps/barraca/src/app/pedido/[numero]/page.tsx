@@ -219,6 +219,12 @@ export default async function PedidoPage({
             <span className="tabular-nums">{montoDespacho(pedido)}</span>
           </div>
         )}
+        {(pedido.descuento_transferencia ?? 0) > 0 && (
+          <div className="flex justify-between text-sm text-[#2F7F4E] pt-2">
+            <span>Descuento transferencia</span>
+            <span className="tabular-nums">−{formatCLP(pedido.descuento_transferencia ?? 0)}</span>
+          </div>
+        )}
         <div className="flex justify-between items-baseline border-t border-gray-200 pt-4 mt-1">
           <span className="font-semibold">Total</span>
           <span className="text-2xl font-extrabold text-navy-950 tabular-nums">{formatCLP(pedido.total)}</span>

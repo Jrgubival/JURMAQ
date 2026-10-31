@@ -8,6 +8,7 @@ import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
 import { trackEvents } from "@/lib/analytics";
 import { useCarrito } from "@/lib/useCarrito";
 import { totalLinea } from "@/lib/combos";
+import { descuentoTransferencia, DESCUENTO_TRANSFERENCIA_PCT } from "@/lib/pagos/descuento-transferencia";
 import LineaCombo from "@/components/barraca/LineaCombo";
 import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carrito";
 import { rutValido } from "@/lib/rut";
@@ -110,10 +111,12 @@ const claseInput = (error?: string | null) =>
   }`;
 
 function Opcion({
-  nombre, valor, actual, onChange, titulo, detalle, deshabilitada,
+  nombre, valor, actual, onChange, titulo, detalle, deshabilitada, etiqueta,
 }: {
   nombre: string; valor: string; actual: string; onChange: (v: string) => void;
   titulo: string; detalle: string; deshabilitada?: boolean;
+  /** Texto chico junto al título, p. ej. "2% de descuento". */
+  etiqueta?: string;
 }) {
   const activa = actual === valor;
   return (
@@ -132,7 +135,10 @@ function Opcion({
         className="mt-1 w-4 h-4 accent-[#0c1d3a] shrink-0"
       />
       <span className="min-w-0">
-        <span className="block text-[15px] font-semibold text-[#111111]">{titulo}</span>
+        <span className="block text-[15px] font-semibold text-[#111111]">
+          {titulo}
+          {etiqueta && <span className="ml-2 text-[13px] font-medium text-[#2F7F4E]">{etiqueta}</span>}
+        </span>
         <span className="block text-[13px] text-[#5A5A57] mt-0.5">{detalle}</span>
       </span>
     </label>
@@ -292,7 +298,9 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   }, [consulta]);
 
   const costoDespacho = despacho && cotizacion?.estado === "ok" ? cotizacion.costo : null;
-  const totalPedido = total + (costoDespacho ?? 0);
+  // Vista previa: el descuento que vale es el que calcula el servidor al crear el pedido.
+  const descuento = metodo === "transferencia" ? descuentoTransferencia(total) : 0;
+  const totalPedido = total - descuento + (costoDespacho ?? 0);
   const despachoListo = !despacho || cotizacion?.estado === "ok";
 
   const set = (c: keyof Datos) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -548,6 +556,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 detalle={pagoEnLinea ? "Tarjeta de débito o crédito. Hasta 3 cuotas sin interés con tarjeta de crédito. El pedido queda confirmado al pagar." : "No disponible por ahora."} />
               <Opcion nombre="pago" valor="transferencia" actual={metodo} onChange={(v) => setMetodo(v as "transferencia")}
                 titulo="Transferencia bancaria"
+                etiqueta={`${DESCUENTO_TRANSFERENCIA_PCT}% de descuento`}
                 detalle="Te mostramos los datos de la cuenta. Preparamos el pedido cuando veamos la transferencia." />
             </div>
             <CampoForm id="co-notas" label="Comentario para la barraca" opcional>
@@ -582,6 +591,9 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 <span className="text-[#5A5A57]">{despacho ? `Despacho${cotizacion && "comuna" in cotizacion ? ` a ${cotizacion.comuna}` : ""}` : "Retiro en Molina"}</span>
                 <span className={`tabular-nums shrink-0 ${costoDespacho ? "text-[#111111]" : "text-[#5A5A57]"}`}>{montoFila}</span>
               </div>
+              {descuento > 0 && (
+                <div className="flex justify-between text-[#2F7F4E]"><span>Descuento transferencia</span><span className="tabular-nums">−{formatCLP(descuento)}</span></div>
+              )}
               <div className="flex justify-between items-baseline pt-2 border-t border-gray-100">
                 <span className="font-semibold text-[#111111]">Total</span>
                 <span className="text-2xl font-extrabold text-navy-950 tabular-nums">{formatCLP(totalPedido)}</span>

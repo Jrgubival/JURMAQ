@@ -15,7 +15,7 @@ export const PRECIO_WEB: { desde: string | null; hasta: string | null } = {
   hasta: '2026-12-01', // Jorge, 30-10-2026: prueba de un mes, inclusive
 };
 
-export const VERSION_TERMINOS: string | null = '1.1';
+export const VERSION_TERMINOS: string | null = '1.2';
 
 /** "30 de noviembre de 2026", o null si no hay fecha. */
 export function fechaLarga(iso: string | null): string | null {

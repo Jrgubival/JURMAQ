@@ -333,6 +333,9 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
             <dl className="mt-3 pt-3 border-t border-[#E6E4DF] space-y-1.5 text-[15px]">
               <div className="flex justify-between"><dt className="text-[#5F5E5A]">Productos</dt><dd className="tabular-nums">{formatCLP(p.subtotal)}</dd></div>
               <div className="flex justify-between"><dt className="text-[#5F5E5A]">{p.entrega === "retiro" ? "Retiro" : "Despacho"}</dt><dd className="tabular-nums">{p.entrega === "retiro" ? "Gratis" : montoDespacho(p)}</dd></div>
+              {(p.descuento_transferencia ?? 0) > 0 && (
+                <div className="flex justify-between"><dt className="text-[#5F5E5A]">Descuento transferencia</dt><dd className="tabular-nums text-[#2F7F4E]">−{formatCLP(p.descuento_transferencia ?? 0)}</dd></div>
+              )}
               <div className="flex justify-between items-baseline pt-2"><dt className="font-semibold">Total</dt><dd className="cifra text-[28px] leading-none font-semibold text-navy-950">{formatCLP(p.total)}</dd></div>
             </dl>
           </Seccion>

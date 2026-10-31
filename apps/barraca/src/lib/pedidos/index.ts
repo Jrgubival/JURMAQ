@@ -100,6 +100,8 @@ export interface Pedido {
   notas: string | null;
   items: ItemPedido[];
   subtotal: number;
+  /** Descuento por pagar con transferencia (2% de los productos); ya restado del total. */
+  descuento_transferencia?: number;
   costo_despacho: number | null;
   /** Cómo viaja el despacho: camión propio o courier. null en retiro. */
   despacho_tipo: TipoDespacho | null;

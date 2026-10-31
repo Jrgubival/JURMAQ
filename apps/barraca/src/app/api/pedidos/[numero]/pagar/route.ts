@@ -29,6 +29,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (pedido.estado !== 'pendiente_pago' && pedido.estado !== 'pago_rechazado') {
     return NextResponse.json({ error: 'Este pedido ya no está pendiente de pago' }, { status: 409 });
   }
+  // Un pedido por transferencia lleva el 2% de descuento en el total: no se paga con Webpay.
+  if (pedido.metodo_pago === 'transferencia') {
+    return NextResponse.json({ error: 'Este pedido se paga por transferencia' }, { status: 409 });
+  }
   if (!pagoEnLineaDisponible()) {
     return NextResponse.json({ error: 'El pago en línea no está disponible' }, { status: 409 });
   }

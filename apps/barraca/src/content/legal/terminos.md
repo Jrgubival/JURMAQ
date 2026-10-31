@@ -1,7 +1,7 @@
 # Términos y Condiciones de la tienda online barraca.jurmaq.cl
 
 **Vigentes desde:** 31 de octubre de 2026
-**Versión:** 1.1
+**Versión:** 1.2
 
 Lee estos Términos y Condiciones antes de comprar. En el checkout, antes de confirmar tu pedido, tienes un enlace a estos Términos y a la Política de Privacidad y una casilla para aceptarlos. Sin marcar esa casilla no se puede comprar. Al marcarla declaras que los leíste y los aceptas, y guardamos la fecha y hora en que lo hiciste. Puedes descargarlos o imprimirlos desde esta misma página, y el correo de confirmación de tu compra trae el enlace para volver a verlos.
 
@@ -231,7 +231,7 @@ El checkout muestra solo los medios de pago que están activos el día de tu com
 
 14.1. **Pago en línea con Webpay Plus (Transbank):** pagas con tarjeta de crédito, débito o prepago en el sitio de Transbank. JURMAQ **no recibe ni guarda** los datos de tu tarjeta. Con tarjeta de crédito puedes pagar **hasta en 3 cuotas sin interés para ti**, según lo que permita el banco o emisor de tu tarjeta. Si eliges más cuotas o un tipo de cuota distinto, esas cuotas, sus intereses y sus condiciones son del banco o emisor, no de JURMAQ. Si el pago en línea no aparece en el checkout, es porque todavía no está disponible.
 
-14.2. **Transferencia bancaria:** al confirmar el pedido te mostramos y enviamos por correo los datos de la cuenta. Debes transferir el total indicando el número de pedido y enviar el comprobante a contacto@jurmaq.cl.
+14.2. **Transferencia bancaria:** al confirmar el pedido te mostramos y enviamos por correo los datos de la cuenta. Debes transferir el total indicando el número de pedido y enviar el comprobante a contacto@jurmaq.cl. **Pagando por transferencia tienes un 2% de descuento** sobre el valor de los productos (ya con el precio web y el descuento por cantidad), que no se aplica al despacho. El checkout te lo muestra antes de confirmar y el total a transferir ya lo incluye. Si después quisieras pagar ese pedido de otra forma, el descuento no se mantiene.
 
 - Banco: BancoEstado (Banco del Estado de Chile)
 - Tipo de cuenta: Cuenta Corriente
@@ -254,7 +254,7 @@ El checkout muestra solo los medios de pago que están activos el día de tu com
 
 ## 16. Promociones y cupones
 
-16.1. Hoy la Tienda no tiene cupones de descuento ni promociones distintas del precio web de la sección 5, salvo el descuento por cantidad del punto 16.3 y las cuotas sin interés con tarjeta de crédito vía Webpay del punto 14.1.
+16.1. Hoy la Tienda no tiene cupones de descuento ni promociones distintas del precio web de la sección 5, salvo el descuento por cantidad del punto 16.3, el 2% de descuento por transferencia del punto 14.2 y las cuotas sin interés con tarjeta de crédito vía Webpay del punto 14.1.
 
 16.2. Si en el futuro publicamos una promoción o un cupón, indicará su fecha de inicio y de término, el descuento, los productos incluidos y sus condiciones, según exige el artículo 35 de la Ley del Consumidor, y si tiene stock limitado, el número mínimo de unidades disponibles. Las condiciones de esa promoción se agregarán a estos Términos antes de ofrecerla.
 

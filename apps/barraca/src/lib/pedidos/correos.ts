@@ -101,6 +101,7 @@ function cuerpo(p: Pedido, intro: string, conEnlace = true): string {
 <p style="margin:0 0 16px;">${intro}</p>
 ${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio, subtotal: i.subtotal, nota: i.combo ? textoCombo(i.combo) : null })))}
 ${p.entrega === 'despacho' ? `<p style="margin:16px 0 0;font-size:14px;">Despacho: ${escapeHtml(montoDespacho(p))}</p>` : ''}
+${(p.descuento_transferencia ?? 0) > 0 ? `<p style="margin:8px 0 0;font-size:14px;color:#2F7F4E;">Descuento transferencia: −${formatCLP(p.descuento_transferencia ?? 0)}</p>` : ''}
 <p style="margin:16px 0;font-size:16px;"><strong>Total: ${formatCLP(p.total)}</strong> <span style="color:#6b7280;font-size:13px;">IVA incluido${p.entrega === 'despacho' && p.costo_despacho == null ? ' · despacho aparte' : ''}</span></p>
 <div style="margin:0 0 16px;">${bloqueEntrega(p)}</div>
 <div style="margin:0 0 16px;">${bloqueDocumento(p)}</div>
