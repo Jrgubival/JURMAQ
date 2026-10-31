@@ -78,7 +78,12 @@ apps/barraca/scripts/backups/*
 .pedidos-dev.json
 .bajas-dev.json
 .opiniones-dev.json
+# Códigos del login del panel en desarrollo (sólo hashes + el último código en claro)
+.login-codigos-dev.json
+.login-codigos-dev-ultimo.txt
 .comprobantes-dev/
+# Boletas/facturas subidas desde el panel en local
+.documentos-dev/
 # Reportes de la carga de precios
 reporte-carga-precios.csv
 

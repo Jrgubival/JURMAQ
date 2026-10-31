@@ -27,7 +27,13 @@ export type Action =
   /** Validar / marcar recuperada una factura de combustible. */
   | 'validate'
   /** Exportar reportes (Excel SII, etc.). */
-  | 'export';
+  | 'export'
+  /**
+   * Devolver dinero a un cliente (no aprobar un pedido de la tienda y anular
+   * el pago en Webpay o devolver la transferencia). Sólo barraca_ventas.
+   * NO está en ALL_ACTIONS ni lo implica `update`: hay que darlo explícito.
+   */
+  | 'reembolsar';
 
 /**
  * Módulos del admin Constructora — operaciones, catálogo, tributario,
@@ -66,7 +72,13 @@ export type BarracaModule =
   /** Reviews/ratings de productos (moderación: aprobar/rechazar). */
   | 'barraca_reviews'
   /** Customer 360 — clientes barraca registrados con historial agregado. */
-  | 'barraca_clientes';
+  | 'barraca_clientes'
+  /**
+   * Ventas de la tienda en línea (pedidos web): ver, cambiar estado,
+   * confirmar transferencias, subir boleta/factura y exportar. Devolver
+   * dinero exige además la acción 'reembolsar'.
+   */
+  | 'barraca_ventas';
 
 /**
  * Union de ambos. `Module` queda como type-alias para no romper los ~30
@@ -101,6 +113,7 @@ const ALL_BARRACA_MODULES: Module[] = [
   'barraca_comisiones',
   'barraca_reviews',
   'barraca_clientes',
+  'barraca_ventas',
 ];
 
 const ALL_MODULES: Module[] = [
@@ -152,6 +165,8 @@ export const ROLES: Record<RoleId, RoleDef> = {
       barraca_comisiones: ALL_ACTIONS,
       barraca_reviews: ALL_ACTIONS,
       barraca_clientes: ALL_ACTIONS,
+      // Sin 'reembolsar': devolver dinero queda sólo para el administrador.
+      barraca_ventas: ALL_ACTIONS,
     },
     badgeClass: 'bg-purple-100 text-purple-700',
   },
@@ -168,6 +183,7 @@ export const ROLES: Record<RoleId, RoleDef> = {
       'barraca_cotizaciones',
       'barraca_reviews',
       'barraca_clientes',
+      'barraca_ventas',
     ],
     permissions: {
       dashboard: ['read'],
@@ -186,6 +202,9 @@ export const ROLES: Record<RoleId, RoleDef> = {
       barraca_reviews: ['read', 'update'],
       // Clientes 360: lee para atención, no edita (los clientes manejan sus datos).
       barraca_clientes: ['read'],
+      // Ventas de la tienda: atiende pedidos (estado, transferencias, boleta)
+      // y exporta. NO 'reembolsar': devolver dinero es sólo del administrador.
+      barraca_ventas: ['read', 'update', 'export'],
     },
     badgeClass: 'bg-blue-100 text-blue-700',
   },
@@ -208,7 +227,7 @@ export const ROLES: Record<RoleId, RoleDef> = {
   contador: {
     label: 'Contador / Finanzas',
     description: 'Combustible end-to-end (F29 SII). Ve cotizaciones para conciliar pagos. Paga comisiones a maestros.',
-    modules: ['dashboard', 'cotizaciones', 'combustible', 'barraca_cotizaciones', 'barraca_comisiones'],
+    modules: ['dashboard', 'cotizaciones', 'combustible', 'barraca_cotizaciones', 'barraca_comisiones', 'barraca_ventas'],
     permissions: {
       dashboard: ['read'],
       // Solo lectura de cotizaciones — para reconciliar.
@@ -218,6 +237,8 @@ export const ROLES: Record<RoleId, RoleDef> = {
       combustible: ['read', 'create', 'update', 'delete', 'validate', 'export'],
       // Comisiones: marca pagadas + exporta. NO crea ni borra (las crea el trigger).
       barraca_comisiones: ['read', 'update', 'export'],
+      // Ventas de la tienda: sólo lectura + Excel, para conciliar.
+      barraca_ventas: ['read', 'export'],
     },
     badgeClass: 'bg-green-100 text-green-700',
   },

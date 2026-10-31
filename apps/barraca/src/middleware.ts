@@ -6,8 +6,8 @@ const authMiddleware = NextAuth({
   ...authConfig,
   pages: {
     ...authConfig.pages,
-    // Login admin propio con SSO Google (+ respaldo con credenciales en
-    // /login/credenciales). La tienda no tiene cuentas de cliente.
+    // Login admin propio con código por correo (sin contraseña ni Google).
+    // La tienda no tiene cuentas de cliente.
     signIn: '/login',
   },
 }).auth;

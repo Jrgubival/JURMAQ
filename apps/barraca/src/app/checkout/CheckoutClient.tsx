@@ -20,7 +20,9 @@ import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from "@jurmaq/shared/whatsapp";
  * Validación al salir de cada campo; el botón dice lo que hace ("Pagar $X").
  */
 
-type Campo = "nombre" | "email" | "telefono" | "rut" | "direccion" | "comuna";
+type Campo = "nombre" | "email" | "telefono" | "rut" | "direccion" | "comuna"
+  | "facturaRazonSocial" | "facturaRut" | "facturaGiro" | "facturaDireccion" | "facturaComuna";
+const CAMPOS_FACTURA: Campo[] = ["facturaRazonSocial", "facturaRut", "facturaGiro", "facturaDireccion", "facturaComuna"];
 type Datos = Record<Campo | "notas", string>;
 
 /** El selector muestra sólo las zonas de despacho (zonas.ts) y "mi comuna no está". */
@@ -53,12 +55,20 @@ type Cotizacion =
   | { estado: "bloqueado"; motivo: string; productos: string[]; comuna: string; whatsapp?: string }
   | { estado: "sin_servicio" | "error"; motivo: string; whatsapp?: string };
 
-const VACIO: Datos = { nombre: "", email: "", telefono: "", rut: "", direccion: "", comuna: "", notas: "" };
+const VACIO: Datos = {
+  nombre: "", email: "", telefono: "", rut: "", direccion: "", comuna: "", notas: "",
+  facturaRazonSocial: "", facturaRut: "", facturaGiro: "", facturaDireccion: "", facturaComuna: "",
+};
 const CLAVE_DATOS = "barraca_checkout_datos";
 
-function validar(c: Campo, v: string, despacho: boolean): string | null {
+function validar(c: Campo, v: string, despacho: boolean, factura = false): string | null {
   const t = v.trim();
   switch (c) {
+    case "facturaRazonSocial": return !factura || t.length >= 2 ? null : "Escribe la razón social de la empresa.";
+    case "facturaRut": return !factura || rutValido(t) ? null : "El RUT de la empresa no es válido. Revisa el dígito verificador.";
+    case "facturaGiro": return !factura || t.length >= 2 ? null : "Escribe el giro de la empresa.";
+    case "facturaDireccion": return !factura || t.length >= 5 ? null : "Escribe la dirección comercial.";
+    case "facturaComuna": return !factura || t.length >= 2 ? null : "Escribe la comuna.";
     case "nombre": return t.length >= 3 ? null : "Escribe tu nombre y apellido.";
     case "email": return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t) ? null : "Revisa el correo: ahí te llega el detalle del pedido.";
     case "telefono": return t.replace(/\D/g, "").length >= 8 ? null : "Escribe un teléfono de al menos 8 dígitos.";
@@ -213,6 +223,8 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   const [datos, setDatos] = useState<Datos>(VACIO);
   const [entrega, setEntrega] = useState<"retiro" | "despacho">("retiro");
   const [metodo, setMetodo] = useState<"webpay" | "transferencia">(pagoEnLinea ? "webpay" : "transferencia");
+  const [documento, setDocumento] = useState<"boleta" | "factura">("boleta");
+  const factura = documento === "factura";
   const [errores, setErrores] = useState<Partial<Record<Campo, string | null>>>({});
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
@@ -286,10 +298,10 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
     setDatos((d) => ({ ...d, [c]: v }));
     // Un error ya mostrado se va apenas el valor queda válido, no antes.
     if (c !== "notas" && errores[c as Campo]) {
-      setErrores((er) => ({ ...er, [c]: validar(c as Campo, v, despacho) }));
+      setErrores((er) => ({ ...er, [c]: validar(c as Campo, v, despacho, factura) }));
     }
   };
-  const blur = (c: Campo) => () => setErrores((er) => ({ ...er, [c]: validar(c, datos[c], despacho) }));
+  const blur = (c: Campo) => () => setErrores((er) => ({ ...er, [c]: validar(c, datos[c], despacho, factura) }));
   const props = (c: Campo) => ({
     id: `co-${c}`,
     value: datos[c],
@@ -303,9 +315,13 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setErrorEnvio(null);
-    const campos: Campo[] = ["nombre", "email", "telefono", "rut", ...(despacho ? (["comuna", "direccion"] as Campo[]) : [])];
+    const campos: Campo[] = [
+      "nombre", "email", "telefono", "rut",
+      ...(factura ? CAMPOS_FACTURA : []),
+      ...(despacho ? (["comuna", "direccion"] as Campo[]) : []),
+    ];
     const nuevos: Partial<Record<Campo, string | null>> = {};
-    for (const c of campos) nuevos[c] = validar(c, datos[c], despacho);
+    for (const c of campos) nuevos[c] = validar(c, datos[c], despacho, factura);
     setErrores(nuevos);
     const primero = campos.find((c) => nuevos[c]);
     if (primero) {
@@ -345,6 +361,16 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
           comuna: despacho ? datos.comuna : "",
           metodoPago: metodo,
           notas: datos.notas,
+          documento,
+          ...(factura
+            ? {
+                facturaRazonSocial: datos.facturaRazonSocial,
+                facturaRut: datos.facturaRut,
+                facturaGiro: datos.facturaGiro,
+                facturaDireccion: datos.facturaDireccion,
+                facturaComuna: datos.facturaComuna,
+              }
+            : {}),
           aceptaTerminos,
           aceptaOfertas,
         }),
@@ -432,9 +458,38 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
             <CampoForm id="co-telefono" label="Teléfono" ayuda="Para avisarte cuando esté listo o coordinar el despacho." error={errores.telefono}>
               <input {...props("telefono")} type="tel" inputMode="tel" autoComplete="tel" placeholder="+56 9 1234 5678" />
             </CampoForm>
-            <CampoForm id="co-rut" label="RUT" opcional ayuda="Sólo si necesitas factura." error={errores.rut}>
-              <input {...props("rut")} type="text" autoComplete="off" placeholder="76.123.456-7" />
+            <CampoForm id="co-rut" label="Tu RUT" opcional error={errores.rut}>
+              <input {...props("rut")} type="text" autoComplete="off" placeholder="12.345.678-5" />
             </CampoForm>
+            <fieldset>
+              <legend className="block text-sm font-medium text-[#111111] mb-1.5">Documento</legend>
+              <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Documento tributario">
+                <Opcion nombre="documento" valor="boleta" actual={documento} onChange={(v) => setDocumento(v as "boleta")}
+                  titulo="Boleta" detalle="Para personas." />
+                <Opcion nombre="documento" valor="factura" actual={documento} onChange={(v) => setDocumento(v as "factura")}
+                  titulo="Factura" detalle="Para empresas." />
+              </div>
+            </fieldset>
+            {factura && (
+              <div className="space-y-4 rounded-xl bg-[#F7F7F5] border border-[#EAEAEA] p-4">
+                <p className="text-[13px] text-[#5A5A57]">Datos de la empresa para la factura. Te la mandamos por correo.</p>
+                <CampoForm id="co-facturaRazonSocial" label="Razón social" error={errores.facturaRazonSocial}>
+                  <input {...props("facturaRazonSocial")} type="text" autoComplete="organization" maxLength={150} placeholder="Constructora Ejemplo SpA" />
+                </CampoForm>
+                <CampoForm id="co-facturaRut" label="RUT de la empresa" error={errores.facturaRut}>
+                  <input {...props("facturaRut")} type="text" autoComplete="off" maxLength={14} placeholder="76.123.456-0" />
+                </CampoForm>
+                <CampoForm id="co-facturaGiro" label="Giro" error={errores.facturaGiro}>
+                  <input {...props("facturaGiro")} type="text" autoComplete="off" maxLength={120} placeholder="Construcción" />
+                </CampoForm>
+                <CampoForm id="co-facturaDireccion" label="Dirección comercial" error={errores.facturaDireccion}>
+                  <input {...props("facturaDireccion")} type="text" autoComplete="off" maxLength={150} placeholder="Calle y número" />
+                </CampoForm>
+                <CampoForm id="co-facturaComuna" label="Comuna" error={errores.facturaComuna}>
+                  <input {...props("facturaComuna")} type="text" autoComplete="off" maxLength={60} placeholder="Curicó" />
+                </CampoForm>
+              </div>
+            )}
           </Seccion>
 
           <Seccion n={2} titulo="Entrega">

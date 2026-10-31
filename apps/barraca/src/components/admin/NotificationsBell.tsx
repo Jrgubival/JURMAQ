@@ -133,10 +133,10 @@ export default function NotificationsBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        className="relative min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-current hover:bg-white/10 transition-colors"
         aria-label={`Notificaciones${unreadCount > 0 ? ` (${unreadCount} no leídas)` : ''}`}
       >
-        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -145,14 +145,14 @@ export default function NotificationsBell() {
           />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-marca-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-navy-950">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[360px] max-w-[95vw] bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50">
+        <div className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-auto mt-2 w-[360px] max-w-[calc(100vw-1rem)] bg-white text-gray-900 border border-gray-200 rounded-xl shadow-xl overflow-hidden z-50">
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
             <h3 className="font-semibold text-gray-900 text-sm">Notificaciones</h3>
             {unreadCount > 0 && (

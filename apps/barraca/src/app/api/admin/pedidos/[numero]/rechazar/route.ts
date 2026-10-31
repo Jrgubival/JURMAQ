@@ -3,7 +3,7 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { z, parseBody } from '@jurmaq/shared/validation';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
-import { PATRON_NUMERO, MOTIVOS_RECHAZO, type MotivoRechazo } from '@/lib/pedidos';
+import { pedidos, PATRON_NUMERO, MOTIVOS_RECHAZO, type MotivoRechazo } from '@/lib/pedidos';
 import { rechazarPedido, reintentarDevolucion } from '@/lib/pedidos/rechazo';
 
 /**
@@ -17,6 +17,8 @@ import { rechazarPedido, reintentarDevolucion } from '@/lib/pedidos/rechazo';
  *     ya rechazado cuyo reembolso falló.
  *
  * El panel pide confirmación antes de llamar. Montos siempre del pedido guardado.
+ * Devuelve dinero: exige la acción 'reembolsar' (sólo administrador; el
+ * vendedor ve el botón deshabilitado).
  */
 const motivos = Object.keys(MOTIVOS_RECHAZO) as [MotivoRechazo, ...MotivoRechazo[]];
 const schema = z.discriminatedUnion('accion', [
@@ -26,7 +28,7 @@ const schema = z.discriminatedUnion('accion', [
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ numero: string }> }) {
   if (!isValidOrigin(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
-  const session = await requirePermission('barraca_cotizaciones', 'update');
+  const session = await requirePermission('barraca_ventas', 'reembolsar');
   if (!session) return forbiddenResponse();
 
   const { numero } = await params;
@@ -42,6 +44,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
     const r = await rechazarPedido(numero, parsed.data.motivo, parsed.data.nota || null);
     if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });
+    await pedidos().firmarEvento(numero, 'rechazado', session.user?.email ?? null, null).catch((e) =>
+      logSafeError('admin-pedido-evento-error', { numero, error: String(e) }),
+    );
     logSafe('admin-pedido-rechazado', { numero, motivo: parsed.data.motivo, reembolso: r.reembolso, por: session.user?.id ?? null });
     return NextResponse.json({ ok: true, reembolso: r.reembolso });
   } catch (error) {

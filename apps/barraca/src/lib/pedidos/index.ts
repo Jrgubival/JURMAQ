@@ -130,6 +130,20 @@ export interface Pedido {
   comprobante_nota?: string | null;
   /** Cuándo se mandó el correo para opinar de los productos (una vez por pedido). */
   opinion_solicitada_at?: string | null;
+  /** Lo que pidió en el checkout. Pedidos antiguos: sin dato = boleta. */
+  documento_solicitado?: DocumentoTributario | null;
+  /** Datos de la empresa si pidió factura (validados en el servidor). */
+  factura_razon_social?: string | null;
+  factura_rut?: string | null;
+  factura_giro?: string | null;
+  factura_direccion?: string | null;
+  /** Boleta/factura emitida: PDF privado (lib/pedidos/documentos.ts) y cuándo se mandó al cliente. */
+  documento_path?: string | null;
+  documento_tipo?: DocumentoTributario | null;
+  documento_subido_at?: string | null;
+  documento_enviado_at?: string | null;
+  /** Sólo en el store de archivo: el historial vive en el mismo pedido. */
+  eventos?: EventoPedido[];
   total: number;
   stock_descontado: boolean;
   created_at: string;
@@ -140,6 +154,19 @@ export type NuevoPedido = Omit<
   Pedido,
   'id' | 'estado' | 'pasarela' | 'pasarela_referencia' | 'pago_id' | 'pago_detalle' | 'pagado_at' | 'stock_descontado' | 'courier_seguimiento' | 'courier_etiqueta_url' | 'courier_envio_id' | 'created_at' | 'updated_at'
 >;
+
+export type DocumentoTributario = 'boleta' | 'factura';
+
+/** Un cambio en el pedido (tabla barraca_pedidos_eventos). actor_email null = sistema. */
+export interface EventoPedido {
+  id: number | string;
+  numero: string;
+  estado_anterior: EstadoPedido | null;
+  estado_nuevo: EstadoPedido;
+  motivo: string | null;
+  actor_email: string | null;
+  created_at: string;
+}
 
 export type ResultadoPago = 'pagado' | 'ya_procesado' | 'monto_distinto' | 'no_encontrado';
 
@@ -172,6 +199,21 @@ export interface PedidosStore {
   /** Guarda el envío generado. Sólo si el pedido aún no tenía seguimiento (devuelve false si ya lo tenía). */
   guardarEnvio(numero: string, envio: EnvioEmitido): Promise<boolean>;
   listar(opts: { estado?: EstadoPedido; limite?: number }): Promise<Pedido[]>;
+  /** Pedidos creados entre `desde` (incluido) y `hasta` (excluido), ISO. Más nuevos primero. */
+  listarRango(opts: { desde: string; hasta: string; limite: number }): Promise<Pedido[]>;
+  /** Historial del pedido, del más antiguo al más nuevo. */
+  eventos(numero: string): Promise<EventoPedido[]>;
+  /**
+   * Los cambios de estado los registra solo el store (trigger en la base,
+   * `editar` en el archivo). Esto le pone quién lo hizo (y un motivo) al
+   * último evento sin firmar que llegó a `estadoNuevo` en los últimos minutos.
+   */
+  firmarEvento(numero: string, estadoNuevo: EstadoPedido, actorEmail: string | null, motivo: string | null): Promise<void>;
+  /** Evento que no es un cambio de estado (ej. "Boleta subida y enviada"). */
+  registrarEvento(numero: string, estado: EstadoPedido, actorEmail: string | null, motivo: string): Promise<void>;
+  /** Guarda el PDF de boleta/factura recién subido (reemplaza al anterior). */
+  guardarDocumento(numero: string, ruta: string, tipo: DocumentoTributario): Promise<void>;
+  marcarDocumentoEnviado(numero: string): Promise<void>;
   /** Entregados entre `desde` y `hasta` (updated_at) a los que aún no se les pidió opinión. */
   paraPedirOpinion(opts: { desde: string; hasta: string; limite: number }): Promise<Pedido[]>;
   /** Marca que ya se pidió la opinión. Condicional: false si otro proceso ya lo marcó. */
@@ -288,6 +330,65 @@ const storeSupabase: PedidosStore = {
     const { data, error } = await q;
     if (error) throw error;
     return (data as Pedido[]) ?? [];
+  },
+  async listarRango({ desde, hasta, limite }) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .select('*')
+      .gte('created_at', desde)
+      .lt('created_at', hasta)
+      .order('created_at', { ascending: false })
+      .limit(limite);
+    if (error) throw error;
+    return (data as Pedido[]) ?? [];
+  },
+  async eventos(numero) {
+    const { data, error } = await db
+      .from('barraca_pedidos_eventos')
+      .select('*')
+      .eq('numero', numero)
+      .order('created_at', { ascending: true })
+      .limit(200);
+    if (error) throw error;
+    return (data as EventoPedido[]) ?? [];
+  },
+  async firmarEvento(numero, estadoNuevo, actorEmail, motivo) {
+    const hace = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data, error } = await db
+      .from('barraca_pedidos_eventos')
+      .select('id')
+      .eq('numero', numero)
+      .eq('estado_nuevo', estadoNuevo)
+      .is('actor_email', null)
+      .gte('created_at', hace)
+      .order('id', { ascending: false })
+      .limit(1);
+    if (error) throw error;
+    const id = (data as Array<{ id: number }> | null)?.[0]?.id;
+    if (id == null) return;
+    const cambios: Record<string, string> = {};
+    if (actorEmail) cambios.actor_email = actorEmail;
+    if (motivo) cambios.motivo = motivo;
+    if (Object.keys(cambios).length === 0) return;
+    const { error: e2 } = await db.from('barraca_pedidos_eventos').update(cambios).eq('id', id);
+    if (e2) throw e2;
+  },
+  async registrarEvento(numero, estado, actorEmail, motivo) {
+    const { error } = await db.from('barraca_pedidos_eventos').insert({
+      numero, estado_anterior: estado, estado_nuevo: estado, motivo, actor_email: actorEmail,
+    });
+    if (error) throw error;
+  },
+  async guardarDocumento(numero, ruta, tipo) {
+    const { error } = await db
+      .from('barraca_pedidos')
+      .update({ documento_path: ruta, documento_tipo: tipo, documento_subido_at: new Date().toISOString(), documento_enviado_at: null })
+      .eq('numero', numero);
+    if (error) throw error;
+  },
+  async marcarDocumentoEnviado(numero) {
+    const { error } = await db.from('barraca_pedidos').update({ documento_enviado_at: new Date().toISOString() }).eq('numero', numero);
+    if (error) throw error;
   },
   async paraPedirOpinion({ desde, hasta, limite }) {
     const { data, error } = await db

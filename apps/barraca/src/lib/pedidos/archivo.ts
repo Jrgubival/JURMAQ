@@ -1,7 +1,7 @@
 import 'server-only';
 import fs from 'fs';
 import path from 'path';
-import type { Pedido, PedidosStore } from './index';
+import type { EventoPedido, EstadoPedido, Pedido, PedidosStore } from './index';
 
 /**
  * Pedidos en un JSON local — SÓLO para probar la tienda en desarrollo sin
@@ -22,11 +22,30 @@ function escribir(lista: Pedido[]) {
   fs.writeFileSync(ARCHIVO, JSON.stringify(lista, null, 2));
 }
 
+function nuevoEvento(p: Pedido, anterior: EstadoPedido | null, nuevo: EstadoPedido, motivo: string | null, actor: string | null): EventoPedido {
+  const eventos = p.eventos ?? [];
+  return {
+    id: eventos.length + 1,
+    numero: p.numero,
+    estado_anterior: anterior,
+    estado_nuevo: nuevo,
+    motivo,
+    actor_email: actor,
+    created_at: new Date().toISOString(),
+  };
+}
+
+/** Igual que el trigger de la base: todo cambio de estado deja un evento sin firmar. */
 function editar(numero: string, fn: (p: Pedido) => void) {
   const lista = leer();
   const p = lista.find((x) => x.numero === numero);
   if (!p) return;
+  const antes = p.estado;
   fn(p);
+  if (p.estado !== antes) {
+    const motivo = p.estado === 'rechazado' ? p.rechazo_motivo ?? null : null;
+    p.eventos = [...(p.eventos ?? []), nuevoEvento(p, antes, p.estado, motivo, null)];
+  }
   p.updated_at = new Date().toISOString();
   escribir(lista);
 }
@@ -55,6 +74,7 @@ export function crearStoreArchivo(): PedidosStore {
         created_at: ahora,
         updated_at: ahora,
       };
+      p.eventos = [nuevoEvento(p, null, 'pendiente_pago', 'Pedido creado en la tienda', null)];
       lista.unshift(p);
       escribir(lista);
       return p;
@@ -147,6 +167,47 @@ export function crearStoreArchivo(): PedidosStore {
     },
     async listar({ estado, limite = 200 }) {
       return leer().filter((p) => !estado || p.estado === estado).slice(0, limite);
+    },
+    async listarRango({ desde, hasta, limite }) {
+      const d = Date.parse(desde);
+      const h = Date.parse(hasta);
+      return leer()
+        .filter((p) => { const t = Date.parse(p.created_at); return t >= d && t < h; })
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))
+        .slice(0, limite);
+    },
+    async eventos(numero) {
+      return leer().find((x) => x.numero === numero)?.eventos ?? [];
+    },
+    async firmarEvento(numero, estadoNuevo, actorEmail, motivo) {
+      const lista = leer();
+      const p = lista.find((x) => x.numero === numero);
+      const hace = Date.now() - 5 * 60 * 1000;
+      const ev = [...(p?.eventos ?? [])].reverse().find(
+        (e) => e.estado_nuevo === estadoNuevo && !e.actor_email && Date.parse(e.created_at) >= hace,
+      );
+      if (!ev) return;
+      if (actorEmail) ev.actor_email = actorEmail;
+      if (motivo) ev.motivo = motivo;
+      escribir(lista);
+    },
+    async registrarEvento(numero, estado, actorEmail, motivo) {
+      const lista = leer();
+      const p = lista.find((x) => x.numero === numero);
+      if (!p) return;
+      p.eventos = [...(p.eventos ?? []), nuevoEvento(p, estado, estado, motivo, actorEmail)];
+      escribir(lista);
+    },
+    async guardarDocumento(numero, ruta, tipo) {
+      editar(numero, (p) => {
+        p.documento_path = ruta;
+        p.documento_tipo = tipo;
+        p.documento_subido_at = new Date().toISOString();
+        p.documento_enviado_at = null;
+      });
+    },
+    async marcarDocumentoEnviado(numero) {
+      editar(numero, (p) => { p.documento_enviado_at = new Date().toISOString(); });
     },
     async paraPedirOpinion({ desde, hasta, limite }) {
       return leer()

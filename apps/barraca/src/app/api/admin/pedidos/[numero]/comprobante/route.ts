@@ -11,7 +11,7 @@ import { leerComprobante, rutaValida, MIME_COMPROBANTE } from '@/lib/pedidos/com
  * no existe URL pública ni firmada que se pueda reenviar.
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ numero: string }> }) {
-  const session = await requirePermission('barraca_cotizaciones', 'read');
+  const session = await requirePermission('barraca_ventas', 'read');
   if (!session) return forbiddenResponse();
 
   const { numero } = await params;

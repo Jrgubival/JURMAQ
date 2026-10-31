@@ -8,7 +8,7 @@ import { pedidos, ESTADOS_PEDIDO, type EstadoPedido } from '@/lib/pedidos';
  * Usa el permiso de cotizaciones barraca (mismo equipo de ventas).
  */
 export async function GET(request: NextRequest) {
-  const session = await requirePermission('barraca_cotizaciones', 'read');
+  const session = await requirePermission('barraca_ventas', 'read');
   if (!session) return forbiddenResponse();
 
   const estadoParam = request.nextUrl.searchParams.get('estado') || '';

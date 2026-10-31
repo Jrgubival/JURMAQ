@@ -1,29 +1,6 @@
-import type { Metadata } from "next";
-import LoginCredenciales from "./LoginCredenciales";
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: "Acceso administración · JURMAQ Barraca",
-  robots: { index: false, follow: false },
-};
-
-/** Solo paths relativos del mismo sitio — nunca URLs absolutas (open redirect). */
-function safeCallback(url: string | undefined): string {
-  // Sólo /admin…: nada de "//", "/\\" ni caracteres de control (/%09/evil.com).
-  if (!url || !/^\/admin(?:[/?#][^\s\\]*)?$/.test(url) || /[\u0000-\u001f]/.test(url)) return "/admin";
-  return url;
-}
-
-/**
- * Respaldo del login de administración con email y contraseña (tabla
- * public.users, filtrada por AUTH_SCOPE en el provider Credentials de
- * NextAuth). Reemplaza a /cuenta/login, que se eliminó junto con las cuentas
- * de cliente (oct-2026). La vía normal es /login (Google).
- */
-export default async function CredencialesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ callbackUrl?: string }>;
-}) {
-  const { callbackUrl } = await searchParams;
-  return <LoginCredenciales callbackUrl={safeCallback(callbackUrl)} />;
+/** El login con contraseña se eliminó (nov-2026): ahora es con código por correo. */
+export default function CredencialesPage() {
+  redirect('/login');
 }

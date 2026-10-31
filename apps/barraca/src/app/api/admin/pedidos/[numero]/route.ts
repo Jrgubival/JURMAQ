@@ -19,7 +19,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
-  const session = await requirePermission('barraca_cotizaciones', 'update');
+  const session = await requirePermission('barraca_ventas', 'update');
   if (!session) return forbiddenResponse();
 
   const { numero } = await params;
@@ -39,7 +39,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       listo_retiro: ['en_preparacion'],
       despachado: ['en_preparacion'],
       entregado: ['listo_retiro', 'despachado'],
-      cancelado: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado', 'pago_discrepancia'],
+      // 'pago_discrepancia' no: se cobró un monto distinto y sólo se cierra con
+      // 'No aprobar' + devolución (sólo administrador).
+      cancelado: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado'],
     };
     if (!desde[parsed.data.estado]?.includes(pedido.estado)) {
       return NextResponse.json({ error: 'Ese cambio de estado no corresponde para este pedido' }, { status: 409 });
@@ -63,6 +65,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     } else {
       await store.cambiarEstado(numero, parsed.data.estado);
     }
+    // El cambio ya quedó en el historial (trigger / store); acá se firma con quién lo hizo.
+    const motivo = parsed.data.estado === 'pagado' ? 'Transferencia confirmada en el panel' : null;
+    await pedidos().firmarEvento(numero, parsed.data.estado, session.user?.email ?? null, motivo).catch((e) =>
+      logSafeError('admin-pedido-evento-error', { numero, error: String(e) }),
+    );
     logSafe('admin-pedido-estado', { numero, estado: parsed.data.estado, por: session.user?.id ?? null });
     return NextResponse.json({ ok: true });
   } catch (error) {

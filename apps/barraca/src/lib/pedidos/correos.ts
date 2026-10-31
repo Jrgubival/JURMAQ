@@ -5,7 +5,7 @@ import { avisosBarraca } from '@jurmaq/shared/mail/barraca';
 import { logSafeError } from '@jurmaq/shared/logging';
 import { HORARIO_BARRACA } from '@jurmaq/shared/seo';
 import { montoDespacho, textoDespacho } from '@/lib/despacho/texto';
-import { ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type Pedido } from './index';
+import { ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type DocumentoTributario, type Pedido } from './index';
 import { urlVerPedido, urlOpinar } from './enlace';
 import { MIME_COMPROBANTE, type TipoComprobante } from './comprobantes';
 
@@ -78,6 +78,17 @@ function bloquePago(p: Pedido): string {
   return `<p style="margin:0;">Estado del pago: <strong>${escapeHtml(ETIQUETA_ESTADO[p.estado])}</strong>.</p>`;
 }
 
+/** Boleta o factura pedida (y los datos de la empresa si es factura). */
+function bloqueDocumento(p: Pedido): string {
+  if (p.documento_solicitado !== 'factura') {
+    return `<p style="margin:0;font-size:14px;">Documento: <strong>Boleta</strong>.</p>`;
+  }
+  const fila = (k: string, v: string | null | undefined) =>
+    v ? `<tr><td style="padding:2px 12px 2px 0;color:#6b7280;">${k}</td><td style="padding:2px 0;">${escapeHtml(v)}</td></tr>` : '';
+  return `<p style="margin:0 0 4px;font-size:14px;">Documento: <strong>Factura</strong></p>
+<table role="presentation" style="font-size:14px;">${fila('Razón social', p.factura_razon_social)}${fila('RUT', p.factura_rut)}${fila('Giro', p.factura_giro)}${fila('Dirección', p.factura_direccion)}</table>`;
+}
+
 /** Botón con el enlace de acceso al pedido, para cualquier navegador. */
 function bloqueVerPedido(p: Pedido): string {
   return `<div style="margin:0 0 16px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
@@ -91,6 +102,7 @@ ${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad,
 ${p.entrega === 'despacho' ? `<p style="margin:16px 0 0;font-size:14px;">Despacho: ${escapeHtml(montoDespacho(p))}</p>` : ''}
 <p style="margin:16px 0;font-size:16px;"><strong>Total: ${formatCLP(p.total)}</strong> <span style="color:#6b7280;font-size:13px;">IVA incluido${p.entrega === 'despacho' && p.costo_despacho == null ? ' · despacho aparte' : ''}</span></p>
 <div style="margin:0 0 16px;">${bloqueEntrega(p)}</div>
+<div style="margin:0 0 16px;">${bloqueDocumento(p)}</div>
 <div style="margin:0 0 16px;">${bloquePago(p)}</div>
 ${conEnlace ? bloqueVerPedido(p) : ''}
 <p style="margin:0;color:#6b7280;font-size:12px;">Esta compra se rige por nuestros <a href="${URL_TERMINOS}" style="color:#6b7280;">Términos y Condiciones</a> (${URL_TERMINOS}), que aceptaste al comprar. Puedes guardarlos o imprimirlos desde ese enlace.</p>`;
@@ -208,7 +220,7 @@ export async function correoPedirOpinion(p: Pedido, urlBajaCorreos: string): Pro
   }
 }
 
-const URL_PANEL = `${(env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl').replace(/\/$/, '')}/admin/pedidos`;
+const URL_PANEL = `${(env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl').replace(/\/$/, '')}/admin/ventas`;
 
 export interface AdjuntoComprobante {
   contenido: Buffer;
@@ -233,7 +245,7 @@ export function armarCorreoTransferenciaInformada(p: Pedido, adjunto: AdjuntoCom
 <tr><td style="padding:3px 12px 3px 0;color:#6b7280;">Nota</td><td>${nota ? escapeHtml(nota) : '<span style="color:#6b7280;">(sin nota)</span>'}</td></tr>
 <tr><td style="padding:3px 12px 3px 0;color:#6b7280;">Comprobante</td><td>${adjunto ? 'Adjunto en este correo' : '<span style="color:#6b7280;">No subió comprobante</span>'}</td></tr>
 </table>
-<div style="margin:0 0 8px;">${renderButton({ href: `${URL_PANEL}?n=${encodeURIComponent(p.numero)}`, label: 'Abrir el pedido en el panel', color: 'navy' })}</div>`;
+<div style="margin:0 0 8px;">${renderButton({ href: `${URL_PANEL}/${encodeURIComponent(p.numero)}`, label: 'Abrir el pedido en el panel', color: 'navy' })}</div>`;
   return {
     to: avisosBarraca(),
     subject: titulo,
@@ -254,6 +266,40 @@ export async function correoTransferenciaInformada(p: Pedido, adjunto: AdjuntoCo
     return r.error ? 'error' : 'enviado';
   } catch (error) {
     logSafeError('pedido-correo-transferencia-informada', { numero: p.numero, error: String(error) });
+    return 'error';
+  }
+}
+
+/**
+ * Manda al cliente la boleta o factura (PDF adjunto) que subió la barraca en
+ * el panel. Plantilla fija; todo dato del pedido va con escapeHtml. Nunca
+ * lanza. En pruebas locales no se envía ('omitido').
+ */
+export function armarCorreoDocumentoTributario(p: Pedido, tipo: DocumentoTributario, pdf: Buffer) {
+  const nombreDoc = tipo === 'factura' ? 'factura' : 'boleta';
+  const titulo = `Tu ${nombreDoc} del pedido ${p.numero}`;
+  const bodyHtml = `
+<p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, te adjuntamos la ${nombreDoc} de tu pedido <strong>${escapeHtml(p.numero)}</strong> por <strong>${formatCLP(p.total)}</strong>.</p>
+${tipo === 'factura' && p.factura_razon_social ? `<p style="margin:0 0 12px;font-size:14px;color:#374151;">Emitida a ${escapeHtml(p.factura_razon_social)}${p.factura_rut ? ` · RUT ${escapeHtml(p.factura_rut)}` : ''}.</p>` : ''}
+<div style="margin:0 0 16px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
+<p style="margin:0;color:#6b7280;font-size:12px;">Si algún dato está mal, respóndenos este correo o escríbenos a contacto@jurmaq.cl.</p>`;
+  return {
+    to: p.email,
+    subject: `${titulo} | Barraca JURMAQ`,
+    html: renderEmailLayout({ title: titulo, preheader: `${nombreDoc[0].toUpperCase()}${nombreDoc.slice(1)} adjunta en PDF`, bodyHtml }),
+    skipAdminBcc: true as const,
+    attachments: [{ filename: `${nombreDoc}-${p.numero}.pdf`, content: pdf, contentType: 'application/pdf' }],
+  };
+}
+
+export async function correoDocumentoTributario(p: Pedido, tipo: DocumentoTributario, pdf: Buffer): Promise<'enviado' | 'omitido' | 'error'> {
+  const correo = armarCorreoDocumentoTributario(p, tipo, pdf);
+  if (modoPrueba()) return 'omitido';
+  try {
+    const r = await transporter.sendMail(correo);
+    return r.error ? 'error' : 'enviado';
+  } catch (error) {
+    logSafeError('pedido-correo-documento', { numero: p.numero, error: String(error) });
     return 'error';
   }
 }

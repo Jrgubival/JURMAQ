@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { can, type Module, type Action } from '@jurmaq/shared/roles';
 import { ADMIN_NAV, adminHref, esExterno } from '@jurmaq/shared/admin/nav';
@@ -11,17 +11,15 @@ import { env } from '@jurmaq/shared/env';
 import NotificationsBell from './NotificationsBell';
 
 /**
- * AdminShell — panel de la tienda en línea de la barraca (barraca.jurmaq.cl/admin).
+ * AdminShell — panel de la tienda en línea (barraca.jurmaq.cl/admin).
  *
- * Pensado para usarse en el celular en el local: cuatro secciones fijas
- * (Resumen, Pedidos, Productos, Despacho) en una barra inferior en el
- * teléfono y en una barra lateral en el computador. El resto de las
- * herramientas (importar precios, imágenes, cotizaciones, el panel de
- * arriendo, etc.) sigue existiendo y con sus permisos, pero queda dentro de
- * "Más herramientas" para no estorbar.
+ * Pensado para atender ventas desde el celular en el mesón: barra superior
+ * azul marino con la marca, y en el teléfono una barra inferior con las
+ * secciones (sólo si hay más de una: el vendedor ve sólo Ventas). En el
+ * computador, barra lateral.
  *
  * La visibilidad es sólo comodidad: cada página y cada /api/admin/* valida el
- * permiso en el servidor.
+ * permiso en el servidor (el vendedor recibe 403 en Productos y Despacho).
  */
 
 interface ItemTienda {
@@ -29,50 +27,63 @@ interface ItemTienda {
   href: string;
   module: Module;
   action?: Action;
+  /** Otras rutas que marcan esta sección como activa. */
+  tambien?: string[];
   icon: React.ReactNode;
 }
 
 const ic = (d: string) => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+  <svg className="w-[22px] h-[22px] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d={d} />
   </svg>
 );
 
 const TIENDA: ItemTienda[] = [
-  { label: 'Resumen', href: '/admin', module: 'barraca_cotizaciones', icon: ic('M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1') },
-  { label: 'Pedidos', href: '/admin/pedidos', module: 'barraca_cotizaciones', icon: ic('M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z') },
+  { label: 'Ventas', href: '/admin', module: 'barraca_ventas', tambien: ['/admin/ventas', '/admin/pedidos'], icon: ic('M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 2.3c-.6.6-.2 1.7.7 1.7H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z') },
   { label: 'Productos', href: '/admin/productos', module: 'barraca_productos', icon: ic('M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4') },
-  { label: 'Despacho', href: '/admin/despacho', module: 'barraca_precios', icon: ic('M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0') },
+  { label: 'Despacho', href: '/admin/despacho', module: 'barraca_precios', icon: ic('M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1') },
 ];
 
 /** Rutas propias de la tienda (no se repiten en "Más herramientas"). */
-const RUTAS_TIENDA = new Set(['/admin/pedidos', '/admin/productos', '/admin/dashboard']);
+const RUTAS_TIENDA = new Set(['/admin', '/admin/pedidos', '/admin/productos', '/admin/despacho', '/admin/dashboard']);
+
+function Marca({ chica = false }: { chica?: boolean }) {
+  return (
+    <span className="flex flex-col leading-none">
+      <span className={`cifra font-bold tracking-[0.06em] text-white ${chica ? 'text-[19px]' : 'text-[22px]'}`}>JURMAQ</span>
+      <span aria-hidden="true" className="mt-1 h-[3px] w-full bg-marca-600" />
+      <span className="mt-1 text-[10.5px] font-medium uppercase tracking-[0.14em] text-white/65">Barraca · Panel</span>
+    </span>
+  );
+}
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const [masAbierto, setMasAbierto] = useState(false);
   const pathname = usePathname() || '';
-  const router = useRouter();
   const { data: session } = useSession();
   const role = (session?.user as { role?: string } | undefined)?.role;
   const constructoraUrl = env.NEXT_PUBLIC_CONSTRUCTORA_URL || undefined;
 
-  const handleSignOut = async () => {
-    await signOut({ redirect: false });
-    router.push('/login');
+  // Siempre a /login (código por correo). Recarga completa: no queda nada del panel en memoria.
+  const salir = async () => {
+    await signOut({ redirect: false }).catch(() => {});
+    window.location.assign('/login');
   };
 
-  const isActive = (href: string) => (href === '/admin' ? pathname === '/admin' : pathname.startsWith(href));
+  const activo = (it: ItemTienda) =>
+    it.href === '/admin'
+      ? pathname === '/admin' || (it.tambien ?? []).some((r) => pathname.startsWith(r))
+      : pathname.startsWith(it.href);
 
-  const tienda = TIENDA.filter((it) => !session || can(role, it.module, it.action ?? 'read'));
+  // Sin sesión todavía (cargando) no se muestra nada que el rol no pueda ver.
+  const tienda = TIENDA.filter((it) => !!session && can(role, it.module, it.action ?? 'read'));
   const otras = ADMIN_NAV.filter(
     (it) => can(role, it.module, it.action ?? 'read') && !(it.app === 'barraca' && RUTAS_TIENDA.has(it.path)),
   );
-  const titulo = TIENDA.find((it) => isActive(it.href))?.label
-    ?? ADMIN_NAV.find((it) => it.app === 'barraca' && pathname.startsWith(it.path) && it.path !== '/admin')?.label
-    ?? 'Panel';
+  const conBarraInferior = tienda.length > 1;
 
   const listaOtras = (
-    <ul className="space-y-1">
+    <ul className="space-y-0.5">
       {otras.map((item) => {
         const externo = esExterno(item, 'barraca');
         const href = adminHref(item, 'barraca', { constructora: constructoraUrl });
@@ -81,10 +92,10 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <Link
               href={href}
               onClick={() => setMasAbierto(false)}
-              className="flex items-center justify-between min-h-[44px] px-3 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+              className="flex items-center justify-between min-h-[44px] px-3 rounded-lg text-[14px] hover:bg-black/5"
             >
               <span>{item.label}</span>
-              {externo && <span className="text-[11px] text-gray-400">jurmaq.cl ↗</span>}
+              {externo && <span className="text-[11px] opacity-60">jurmaq.cl ↗</span>}
             </Link>
           </li>
         );
@@ -93,113 +104,139 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 lg:flex">
+    <div className="panel-ventas min-h-screen bg-[#FBFBFA] text-[#111111] lg:flex">
       {/* Barra lateral (computador) */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-60 lg:shrink-0 lg:sticky lg:top-0 lg:h-screen bg-white border-r border-gray-200">
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-gray-100">
-          <span className="w-9 h-9 rounded-lg bg-orange-600 text-white font-black flex items-center justify-center">B</span>
-          <div className="leading-tight">
-            <p className="font-bold text-gray-900">Tienda Barraca</p>
-            <p className="text-xs text-gray-500">Panel JURMAQ</p>
-          </div>
+      <aside className="sobre-navy hidden lg:flex lg:flex-col lg:w-[232px] lg:shrink-0 lg:sticky lg:top-0 lg:h-screen bg-navy-950 text-white">
+        <div className="px-6 pt-7 pb-6">
+          <Link href="/admin" aria-label="Ventas" className="inline-block">
+            <Marca />
+          </Link>
         </div>
-        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Secciones de la tienda">
-          <ul className="space-y-1">
+        <nav className="flex-1 overflow-y-auto px-3" aria-label="Secciones del panel">
+          <ul className="space-y-0.5">
             {tienda.map((it) => (
               <li key={it.href}>
                 <Link
                   href={it.href}
-                  aria-current={isActive(it.href) ? 'page' : undefined}
-                  className={`flex items-center gap-3 min-h-[44px] px-3 rounded-lg text-sm font-semibold ${
-                    isActive(it.href) ? 'bg-orange-50 text-orange-700' : 'text-gray-700 hover:bg-gray-100'
+                  aria-current={activo(it) ? 'page' : undefined}
+                  className={`flex items-center gap-3 min-h-[44px] px-3 rounded-lg text-[14.5px] font-medium transition-colors ${
+                    activo(it) ? 'bg-white/[0.09] text-white' : 'text-white/70 hover:text-white hover:bg-white/[0.05]'
                   }`}
                 >
                   {it.icon}
-                  {it.label}
+                  <span className="flex-1">{it.label}</span>
+                  {activo(it) && <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-marca-600" />}
                 </Link>
               </li>
             ))}
           </ul>
           {otras.length > 0 && (
-            <details className="mt-6 pt-4 border-t border-gray-100 group">
-              <summary className="cursor-pointer list-none flex items-center justify-between min-h-[44px] px-3 text-xs font-bold uppercase tracking-wide text-gray-500">
+            <details className="mt-6 pt-4 border-t border-white/10 group text-white/80">
+              <summary className="cursor-pointer list-none flex items-center justify-between min-h-[44px] px-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-white/55 hover:text-white/80">
                 Más herramientas
                 <span aria-hidden="true" className="transition-transform group-open:rotate-90">›</span>
               </summary>
-              <div className="mt-1">{listaOtras}</div>
+              <div className="mt-1 [&_a:hover]:bg-white/[0.06]">{listaOtras}</div>
             </details>
           )}
         </nav>
-        <div className="px-3 py-3 border-t border-gray-100">
-          <p className="px-3 text-xs text-gray-500 truncate">{session?.user?.email || ''}</p>
-          <button onClick={handleSignOut} className="mt-1 w-full text-left min-h-[44px] px-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100">
+        <div className="px-3 py-4 border-t border-white/10">
+          <p className="px-3 text-[12px] text-white/55 truncate">{session?.user?.email || ''}</p>
+          <button onClick={salir} className="mt-1 w-full text-left min-h-[44px] px-3 rounded-lg text-[14px] font-medium text-white/80 hover:text-white hover:bg-white/[0.06]">
             Cerrar sesión
           </button>
         </div>
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-        {/* Barra superior */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 h-14 lg:h-16 px-4 lg:px-8 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="lg:hidden w-8 h-8 rounded-lg bg-orange-600 text-white text-sm font-black flex items-center justify-center shrink-0">B</span>
-            <h1 className="text-base lg:text-lg font-bold text-gray-900 truncate">{titulo}</h1>
-          </div>
-          <div className="flex items-center gap-1">
+        {/* Barra superior (celular) */}
+        <header className="sobre-navy lg:hidden sticky top-0 z-30 bg-navy-950 text-white h-14 pl-4 pr-1 flex items-center justify-between gap-2 pt-[env(safe-area-inset-top)] box-content">
+          <Link href="/admin" aria-label="Ventas" className="min-h-[44px] flex items-center">
+            <Marca chica />
+          </Link>
+          <div className="flex items-center">
             <NotificationsBell />
             <button
               type="button"
               onClick={() => setMasAbierto(true)}
-              className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
-              aria-label="Más herramientas y cerrar sesión"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10"
+              aria-label="Menú: más herramientas y cerrar sesión"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M4 7h16M4 12h16M4 17h16" />
               </svg>
             </button>
           </div>
         </header>
 
-        {/* pb para que la barra inferior no tape el contenido en el celular */}
-        <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-4 lg:px-8 lg:py-8 pb-24 lg:pb-8">{children}</main>
+        {/* Campana en el computador: arriba a la derecha, sin barra extra. */}
+        <div className="hidden lg:flex justify-end items-center h-14 px-8 relative z-20 text-navy-950 [&_button:hover]:bg-black/5">
+          <NotificationsBell />
+        </div>
+
+        <main className={`flex-1 w-full max-w-[1180px] mx-auto px-4 pt-4 lg:px-10 lg:pt-0 ${conBarraInferior ? 'pb-28' : 'pb-10'} lg:pb-12`}>
+          {children}
+        </main>
       </div>
 
-      {/* Barra inferior (celular) */}
-      <nav
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]"
-        aria-label="Secciones de la tienda"
-      >
-        <ul className="grid" style={{ gridTemplateColumns: `repeat(${Math.max(tienda.length, 1)}, minmax(0, 1fr))` }}>
-          {tienda.map((it) => (
-            <li key={it.href}>
-              <Link
-                href={it.href}
-                aria-current={isActive(it.href) ? 'page' : undefined}
-                className={`flex flex-col items-center justify-center gap-0.5 min-h-[60px] text-[11px] font-semibold ${
-                  isActive(it.href) ? 'text-orange-700' : 'text-gray-500'
-                }`}
-              >
-                {it.icon}
-                {it.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {/* Barra inferior (celular), sólo si hay más de una sección */}
+      {conBarraInferior && (
+        <nav
+          className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-[#E6E4DF] pb-[env(safe-area-inset-bottom)]"
+          aria-label="Secciones del panel"
+        >
+          <ul className="grid" style={{ gridTemplateColumns: `repeat(${tienda.length}, minmax(0, 1fr))` }}>
+            {tienda.map((it) => (
+              <li key={it.href}>
+                <Link
+                  href={it.href}
+                  aria-current={activo(it) ? 'page' : undefined}
+                  className={`relative flex flex-col items-center justify-center gap-1 min-h-[58px] text-[11.5px] font-semibold ${
+                    activo(it) ? 'text-navy-950' : 'text-[#6B6A66]'
+                  }`}
+                >
+                  {activo(it) && <span aria-hidden="true" className="absolute top-0 inset-x-6 h-[3px] rounded-b bg-marca-600" />}
+                  {it.icon}
+                  {it.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
 
-      {/* Hoja "Más" (celular) */}
+      {/* Hoja "Menú" (celular) */}
       {masAbierto && (
-        <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Más herramientas">
-          <button className="absolute inset-0 bg-black/40" aria-label="Cerrar" onClick={() => setMasAbierto(false)} />
-          <div className="absolute bottom-0 inset-x-0 max-h-[80vh] overflow-y-auto bg-white rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-            <div className="flex items-center justify-between mb-2">
-              <p className="font-bold text-gray-900">Más herramientas</p>
-              <button onClick={() => setMasAbierto(false)} className="min-w-[44px] min-h-[44px] text-gray-500" aria-label="Cerrar">✕</button>
+        <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Menú">
+          <button className="absolute inset-0 bg-navy-950/50" aria-label="Cerrar menú" onClick={() => setMasAbierto(false)} />
+          <div className="absolute bottom-0 inset-x-0 max-h-[85vh] overflow-y-auto bg-white rounded-t-2xl px-3 pt-2 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <div className="flex items-center justify-between pl-3">
+              <p className="text-[15px] font-semibold text-navy-950">Menú</p>
+              <button onClick={() => setMasAbierto(false)} className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-[#6B6A66]" aria-label="Cerrar menú">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeWidth={2} d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
             </div>
-            {listaOtras}
-            <div className="mt-3 pt-3 border-t border-gray-100">
-              <p className="px-3 text-xs text-gray-500 truncate">{session?.user?.email || ''}</p>
-              <button onClick={handleSignOut} className="mt-1 w-full text-left min-h-[44px] px-3 rounded-lg text-sm font-semibold text-red-700 hover:bg-red-50">
+            {tienda.length > 0 && (
+              <ul className="mb-2 pb-2 border-b border-[#EFEDE8]">
+                {tienda.map((it) => (
+                  <li key={it.href}>
+                    <Link href={it.href} onClick={() => setMasAbierto(false)} className="flex items-center gap-3 min-h-[48px] px-3 rounded-lg text-[15px] font-medium text-navy-950 hover:bg-black/5">
+                      {it.icon}
+                      {it.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {otras.length > 0 && (
+              <>
+                <p className="px-3 pt-1 pb-1 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-[#8A8884]">Más herramientas</p>
+                <div className="text-[#2B2A28]">{listaOtras}</div>
+              </>
+            )}
+            <div className="mt-2 pt-2 border-t border-[#EFEDE8]">
+              <p className="px-3 py-1 text-[12.5px] text-[#6B6A66] truncate">{session?.user?.email || ''}</p>
+              <button onClick={salir} className="w-full text-left min-h-[48px] px-3 rounded-lg text-[15px] font-semibold text-marca-700 hover:bg-marca-50">
                 Cerrar sesión
               </button>
             </div>

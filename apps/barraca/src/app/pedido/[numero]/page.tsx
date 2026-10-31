@@ -237,6 +237,18 @@ export default async function PedidoPage({
             {textoDespacho(pedido).detalle}
           </p>
         )}
+        <p className="mt-4 pt-4 border-t border-gray-100 text-[15px] text-[#5A5A57]">
+          {pedido.documento_solicitado === "factura" ? (
+            <>
+              <strong className="text-[#111111]">Factura</strong> a {pedido.factura_razon_social}
+              {pedido.factura_rut ? <> · RUT <span className="tabular-nums">{pedido.factura_rut}</span></> : null}.
+              {pedido.factura_giro ? <><br />Giro: {pedido.factura_giro}</> : null}
+              {pedido.factura_direccion ? <><br />{pedido.factura_direccion}</> : null}
+            </>
+          ) : (
+            <><strong className="text-[#111111]">Boleta</strong>. Te la mandamos por correo.</>
+          )}
+        </p>
       </div>
 
       <div className="text-center mt-8">

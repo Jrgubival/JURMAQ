@@ -122,3 +122,31 @@
 @media (prefers-reduced-motion: reduce) {
   .menu-baja { animation: none; }
 }
+
+/* ---------------------------------------------------------------------------
+   Panel de ventas (/admin) — "mesón de la barraca"
+
+   Las cifras van en Oswald (la letra de los titulares de la tienda), con
+   números tabulares: se leen como el letrero de precios del local y no
+   bailan al cambiar. El resto del panel es Geist.
+   --------------------------------------------------------------------------- */
+.cifra {
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: 0.01em;
+}
+.panel-ventas {
+  font-variant-numeric: tabular-nums;
+}
+.panel-ventas ::selection {
+  background: #081428;
+  color: #ffffff;
+}
+.panel-ventas :focus-visible {
+  outline: 2px solid #c90319;
+  outline-offset: 2px;
+}
+.panel-ventas .sobre-navy :focus-visible {
+  outline-color: #ffffff;
+}

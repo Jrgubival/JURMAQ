@@ -518,7 +518,8 @@ export default function BarracaShell({
   // se renderiza encima quedan dos headers, dos toasts, dos widgets de chat,
   // etc. SEO: /admin/* está disallow en robots.txt y noindex en metadata,
   // así que ocultar el shell público acá no impacta crawling.
-  const isAdmin = pathname?.startsWith("/admin");
+  // El ingreso al panel (/login) tampoco lleva el header ni el pie de la tienda.
+  const isAdmin = pathname?.startsWith("/admin") || pathname === "/login" || pathname?.startsWith("/login/");
   if (isAdmin) {
     return <>{children}</>;
   }

@@ -22,7 +22,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
-  const session = await requirePermission('barraca_cotizaciones', 'update');
+  const session = await requirePermission('barraca_ventas', 'update');
   if (!session) return forbiddenResponse();
 
   const { numero } = await params;

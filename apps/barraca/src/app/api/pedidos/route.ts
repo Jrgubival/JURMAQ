@@ -43,10 +43,24 @@ const schema = z
     // Fail-closed: sin la casilla marcada no hay pedido (Ley 19.496, art. 12 A).
     aceptaTerminos: z.literal(true),
     aceptaOfertas: z.boolean().optional().default(false),
+    // Boleta (por defecto) o factura. Con factura, los datos de la empresa son obligatorios.
+    documento: z.enum(['boleta', 'factura']).optional().default('boleta'),
+    facturaRazonSocial: texto(150).optional().default(''),
+    facturaRut: texto(14).optional().default(''),
+    facturaGiro: texto(120).optional().default(''),
+    facturaDireccion: texto(150).optional().default(''),
+    facturaComuna: texto(60).optional().default(''),
   })
   .superRefine((d, ctx) => {
     if (d.rut && !rutValido(d.rut)) ctx.addIssue({ code: 'custom', path: ['rut'], message: 'RUT inválido' });
     if (d.telefono.replace(/\D/g, '').length < 8) ctx.addIssue({ code: 'custom', path: ['telefono'], message: 'Teléfono inválido' });
+    if (d.documento === 'factura') {
+      if (d.facturaRazonSocial.length < 2) ctx.addIssue({ code: 'custom', path: ['facturaRazonSocial'], message: 'Falta la razón social' });
+      if (!rutValido(d.facturaRut)) ctx.addIssue({ code: 'custom', path: ['facturaRut'], message: 'RUT de la empresa inválido' });
+      if (d.facturaGiro.length < 2) ctx.addIssue({ code: 'custom', path: ['facturaGiro'], message: 'Falta el giro' });
+      if (d.facturaDireccion.length < 5) ctx.addIssue({ code: 'custom', path: ['facturaDireccion'], message: 'Falta la dirección comercial' });
+      if (d.facturaComuna.length < 2) ctx.addIssue({ code: 'custom', path: ['facturaComuna'], message: 'Falta la comuna' });
+    }
     if (d.entrega === 'despacho') {
       if (d.direccion.length < 5) ctx.addIssue({ code: 'custom', path: ['direccion'], message: 'Falta la dirección' });
       if (!d.comuna) ctx.addIssue({ code: 'custom', path: ['comuna'], message: 'Falta la comuna' });
@@ -167,6 +181,17 @@ export async function POST(request: NextRequest) {
           acepta_ofertas: d.aceptaOfertas,
           costo_despacho: costoDespacho, // null = a coordinar
           total: subtotal + (costoDespacho ?? 0),
+          // Sólo se mandan las columnas de factura cuando la piden: un pedido
+          // con boleta usa el default de la base ('boleta').
+          ...(d.documento === 'factura'
+            ? {
+                documento_solicitado: 'factura' as const,
+                factura_razon_social: d.facturaRazonSocial,
+                factura_rut: formatearRut(d.facturaRut),
+                factura_giro: d.facturaGiro,
+                factura_direccion: `${d.facturaDireccion}, ${d.facturaComuna}`,
+              }
+            : {}),
         });
       } catch (e) {
         if ((e as { code?: string }).code !== '23505') throw e; // número repetido: otro intento
@@ -174,7 +199,7 @@ export async function POST(request: NextRequest) {
     }
     if (!pedido) throw new Error('No se pudo generar un número de pedido');
 
-    logSafe('pedido-creado', { numero: pedido.numero, metodo: d.metodoPago, total: pedido.total, email: maskEmail(d.email) });
+    logSafe('pedido-creado', { numero: pedido.numero, metodo: d.metodoPago, total: pedido.total, documento: d.documento, email: maskEmail(d.email) });
 
     let redirect = `/pedido/${pedido.numero}`;
     if (d.metodoPago === 'webpay') {

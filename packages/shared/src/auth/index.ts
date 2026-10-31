@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import { CredentialsSignin } from 'next-auth';
 import Google from 'next-auth/providers/google';
 import { authConfig } from './config';
 import bcrypt from 'bcryptjs';
@@ -7,6 +8,53 @@ import { rateLimitPersistent } from '../rate-limit';
 import { headers } from 'next/headers';
 import { env } from '@jurmaq/shared/env';
 import { maskEmail, maskIp } from '../logging';
+import { esScopeBarraca, verificarCodigo } from './codigo-correo';
+
+/** Barraca (nov-2026): el panel entra SÓLO con código por correo. */
+const ES_BARRACA = esScopeBarraca();
+
+class CodigoInvalido extends CredentialsSignin {
+  code = 'codigo_invalido';
+}
+class DemasiadosIntentos extends CredentialsSignin {
+  code = 'limite';
+}
+
+/**
+ * Provider de barraca.jurmaq.cl: correo + código de 6 dígitos (ver
+ * ./codigo-correo.ts). No se monta en constructora.
+ */
+const proveedorCodigoCorreo = Credentials({
+  id: 'codigo-correo',
+  name: 'Código por correo',
+  credentials: {
+    email: { label: 'Correo', type: 'email' },
+    codigo: { label: 'Código', type: 'text' },
+  },
+  async authorize(credentials) {
+    let ip = 'unknown';
+    try {
+      const hdrs = await headers();
+      const fwd = hdrs.get('x-forwarded-for') || '';
+      ip = fwd.split(',')[0].trim() || hdrs.get('x-real-ip') || 'unknown';
+    } catch {
+      // Sin headers no se puede aplicar el límite por IP → denegar.
+      throw new DemasiadosIntentos();
+    }
+    const r = await verificarCodigo(credentials?.email, credentials?.codigo, ip);
+    if (!r.ok) {
+      if (r.motivo === 'limite') throw new DemasiadosIntentos();
+      throw new CodigoInvalido();
+    }
+    return {
+      id: r.usuario.id,
+      name: r.usuario.name,
+      email: r.usuario.email,
+      role: r.usuario.role,
+      scope: r.usuario.scope,
+    };
+  },
+});
 
 /**
  * SSO Google (admins): busca el usuario cuyo `email` o `sso_email` coincida
@@ -39,7 +87,9 @@ async function findAdminPorSsoEmail(email: string) {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  providers: [
+  providers: ES_BARRACA
+    ? [proveedorCodigoCorreo]
+    : [
     // SSO Google para admins — solo se monta si hay credenciales OAuth
     // configuradas (en su ausencia queda únicamente el login con password).
     ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
