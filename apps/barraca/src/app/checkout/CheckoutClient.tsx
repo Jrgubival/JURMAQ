@@ -196,7 +196,7 @@ function EstadoDespacho({ cotizacion, onRetiro }: { cotizacion: Cotizacion | nul
 /** "Te faltan $X para despacho gratis" o "Despacho gratis", según la zona elegida. */
 function AvisoGratis({ zonaId, subtotal, alineado = "derecha" }: { zonaId: string; subtotal: number; alineado?: "derecha" | "izquierda" }) {
   const z = zonaEn(useZonas(), zonaId);
-  if (!z || z.gratisDesde == null) return null;
+  if (!z || z.costo === 0 || z.gratisDesde == null) return null;
   const falta = z.gratisDesde - subtotal;
   return (
     <p className={`text-xs mt-1.5 tabular-nums ${alineado === "derecha" ? "text-right" : "-mt-1"} ${falta <= 0 ? "text-[#2F7F4E] font-medium" : "text-[#787774]"}`}>
@@ -518,7 +518,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                       <option value="">Elige tu zona</option>
                       {zonas.map((z) => (
                         <option key={z.id} value={z.id}>
-                          {z.nombre} · {formatCLP(z.costo)}
+                          {z.nombre} · {z.costo === 0 ? "Gratis" : formatCLP(z.costo)}
                         </option>
                       ))}
                       <option value={OTRA_COMUNA}>Mi comuna no está en la lista</option>

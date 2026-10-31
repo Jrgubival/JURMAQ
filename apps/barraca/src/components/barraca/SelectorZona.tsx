@@ -48,6 +48,7 @@ export function useZonaDespacho(): [ZonaDespacho | null, (z: ZonaDespacho) => vo
 export const EVENTO_MENU = "barraca:menu-abierto";
 
 export function resumenZona(z: ZonaDespacho): string {
+  if (z.costo === 0) return "Gratis";
   return z.gratisDesde != null
     ? `${formatCLP(z.costo)} · gratis desde ${formatCLP(z.gratisDesde)}`
     : formatCLP(z.costo);
@@ -169,8 +170,8 @@ export default function SelectorZona({ variante }: { variante: "escritorio" | "c
                       {z.nombre}
                     </span>
                     <span className="text-right leading-tight tabular-nums">
-                      <span className="block text-xs text-gray-600">{formatCLP(z.costo)}</span>
-                      {z.gratisDesde != null && <span className="block text-[11px] text-gray-400">gratis desde {formatCLP(z.gratisDesde)}</span>}
+                      <span className={`block text-xs ${z.costo === 0 ? "text-[#2F7F4E] font-medium" : "text-gray-600"}`}>{z.costo === 0 ? "Gratis" : formatCLP(z.costo)}</span>
+                      {z.costo > 0 && z.gratisDesde != null && <span className="block text-[11px] text-gray-400">gratis desde {formatCLP(z.gratisDesde)}</span>}
                     </span>
                   </button>
                 </li>

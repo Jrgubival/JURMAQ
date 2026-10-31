@@ -27,7 +27,7 @@ export interface ZonaDespacho {
 }
 
 export const ZONAS_DESPACHO: ZonaDespacho[] = [
-  { id: 'molina', nombre: 'Molina', comuna: 'ZMO', costo: 5000, gratisDesde: 150000 },
+  { id: 'molina', nombre: 'Molina', comuna: 'ZMO', costo: 0, gratisDesde: null }, // gratis siempre (Jorge, 31-10-2026)
   { id: 'lontue', nombre: 'Lontué', comuna: 'ZMO', costo: 8000, gratisDesde: 250000 },
   { id: 'itahue', nombre: 'Itahue', comuna: 'ZMO', costo: 8000, gratisDesde: 250000 },
   { id: 'cumpeo', nombre: 'Cumpeo', comuna: 'RCL', costo: 10000, gratisDesde: 350000 },

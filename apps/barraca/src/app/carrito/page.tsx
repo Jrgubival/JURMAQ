@@ -22,7 +22,7 @@ function EntregaZona({ subtotal }: { subtotal: number }) {
       </div>
     );
   }
-  const gratis = zona.gratisDesde != null && subtotal >= zona.gratisDesde;
+  const gratis = zona.costo === 0 || (zona.gratisDesde != null && subtotal >= zona.gratisDesde);
   return (
     <div>
       <div className="flex justify-between gap-3">
