@@ -8,7 +8,7 @@ import { rateLimitPersistent } from '../rate-limit';
 import { headers } from 'next/headers';
 import { env } from '@jurmaq/shared/env';
 import { maskEmail, maskIp } from '../logging';
-import { esScopeBarraca, usuarioBarracaVigente, verificarCodigo } from './codigo-correo';
+import { esScopeBarraca, revisarSesionBarraca, verificarCodigo } from './codigo-correo';
 
 /** Barraca (nov-2026): el panel entra SÓLO con código por correo. */
 const ES_BARRACA = esScopeBarraca();
@@ -234,11 +234,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (ES_BARRACA) {
         const t = await authConfig.callbacks!.jwt!(params);
         if (!t) return null;
-        const u = await usuarioBarracaVigente(t.sub, t.email);
-        if (!u) {
+        const r = await revisarSesionBarraca(t.sub, t.email);
+        if (r.estado === 'revocada') {
+          // Una vez por sesión: al devolver null, NextAuth borra la cookie.
           console.warn('[barraca-sesion-cerrada]', { user: t.sub, email: maskEmail(String(t.email ?? '')) });
           return null;
         }
+        if (r.estado === 'sin_verificar') {
+          // La base no respondió: sin rol, este request no pasa los permisos
+          // (requirePermission), pero la sesión sigue y el rol vuelve a la
+          // siguiente revisión que sí responda.
+          delete t.role;
+          return t;
+        }
+        const u = r.usuario;
         t.role = u.role;
         t.scope = u.scope as 'barraca' | 'constructora' | 'both';
         t.name = u.name;

@@ -208,7 +208,7 @@ export type UsuarioBarraca = {
 };
 
 /** Fila de public.users por `email` exacto (no sso_email), scope barraca|both, en la allowlist. */
-async function buscarUsuario(email: string): Promise<UsuarioBarraca | null> {
+async function buscarUsuario(email: string, { lanzarSiFalla = false } = {}): Promise<UsuarioBarraca | null> {
   if (!LOGIN_BARRACA_PERMITIDOS.includes(email)) return null;
   const { data, error } = await (await db())
     .from('users')
@@ -216,6 +216,9 @@ async function buscarUsuario(email: string): Promise<UsuarioBarraca | null> {
     .eq('email', email)
     .in('scope', ['barraca', 'both'])
     .maybeSingle();
+  // En el login, un error de la base es "no" (fail-closed). En la revisión de
+  // una sesión ya abierta se distingue, para no echar a todos por un corte breve.
+  if (error && lanzarSiFalla) throw error;
   if (error || !data) return null;
   const fila = data as { id: string | number; name: string | null; email: string; role: string; scope: string };
   if (fila.email !== email || (fila.scope !== 'barraca' && fila.scope !== 'both')) return null;
@@ -236,28 +239,37 @@ const ROLES_PANEL = new Set(['admin', 'gerente', 'vendedor', 'operador', 'contad
 const CACHE_VIGENTE_MS = 30_000;
 const cacheVigente = new Map<string, { usuario: UsuarioBarraca | null; hasta: number }>();
 
+export type SesionBarraca =
+  | { estado: 'vigente'; usuario: UsuarioBarraca }
+  /** Cuenta fuera de la lista, borrada, sin rol del panel o con otro id: se cierra la sesión. */
+  | { estado: 'revocada' }
+  /** No se pudo consultar la base: se niega este request, sin cerrar la sesión. */
+  | { estado: 'sin_verificar' };
+
 /**
  * ¿La sesión (id + correo del token) sigue siendo de una cuenta permitida?
  * El correo debe estar en LOGIN_BARRACA_PERMITIDOS y la cuenta seguir en la
- * base con ese mismo id, scope barraca/both y un rol del panel. Cualquier
- * error → null (fail-closed: se cierra la sesión).
+ * base con ese mismo id, scope barraca/both y un rol del panel. Los errores
+ * de la base no se cachean.
  */
-export async function usuarioBarracaVigente(id: unknown, email: unknown): Promise<UsuarioBarraca | null> {
+export async function revisarSesionBarraca(id: unknown, email: unknown): Promise<SesionBarraca> {
   const correo = normalizarCorreo(email);
-  if (!correo || typeof id !== 'string' || !id) return null;
-  if (!LOGIN_BARRACA_PERMITIDOS.includes(correo)) return null;
+  if (!correo || typeof id !== 'string' || !id) return { estado: 'revocada' };
+  if (!LOGIN_BARRACA_PERMITIDOS.includes(correo)) return { estado: 'revocada' };
   const clave = `${id}:${correo}`;
   const previo = cacheVigente.get(clave);
-  if (previo && previo.hasta > Date.now()) return previo.usuario;
-  let usuario: UsuarioBarraca | null = null;
+  if (previo && previo.hasta > Date.now()) {
+    return previo.usuario ? { estado: 'vigente', usuario: previo.usuario } : { estado: 'revocada' };
+  }
+  let usuario: UsuarioBarraca | null;
   try {
-    const u = await buscarUsuario(correo);
+    const u = await buscarUsuario(correo, { lanzarSiFalla: true });
     usuario = u && u.id === id && ROLES_PANEL.has(u.role) ? u : null;
   } catch {
-    usuario = null;
+    return { estado: 'sin_verificar' };
   }
   cacheVigente.set(clave, { usuario, hasta: Date.now() + CACHE_VIGENTE_MS });
-  return usuario;
+  return usuario ? { estado: 'vigente', usuario } : { estado: 'revocada' };
 }
 
 // --- API ----------------------------------------------------------------------
