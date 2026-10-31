@@ -13,6 +13,8 @@ import ViewItemTracker from "@jurmaq/shared/ui/ViewItemTracker";
 import Breadcrumbs, { type BreadcrumbItem } from "@jurmaq/shared/ui/Breadcrumbs";
 import { getActiveCategoryDiscountMap, getDailyPromotions, applyDailyPromosToProducts } from "@/lib/promotions";
 import { formatCLP } from "@jurmaq/shared/format";
+import { pagoEnLineaDisponible } from "@/lib/pagos";
+import { CUOTAS_SIN_INTERES, CUOTAS_DESDE } from "@/lib/pagos/cuotas";
 import { resolvePrice } from "@/lib/pricing";
 import { vistaDesde, vistaPrecio } from "@/lib/precio-web";
 import { esComprable, unidadesDisponibles } from "@/lib/stock";
@@ -423,6 +425,12 @@ export default async function ProductoPage({
             {/* Precio web / precio normal (tachado) / No disponible: ver lib/precio-web.ts. */}
             <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
               <Precio vista={vista} unidad={producto.unidad} tamano="ficha" />
+              {/* Cuotas sin interés de Webpay: sólo con Webpay activo y desde $50.000. */}
+              {vista.disponible && vista.precioWeb >= CUOTAS_DESDE && pagoEnLineaDisponible() && (
+                <p className="mt-1 text-sm text-[#5A5A57] tabular-nums">
+                  o {CUOTAS_SIN_INTERES} cuotas sin interés de {formatCLP(Math.ceil(vista.precioWeb / CUOTAS_SIN_INTERES))}
+                </p>
+              )}
               {vista.disponible && <AvisoSinRetracto codigo={producto.codigo} />}
               {vista.disponible ? (
                 <p className="mt-3 text-sm text-[#5A5A57] flex flex-wrap items-center gap-x-2 gap-y-1">

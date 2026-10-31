@@ -542,7 +542,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
               <Opcion nombre="pago" valor="webpay" actual={metodo} onChange={(v) => setMetodo(v as "webpay")}
                 deshabilitada={!pagoEnLinea}
                 titulo="Pagar en línea con Webpay"
-                detalle={pagoEnLinea ? "Tarjeta de débito o crédito. El pedido queda confirmado al pagar." : "No disponible por ahora."} />
+                detalle={pagoEnLinea ? "Tarjeta de débito o crédito. Hasta 3 cuotas sin interés con tarjeta de crédito. El pedido queda confirmado al pagar." : "No disponible por ahora."} />
               <Opcion nombre="pago" valor="transferencia" actual={metodo} onChange={(v) => setMetodo(v as "transferencia")}
                 titulo="Transferencia bancaria"
                 detalle="Te mostramos los datos de la cuenta. Preparamos el pedido cuando veamos la transferencia." />
