@@ -15,11 +15,11 @@ export const PLAZO_TRANSFERENCIA_HORAS = 48;
 
 export async function vencerTransferencias(): Promise<{ vencidos: number; errores: number }> {
   const store = pedidos();
-  const corte = Date.now() - PLAZO_TRANSFERENCIA_HORAS * 3600_000;
-  const pendientes = await store.listar({ estado: 'pendiente_pago', limite: 500 });
+  const corte = new Date(Date.now() - PLAZO_TRANSFERENCIA_HORAS * 3600_000).toISOString();
+  // Sólo los que corresponden, y pocos por vez: también corre al abrir el panel.
+  const pendientes = await store.transferenciasPorVencer(corte, 20);
   const r = { vencidos: 0, errores: 0 };
   for (const p of pendientes) {
-    if (p.metodo_pago !== 'transferencia' || Date.parse(p.created_at) > corte) continue;
     try {
       if ((await store.vencer(p.numero, PLAZO_TRANSFERENCIA_HORAS)) !== 'vencido') continue;
       r.vencidos++;

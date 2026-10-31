@@ -54,10 +54,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (parsed.data.accion === 'cuenta') {
       const d = parsed.data;
       if (!rutValido(d.rut)) return NextResponse.json({ error: 'RUT del titular inválido' }, { status: 400 });
-      await store.guardarReembolso(numero, {
+      const guardado = await store.guardarCuentaDevolucion(numero, {
         ...r,
         cuenta: { banco: d.banco, tipo: d.tipo, numero: d.numero, rut: formatearRut(d.rut), titular: d.titular },
       });
+      if (!guardado) return NextResponse.json({ error: 'La devolución ya no está pendiente' }, { status: 409 });
       logSafe('admin-devolucion-cuenta', { numero, por: session.user?.id ?? null });
       return NextResponse.json({ ok: true });
     }

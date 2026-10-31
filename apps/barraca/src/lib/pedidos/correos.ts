@@ -214,7 +214,7 @@ function devolucionTransferencia(p: Pedido): string {
 <ul style="margin:0 0 12px;padding-left:20px;">
 <li>Banco</li><li>Tipo de cuenta</li><li>Número de cuenta</li><li>RUT del titular</li><li>Nombre del titular</li>
 </ul>
-<p style="margin:0 0 12px;">La hacemos dentro de 10 días hábiles desde que nos llegan tus datos y te avisamos por correo cuando esté hecha.</p>`;
+<p style="margin:0 0 12px;">La hacemos lo antes posible y a más tardar dentro de 10 días hábiles desde este aviso (Términos 12.1). Te avisamos por correo cuando esté hecha.</p>`;
 }
 
 /** Productos y total del pedido, para los correos de cierre. */
@@ -287,7 +287,7 @@ export async function correoDevolucionHecha(p: Pedido) {
         preheader: `Transferimos ${formatCLP(p.reembolso?.monto ?? p.total)}`,
         bodyHtml: `
 <p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, te transferimos <strong>${formatCLP(p.reembolso?.monto ?? p.total)}</strong> del pedido <strong>${escapeHtml(p.numero)}</strong> a ${cuenta}.</p>
-<p style="margin:0 0 12px;">Según tu banco, puede tardar hasta un día hábil en verse. Si no te llega, respóndenos este correo o escríbenos por WhatsApp al ${WHATSAPP_BARRACA}.</p>
+<p style="margin:0 0 12px;">Si no ves el abono, respóndenos este correo o escríbenos por WhatsApp al ${WHATSAPP_BARRACA}.</p>
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 12: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
       skipAdminBcc: false,

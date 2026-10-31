@@ -63,7 +63,7 @@ export async function rechazarPedido(numero: string, motivo: MotivoRechazo, nota
 export async function reintentarDevolucion(numero: string): Promise<{ ok: boolean | null; status: number; error?: string }> {
   const pedido = await pedidos().porNumero(numero);
   if (!pedido) return { ok: false, status: 404, error: 'Pedido no encontrado' };
-  if (pedido.estado !== 'rechazado' || !pagadoConWebpay(pedido) || pedido.reembolso?.estado === 'hecho') {
+  if (!['rechazado', 'cancelado'].includes(pedido.estado) || !pagadoConWebpay(pedido) || pedido.reembolso?.estado === 'hecho') {
     return { ok: false, status: 409, error: 'Este pedido no tiene un reembolso de Webpay pendiente' };
   }
   const ok = await devolverWebpay(pedido);

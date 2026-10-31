@@ -203,8 +203,16 @@ export interface PedidosStore {
   reservarStock(numero: string): Promise<'reservado' | 'ya_reservado' | 'no_encontrado'>;
   /** Cancela o rechaza un pedido que no ha salido y devuelve su stock. Atómico. */
   cerrar(numero: string, estado: 'cancelado' | 'rechazado', motivo: MotivoRechazo | null, nota: string | null): Promise<'ok' | 'no_encontrado' | 'estado_invalido'>;
-  /** Guarda por qué se canceló (después de cerrar). */
-  guardarMotivoCancelacion(numero: string, motivo: MotivoCancelacion): Promise<void>;
+  /**
+   * Cancela desde el panel en una sola operación: motivo, stock y devolución
+   * pendiente si estaba pagado por transferencia. Sin `permitePagado` no
+   * cancela un pedido con pago (aunque el pago llegue en ese mismo instante).
+   */
+  cancelar(numero: string, motivo: Exclude<MotivoCancelacion, 'vencido'>, permitePagado: boolean): Promise<'ok' | 'no_encontrado' | 'estado_invalido' | 'requiere_permiso' | 'motivo_invalido'>;
+  /** Pedidos por transferencia sin pagar creados antes de `antesDe` (para vencerlos). */
+  transferenciasPorVencer(antesDe: string, limite: number): Promise<Pedido[]>;
+  /** Anota la cuenta para una devolución por transferencia que sigue pendiente. */
+  guardarCuentaDevolucion(numero: string, r: Reembolso): Promise<boolean>;
   /** Anula un pedido por transferencia sin pagar después de `horas` y devuelve su stock. Atómico. */
   vencer(numero: string, horas: number): Promise<'vencido' | 'no_corresponde' | 'no_encontrado'>;
   guardarReembolso(numero: string, r: Reembolso): Promise<void>;
@@ -300,9 +308,34 @@ const storeSupabase: PedidosStore = {
     if (error) throw error;
     return data as 'ok' | 'no_encontrado' | 'estado_invalido';
   },
-  async guardarMotivoCancelacion(numero, motivo) {
-    const { error } = await db.from('barraca_pedidos').update({ cancelacion_motivo: motivo }).eq('numero', numero).eq('estado', 'cancelado');
+  async cancelar(numero, motivo, permitePagado) {
+    const { data, error } = await db.rpc('barraca_pedido_cancelar', { p_numero: numero, p_motivo: motivo, p_permite_pagado: permitePagado });
     if (error) throw error;
+    return data as 'ok' | 'no_encontrado' | 'estado_invalido' | 'requiere_permiso' | 'motivo_invalido';
+  },
+  async transferenciasPorVencer(antesDe, limite) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .select('*')
+      .eq('estado', 'pendiente_pago')
+      .eq('metodo_pago', 'transferencia')
+      .lt('created_at', antesDe)
+      .order('created_at', { ascending: true })
+      .limit(limite);
+    if (error) throw error;
+    return (data as Pedido[]) ?? [];
+  },
+  async guardarCuentaDevolucion(numero, r) {
+    // Condicional: si ya quedó "hecha", no la vuelve a pendiente.
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({ reembolso: r })
+      .eq('numero', numero)
+      .eq('reembolso->>medio', 'transferencia')
+      .eq('reembolso->>estado', 'pendiente')
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
   },
   async vencer(numero, horas) {
     const { data, error } = await db.rpc('barraca_pedido_vencer', { p_numero: numero, p_horas: horas });
@@ -331,6 +364,8 @@ const storeSupabase: PedidosStore = {
       .eq('numero', numero)
       .eq('reembolso->>medio', 'transferencia')
       .eq('reembolso->>estado', 'pendiente')
+      // La cuenta que se marca como pagada es la que está en la base, no otra.
+      .eq('reembolso->cuenta->>numero', r.cuenta?.numero ?? '')
       .select('numero');
     if (error) throw error;
     return (data ?? []).length > 0;

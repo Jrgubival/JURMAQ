@@ -77,17 +77,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       const actualizado = await store.porNumero(numero);
       if (actualizado) await correoConfirmacionComprador(actualizado);
     } else if (parsed.data.estado === 'cancelado') {
-      // Devuelve al stock lo reservado o descontado (transferencia o pagado).
-      const r = await store.cerrar(numero, 'cancelado', null, null);
+      // Una sola operación en la base: estado, motivo, stock y devolución
+      // pendiente si se pagó por transferencia. Sin permiso de reembolsar no
+      // cancela un pedido con pago, aunque el pago llegue en este instante.
+      const r = await store.cancelar(numero, motivo!, can(session.user?.role, 'barraca_ventas', 'reembolsar'));
+      if (r === 'requiere_permiso') return NextResponse.json({ error: 'El pedido ya tiene pago: cancelarlo (con devolución) lo hace el administrador' }, { status: 403 });
+      if (r === 'motivo_invalido') return NextResponse.json({ error: '«Transferencia no recibida» es sólo para pedidos por transferencia sin pago confirmado' }, { status: 409 });
       if (r !== 'ok') return NextResponse.json({ error: 'Este pedido ya salió o está cerrado: no se puede cancelar' }, { status: 409 });
-      await store.guardarMotivoCancelacion(numero, motivo!);
-      // Se relee después de cerrar: el pago pudo confirmarse justo antes.
       const cerrado = await store.porNumero(numero);
       if (cerrado?.pagado_at) {
         if (pagadoConWebpay(cerrado)) {
-          reembolso = (await devolverWebpay(cerrado)) ? 'hecho' : 'error';
+          const ok = await devolverWebpay(cerrado);
+          reembolso = ok === null ? null : ok ? 'hecho' : 'error';
         } else {
-          await store.guardarReembolso(numero, { estado: 'pendiente', medio: 'transferencia', monto: cerrado.total, fecha: new Date().toISOString() });
           reembolso = 'transferencia';
         }
       }

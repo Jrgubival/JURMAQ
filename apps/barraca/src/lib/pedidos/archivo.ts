@@ -129,8 +129,33 @@ export function crearStoreArchivo(): PedidosStore {
       });
       return 'ok';
     },
-    async guardarMotivoCancelacion(numero, motivo) {
-      editar(numero, (x) => { if (x.estado === 'cancelado') x.cancelacion_motivo = motivo; });
+    async cancelar(numero, motivo, permitePagado) {
+      const p = leer().find((x) => x.numero === numero);
+      if (!p) return 'no_encontrado';
+      if (!['pendiente_pago', 'transferencia_informada', 'pago_rechazado', 'pagado', 'en_preparacion', 'listo_retiro'].includes(p.estado)) return 'estado_invalido';
+      if (p.pagado_at && !permitePagado) return 'requiere_permiso';
+      if (motivo === 'transferencia_no_recibida' && (p.metodo_pago !== 'transferencia' || p.pagado_at)) return 'motivo_invalido';
+      editar(numero, (x) => {
+        x.estado = 'cancelado';
+        x.stock_descontado = false;
+        x.cancelacion_motivo = motivo;
+        if (x.pagado_at && x.pasarela !== 'webpay' && !x.reembolso) {
+          x.reembolso = { estado: 'pendiente', medio: 'transferencia', monto: x.total, fecha: new Date().toISOString() };
+        }
+      });
+      return 'ok';
+    },
+    async transferenciasPorVencer(antesDe, limite) {
+      return leer()
+        .filter((x) => x.estado === 'pendiente_pago' && x.metodo_pago === 'transferencia' && x.created_at < antesDe)
+        .slice(0, limite);
+    },
+    async guardarCuentaDevolucion(numero, r) {
+      let ok = false;
+      editar(numero, (p) => {
+        if (p.reembolso?.medio === 'transferencia' && p.reembolso.estado === 'pendiente') { p.reembolso = r; ok = true; }
+      });
+      return ok;
     },
     async vencer(numero, horas) {
       const p = leer().find((x) => x.numero === numero);
@@ -147,7 +172,7 @@ export function crearStoreArchivo(): PedidosStore {
     async tomarDevolucionHecha(numero, r) {
       let tomado = false;
       editar(numero, (p) => {
-        if (p.reembolso?.medio === 'transferencia' && p.reembolso.estado === 'pendiente') { p.reembolso = r; tomado = true; }
+        if (p.reembolso?.medio === 'transferencia' && p.reembolso.estado === 'pendiente' && p.reembolso.cuenta?.numero === r.cuenta?.numero) { p.reembolso = r; tomado = true; }
       });
       return tomado;
     },
