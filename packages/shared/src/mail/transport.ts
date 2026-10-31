@@ -45,6 +45,11 @@ export type SendMailOptions = {
    * codigos OTP de firma, contratos firmados, recovery passwords, etc.
    */
   skipAdminBcc?: boolean;
+  /**
+   * Adjuntos (Resend: máx. 40 MB por correo). `content` como Buffer; el
+   * nombre lo pone el servidor, nunca el que manda un cliente.
+   */
+  attachments?: Array<{ filename: string; content: Buffer; contentType?: string }>;
 };
 
 export type SendMailResult = Awaited<ReturnType<typeof resend.emails.send>>;
@@ -76,6 +81,7 @@ async function sendMail(options: SendMailOptions): Promise<SendMailResult> {
       ...(bcc.length > 0 ? { bcc } : {}),
       subject: options.subject,
       html: options.html,
+      ...(options.attachments?.length ? { attachments: options.attachments } : {}),
     });
     if (result.error) {
       // PII masked: emails de destinatarios no van cleartext a logs (Ley 21.719 H1)

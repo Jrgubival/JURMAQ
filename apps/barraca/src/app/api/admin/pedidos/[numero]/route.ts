@@ -34,12 +34,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     // Sólo transiciones razonables: un pedido cerrado no revive y uno sin pago no se salta el pago.
     const desde: Record<string, string[]> = {
-      pagado: ['pendiente_pago', 'pago_rechazado'],
+      pagado: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado'],
       en_preparacion: ['pagado'],
       listo_retiro: ['en_preparacion'],
       despachado: ['en_preparacion'],
       entregado: ['listo_retiro', 'despachado'],
-      cancelado: ['pendiente_pago', 'pago_rechazado', 'pago_discrepancia'],
+      cancelado: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado', 'pago_discrepancia'],
     };
     if (!desde[parsed.data.estado]?.includes(pedido.estado)) {
       return NextResponse.json({ error: 'Ese cambio de estado no corresponde para este pedido' }, { status: 409 });

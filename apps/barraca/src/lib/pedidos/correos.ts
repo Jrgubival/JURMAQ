@@ -7,6 +7,7 @@ import { HORARIO_BARRACA } from '@jurmaq/shared/seo';
 import { montoDespacho, textoDespacho } from '@/lib/despacho/texto';
 import { ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type Pedido } from './index';
 import { urlVerPedido, urlOpinar } from './enlace';
+import { MIME_COMPROBANTE, type TipoComprobante } from './comprobantes';
 
 /**
  * Correos de la tienda: confirmación al comprador y aviso a la barraca. Si
@@ -61,12 +62,17 @@ function bloquePago(p: Pedido): string {
         : '';
     return `<p style="margin:0;"><strong>Pago recibido.</strong> Gracias. Lo preparamos en 1 a 5 días hábiles y te contactamos por WhatsApp o teléfono para coordinar el retiro o la entrega.</p>${comprobante}`;
   }
+  if (p.metodo_pago === 'transferencia' && p.estado === 'transferencia_informada') {
+    return `<p style="margin:0;"><strong>Recibimos tu aviso de transferencia.</strong> Te confirmamos por correo cuando veamos el abono.</p>`;
+  }
   if (p.metodo_pago === 'transferencia') {
     const t = datosTransferencia();
     const fila = (k: string, v: string | null) =>
-      v ? `<tr><td style="padding:2px 12px 2px 0;color:#6b7280;">${k}</td><td style="padding:2px 0;"><strong>${escapeHtml(v)}</strong></td></tr>` : '';
-    return `<p style="margin:0 0 8px;"><strong>Paga por transferencia</strong> ${formatCLP(p.total)} indicando el pedido <strong>${escapeHtml(p.numero)}</strong>:</p>
-<table role="presentation" style="font-size:14px;">${fila('Banco', t.banco)}${fila('Tipo', t.tipo)}${fila('N° de cuenta', t.cuenta)}${fila('Titular', t.titular)}${fila('RUT', t.rut)}${fila('Comprobante a', t.email)}</table>
+      v ? `<tr><td style="padding:3px 12px 3px 0;color:#6b7280;">${k}</td><td style="padding:3px 0;"><strong>${escapeHtml(v)}</strong></td></tr>` : '';
+    return `<p style="margin:0 0 8px;font-size:16px;"><strong>Paga por transferencia: ${formatCLP(p.total)}</strong></p>
+<table role="presentation" style="font-size:15px;">${fila('Banco', t.banco)}${fila('Tipo', t.tipo)}${fila('N° de cuenta', t.cuenta)}${fila('Titular', t.titular)}${fila('RUT', t.rut)}${fila('Monto exacto', formatCLP(p.total))}</table>
+<p style="margin:12px 0 0;padding:12px 14px;background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;font-size:15px;color:#111111;">Pon el N° de pedido <strong>${escapeHtml(p.numero)}</strong> en el comentario de la transferencia.</p>
+<p style="margin:12px 0 0;font-size:14px;">Cuando transfieras, abre tu pedido y toca <strong>«Ya transferí»</strong> (puedes subir el comprobante). También puedes mandarlo a ${escapeHtml(t.email)}.</p>
 <p style="margin:8px 0 0;color:#6b7280;font-size:13px;">Cuando veamos la transferencia lo preparamos en 1 a 5 días hábiles y te contactamos por WhatsApp o teléfono para coordinar el retiro o la entrega.</p>`;
   }
   return `<p style="margin:0;">Estado del pago: <strong>${escapeHtml(ETIQUETA_ESTADO[p.estado])}</strong>.</p>`;
@@ -199,5 +205,55 @@ export async function correoPedirOpinion(p: Pedido, urlBajaCorreos: string): Pro
   } catch (error) {
     logSafeError('pedido-correo-opinion', { numero: p.numero, error: String(error) });
     return false;
+  }
+}
+
+const URL_PANEL = `${(env.NEXT_PUBLIC_BARRACA_URL || 'https://barraca.jurmaq.cl').replace(/\/$/, '')}/admin/pedidos`;
+
+export interface AdjuntoComprobante {
+  contenido: Buffer;
+  tipo: TipoComprobante;
+}
+
+/**
+ * Arma el aviso "Transferencia informada" para la barraca (sin enviarlo), con
+ * el comprobante como ADJUNTO. No hay enlace público al archivo: el botón
+ * lleva al panel, que exige sesión. Todo dato del comprador va con escapeHtml.
+ */
+export function armarCorreoTransferenciaInformada(p: Pedido, adjunto: AdjuntoComprobante | null) {
+  const titulo = `Transferencia informada · pedido ${p.numero} · ${formatCLP(p.total)}`;
+  const nota = p.comprobante_nota?.trim();
+  const bodyHtml = `
+<p style="margin:0 0 12px;">El cliente avisa que transfirió el pedido <strong>${escapeHtml(p.numero)}</strong>. Revisa la cartola antes de confirmar el pago.</p>
+<table role="presentation" style="font-size:15px;margin:0 0 16px;">
+<tr><td style="padding:3px 12px 3px 0;color:#6b7280;">Pedido</td><td><strong>${escapeHtml(p.numero)}</strong></td></tr>
+<tr><td style="padding:3px 12px 3px 0;color:#6b7280;">Monto exacto</td><td><strong>${formatCLP(p.total)}</strong></td></tr>
+<tr><td style="padding:3px 12px 3px 0;color:#6b7280;">Cliente</td><td>${escapeHtml(p.nombre)}</td></tr>
+<tr><td style="padding:3px 12px 3px 0;color:#6b7280;">Teléfono</td><td>${escapeHtml(p.telefono)}</td></tr>
+<tr><td style="padding:3px 12px 3px 0;color:#6b7280;">Nota</td><td>${nota ? escapeHtml(nota) : '<span style="color:#6b7280;">(sin nota)</span>'}</td></tr>
+<tr><td style="padding:3px 12px 3px 0;color:#6b7280;">Comprobante</td><td>${adjunto ? 'Adjunto en este correo' : '<span style="color:#6b7280;">No subió comprobante</span>'}</td></tr>
+</table>
+<div style="margin:0 0 8px;">${renderButton({ href: `${URL_PANEL}?n=${encodeURIComponent(p.numero)}`, label: 'Abrir el pedido en el panel', color: 'navy' })}</div>`;
+  return {
+    to: avisosBarraca(),
+    subject: titulo,
+    html: renderEmailLayout({ title: titulo, bodyHtml }),
+    skipAdminBcc: true as const,
+    attachments: adjunto
+      ? [{ filename: `comprobante-${p.numero}.${adjunto.tipo}`, content: adjunto.contenido, contentType: MIME_COMPROBANTE[adjunto.tipo] }]
+      : undefined,
+  };
+}
+
+/** Envía el aviso a la barraca. Nunca lanza: el aviso ya quedó guardado en el pedido. */
+export async function correoTransferenciaInformada(p: Pedido, adjunto: AdjuntoComprobante | null): Promise<'enviado' | 'omitido' | 'error'> {
+  const correo = armarCorreoTransferenciaInformada(p, adjunto);
+  if (modoPrueba()) return 'omitido';
+  try {
+    const r = await transporter.sendMail(correo);
+    return r.error ? 'error' : 'enviado';
+  } catch (error) {
+    logSafeError('pedido-correo-transferencia-informada', { numero: p.numero, error: String(error) });
+    return 'error';
   }
 }

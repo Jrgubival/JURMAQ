@@ -81,7 +81,11 @@ export async function POST(request: NextRequest) {
     // persona, para que nadie pueda dejar productos "tomados" sin comprarlos.
     if (d.metodoPago === 'transferencia') {
       const tel = d.telefono.replace(/\D/g, '');
-      const pendientes = (await pedidos().listar({ estado: 'pendiente_pago', limite: 500 })).filter(
+      const sinConfirmar = [
+        ...(await pedidos().listar({ estado: 'pendiente_pago', limite: 500 })),
+        ...(await pedidos().listar({ estado: 'transferencia_informada', limite: 500 })),
+      ];
+      const pendientes = sinConfirmar.filter(
         (p) => p.metodo_pago === 'transferencia' && (p.email === d.email || p.telefono.replace(/\D/g, '') === tel),
       );
       if (pendientes.length >= MAX_TRANSFERENCIAS_PENDIENTES) {

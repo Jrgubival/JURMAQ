@@ -68,7 +68,7 @@ export function crearStoreArchivo(): PedidosStore {
     async marcarPagado(numero, monto, pagoId, pasarela) {
       const p = leer().find((x) => x.numero === numero);
       if (!p) return 'no_encontrado';
-      if (p.estado !== 'pendiente_pago' && p.estado !== 'pago_rechazado') return 'ya_procesado';
+      if (!['pendiente_pago', 'pago_rechazado', 'transferencia_informada'].includes(p.estado)) return 'ya_procesado';
       if (Math.abs(p.total - monto) > 1) {
         editar(numero, (x) => { x.estado = 'pago_discrepancia'; x.pago_id = pagoId; });
         return 'monto_distinto';
@@ -101,7 +101,7 @@ export function crearStoreArchivo(): PedidosStore {
     async cerrar(numero, estado, motivo, nota) {
       const p = leer().find((x) => x.numero === numero);
       if (!p) return 'no_encontrado';
-      if (!['pendiente_pago', 'pago_rechazado', 'pago_discrepancia', 'pagado', 'en_preparacion', 'listo_retiro'].includes(p.estado)) return 'estado_invalido';
+      if (!['pendiente_pago', 'transferencia_informada', 'pago_rechazado', 'pago_discrepancia', 'pagado', 'en_preparacion', 'listo_retiro'].includes(p.estado)) return 'estado_invalido';
       editar(numero, (x) => {
         x.estado = estado;
         x.stock_descontado = false;
@@ -121,6 +121,18 @@ export function crearStoreArchivo(): PedidosStore {
     },
     async cambiarEstado(numero, estado) {
       editar(numero, (p) => { p.estado = estado; });
+    },
+    async informarTransferencia(numero, comprobantePath, nota) {
+      let informado = false;
+      editar(numero, (p) => {
+        if (p.metodo_pago !== 'transferencia' || p.estado !== 'pendiente_pago') return;
+        p.estado = 'transferencia_informada';
+        p.transferencia_informada_at = new Date().toISOString();
+        p.comprobante_path = comprobantePath;
+        p.comprobante_nota = nota;
+        informado = true;
+      });
+      return informado;
     },
     async guardarEnvio(numero, envio) {
       let guardado = false;

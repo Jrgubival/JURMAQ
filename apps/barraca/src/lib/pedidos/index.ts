@@ -17,6 +17,7 @@ import type { EnvioEmitido, Paquete } from '@/lib/despacho/courier/tipos';
 
 export type EstadoPedido =
   | 'pendiente_pago'
+  | 'transferencia_informada'
   | 'pagado'
   | 'pago_rechazado'
   | 'pago_discrepancia'
@@ -28,12 +29,13 @@ export type EstadoPedido =
   | 'rechazado';
 
 export const ESTADOS_PEDIDO: EstadoPedido[] = [
-  'pendiente_pago', 'pagado', 'pago_rechazado', 'pago_discrepancia',
+  'pendiente_pago', 'transferencia_informada', 'pagado', 'pago_rechazado', 'pago_discrepancia',
   'en_preparacion', 'listo_retiro', 'despachado', 'entregado', 'cancelado', 'rechazado',
 ];
 
 export const ETIQUETA_ESTADO: Record<EstadoPedido, string> = {
   pendiente_pago: 'Pendiente de pago',
+  transferencia_informada: 'Transferencia informada',
   pagado: 'Pagado',
   pago_rechazado: 'Pago rechazado',
   pago_discrepancia: 'Pago por revisar',
@@ -122,6 +124,10 @@ export interface Pedido {
   reembolso?: Reembolso | null;
   /** Consentimiento aparte, no obligatorio, para recordatorios y ofertas por correo. */
   acepta_ofertas: boolean;
+  /** "Ya transferí": cuándo avisó el comprador, comprobante (ruta privada) y nota. */
+  transferencia_informada_at?: string | null;
+  comprobante_path?: string | null;
+  comprobante_nota?: string | null;
   /** Cuándo se mandó el correo para opinar de los productos (una vez por pedido). */
   opinion_solicitada_at?: string | null;
   total: number;
@@ -158,6 +164,11 @@ export interface PedidosStore {
    */
   tomarReembolso(numero: string, r: Reembolso): Promise<boolean>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
+  /**
+   * "Ya transferí": pasa a 'transferencia_informada' sólo si es transferencia
+   * y seguía 'pendiente_pago'. Condicional: false si ya se había informado.
+   */
+  informarTransferencia(numero: string, comprobantePath: string | null, nota: string | null): Promise<boolean>;
   /** Guarda el envío generado. Sólo si el pedido aún no tenía seguimiento (devuelve false si ya lo tenía). */
   guardarEnvio(numero: string, envio: EnvioEmitido): Promise<boolean>;
   listar(opts: { estado?: EstadoPedido; limite?: number }): Promise<Pedido[]>;
@@ -240,6 +251,22 @@ const storeSupabase: PedidosStore = {
   async cambiarEstado(numero, estado) {
     const { error } = await db.from('barraca_pedidos').update({ estado }).eq('numero', numero);
     if (error) throw error;
+  },
+  async informarTransferencia(numero, comprobantePath, nota) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({
+        estado: 'transferencia_informada',
+        transferencia_informada_at: new Date().toISOString(),
+        comprobante_path: comprobantePath,
+        comprobante_nota: nota,
+      })
+      .eq('numero', numero)
+      .eq('metodo_pago', 'transferencia')
+      .eq('estado', 'pendiente_pago')
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
   },
   async guardarEnvio(numero, envio) {
     const { data, error } = await db

@@ -14,11 +14,12 @@ import { linkWhatsappPedido } from "@/lib/admin/whatsapp";
  */
 
 type Estado =
-  | "pendiente_pago" | "pagado" | "pago_rechazado" | "pago_discrepancia"
+  | "pendiente_pago" | "transferencia_informada" | "pagado" | "pago_rechazado" | "pago_discrepancia"
   | "en_preparacion" | "listo_retiro" | "despachado" | "entregado" | "cancelado" | "rechazado";
 
 const ETIQUETA: Record<Estado, string> = {
   pendiente_pago: "Pendiente de pago",
+  transferencia_informada: "Transferencia informada",
   pagado: "Pagado",
   pago_rechazado: "Pago rechazado",
   pago_discrepancia: "Pago por revisar",
@@ -32,6 +33,7 @@ const ETIQUETA: Record<Estado, string> = {
 
 const COLOR: Record<Estado, string> = {
   pendiente_pago: "bg-amber-100 text-amber-800",
+  transferencia_informada: "bg-orange-500 text-white",
   pagado: "bg-green-100 text-green-800",
   pago_rechazado: "bg-red-100 text-red-800",
   pago_discrepancia: "bg-red-100 text-red-800",
@@ -43,11 +45,12 @@ const COLOR: Record<Estado, string> = {
   rechazado: "bg-red-100 text-red-800",
 };
 
-type Grupo = "todos" | "por_pagar" | "pagado" | "preparando" | "listo" | "entregado" | "rechazado" | "cancelado" | "por_preparar";
+type Grupo = "todos" | "informada" | "por_pagar" | "pagado" | "preparando" | "listo" | "entregado" | "rechazado" | "cancelado" | "por_preparar";
 
 const GRUPOS: Array<{ id: Grupo; label: string; estados: Estado[] | null }> = [
   { id: "todos", label: "Todos", estados: null },
-  { id: "por_pagar", label: "Por pagar", estados: ["pendiente_pago", "pago_rechazado", "pago_discrepancia"] },
+  { id: "informada", label: "Transferencia informada", estados: ["transferencia_informada"] },
+  { id: "por_pagar", label: "Por pagar", estados: ["pendiente_pago", "transferencia_informada", "pago_rechazado", "pago_discrepancia"] },
   { id: "pagado", label: "Pagado", estados: ["pagado"] },
   { id: "preparando", label: "Preparando", estados: ["en_preparacion"] },
   { id: "listo", label: "Listo", estados: ["listo_retiro", "despachado"] },
@@ -79,6 +82,9 @@ interface Pedido {
   courier_etiqueta_url?: string | null;
   pasarela?: string | null;
   pagado_at?: string | null;
+  transferencia_informada_at?: string | null;
+  comprobante_path?: string | null;
+  comprobante_nota?: string | null;
   rechazo_motivo?: MotivoRechazo | null;
   rechazo_nota?: string | null;
   reembolso?: { estado: "hecho" | "pendiente" | "error" | "en_curso"; medio: "webpay" | "transferencia"; monto: number } | null;
@@ -102,6 +108,11 @@ function acciones(p: Pedido): Array<{ estado: Estado; label: string; principal?:
           : []),
         { estado: "cancelado", label: "Cancelar pedido" },
       ];
+    case "transferencia_informada":
+      return [
+        { estado: "pagado", label: "Confirmar pago (vi el abono)", principal: true },
+        { estado: "cancelado", label: "Cancelar pedido" },
+      ];
     case "pago_discrepancia":
       return [{ estado: "cancelado", label: "Cancelar pedido" }];
     case "pagado":
@@ -118,7 +129,7 @@ function acciones(p: Pedido): Array<{ estado: Estado; label: string; principal?:
   }
 }
 
-const RECHAZABLE: Estado[] = ["pendiente_pago", "pago_rechazado", "pago_discrepancia", "pagado", "en_preparacion", "listo_retiro"];
+const RECHAZABLE: Estado[] = ["pendiente_pago", "transferencia_informada", "pago_rechazado", "pago_discrepancia", "pagado", "en_preparacion", "listo_retiro"];
 
 export default function PedidosAdminPage() {
   const [lista, setLista] = useState<Pedido[]>([]);
@@ -172,7 +183,7 @@ export default function PedidosAdminPage() {
 
   async function cambiar(numero: string, estado: Estado) {
     if (estado === "cancelado" && !confirm(`¿Cancelar el pedido ${numero}? Se devuelve el stock.`)) return;
-    if (estado === "pagado" && !confirm(`¿Confirmas que llegó la transferencia del pedido ${numero}? Revisa la cartola antes.`)) return;
+    if (estado === "pagado" && !confirm(`¿Confirmas que llegó la transferencia del pedido ${numero}? Revisa la cartola antes. Se le avisa al cliente por correo.`)) return;
     setGuardando(numero);
     const res = await fetch(`/api/admin/pedidos/${encodeURIComponent(numero)}`, {
       method: "PATCH",
@@ -279,13 +290,14 @@ export default function PedidosAdminPage() {
         )}
         {GRUPOS.map((g) => {
           const activo = grupo === g.id;
+          if (g.id === "informada" && !conteo.informada && !activo) return null;
           return (
             <button
               key={g.id}
               onClick={() => setGrupo(g.id)}
               aria-pressed={activo}
               className={`min-h-[44px] px-4 rounded-full text-sm font-semibold border ${
-                activo ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-700 border-gray-300"
+                activo ? "bg-gray-900 text-white border-gray-900" : g.id === "informada" ? "bg-orange-50 text-orange-800 border-orange-400" : "bg-white text-gray-700 border-gray-300"
               }`}
             >
               {g.label} <span className={activo ? "text-white/70" : "text-gray-400"}>{conteo[g.id] ?? 0}</span>
@@ -305,7 +317,7 @@ export default function PedidosAdminPage() {
             const wa = linkWhatsappPedido(p);
             const ocupado = guardando === p.numero;
             return (
-              <li key={p.numero} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+              <li key={p.numero} className={`bg-white border rounded-2xl overflow-hidden ${p.estado === "transferencia_informada" ? "border-orange-400 ring-2 ring-orange-200" : "border-gray-200"}`}>
                 <button
                   onClick={() => setAbierto(abierto === p.numero ? null : p.numero)}
                   aria-expanded={abierto === p.numero}
@@ -388,6 +400,26 @@ export default function PedidosAdminPage() {
                         <button disabled={ocupado} onClick={() => generarEnvio(p, true)} className={`${btnBase} border border-gray-300 text-gray-800`}>
                           Ingresar seguimiento a mano
                         </button>
+                      </div>
+                    )}
+
+                    {p.transferencia_informada_at && (
+                      <div className={`rounded-xl border px-3 py-3 ${p.estado === "transferencia_informada" ? "bg-orange-50 border-orange-300 text-orange-950" : "bg-gray-50 border-gray-200 text-gray-800"}`}>
+                        <p><strong>El cliente avisó que transfirió</strong> · {fecha(p.transferencia_informada_at)}</p>
+                        <p className="mt-0.5">Monto a revisar en la cartola: <strong className="tabular-nums">{fmt(p.total)}</strong> · comentario {p.numero}</p>
+                        {p.comprobante_nota && <p className="mt-1 break-words">Nota: {p.comprobante_nota}</p>}
+                        {p.comprobante_path ? (
+                          <a
+                            href={`/api/admin/pedidos/${encodeURIComponent(p.numero)}/comprobante`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`${btnBase} mt-2 flex items-center justify-center border border-orange-400 bg-white text-orange-900`}
+                          >
+                            Ver comprobante
+                          </a>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-600">No subió comprobante.</p>
+                        )}
                       </div>
                     )}
 

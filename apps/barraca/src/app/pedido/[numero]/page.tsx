@@ -11,6 +11,7 @@ import { montoDespacho, textoDespacho } from "@/lib/despacho/texto";
 import { aplicarEstadoPago, pagoEnLineaDisponible } from "@/lib/pagos";
 import { mercadoPago } from "@/lib/pagos/mercadopago";
 import AccionesPedido from "./AccionesPedido";
+import YaTransferi from "./YaTransferi";
 
 export const dynamic = "force-dynamic";
 
@@ -109,6 +110,7 @@ export default async function PedidoPage({
 
   const pagado = pedido.estado === "pagado" || ["en_preparacion", "listo_retiro", "despachado", "entregado"].includes(pedido.estado);
   const transferencia = pedido.metodo_pago === "transferencia" && pedido.estado === "pendiente_pago";
+  const informada = pedido.metodo_pago === "transferencia" && pedido.estado === "transferencia_informada";
   const rechazado = pedido.estado === "pago_rechazado";
   const esperandoPago = pedido.metodo_pago !== "transferencia" && pedido.estado === "pendiente_pago";
   const motivo = typeof sp.pago === "string" && !pagado ? MOTIVO_PAGO[sp.pago] ?? null : null;
@@ -122,6 +124,8 @@ export default async function PedidoPage({
     ? "¡Gracias! Tu pago está confirmado"
     : transferencia
       ? "Pedido recibido: falta la transferencia"
+      : informada
+      ? "Recibimos tu aviso de transferencia"
       : rechazado
         ? "El pago no se completó"
         : esperandoPago
@@ -152,7 +156,9 @@ export default async function PedidoPage({
             : pagado
             ? `Te mandamos el detalle a ${pedido.email}. Lo preparamos en 1 a 5 días hábiles y te contactamos por WhatsApp o teléfono para coordinar el retiro o la entrega.`
             : transferencia
-              ? `Transfiere ${formatCLP(pedido.total)} con estos datos e indica el número de pedido. Cuando veamos la transferencia lo preparamos en 1 a 5 días hábiles y te contactamos para coordinar el retiro o la entrega.`
+              ? `Transfiere exactamente ${formatCLP(pedido.total)} a esta cuenta. Cuando lo hagas, toca «Ya transferí». Al ver el abono lo preparamos en 1 a 5 días hábiles y te contactamos para coordinar el retiro o la entrega.`
+              : informada
+              ? "Recibimos tu aviso de transferencia. Te confirmamos por correo cuando veamos el abono."
               : rechazado
                 ? `${motivo ?? "No se hizo ningún cobro."} Puedes intentar de nuevo, con la misma u otra tarjeta. Si prefieres transferir, escríbenos y te mandamos los datos.`
                 : esperandoPago
@@ -176,13 +182,19 @@ export default async function PedidoPage({
             {t.cuenta && (<><dt className="text-[#787774]">N° de cuenta</dt><dd className="font-semibold text-[#111111] tabular-nums">{t.cuenta}</dd></>)}
             <dt className="text-[#787774]">Titular</dt><dd className="font-semibold text-[#111111]">{t.titular}</dd>
             {t.rut && (<><dt className="text-[#787774]">RUT</dt><dd className="font-semibold text-[#111111] tabular-nums">{t.rut}</dd></>)}
-            <dt className="text-[#787774]">Monto</dt><dd className="font-extrabold text-navy-950 tabular-nums">{formatCLP(pedido.total)}</dd>
-            <dt className="text-[#787774]">Comentario</dt><dd className="font-semibold text-[#111111] tabular-nums">{pedido.numero}</dd>
-            <dt className="text-[#787774]">Comprobante</dt><dd className="font-semibold text-[#111111] break-all">{t.email}</dd>
+            <dt className="text-[#787774]">Monto exacto</dt><dd className="font-extrabold text-navy-950 tabular-nums text-[17px]">{formatCLP(pedido.total)}</dd>
             {!t.cuenta && (
               <dd className="col-span-2 text-[13px] text-[#5A5A57] mt-1">Te mandamos los datos de la cuenta por correo y WhatsApp.</dd>
             )}
           </dl>
+        )}
+        {transferencia && (
+          <>
+            <p className="mt-3 rounded-xl border border-amber-400 bg-amber-50 px-4 py-3 text-[15px] text-[#111111]">
+              Pon el N° de pedido <strong className="tabular-nums whitespace-nowrap">{pedido.numero}</strong> en el comentario de la transferencia.
+            </p>
+            <YaTransferi numero={pedido.numero} correo={t.email} />
+          </>
         )}
       </div>
 

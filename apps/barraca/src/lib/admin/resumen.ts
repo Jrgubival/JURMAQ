@@ -9,7 +9,7 @@ import type { EstadoPedido } from '@/lib/pedidos';
 export const ESTADOS_VENTA: EstadoPedido[] = ['pagado', 'en_preparacion', 'listo_retiro', 'despachado', 'entregado'];
 
 export const GRUPOS_PENDIENTES = {
-  por_pagar: ['pendiente_pago', 'pago_rechazado', 'pago_discrepancia'],
+  por_pagar: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado', 'pago_discrepancia'],
   por_preparar: ['pagado', 'en_preparacion'],
   listos: ['listo_retiro', 'despachado'],
 } as const satisfies Record<string, EstadoPedido[]>;
