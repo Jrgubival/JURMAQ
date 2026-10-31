@@ -20,13 +20,12 @@ function modoPrueba(): boolean {
 /**
  * Cuenta para transferencias (datos que entregó Jorge el 30-10-2026). Se
  * muestran a todo comprador, así que no son secretos; las variables BANK_*
- * sólo sirven para cambiarlos sin tocar el código. El tipo de cuenta falta
- * confirmarlo: sin él, esa fila no se muestra.
+ * sólo sirven para cambiarlos sin tocar el código.
  */
 export function datosTransferencia() {
   return {
     banco: env.BANK_NAME?.trim() || 'BancoEstado',
-    tipo: env.BANK_ACCOUNT_TYPE?.trim() || null,
+    tipo: env.BANK_ACCOUNT_TYPE?.trim() || 'Cuenta Corriente',
     cuenta: env.BANK_ACCOUNT?.trim() || '42500240045',
     titular: env.BANK_HOLDER?.trim() || 'Barraca de Fierros JURMAQ SpA',
     rut: env.BANK_RUT?.trim() || '77.722.788-2',
