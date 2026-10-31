@@ -259,7 +259,7 @@ export default function ProductCard({
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeWidth={2.2} d="M20 12H4" /></svg>
                 )}
               </button>
-              <label className="flex-1 min-w-0 text-center leading-tight tabular-nums cursor-text">
+              <label className="flex-1 min-w-0 self-stretch flex items-center text-center tabular-nums cursor-text">
                 <input
                   type="number"
                   inputMode="numeric"
@@ -271,9 +271,8 @@ export default function ProductCard({
                   onChange={(e) => setTexto(e.target.value.replace(/\D/g, "").slice(0, 4))}
                   onBlur={(e) => fijar(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
-                  className="block w-full bg-transparent text-center text-base font-bold text-navy-950 focus:outline-none focus:bg-marca-50 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="block w-full h-full bg-transparent text-center text-base font-bold text-navy-950 focus:outline-none focus:bg-marca-50 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
-                <span className="block text-[10px] text-gray-500" aria-live="polite">{enCarrito >= unidades ? "máximo" : "en el carrito"}</span>
               </label>
               <button
                 type="button"
