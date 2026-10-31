@@ -4,7 +4,8 @@ import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from '@jurmaq/shared/whatsapp';
 import type { LineaRevisada } from '@/lib/tienda';
 import { COMUNAS, type Comuna } from './comunas';
 import { CATEGORIAS_CAMION, COMUNA_ORIGEN, LIMITE_COURIER, TAMANOS_ENVIO } from './tarifas';
-import { COMUNAS_CON_ZONA, ZONAS_DESPACHO, costoZona, zonaPorId } from './zonas';
+import { costoZona, type ZonaDespacho } from './zonas';
+import { zonasDespachoVigentes } from './tarifas-db';
 import { courierActivo, type Bulto, type Paquete } from './courier';
 
 /**
@@ -45,8 +46,8 @@ export function comunaPorCodigo(codigo: string): Comuna | null {
   return porCodigo.get(codigo) ?? null;
 }
 
-const listaCamion = () => {
-  const n = ZONAS_DESPACHO.map((z) => z.nombre);
+const listaCamion = (zonas: ZonaDespacho[]) => {
+  const n = zonas.map((z) => z.nombre);
   return n.length > 1 ? `${n.slice(0, -1).join(', ')} y ${n[n.length - 1]}` : n.join('');
 };
 
@@ -104,7 +105,10 @@ function whatsappDespacho(comuna: Comuna, lineas: LineaRevisada[]): string {
 export async function cotizarDespacho(lineas: LineaRevisada[], destino: string): Promise<CotizacionDespacho | null> {
   const subtotal = lineas.reduce((s, l) => s + l.precio * l.cantidad, 0);
 
-  const zona = zonaPorId(destino);
+  // Tarifas del camión: tabla barraca_zonas_despacho (editable en /admin/despacho),
+  // con respaldo en las constantes de zonas.ts si la tabla falla (tarifas-db.ts).
+  const { zonas } = await zonasDespachoVigentes();
+  const zona = zonas.find((z) => z.id === destino) ?? null;
   if (zona) {
     const comunaZona = comunaPorCodigo(zona.comuna);
     if (!comunaZona) return null;
@@ -112,7 +116,7 @@ export async function cotizarDespacho(lineas: LineaRevisada[], destino: string):
   }
 
   // Una comuna que tiene zonas se elige por zona, no por código.
-  if (COMUNAS_CON_ZONA.has(destino)) return null;
+  if (zonas.some((z) => z.comuna === destino)) return null;
   const comuna = comunaPorCodigo(destino);
   if (!comuna) return null;
 
@@ -122,7 +126,7 @@ export async function cotizarDespacho(lineas: LineaRevisada[], destino: string):
     return {
       estado: 'sin_servicio',
       comuna,
-      motivo: `Por ahora despachamos sólo en nuestro camión a ${listaCamion()}. Puedes retirar en la barraca o cotizar el despacho a ${comuna.nombre} por WhatsApp.`,
+      motivo: `Por ahora despachamos sólo en nuestro camión a ${listaCamion(zonas)}. Puedes retirar en la barraca o cotizar el despacho a ${comuna.nombre} por WhatsApp.`,
       whatsapp,
     };
   }
@@ -132,7 +136,7 @@ export async function cotizarDespacho(lineas: LineaRevisada[], destino: string):
     return {
       estado: 'bloqueado',
       comuna,
-      motivo: `Fierros, perfiles, planchas y materiales pesados sólo los despachamos en nuestro camión a ${listaCamion()}. Puedes retirarlos en la barraca, quitarlos del carrito o cotizar el despacho por WhatsApp.`,
+      motivo: `Fierros, perfiles, planchas y materiales pesados sólo los despachamos en nuestro camión a ${listaCamion(zonas)}. Puedes retirarlos en la barraca, quitarlos del carrito o cotizar el despacho por WhatsApp.`,
       productos: camion.map((l) => l.nombre),
       whatsapp,
     };

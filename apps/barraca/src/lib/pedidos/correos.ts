@@ -1,15 +1,21 @@
 import 'server-only';
 import { env } from '@jurmaq/shared/env';
-import { transporter, renderEmailLayout, renderOrderItems, escapeHtml, formatCLP } from '@jurmaq/shared/mail/email';
+import { transporter, renderEmailLayout, renderOrderItems, renderButton, escapeHtml, formatCLP } from '@jurmaq/shared/mail/email';
+import { avisosBarraca } from '@jurmaq/shared/mail/barraca';
 import { logSafeError } from '@jurmaq/shared/logging';
 import { HORARIO_BARRACA } from '@jurmaq/shared/seo';
 import { montoDespacho, textoDespacho } from '@/lib/despacho/texto';
 import { ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type Pedido } from './index';
+import { urlVerPedido, urlOpinar } from './enlace';
 
 /**
  * Correos de la tienda: confirmación al comprador y aviso a la barraca. Si
  * Resend falla el pedido igual queda guardado; el correo nunca bloquea la
  * compra.
+ *
+ * Todos los correos al comprador llevan el botón "Ver tu pedido" con su
+ * enlace de acceso (lib/pedidos/enlace.ts): no hay cuentas de cliente.
+ * Van con skipAdminBcc: la barraca recibe su propio aviso con los datos.
  */
 
 /** En pruebas locales (pedidos en archivo) no se mandan correos reales. */
@@ -66,7 +72,13 @@ function bloquePago(p: Pedido): string {
   return `<p style="margin:0;">Estado del pago: <strong>${escapeHtml(ETIQUETA_ESTADO[p.estado])}</strong>.</p>`;
 }
 
-function cuerpo(p: Pedido, intro: string): string {
+/** Botón con el enlace de acceso al pedido, para cualquier navegador. */
+function bloqueVerPedido(p: Pedido): string {
+  return `<div style="margin:0 0 16px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
+<p style="margin:0 0 16px;color:#6b7280;font-size:12px;">Este enlace es personal: abre tu pedido sin contraseña. No lo reenvíes.</p>`;
+}
+
+function cuerpo(p: Pedido, intro: string, conEnlace = true): string {
   return `
 <p style="margin:0 0 16px;">${intro}</p>
 ${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio })))}
@@ -74,6 +86,7 @@ ${p.entrega === 'despacho' ? `<p style="margin:16px 0 0;font-size:14px;">Despach
 <p style="margin:16px 0;font-size:16px;"><strong>Total: ${formatCLP(p.total)}</strong> <span style="color:#6b7280;font-size:13px;">IVA incluido${p.entrega === 'despacho' && p.costo_despacho == null ? ' · despacho aparte' : ''}</span></p>
 <div style="margin:0 0 16px;">${bloqueEntrega(p)}</div>
 <div style="margin:0 0 16px;">${bloquePago(p)}</div>
+${conEnlace ? bloqueVerPedido(p) : ''}
 <p style="margin:0;color:#6b7280;font-size:12px;">Esta compra se rige por nuestros <a href="${URL_TERMINOS}" style="color:#6b7280;">Términos y Condiciones</a> (${URL_TERMINOS}), que aceptaste al comprar. Puedes guardarlos o imprimirlos desde ese enlace.</p>`;
 }
 
@@ -98,14 +111,14 @@ export async function correoConfirmacionComprador(p: Pedido) {
 
 export async function correoAvisoBarraca(p: Pedido, motivo: 'nuevo' | 'pagado') {
   if (modoPrueba()) return;
-  const destino = env.BARRACA_PEDIDOS_EMAIL || env.ADMIN_EMAIL || 'contacto@jurmaq.cl';
+  const destino = avisosBarraca();
   try {
     const titulo = motivo === 'pagado' ? `Pedido PAGADO ${p.numero}` : `Pedido nuevo ${p.numero} (${p.metodo_pago === 'transferencia' ? 'transferencia' : 'pago en línea pendiente'})`;
     const datos = `<p style="margin:0 0 16px;font-size:14px;">${escapeHtml(p.nombre)} · ${escapeHtml(p.telefono)} · ${escapeHtml(p.email)}${p.rut ? ` · RUT ${escapeHtml(p.rut)}` : ''}${p.notas ? `<br>Nota: ${escapeHtml(p.notas)}` : ''}</p>`;
     await transporter.sendMail({
       to: destino,
       subject: `${titulo} · ${formatCLP(p.total)}`,
-      html: renderEmailLayout({ title: titulo, bodyHtml: datos + cuerpo(p, `Pedido <strong>${escapeHtml(p.numero)}</strong> desde la tienda web.`) }),
+      html: renderEmailLayout({ title: titulo, bodyHtml: datos + cuerpo(p, `Pedido <strong>${escapeHtml(p.numero)}</strong> desde la tienda web.`, false) }),
       skipAdminBcc: true,
     });
   } catch (error) {
@@ -144,6 +157,7 @@ export async function correoRechazoComprador(p: Pedido) {
 <p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, lamentamos avisarte que no podemos aprobar tu pedido <strong>${escapeHtml(p.numero)}</strong>.</p>
 <p style="margin:0 0 12px;"><strong>Motivo:</strong> ${escapeHtml(motivo)}.</p>
 ${retiro}${devolucion}
+<div style="margin:0 0 12px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
 <p style="margin:0 0 12px;">Si tienes dudas, escríbenos a contacto@jurmaq.cl o al +56 9 7667 3577. También puedes reclamar ante el SERNAC si no estás conforme.</p>
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 8.4: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
@@ -151,5 +165,39 @@ ${retiro}${devolucion}
     });
   } catch (error) {
     logSafeError('pedido-correo-rechazo', { numero: p.numero, error: String(error) });
+  }
+}
+
+/**
+ * Pedido entregado: pide la opinión de los productos con un enlace de un solo
+ * uso por producto (/opinar/<numero>/<token>). Lo dispara el cron
+ * /api/cron/post-purchase una sola vez por pedido y respeta la baja de
+ * correos (el cron consulta estaDeBaja antes). Devuelve false si no se envió.
+ */
+export async function correoPedirOpinion(p: Pedido, urlBajaCorreos: string): Promise<boolean> {
+  if (modoPrueba()) return false;
+  const nombres = [...new Map(p.items.map((i) => [i.productoId, i.nombre])).values()].slice(0, 5);
+  try {
+    const titulo = '¿Qué te parecieron tus productos?';
+    await transporter.sendMail({
+      to: p.email,
+      subject: `${titulo} · pedido ${p.numero} | Barraca JURMAQ`,
+      html: renderEmailLayout({
+        title: titulo,
+        preheader: `Cuéntanos cómo te fue con tu pedido ${p.numero}`,
+        bodyHtml: `
+<p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, ya entregamos tu pedido <strong>${escapeHtml(p.numero)}</strong>.</p>
+<p style="margin:0 0 12px;">Si tienes un minuto, califica los productos que compraste. Tu opinión ayuda a otros clientes a elegir:</p>
+<ul style="margin:0 0 16px;padding:0 0 0 18px;font-size:14px;line-height:1.6;">${nombres.map((n) => `<li>${escapeHtml(n)}</li>`).join('')}</ul>
+<div style="margin:0 0 16px;">${renderButton({ href: urlOpinar(p.numero), label: 'Dar mi opinión' })}</div>
+<p style="margin:0 0 12px;color:#6b7280;font-size:13px;">En la opinión publicada sólo aparece tu nombre y la inicial de tu apellido. Puedes opinar una vez por producto.</p>
+<p style="margin:0;color:#6b7280;font-size:12px;">Te escribimos una sola vez por este pedido. <a href="${escapeHtml(urlBajaCorreos)}" style="color:#6b7280;">No quiero recibir más correos como este</a>.</p>`,
+      }),
+      skipAdminBcc: true,
+    });
+    return true;
+  } catch (error) {
+    logSafeError('pedido-correo-opinion', { numero: p.numero, error: String(error) });
+    return false;
   }
 }

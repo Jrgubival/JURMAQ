@@ -1,11 +1,12 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, stripHtml } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 import { conRevalidacion } from '@/lib/revalidar';
+import { camposProducto } from '@/lib/admin/producto-campos';
 /**
  * Busca el producto por slug o, si el segmento es numérico, por id.
  *
@@ -105,11 +106,11 @@ export async function PUT(
   }
 
   try {
-    const session = await auth();
+    const session = await requirePermission('barraca_productos', 'update');
     if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const { slug } = await params;
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
 
     const existing = await buscarProducto(slug);
 
@@ -117,14 +118,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
     }
 
-    const allowedFields = ['codigo', 'nombre', 'slug', 'descripcion', 'precio', 'costo', 'stock', 'peso', 'unidad', 'categoria_id', 'imagen', 'producto_padre_id', 'medida', 'activo', 'destacado'];
-    const updateData: Record<string, unknown> = {};
-
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
+    // Whitelist + tipos (Zod): nada de copiar body[campo] tal cual.
+    const parsedCampos = camposProducto.safeParse(body);
+    if (!parsedCampos.success) {
+      return NextResponse.json({ error: 'Datos del producto inválidos' }, { status: 400 });
     }
+    const updateData: Record<string, unknown> = { ...parsedCampos.data };
     // SECURITY (M-2): stripHtml en campos inyectados en JSON-LD público.
     if (typeof updateData.nombre === 'string') updateData.nombre = stripHtml(updateData.nombre);
     if (typeof updateData.descripcion === 'string') updateData.descripcion = stripHtml(updateData.descripcion);
@@ -171,7 +170,7 @@ async function manejarDELETE(
   }
 
   try {
-    const session = await auth();
+    const session = await requirePermission('barraca_productos', 'delete');
     if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const { slug } = await params;

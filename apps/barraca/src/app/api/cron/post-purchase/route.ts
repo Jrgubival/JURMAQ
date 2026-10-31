@@ -1,31 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { sendReviewRequestEmail } from '@jurmaq/shared/mail/templates/review-request';
 import { sendReplenishmentEmail } from '@jurmaq/shared/mail/templates/replenishment';
 import { env } from '@jurmaq/shared/env';
 import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
+import { logSafeError } from '@jurmaq/shared/logging';
 import { estaDeBaja, urlBaja } from '@/lib/baja-correos';
+import { pedidos } from '@/lib/pedidos';
+import { correoPedirOpinion } from '@/lib/pedidos/correos';
 
 /**
- * POST /api/cron/post-purchase
+ * POST /api/cron/post-purchase — una vez al día (vercel.json, 09:00).
  *
- * Tier 4 D6: envío programado de emails post-compra.
+ * Pedir opinión (oct-2026, tienda sin cuentas): a los pedidos de la tienda
+ * (`barraca_pedidos`) en estado 'entregado' hace 2 a 30 días (updated_at) se
+ * les manda UNA vez el correo con el enlace /opinar/<numero>/<token>.
+ *   - Una sola vez por pedido: `opinion_solicitada_at` se marca ANTES de
+ *     enviar, con un update condicional (dos corridas a la vez no duplican).
+ *   - Respeta la baja de correos (estaDeBaja, fail-closed).
+ *   - No depende de acepta_ofertas: es sobre su propia compra, no publicidad.
+ *   - Pedidos entregados hace más de 30 días (p. ej. al aplicar la migración)
+ *     no reciben nada.
+ * Las cotizaciones pagadas ya no reciben este correo: el formulario de
+ * opinión para clientes con cuenta se eliminó junto con las cuentas.
  *
- * Mira cotizaciones barraca con estado 'pagada' y dispara:
- *   - Review request: 7-14 días después de pagada_at, si tiene productos
- *     y NO se envió antes
- *   - Replenishment: 55-75 días después de pagada_at, si NO se envió antes
- *
- * Las ventanas dan flexibilidad para que el cron pueda correr 1 vez al día
- * y aún así captar las cotizaciones que cayeron en ese rango.
- *
- * Auth: header x-cron-secret. Schedule sugerido: 1 vez al día (09:00 AM).
+ * Auth: header x-cron-secret o Authorization: Bearer (CRON_SECRET).
  */
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const BATCH = 50;
+const DIA = 24 * 3600 * 1000;
 
 function isAuthorized(request: NextRequest): boolean {
   const secret = env.CRON_SECRET;
@@ -34,28 +38,6 @@ function isAuthorized(request: NextRequest): boolean {
     request.headers.get('x-cron-secret') ||
     request.headers.get('authorization')?.replace('Bearer ', '');
   return safeSecretEquals(provided, secret);
-}
-
-interface CotizacionRow {
-  id: number;
-  email: string;
-  nombre: string | null;
-  numero: string;
-  items: unknown;
-  pagada_at: string;
-}
-
-function parseItems(raw: unknown): Array<{ nombre?: string; slug?: string; producto_id?: number; id?: number }> {
-  if (Array.isArray(raw)) return raw as Array<{ nombre?: string; slug?: string }>;
-  if (typeof raw === 'string') {
-    try {
-      const p = JSON.parse(raw);
-      return Array.isArray(p) ? p : [];
-    } catch {
-      return [];
-    }
-  }
-  return [];
 }
 
 // Vercel Cron invoca con GET; aceptamos ambos métodos. La autenticación real
@@ -67,83 +49,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
-  const now = new Date();
-  const stats = {
-    review_requests_sent: 0,
-    replenishments_sent: 0,
-    errors: 0,
-  };
+  const ahora = Date.now();
+  const stats = { review_requests_sent: 0, skipped_baja: 0, errors: 0 };
 
-  // ---- Review requests: ventana [pagada_at + 7d, pagada_at + 14d] ----
-  // Damos 7 días de gracia (no insistir si el cron se cae 1-2 días).
-  const reviewWindowStart = new Date(now.getTime() - 14 * 24 * 3600 * 1000).toISOString();
-  const reviewWindowEnd = new Date(now.getTime() - 7 * 24 * 3600 * 1000).toISOString();
+  let candidatos;
+  try {
+    candidatos = await pedidos().paraPedirOpinion({
+      desde: new Date(ahora - 30 * DIA).toISOString(),
+      hasta: new Date(ahora - 2 * DIA).toISOString(),
+      limite: BATCH,
+    });
+  } catch (error) {
+    // Fail-closed: sin la columna opinion_solicitada_at (migración sin
+    // aplicar) no se manda nada.
+    logSafeError('post-purchase-listar', { error: String(error) });
+    return NextResponse.json({ ok: false, ...stats, errors: 1 }, { status: 500 });
+  }
 
-  const { data: candidatosReview } = await supabaseAdmin
-    .from('barraca_cotizaciones')
-    .select('id, email, nombre, numero, items, pagada_at')
-    .eq('estado', 'pagada')
-    .is('review_request_sent_at', null)
-    .gte('pagada_at', reviewWindowStart)
-    .lte('pagada_at', reviewWindowEnd)
-    .not('email', 'is', null)
-    .limit(BATCH);
-
-  for (const c of (candidatosReview ?? []) as CotizacionRow[]) {
+  for (const p of candidatos) {
     try {
-      const items = parseItems(c.items);
-      // Resolver slugs vía DB si los items no traen slug (estructura legacy).
-      const productoIds = items
-        .map((it) => Number(it.producto_id ?? it.id))
-        .filter((id) => Number.isFinite(id) && id > 0);
-
-      let productos: Array<{ nombre: string; slug: string }> = [];
-      if (productoIds.length > 0) {
-        const { data: prods } = await supabaseAdmin
-          .from('barraca_productos')
-          .select('nombre, slug')
-          .in('id', productoIds)
-          .limit(3);
-        productos = (prods ?? []).map((p) => ({
-          nombre: String(p.nombre),
-          slug: String(p.slug),
-        }));
-      } else {
-        // Fallback: usar nombres de items si no podemos resolver.
-        productos = items
-          .slice(0, 3)
-          .filter((it) => it.nombre && it.slug)
-          .map((it) => ({ nombre: String(it.nombre), slug: String(it.slug) }));
+      const tomado = await pedidos().marcarOpinionSolicitada(p.numero);
+      if (!tomado) continue;
+      if (await estaDeBaja(p.email)) {
+        stats.skipped_baja++;
+        continue;
       }
-
-      // Pidió la baja: no se envía, pero se marca para no reintentar.
-      if (!(await estaDeBaja(c.email))) {
-        await sendReviewRequestEmail({
-          to: c.email,
-          nombre: c.nombre || 'Cliente',
-          numero: c.numero,
-          productos,
-          urlBaja: urlBaja(c.email),
-        });
-      }
-
-      await supabaseAdmin
-        .from('barraca_cotizaciones')
-        .update({ review_request_sent_at: new Date().toISOString() })
-        .eq('id', c.id);
-
-      stats.review_requests_sent++;
-    } catch (err) {
-      console.error('[post-purchase-review-fail]', { id: c.id, err: String(err) });
+      if (await correoPedirOpinion(p, urlBaja(p.email))) stats.review_requests_sent++;
+    } catch (error) {
+      logSafeError('post-purchase-opinion', { numero: p.numero, error: String(error) });
       stats.errors++;
     }
   }
 
   // ---- Replenishment: APAGADO ----
   // El recordatorio de reposición es publicidad: según la Política de
-  // Privacidad (sección 4) sólo se envía con una casilla de consentimiento en
-  // el checkout, que todavía no existe. Reactivar cuando esté y respete la
-  // baja (lib/baja-correos.ts). sendReplenishmentEmail se conserva.
+  // Privacidad (sección 4) sólo se envía con consentimiento (acepta_ofertas)
+  // y respetando la baja (lib/baja-correos.ts). sendReplenishmentEmail se conserva.
   void sendReplenishmentEmail;
 
   return NextResponse.json({ ok: true, ...stats });

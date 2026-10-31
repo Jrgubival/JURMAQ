@@ -74,7 +74,7 @@ export function buildPostPurchaseHtml(opts: BuildEmailOptions): string {
         <tr>
           <td style="background-color:#0c1d3a;padding:18px 32px;text-align:center;border-radius:0 0 12px 12px;">
             <p style="margin:0;color:#9ca3af;font-size:12px;">
-              &copy; ${new Date().getFullYear()} JURMAQ Barraca · <a href="${BARRACA_URL}/cuenta/desuscribir" style="color:#9ca3af;text-decoration:underline;">Desuscribir</a>
+              &copy; ${new Date().getFullYear()} JURMAQ Barraca
             </p>
           </td>
         </tr>
@@ -86,8 +86,7 @@ export function buildPostPurchaseHtml(opts: BuildEmailOptions): string {
 }
 
 export async function sendPostPurchaseEmail(args: { to: string; subject: string; html: string }) {
-  // BCC admin OK: confirmaciones de compra son interés legítimo del negocio
-  // saber qué pedidos fueron confirmados. NO usar skipAdminBcc=true acá.
+  // BCC: en barraca va sólo a BARRACA_AVISOS_EMAIL (ver transport.ts).
   await transporter.sendMail({
     to: args.to,
     subject: args.subject,

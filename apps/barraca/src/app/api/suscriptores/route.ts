@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { sanitizeString, isValidEmail, isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
@@ -7,7 +7,7 @@ import { logSafeError } from '@jurmaq/shared/logging';
 
 export async function GET() {
   try {
-    const session = await auth();
+    const session = await requirePermission('barraca_suscriptores', 'read');
     if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const { data: suscriptores, error } = await supabaseAdmin

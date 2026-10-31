@@ -1,5 +1,4 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
@@ -38,7 +37,7 @@ export async function GET(
     // sequential IDs to harvest cotizaciones. 5 attempts per 10 min per IP
     // makes brute-force enumeration infeasible while preserving the legit
     // customer experience.
-    const session = await auth();
+    const session = await requirePermission('barraca_cotizaciones', 'read');
     if (!session) {
       const ip = getClientIp(request);
       const limiter = rateLimit(`cot:${ip}:${idNum}`, { maxAttempts: 5, windowSeconds: 600 });

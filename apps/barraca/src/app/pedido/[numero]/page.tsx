@@ -4,7 +4,8 @@ import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
 import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
 import { logSafeError } from "@jurmaq/shared/logging";
-import { pedidos, cookiePedido, tokenValido, PATRON_NUMERO, ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type Pedido } from "@/lib/pedidos";
+import { pedidos, PATRON_NUMERO, ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type Pedido } from "@/lib/pedidos";
+import { puedeVerPedido } from "@/lib/pedidos/enlace";
 import { datosTransferencia } from "@/lib/pedidos/correos";
 import { montoDespacho, textoDespacho } from "@/lib/despacho/texto";
 import { aplicarEstadoPago, pagoEnLineaDisponible } from "@/lib/pagos";
@@ -20,7 +21,8 @@ export const metadata: Metadata = {
 
 /**
  * Confirmación del pedido. Sólo la ve quien tiene la cookie httpOnly que se
- * dejó al crear el pedido (mismo navegador). El pago con Webpay ya llega
+ * dejó al crear el pedido (mismo navegador) o la que deja el enlace "Ver tu
+ * pedido" de los correos (/pedido/acceso/<numero>/<token>). El pago con Webpay ya llega
  * confirmado desde /api/pagos/webpay/retorno (?pago=anulado|tiempo|rechazado
  * sólo elige el mensaje; el estado sale siempre del pedido guardado). Para
  * pedidos antiguos de Mercado Pago, ?payment_id=... se consulta a Mercado Pago.
@@ -73,7 +75,7 @@ export default async function PedidoPage({
   let pedido: Pedido | null = null;
   if (PATRON_NUMERO.test(numero)) {
     const p = await pedidos().porNumero(numero);
-    if (p && tokenValido(jar.get(cookiePedido(numero))?.value, p.acceso_hash)) pedido = p;
+    if (p && puedeVerPedido((n) => jar.get(n)?.value, p)) pedido = p;
   }
 
   if (!pedido) {
@@ -81,7 +83,7 @@ export default async function PedidoPage({
       <div className="max-w-xl mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-semibold text-[#111111] mb-3">No encontramos este pedido</h1>
         <p className="text-[#5A5A57] mb-8">
-          El detalle sólo se ve en el navegador donde se hizo la compra. También te lo mandamos por correo.
+          Para verlo abre el enlace «Ver tu pedido» del correo que te mandamos al comprar.
           Si tienes dudas, escríbenos a contacto@jurmaq.cl o al +56 9 7667 3577.
         </p>
         <Link href="/categorias" className="inline-flex items-center px-6 py-3 bg-navy-950 text-white text-sm font-medium rounded-lg">

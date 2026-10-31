@@ -72,6 +72,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Postgres compartido y bcrypt (CPU caro) solo se ejecuta si
           // se pasa el rate-limit.
           // 5 intentos / 15 min por (ip, email).
+          // Fail-closed: si no se puede evaluar el límite (headers() falla,
+          // excepción inesperada), se deniega el intento. Antes el catch dejaba
+          // pasar el intento sin límite.
           try {
             const hdrs = await headers();
             const fwd = hdrs.get('x-forwarded-for') || '';
@@ -84,12 +87,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               // intentos ilimitados de fuerza bruta durante un incidente).
               failClosedOnError: true,
             });
-            if (!success) {
-              console.warn('admin-login rate-limited:', limitKey);
+            // Además, un tope por cuenta sin importar la IP: con muchas IPs
+            // (botnet) el límite por (ip, email) no frena la fuerza bruta.
+            const porCuenta = success
+              ? await rateLimitPersistent(supabaseAdmin, `admin-login-cuenta:${email}`, {
+                  maxAttempts: 20,
+                  windowSeconds: 900,
+                  failClosedOnError: true,
+                })
+              : { success: false };
+            if (!success || !porCuenta.success) {
+              console.warn('admin-login rate-limited:', { ip: maskIp(ip), email: maskEmail(email) });
               return null;
             }
           } catch {
-            // headers() may fail in edge — fall through and allow the attempt
+            console.warn('admin-login: no se pudo evaluar el rate-limit, intento denegado');
+            return null;
           }
 
           // Filtrar por scope del proceso (`AUTH_SCOPE` env var). Un user

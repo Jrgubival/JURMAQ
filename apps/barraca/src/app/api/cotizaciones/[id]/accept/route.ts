@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { transporter } from '@jurmaq/shared/mail/email';
+import { transporter, escapeHtml } from '@jurmaq/shared/mail/email';
+import { avisosBarraca } from '@jurmaq/shared/mail/barraca';
 import { auth } from '@jurmaq/shared/auth';
 import { can } from '@jurmaq/shared/roles';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
@@ -14,7 +15,7 @@ async function sendAcceptRejectAdminEmail(
   action: 'accept' | 'reject'
 ) {
   const isAccepted = action === 'accept';
-  const adminEmail = env.ADMIN_EMAIL || 'contacto@jurmaq.cl';
+  const adminEmail = avisosBarraca();
   const adminUrl = `${env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/barraca/cotizaciones`;
   const total = cotizacion.contraoferta_total || cotizacion.total;
 
@@ -43,17 +44,17 @@ async function sendAcceptRejectAdminEmail(
               </div>
 
               <div style="background-color: #fff7ed; border-radius: 8px; padding: 16px; margin-bottom: 20px; text-align: center;">
-                <p style="margin: 0; color: #ea580c; font-size: 22px; font-weight: 700;">#${cotizacion.numero}</p>
+                <p style="margin: 0; color: #ea580c; font-size: 22px; font-weight: 700;">#${escapeHtml(cotizacion.numero)}</p>
               </div>
 
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">
                 <tr>
                   <td style="padding: 8px 0; color: #6b7280; font-size: 14px; width: 120px;">Cliente:</td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${cotizacion.nombre}</td>
+                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px; font-weight: 600;">${escapeHtml(cotizacion.nombre)}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Email:</td>
-                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;"><a href="mailto:${cotizacion.email}" style="color: #ea580c;">${cotizacion.email}</a></td>
+                  <td style="padding: 8px 0; color: #1f2937; font-size: 14px;"><a href="mailto:${encodeURIComponent(cotizacion.email)}" style="color: #ea580c;">${escapeHtml(cotizacion.email)}</a></td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Total:</td>

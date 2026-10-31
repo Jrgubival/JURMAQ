@@ -1,11 +1,12 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, escapeOrFilter, stripHtml } from '@jurmaq/shared/sanitize';
 import { applyDailyPromosToProducts } from '@/lib/promotions';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
 import { conRevalidacion } from '@/lib/revalidar';
+import { camposProducto } from '@/lib/admin/producto-campos';
 export async function GET(request: NextRequest) {
   try {
     // Rate limit: 60/min per IP. Public product listing with filters runs
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
     const requestedAll = searchParams.get('all') === 'true';
     let includeInactive = false;
     if (requestedAll) {
-      const session = await auth();
+      const session = await requirePermission('barraca_productos', 'read');
       if (session) includeInactive = true;
     }
     const offset = (page - 1) * limit;
@@ -128,11 +129,14 @@ async function manejarPOST(request: NextRequest) {
   }
 
   try {
-    const session = await auth();
+    const session = await requirePermission('barraca_productos', 'create');
     if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-    const body = await request.json();
-
+    const parsedCampos = camposProducto.safeParse(await request.json().catch(() => null));
+    if (!parsedCampos.success) {
+      return NextResponse.json({ error: 'Datos del producto inválidos' }, { status: 400 });
+    }
+    const body = parsedCampos.data;
     if (!body.nombre || !body.slug) {
       return NextResponse.json({ error: 'Nombre y slug son requeridos' }, { status: 400 });
     }
@@ -146,17 +150,17 @@ async function manejarPOST(request: NextRequest) {
         nombre: stripHtml(body.nombre),
         slug: body.slug,
         descripcion: body.descripcion ? stripHtml(body.descripcion) : null,
-        precio: body.precio || 0,
-        costo: body.costo || 0,
-        stock: body.stock || 0,
-        peso: body.peso || null,
+        precio: body.precio ?? 0,
+        costo: body.costo ?? 0,
+        stock: body.stock ?? 0,
+        peso: body.peso ?? null,
         unidad: body.unidad || 'unidad',
-        categoria_id: body.categoria_id || null,
+        categoria_id: body.categoria_id ?? null,
         imagen: body.imagen || null,
-        producto_padre_id: body.producto_padre_id || null,
+        producto_padre_id: body.producto_padre_id ?? null,
         medida: body.medida || null,
-        activo: body.activo !== undefined ? body.activo : true,
-        destacado: body.destacado || false,
+        activo: body.activo ?? true,
+        destacado: body.destacado ?? false,
       })
       .select()
       .single();

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidOrigin, isValidEmail, sanitizeString, escapeLikePattern } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
-import { parseBarracaUserToken, extractBearerToken } from '@/lib/barraca-auth';
 
 /**
  * POST /api/public/carrito-abandonado/track
@@ -50,9 +49,8 @@ export async function POST(request: NextRequest) {
   }
 
   const body = (await request.json().catch(() => ({}))) as Body;
-  // usuario_id se deriva del token de sesión, NUNCA del body (anti-IDOR).
-  const token = extractBearerToken(request);
-  const usuarioId = token ? await parseBarracaUserToken(token) : null;
+  // Sin cuentas de cliente (oct-2026): nunca hay usuario_id (y jamás del body).
+  const usuarioId: number | null = null;
   const email = sanitizeString(body.email)?.toLowerCase();
   const telefono = sanitizeString(body.telefono)?.trim();
   const sessionId = sanitizeString(body.session_id);

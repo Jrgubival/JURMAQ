@@ -42,10 +42,10 @@ export async function sendReviewRequestEmail(args: {
     title: '¿Cómo te fue con tu compra?',
     bodyHtml: `
       <p style="margin:0 0 14px;">
-        Hola <strong>${args.nombre.split(' ')[0] || 'Cliente'}</strong>,
+        Hola <strong>${escapeHtml(args.nombre.split(' ')[0] || 'Cliente')}</strong>,
       </p>
       <p style="margin:0 0 14px;">
-        Hace una semana recibiste tu pedido <strong>${args.numero}</strong>.
+        Hace una semana recibiste tu pedido <strong>${escapeHtml(args.numero)}</strong>.
         Tu opinión sobre los productos nos ayuda a mejorar y ayuda a otros
         maestros y clientes a decidir con confianza.
       </p>
@@ -66,7 +66,7 @@ export async function sendReviewRequestEmail(args: {
     ctaUrl:
       featured.length > 0
         ? `${BARRACA_URL}/producto/${encodeURIComponent(featured[0].slug)}#reviews`
-        : `${BARRACA_URL}/cuenta/cotizaciones/${args.numero}`,
+        : `${BARRACA_URL}/categorias`,
     footerNote: args.urlBaja
       ? `Solo enviamos un recordatorio. No insistimos. <a href="${args.urlBaja}" style="color:#9ca3af;text-decoration:underline;">No quiero recibir más correos</a>.`
       : 'Solo enviamos un recordatorio. No insistimos.',

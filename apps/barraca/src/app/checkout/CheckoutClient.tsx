@@ -11,6 +11,7 @@ import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carri
 import { rutValido } from "@/lib/rut";
 import { precioWebHastaNumerico } from "@/lib/vigencia";
 import { ZONAS_DESPACHO, CLAVE_ZONA, zonaPorId } from "@/lib/despacho/zonas";
+import { useZonas, zonaEn } from "@/lib/despacho/zonas-cliente";
 import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from "@jurmaq/shared/whatsapp";
 
 /**
@@ -184,7 +185,7 @@ function EstadoDespacho({ cotizacion, onRetiro }: { cotizacion: Cotizacion | nul
 
 /** "Te faltan $X para despacho gratis" o "Despacho gratis", según la zona elegida. */
 function AvisoGratis({ zonaId, subtotal, alineado = "derecha" }: { zonaId: string; subtotal: number; alineado?: "derecha" | "izquierda" }) {
-  const z = zonaPorId(zonaId);
+  const z = zonaEn(useZonas(), zonaId);
   if (!z || z.gratisDesde == null) return null;
   const falta = z.gratisDesde - subtotal;
   return (
@@ -235,6 +236,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   }, [cargando, items]);
 
   const despacho = entrega === "despacho";
+  const zonas = useZonas();
   // Costo del despacho para la comuna elegida. Es sólo para mostrarlo: al
   // crear el pedido el servidor lo calcula de nuevo y cobra ese. La respuesta
   // se guarda con la consulta que la pidió, así una vieja nunca se muestra.
@@ -459,7 +461,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                       className={`${claseInput(errores.comuna)} appearance-none pr-10`}
                     >
                       <option value="">Elige tu zona</option>
-                      {ZONAS_DESPACHO.map((z) => (
+                      {zonas.map((z) => (
                         <option key={z.id} value={z.id}>
                           {z.nombre} · {formatCLP(z.costo)}
                         </option>

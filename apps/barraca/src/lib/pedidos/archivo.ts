@@ -136,5 +136,19 @@ export function crearStoreArchivo(): PedidosStore {
     async listar({ estado, limite = 200 }) {
       return leer().filter((p) => !estado || p.estado === estado).slice(0, limite);
     },
+    async paraPedirOpinion({ desde, hasta, limite }) {
+      return leer()
+        .filter((p) => p.estado === 'entregado' && !p.opinion_solicitada_at && p.updated_at >= desde && p.updated_at <= hasta)
+        .slice(0, limite);
+    },
+    async marcarOpinionSolicitada(numero) {
+      let marcado = false;
+      editar(numero, (p) => {
+        if (p.opinion_solicitada_at) return;
+        p.opinion_solicitada_at = new Date().toISOString();
+        marcado = true;
+      });
+      return marcado;
+    },
   };
 }

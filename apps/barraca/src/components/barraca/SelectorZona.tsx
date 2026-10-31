@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { formatCLP } from "@jurmaq/shared/format";
-import { ZONAS_DESPACHO, CLAVE_ZONA, EVENTO_ZONA, zonaPorId, type ZonaDespacho } from "@/lib/despacho/zonas";
+import { CLAVE_ZONA, EVENTO_ZONA, type ZonaDespacho } from "@/lib/despacho/zonas";
+import { useZonas, zonaEn } from "@/lib/despacho/zonas-cliente";
 
 /**
  * "Despacho a: Molina ▾" en el header. Abre una lista corta con las zonas del
@@ -10,9 +11,9 @@ import { ZONAS_DESPACHO, CLAVE_ZONA, EVENTO_ZONA, zonaPorId, type ZonaDespacho }
  * usa como comuna por defecto. Nunca se abre sola: sin popups al entrar.
  */
 
-function leerZona(): ZonaDespacho | null {
+function leerId(): string | null {
   try {
-    return zonaPorId(localStorage.getItem(CLAVE_ZONA));
+    return localStorage.getItem(CLAVE_ZONA);
   } catch {
     return null;
   }
@@ -20,10 +21,12 @@ function leerZona(): ZonaDespacho | null {
 
 /** Zona elegida, sincronizada entre el header, la ficha y otras pestañas. */
 export function useZonaDespacho(): [ZonaDespacho | null, (z: ZonaDespacho) => void] {
-  const [zona, setZona] = useState<ZonaDespacho | null>(null);
+  const zonas = useZonas();
+  const [id, setId] = useState<string | null>(null);
+  const zona = zonaEn(zonas, id);
   useEffect(() => {
-    setZona(leerZona());
-    const sync = () => setZona(leerZona());
+    setId(leerId());
+    const sync = () => setId(leerId());
     window.addEventListener(EVENTO_ZONA, sync);
     window.addEventListener("storage", sync);
     return () => {
@@ -35,7 +38,7 @@ export function useZonaDespacho(): [ZonaDespacho | null, (z: ZonaDespacho) => vo
     try {
       localStorage.setItem(CLAVE_ZONA, z.id);
     } catch { /* modo privado: vale sólo para esta vista */ }
-    setZona(z);
+    setId(z.id);
     window.dispatchEvent(new Event(EVENTO_ZONA));
   };
   return [zona, elegir];
@@ -63,6 +66,7 @@ const Flecha = ({ abierto }: { abierto: boolean }) => (
 
 export default function SelectorZona({ variante }: { variante: "escritorio" | "celular" }) {
   const [zona, elegir] = useZonaDespacho();
+  const zonas = useZonas();
   const [abierto, setAbierto] = useState(false);
   const raiz = useRef<HTMLDivElement>(null);
   const idLista = useId();
@@ -146,7 +150,7 @@ export default function SelectorZona({ variante }: { variante: "escritorio" | "c
             <p className="text-xs text-gray-500 mt-0.5">Elige tu zona para ver cuánto cuesta. Te llamamos para coordinar el día.</p>
           </div>
           <ul role="listbox" aria-label="Zona de despacho" className="max-h-[min(60vh,22rem)] overflow-y-auto py-1">
-            {ZONAS_DESPACHO.map((z) => {
+            {zonas.map((z) => {
               const actual = zona?.id === z.id;
               return (
                 <li key={z.id} role="option" aria-selected={actual}>

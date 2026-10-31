@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 
@@ -10,7 +10,7 @@ async function manejarPOST(request: NextRequest) {
   }
 
   try {
-    const session = await auth();
+    const session = await requirePermission('barraca_imagenes', 'update');
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }

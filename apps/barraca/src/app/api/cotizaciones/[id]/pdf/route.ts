@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
@@ -58,7 +58,7 @@ export async function GET(
 
     // SECURITY: require admin session OR matching email query param
     // IDs are sequential so public access would be a PII leak (IDOR).
-    const session = await auth();
+    const session = await requirePermission('barraca_cotizaciones', 'read');
     const emailParam = request.nextUrl.searchParams.get('email')?.trim().toLowerCase() || null;
     const emailMatches = !!emailParam && !!cotizacion.email && emailParam === String(cotizacion.email).trim().toLowerCase();
     if (!session && !emailMatches) {

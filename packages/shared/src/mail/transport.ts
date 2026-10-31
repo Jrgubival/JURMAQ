@@ -22,11 +22,17 @@ const EMAIL_FROM = env.EMAIL_FROM || 'JURMAQ <noreply@jurmaq.cl>';
  * BCC automatico a casillas internas para auditoria/respaldo. Configurable
  * via env ADMIN_BCC_EMAILS (separado por comas).
  */
-const ADMIN_BCC_EMAILS: string[] = (env.ADMIN_BCC_EMAILS ||
-  `${env.ADMIN_EMAIL || 'contacto@jurmaq.cl'},constructora@jurmaq.cl`)
-  .split(',')
-  .map((s) => s.trim().toLowerCase())
-  .filter(Boolean);
+const ES_BARRACA = env.AUTH_SCOPE?.trim().toLowerCase() === 'barraca';
+const ADMIN_BCC_EMAILS: string[] = ES_BARRACA
+  ? // Barraca (oct-2026): la copia oculta va sólo a la casilla de la barraca,
+    // nunca a las casillas generales de la constructora. Sin
+    // BARRACA_AVISOS_EMAIL no se agrega copia oculta.
+    (env.BARRACA_AVISOS_EMAIL ? [env.BARRACA_AVISOS_EMAIL.toLowerCase()] : [])
+  : (env.ADMIN_BCC_EMAILS ||
+    `${env.ADMIN_EMAIL || 'contacto@jurmaq.cl'},constructora@jurmaq.cl`)
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
 
 export type SendMailOptions = {
   from?: string;

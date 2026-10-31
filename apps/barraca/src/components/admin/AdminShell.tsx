@@ -4,334 +4,219 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { can, visibleModules } from '@jurmaq/shared/roles';
-import {
-  ADMIN_NAV,
-  ADMIN_NAV_GROUPS,
-  adminHref,
-  esExterno,
-  type AdminNavGroup,
-  type AdminNavItem,
-} from '@jurmaq/shared/admin/nav';
+import { can, type Module, type Action } from '@jurmaq/shared/roles';
+import { ADMIN_NAV, adminHref, esExterno } from '@jurmaq/shared/admin/nav';
 import CommandPalette from '@jurmaq/shared/ui/CommandPalette';
 import { env } from '@jurmaq/shared/env';
 import NotificationsBell from './NotificationsBell';
 
 /**
- * AdminShell — panel admin de Barraca (e-commerce de fierros y materiales).
+ * AdminShell — panel de la tienda en línea de la barraca (barraca.jurmaq.cl/admin).
  *
- * Antes esto vivía dentro del shell de constructora con detección por path
- * (`/admin/barraca/*`), pero post-split barraca tiene su propio dominio
- * (barraca.jurmaq.cl) con su propio admin (`barraca.jurmaq.cl/admin/*`).
- * Cada app tiene su layout admin independiente para que el branding,
- * navegación, y sesión queden aislados.
+ * Pensado para usarse en el celular en el local: cuatro secciones fijas
+ * (Resumen, Pedidos, Productos, Despacho) en una barra inferior en el
+ * teléfono y en una barra lateral en el computador. El resto de las
+ * herramientas (importar precios, imágenes, cotizaciones, el panel de
+ * arriendo, etc.) sigue existiendo y con sus permisos, pero queda dentro de
+ * "Más herramientas" para no estorbar.
  *
- * SEO: este shell solo se monta bajo /admin/*, que `robots.txt` ya
- * bloquea explícitamente. No hay impacto en las páginas públicas
- * (catálogo, producto, búsqueda, calculadoras, landings).
+ * La visibilidad es sólo comodidad: cada página y cada /api/admin/* valida el
+ * permiso en el servidor.
  */
-/**
- * Íconos por ruta. El menú vive en `@jurmaq/shared/admin/nav`, compartido con
- * el panel de jurmaq.cl para que ambos pinten la misma lista completa.
- */
-const ICONOS: Record<string, React.ReactNode> = {
-  '/admin': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" />
-    </svg>
-  ),
-  '/admin/cotizaciones': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" />
-    </svg>
-  ),
-  '/admin/productos': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-    </svg>
-  ),
-  '/admin/categorias': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-    </svg>
-  ),
-  '/admin/precios': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-  ),
-  '/admin/promociones': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-    </svg>
-  ),
-  '/admin/cupones': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-    </svg>
-  ),
-  '/admin/imagenes': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-  ),
-  '/admin/importar': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-    </svg>
-  ),
-  '/admin/reviews': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-    </svg>
-  ),
-  '/admin/suscriptores': (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-    </svg>
-  ),
-};
 
-const ICONO_DEFAULT = (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
+interface ItemTienda {
+  label: string;
+  href: string;
+  module: Module;
+  action?: Action;
+  icon: React.ReactNode;
+}
+
+const ic = (d: string) => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={d} />
+  </svg>
 );
 
+const TIENDA: ItemTienda[] = [
+  { label: 'Resumen', href: '/admin', module: 'barraca_cotizaciones', icon: ic('M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1') },
+  { label: 'Pedidos', href: '/admin/pedidos', module: 'barraca_cotizaciones', icon: ic('M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z') },
+  { label: 'Productos', href: '/admin/productos', module: 'barraca_productos', icon: ic('M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4') },
+  { label: 'Despacho', href: '/admin/despacho', module: 'barraca_precios', icon: ic('M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0') },
+];
+
+/** Rutas propias de la tienda (no se repiten en "Más herramientas"). */
+const RUTAS_TIENDA = new Set(['/admin/pedidos', '/admin/productos', '/admin/dashboard']);
+
 export default function AdminShell({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [avanzadoAbierto, setAvanzadoAbierto] = useState(false);
-  const pathname = usePathname();
+  const [masAbierto, setMasAbierto] = useState(false);
+  const pathname = usePathname() || '';
   const router = useRouter();
   const { data: session } = useSession();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const constructoraUrl = env.NEXT_PUBLIC_CONSTRUCTORA_URL || undefined;
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
-    router.push('/cuenta/login');
+    router.push('/login');
   };
 
-  const isActive = (href: string) => {
-    if (href === '/admin') return pathname === '/admin';
-    return pathname.startsWith(href);
-  };
+  const isActive = (href: string) => (href === '/admin' ? pathname === '/admin' : pathname.startsWith(href));
 
-  // Si el sysadmin tiene acceso al admin de constructora, ofrecemos un link
-  // de cross-admin (configurable via env). En dev queda apuntando al puerto
-  // de constructora; en prod a admin.jurmaq.cl o jurmaq.cl según deploy.
-  const constructoraUrl = env.NEXT_PUBLIC_CONSTRUCTORA_URL || '';
+  const tienda = TIENDA.filter((it) => !session || can(role, it.module, it.action ?? 'read'));
+  const otras = ADMIN_NAV.filter(
+    (it) => can(role, it.module, it.action ?? 'read') && !(it.app === 'barraca' && RUTAS_TIENDA.has(it.path)),
+  );
+  const titulo = TIENDA.find((it) => isActive(it.href))?.label
+    ?? ADMIN_NAV.find((it) => it.app === 'barraca' && pathname.startsWith(it.path) && it.path !== '/admin')?.label
+    ?? 'Panel';
+
+  const listaOtras = (
+    <ul className="space-y-1">
+      {otras.map((item) => {
+        const externo = esExterno(item, 'barraca');
+        const href = adminHref(item, 'barraca', { constructora: constructoraUrl });
+        return (
+          <li key={`${item.app}${item.path}`}>
+            <Link
+              href={href}
+              onClick={() => setMasAbierto(false)}
+              className="flex items-center justify-between min-h-[44px] px-3 rounded-lg text-sm text-gray-700 hover:bg-gray-100"
+            >
+              <span>{item.label}</span>
+              {externo && <span className="text-[11px] text-gray-400">jurmaq.cl ↗</span>}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-out lg:translate-x-0 lg:static lg:inset-auto ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ backgroundColor: '#0c1d3a' }}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center gap-3 px-6 py-6 border-b border-white/10">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: '#ea580c' }}
-            >
-              <span className="text-lg font-black text-white">B</span>
-            </div>
-            <div>
-              <h1 className="text-white font-bold text-lg leading-tight">JURMAQ</h1>
-              <p className="text-gray-500 text-xs">Panel Barraca</p>
-            </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="ml-auto lg:hidden text-gray-500 hover:text-white"
-              aria-label="Cerrar menú"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+    <div className="min-h-screen bg-gray-50 lg:flex">
+      {/* Barra lateral (computador) */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-60 lg:shrink-0 lg:sticky lg:top-0 lg:h-screen bg-white border-r border-gray-200">
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-gray-100">
+          <span className="w-9 h-9 rounded-lg bg-orange-600 text-white font-black flex items-center justify-center">B</span>
+          <div className="leading-tight">
+            <p className="font-bold text-gray-900">Tienda Barraca</p>
+            <p className="text-xs text-gray-500">Panel JURMAQ</p>
           </div>
-
-          {/* Nav ÚNICO: la lista completa de las dos unidades, desde
-              @jurmaq/shared/admin/nav — la misma que pinta jurmaq.cl/admin. Los
-              ítems de arriendo/contratos/tributario abren jurmaq.cl; la sesión
-              viaja porque la cookie es Domain=.jurmaq.cl. */}
-          <nav className="flex-1 px-3 py-4 overflow-y-auto">
-            {(() => {
-              const role = (session?.user as { role?: string })?.role;
-              // Por ACCIÓN, no solo por módulo: así no se ofrecen pantallas que
-              // van a devolver 403.
-              const permitidos = ADMIN_NAV.filter((it) => can(role, it.module, it.action ?? 'read'));
-              // Primer nivel = lo que el conteo de filas en producción justifica.
-              // El resto vive en el desplegable 'Avanzado' (ver la nota de
-              // `avanzado` en shared/admin/nav.ts): sigue accesible por menú,
-              // por Cmd+K y por URL, solo deja de ocupar el sidebar.
-              const filtered = permitidos.filter((it) => !it.avanzado);
-              const avanzados = permitidos.filter((it) => it.avanzado);
-              const accentBg = '#ea580c';
-              const accentFg = '#fff';
-
-              const grouped = new Map<AdminNavGroup, AdminNavItem[]>();
-              for (const it of filtered) {
-                if (!grouped.has(it.group)) grouped.set(it.group, []);
-                grouped.get(it.group)!.push(it);
-              }
-
-              return ADMIN_NAV_GROUPS.filter((g) => grouped.has(g)).map((group, idx) => (
-                <div key={group} className={idx > 0 ? 'mt-4' : ''}>
-                  <div className="px-3 mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                    {group}
-                  </div>
-                  <div className="space-y-0.5">
-                    {grouped.get(group)!.map((item) => {
-                      const externo = esExterno(item, 'barraca');
-                      const href = adminHref(item, 'barraca', { constructora: constructoraUrl || undefined });
-                      const active = !externo && isActive(item.path);
-                      return (
-                        <Link
-                          key={`${item.app}${item.path}`}
-                          href={href}
-                          onClick={() => setSidebarOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                            active ? 'text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'
-                          }`}
-                          style={active ? { backgroundColor: accentBg, color: accentFg } : {}}
-                        >
-                          {ICONOS[item.path] ?? ICONO_DEFAULT}
-                          {item.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              ));
-            })()}
-
-            {(() => {
-              const role = (session?.user as { role?: string })?.role;
-              const avanzados = ADMIN_NAV
-                .filter((it) => it.avanzado && can(role, it.module, it.action ?? 'read'));
-              if (avanzados.length === 0) return null;
-              return (
-                <div className="mt-6 pt-4 border-t border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setAvanzadoAbierto((v) => !v)}
-                    aria-expanded={avanzadoAbierto}
-                    className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-white transition-colors"
-                  >
-                    Avanzado
-                    <span aria-hidden="true" className={`transition-transform ${avanzadoAbierto ? 'rotate-90' : ''}`}>›</span>
-                  </button>
-                  {avanzadoAbierto && (
-                    <div className="mt-1 space-y-0.5">
-                      {avanzados.map((item) => {
-                        const externo = esExterno(item, 'barraca');
-                        const href = adminHref(item, 'barraca', { constructora: constructoraUrl || undefined });
-                        const active = !externo && isActive(item.path);
-                        return (
-                          <Link
-                            key={`${item.app}${item.path}`}
-                            href={href}
-                            onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors ${
-                              active ? 'text-white' : 'text-gray-500 hover:text-white hover:bg-white/5'
-                            }`}
-                            style={active ? { backgroundColor: '#ea580c', color: '#fff' } : {}}
-                          >
-                            {item.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-          </nav>
-
-          {/* El link cruzado al otro panel se eliminó: el sidebar ya lista
-              TODAS las secciones de las dos unidades. */}
-
-          {/* Sign out */}
-          <div className="px-3 py-4 border-t border-white/10">
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-500 hover:text-white hover:bg-white/5 transition-colors w-full"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Cerrar sesión
-            </button>
-          </div>
+        </div>
+        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Secciones de la tienda">
+          <ul className="space-y-1">
+            {tienda.map((it) => (
+              <li key={it.href}>
+                <Link
+                  href={it.href}
+                  aria-current={isActive(it.href) ? 'page' : undefined}
+                  className={`flex items-center gap-3 min-h-[44px] px-3 rounded-lg text-sm font-semibold ${
+                    isActive(it.href) ? 'bg-orange-50 text-orange-700' : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {it.icon}
+                  {it.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {otras.length > 0 && (
+            <details className="mt-6 pt-4 border-t border-gray-100 group">
+              <summary className="cursor-pointer list-none flex items-center justify-between min-h-[44px] px-3 text-xs font-bold uppercase tracking-wide text-gray-500">
+                Más herramientas
+                <span aria-hidden="true" className="transition-transform group-open:rotate-90">›</span>
+              </summary>
+              <div className="mt-1">{listaOtras}</div>
+            </details>
+          )}
+        </nav>
+        <div className="px-3 py-3 border-t border-gray-100">
+          <p className="px-3 text-xs text-gray-500 truncate">{session?.user?.email || ''}</p>
+          <button onClick={handleSignOut} className="mt-1 w-full text-left min-h-[44px] px-3 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100">
+            Cerrar sesión
+          </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        <header className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-gray-600 hover:text-gray-900"
-            aria-label="Abrir menú"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          <div className="hidden lg:flex items-center gap-3">
-            <span
-              className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded"
-              style={{ backgroundColor: '#fff7ed', color: '#9a3412' }}
-            >
-              Barraca
-            </span>
-            <h2 className="text-lg font-semibold text-gray-800">
-              {ADMIN_NAV.find((item) => item.app === 'barraca' && isActive(item.path))?.label || 'Admin'}
-            </h2>
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+        {/* Barra superior */}
+        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 h-14 lg:h-16 px-4 lg:px-8 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="lg:hidden w-8 h-8 rounded-lg bg-orange-600 text-white text-sm font-black flex items-center justify-center shrink-0">B</span>
+            <h1 className="text-base lg:text-lg font-bold text-gray-900 truncate">{titulo}</h1>
           </div>
-
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             <NotificationsBell />
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-gray-700">
-                {session?.user?.name || 'Administrador'}
-              </p>
-              <p className="text-xs text-gray-500">{session?.user?.email || ''}</p>
-            </div>
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold"
-              style={{ backgroundColor: '#0c1d3a' }}
+            <button
+              type="button"
+              onClick={() => setMasAbierto(true)}
+              className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100"
+              aria-label="Más herramientas y cerrar sesión"
             >
-              {(session?.user?.name || 'A').charAt(0).toUpperCase()}
-            </div>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
         </header>
 
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">{children}</main>
+        {/* pb para que la barra inferior no tape el contenido en el celular */}
+        <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-4 lg:px-8 lg:py-8 pb-24 lg:pb-8">{children}</main>
       </div>
 
-      {/* Command Palette (Cmd+K) */}
+      {/* Barra inferior (celular) */}
+      <nav
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 pb-[env(safe-area-inset-bottom)]"
+        aria-label="Secciones de la tienda"
+      >
+        <ul className="grid" style={{ gridTemplateColumns: `repeat(${Math.max(tienda.length, 1)}, minmax(0, 1fr))` }}>
+          {tienda.map((it) => (
+            <li key={it.href}>
+              <Link
+                href={it.href}
+                aria-current={isActive(it.href) ? 'page' : undefined}
+                className={`flex flex-col items-center justify-center gap-0.5 min-h-[60px] text-[11px] font-semibold ${
+                  isActive(it.href) ? 'text-orange-700' : 'text-gray-500'
+                }`}
+              >
+                {it.icon}
+                {it.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Hoja "Más" (celular) */}
+      {masAbierto && (
+        <div className="lg:hidden fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Más herramientas">
+          <button className="absolute inset-0 bg-black/40" aria-label="Cerrar" onClick={() => setMasAbierto(false)} />
+          <div className="absolute bottom-0 inset-x-0 max-h-[80vh] overflow-y-auto bg-white rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <div className="flex items-center justify-between mb-2">
+              <p className="font-bold text-gray-900">Más herramientas</p>
+              <button onClick={() => setMasAbierto(false)} className="min-w-[44px] min-h-[44px] text-gray-500" aria-label="Cerrar">✕</button>
+            </div>
+            {listaOtras}
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="px-3 text-xs text-gray-500 truncate">{session?.user?.email || ''}</p>
+              <button onClick={handleSignOut} className="mt-1 w-full text-left min-h-[44px] px-3 rounded-lg text-sm font-semibold text-red-700 hover:bg-red-50">
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <CommandPalette
-        items={ADMIN_NAV
-          .filter((it) => can((session?.user as { role?: string })?.role, it.module, it.action ?? 'read'))
-          .map((it) => ({
+        items={[
+          ...tienda.map((it) => ({ label: it.label, href: it.href, group: 'Tienda' })),
+          ...otras.map((it) => ({
             label: it.label,
-            href: adminHref(it, 'barraca', { constructora: constructoraUrl || undefined }),
+            href: adminHref(it, 'barraca', { constructora: constructoraUrl }),
             group: it.group,
             keywords: it.keywords,
-          }))}
+          })),
+        ]}
       />
     </div>
   );

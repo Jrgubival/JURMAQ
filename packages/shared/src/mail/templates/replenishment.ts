@@ -37,7 +37,7 @@ export async function sendReplenishmentEmail(args: {
       </div>
     `,
     ctaLabel: 'Ver mi historial',
-    ctaUrl: `${BARRACA_URL}/cuenta/cotizaciones`,
+    ctaUrl: `${BARRACA_URL}/categorias`,
     footerNote: 'Si no querés más recordatorios, podés desuscribirte abajo.',
   });
 

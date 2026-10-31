@@ -9,7 +9,6 @@ import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
 import { validarCupon, registrarUsoCupon } from '@/lib/cupones';
 import { resolveCartItemPrice } from '@/lib/pricing';
 import { getActiveCategoryDiscountMap } from '@/lib/promotions';
-import { parseBarracaUserToken, extractBearerToken } from '@/lib/barraca-auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -193,27 +192,9 @@ export async function POST(request: NextRequest) {
     }
 
     const total = Math.max(0, totalRecalculado - cuponDescuento);
-    // SECURITY (audit jun-2026, regresión C-1): el usuario_id se deriva SOLO del
-    // JWT FIRMADO del portal cliente, NUNCA del body. El bloque base64 anterior
-    // (base64("id:"+random) sin firma) era FORJABLE: un atacante mandaba
-    // base64("<idVíctima>:"+"a".repeat(32)) + body.usuario_id=<idVíctima> y
-    // colgaba la cotización (con su PII) en la cuenta de cualquier cliente.
-    // Ahora usamos parseBarracaUserToken (verifica firma) e ignoramos body.usuario_id.
-    let usuarioId: number | null = null;
-    const bearer = extractBearerToken(request);
-    if (bearer) {
-      const id = await parseBarracaUserToken(bearer);
-      if (id != null) {
-        // Confirmar que el usuario exista y esté activo antes de asociar.
-        const { data: u } = await supabaseAdmin
-          .from('barraca_usuarios')
-          .select('id')
-          .eq('id', id)
-          .eq('activo', true)
-          .maybeSingle();
-        if (u) usuarioId = id;
-      }
-    }
+    // Sin cuentas de cliente (oct-2026): las cotizaciones son siempre de
+    // invitado. body.usuario_id se ignora (nunca se aceptó del body).
+    const usuarioId: number | null = null;
 
     // Competitor quote fields
     const cotizacionCompetencia = sanitizeString(body.cotizacion_competencia);

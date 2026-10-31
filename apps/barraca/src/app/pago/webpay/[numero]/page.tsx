@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import { pedidos, cookiePedido, tokenValido, PATRON_NUMERO } from "@/lib/pedidos";
+import { pedidos, PATRON_NUMERO } from "@/lib/pedidos";
+import { puedeVerPedido } from "@/lib/pedidos/enlace";
 import { URL_FORMULARIO, entornoWebpay } from "@/lib/pagos/webpay";
 import IrAWebpay from "./IrAWebpay";
 
@@ -17,7 +18,7 @@ export default async function IrAWebpayPage({ params }: { params: Promise<{ nume
   if (!PATRON_NUMERO.test(numero)) notFound();
   const pedido = await pedidos().porNumero(numero);
   const jar = await cookies();
-  if (!pedido || !tokenValido(jar.get(cookiePedido(numero))?.value, pedido.acceso_hash)) notFound();
+  if (!pedido || !puedeVerPedido((n) => jar.get(n)?.value, pedido)) notFound();
   if (pedido.pasarela !== "webpay" || !pedido.pasarela_referencia) redirect(`/pedido/${numero}`);
   if (pedido.estado !== "pendiente_pago" && pedido.estado !== "pago_rechazado") redirect(`/pedido/${numero}`);
 

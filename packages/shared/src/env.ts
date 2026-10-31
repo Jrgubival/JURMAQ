@@ -269,6 +269,19 @@ const serverEnvSchema = z.object({
   /** Correo que recibe el aviso de cada pedido nuevo de la tienda barraca. */
   BARRACA_PEDIDOS_EMAIL: z.string().email().optional(),
 
+  /**
+   * Casilla de la barraca para TODOS sus avisos internos (pedidos, cotizaciones,
+   * contraofertas) y la copia oculta de respaldo de los correos a clientes.
+   * Vacía = no definida. Sin ella, los avisos usan BARRACA_PEDIDOS_EMAIL /
+   * ADMIN_EMAIL / contacto@jurmaq.cl como antes y los correos a clientes de la
+   * barraca NO llevan copia oculta (antes iba a casillas de la constructora).
+   */
+  BARRACA_AVISOS_EMAIL: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim() || undefined)
+    .pipe(z.string().email().optional()),
+
   /** Scope de autenticación legacy (cuenta vs constructora vs admin). */
   AUTH_SCOPE: z.string().optional(),
 

@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 
@@ -11,7 +11,7 @@ export async function PUT(
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
 
-  const session = await auth();
+  const session = await requirePermission('barraca_suscriptores', 'update');
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
   const { id } = await params;
@@ -54,7 +54,7 @@ export async function DELETE(
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
 
-  const session = await auth();
+  const session = await requirePermission('barraca_suscriptores', 'delete');
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
   const { id } = await params;

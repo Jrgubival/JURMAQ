@@ -16,14 +16,14 @@ function safeCallback(url: string | undefined): string {
   return url;
 }
 
-const LOGIN_CREDENCIALES = '/cuenta/login?source=admin';
+const LOGIN_CREDENCIALES = '/login/credenciales';
 
 /**
  * Login de administración de barraca.jurmaq.cl.
  *
  * Mismo patrón que jurmaq.cl/login: SSO con Google (allowlist en
  * public.users vía email/sso_email, filtrada por AUTH_SCOPE=barraca) como
- * vía rápida; el login con email+contraseña de /cuenta/login queda como
+ * vía rápida; el login con email+contraseña de /login/credenciales queda como
  * respaldo. Sin GOOGLE_CLIENT_ID/SECRET se redirige al flujo de
  * credenciales como antes.
  */
@@ -97,7 +97,7 @@ export default async function AdminLoginPage({
 
           <div className="mt-4 text-center">
             <a
-              href={`${LOGIN_CREDENCIALES}&callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              href={`${LOGIN_CREDENCIALES}?callbackUrl=${encodeURIComponent(callbackUrl)}`}
               className="text-xs text-gray-500 hover:text-navy-950 underline underline-offset-2"
             >
               Entrar con email y contraseña

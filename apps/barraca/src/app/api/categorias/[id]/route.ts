@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, stripHtml } from '@jurmaq/shared/sanitize';
 
@@ -53,7 +53,7 @@ async function manejarPUT(
   }
 
   try {
-    const session = await auth();
+    const session = await requirePermission('barraca_categorias', 'update');
     if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const id = await idValido(params);
@@ -115,7 +115,7 @@ async function manejarDELETE(
   }
 
   try {
-    const session = await auth();
+    const session = await requirePermission('barraca_categorias', 'delete');
     if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
     const id = await idValido(params);

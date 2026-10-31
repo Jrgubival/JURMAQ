@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
+import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { parseExcelFile, matchProducts } from '@/lib/import-barraca-smart';
 
 export async function POST(request: NextRequest) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  }
   const session = await requirePermission('barraca_importar', 'create');
   if (!session) return forbiddenResponse('No tienes permiso');
 

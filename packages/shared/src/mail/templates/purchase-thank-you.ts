@@ -17,7 +17,8 @@ export async function sendPurchaseThankYouEmail(args: {
   total: number;
 }) {
   const totalFmt = `$${Number(args.total).toLocaleString('es-CL')}`;
-  const cotUrl = `${BARRACA_URL}/cuenta/cotizaciones/${encodeURIComponent(args.numero)}`;
+  // Sin cuentas de cliente (oct-2026): la cotización se ve en su página pública.
+  const cotUrl = `${BARRACA_URL}/cotizacion/${encodeURIComponent(args.numero)}`;
   const primerNombre = args.nombre.split(' ')[0] || 'Cliente';
   // Sin contexto propio: texto por defecto de la barraca ("Hola, vengo de la web y quiero cotizar").
   const waHref = whatsappCtaBarracaCotizar('email_gracias');

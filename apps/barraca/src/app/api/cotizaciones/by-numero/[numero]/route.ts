@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 
@@ -45,7 +45,7 @@ export async function GET(
     // Grant full access (with PII) only to admin OR when email query matches.
     // For anonymous lookups (public share link), return a PII-stripped version
     // so the customer can still see items and estado/total without leaking phone/RUT/notas.
-    const session = await auth();
+    const session = await requirePermission('barraca_cotizaciones', 'read');
     const isAdmin = !!session;
     const emailParam = request.nextUrl.searchParams.get('email')?.trim().toLowerCase() || null;
     const emailMatches = !!emailParam && !!data.email && emailParam === String(data.email).trim().toLowerCase();

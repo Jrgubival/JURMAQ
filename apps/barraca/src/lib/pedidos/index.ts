@@ -122,6 +122,8 @@ export interface Pedido {
   reembolso?: Reembolso | null;
   /** Consentimiento aparte, no obligatorio, para recordatorios y ofertas por correo. */
   acepta_ofertas: boolean;
+  /** Cuándo se mandó el correo para opinar de los productos (una vez por pedido). */
+  opinion_solicitada_at?: string | null;
   total: number;
   stock_descontado: boolean;
   created_at: string;
@@ -159,6 +161,10 @@ export interface PedidosStore {
   /** Guarda el envío generado. Sólo si el pedido aún no tenía seguimiento (devuelve false si ya lo tenía). */
   guardarEnvio(numero: string, envio: EnvioEmitido): Promise<boolean>;
   listar(opts: { estado?: EstadoPedido; limite?: number }): Promise<Pedido[]>;
+  /** Entregados entre `desde` y `hasta` (updated_at) a los que aún no se les pidió opinión. */
+  paraPedirOpinion(opts: { desde: string; hasta: string; limite: number }): Promise<Pedido[]>;
+  /** Marca que ya se pidió la opinión. Condicional: false si otro proceso ya lo marcó. */
+  marcarOpinionSolicitada(numero: string): Promise<boolean>;
 }
 
 // La tabla todavía no está en db-types (la migración no está aplicada).
@@ -253,6 +259,29 @@ const storeSupabase: PedidosStore = {
     const { data, error } = await q;
     if (error) throw error;
     return (data as Pedido[]) ?? [];
+  },
+  async paraPedirOpinion({ desde, hasta, limite }) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .select('*')
+      .eq('estado', 'entregado')
+      .is('opinion_solicitada_at', null)
+      .gte('updated_at', desde)
+      .lte('updated_at', hasta)
+      .order('updated_at', { ascending: true })
+      .limit(limite);
+    if (error) throw error;
+    return (data as Pedido[]) ?? [];
+  },
+  async marcarOpinionSolicitada(numero) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({ opinion_solicitada_at: new Date().toISOString() })
+      .eq('numero', numero)
+      .is('opinion_solicitada_at', null)
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
   },
 };
 

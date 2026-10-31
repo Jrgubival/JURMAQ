@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@jurmaq/shared/env';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { z, parseBody } from '@jurmaq/shared/validation';
-import { pedidos, esProduccion, cookiePedido, tokenValido, PATRON_NUMERO } from '@/lib/pedidos';
+import { pedidos, esProduccion, PATRON_NUMERO } from '@/lib/pedidos';
+import { puedeVerPedido } from '@/lib/pedidos/enlace';
 import { aplicarEstadoPago } from '@/lib/pagos';
 
 /**
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
   const { numero, resultado } = parsed.data;
 
   const pedido = await pedidos().porNumero(numero);
-  if (!pedido || !tokenValido(request.cookies.get(cookiePedido(numero))?.value, pedido.acceso_hash)) {
+  if (!pedido || !puedeVerPedido((n) => request.cookies.get(n)?.value, pedido)) {
     return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
   }
 

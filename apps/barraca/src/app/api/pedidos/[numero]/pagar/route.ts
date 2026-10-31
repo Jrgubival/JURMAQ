@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafeError } from '@jurmaq/shared/logging';
-import { pedidos, cookiePedido, tokenValido, PATRON_NUMERO } from '@/lib/pedidos';
+import { pedidos, PATRON_NUMERO } from '@/lib/pedidos';
+import { puedeVerPedido } from '@/lib/pedidos/enlace';
 import { pasarelaActiva, pagoEnLineaDisponible, origenTienda } from '@/lib/pagos';
 
 /**
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const store = pedidos();
   const pedido = await store.porNumero(numero);
-  if (!pedido || !tokenValido(request.cookies.get(cookiePedido(numero))?.value, pedido.acceso_hash)) {
+  if (!pedido || !puedeVerPedido((n) => request.cookies.get(n)?.value, pedido)) {
     return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
   }
   if (pedido.estado !== 'pendiente_pago' && pedido.estado !== 'pago_rechazado') {

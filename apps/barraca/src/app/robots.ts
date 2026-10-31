@@ -4,6 +4,7 @@ const DISALLOW = [
   "/admin/",
   "/api/",
   "/cuenta/",
+  "/opinar/",
   "/carrito",
   "/cotizar",
   "/checkout",

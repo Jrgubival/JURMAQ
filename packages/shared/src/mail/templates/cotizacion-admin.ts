@@ -1,6 +1,7 @@
 import { transporter } from "../transport";
 import { formatCLP, escapeHtml } from "../utils";
 import { env } from "@jurmaq/shared/env";
+import { avisosBarraca } from "../barraca";
 
 /**
  * Notificación al admin/equipo cuando entra una cotización nueva.
@@ -87,7 +88,8 @@ export async function sendCotizacionAdminEmail(cotizacion: {
   `;
 
   await transporter.sendMail({
-    to: env.ADMIN_EMAIL || "contacto@jurmaq.cl",
+    // Aviso interno de la barraca (no a las casillas de la constructora).
+    to: avisosBarraca(),
     subject: `${isLargeOrder ? "[URGENTE] " : ""}Nueva Cotizacion ${cotizacion.numero} - ${cotizacion.nombre} - ${formatCLP(cotizacion.total)}`,
     html: adminHtml,
   });

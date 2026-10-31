@@ -55,6 +55,21 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   // Subdomain rewrite handled by middleware.ts
+  // Sin cuentas de cliente (oct-2026): las páginas viejas de cuenta vuelven al
+  // inicio. El login de respaldo de admin (/cuenta/login?source=admin) pasa a
+  // /login/credenciales. 307 (no permanente) por si algún día vuelven.
+  async redirects() {
+    return [
+      {
+        source: "/cuenta/login",
+        has: [{ type: "query", key: "source", value: "admin" }],
+        destination: "/login/credenciales",
+        permanent: false,
+      },
+      { source: "/cuenta", destination: "/", permanent: false },
+      { source: "/cuenta/:path*", destination: "/", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

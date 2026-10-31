@@ -1,4 +1,4 @@
-import { auth } from '@jurmaq/shared/auth';
+import { requirePermission } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@jurmaq/shared/env';
 
@@ -228,7 +228,7 @@ function getDefaultImages(productName: string): string[] {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await requirePermission('barraca_imagenes', 'read');
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }

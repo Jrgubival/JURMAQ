@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
-import { transporter } from '@jurmaq/shared/mail/email';
+import { transporter, escapeHtml } from '@jurmaq/shared/mail/email';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
@@ -71,7 +71,7 @@ function buildEmailHtml(params: {
     linkPago
       ? `
               <div style="text-align: center; margin: 24px 0;">
-                <a href="${linkPago}" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px;">
+                <a href="${escapeHtml(linkPago)}" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 16px 40px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 16px;">
                   Ir a Pagar${total ? ` - ${formatCLP(total)}` : ''}
                 </a>
               </div>`
@@ -116,19 +116,19 @@ function buildEmailHtml(params: {
                   <span style="font-size: 24px;">${getIcon(tipo)}</span>
                 </div>
                 <h2 style="margin: 0; color: #0c1d3a; font-size: 22px; font-weight: 700;">${getTitle(tipo)}</h2>
-                <p style="margin: 8px 0 0; color: #ea580c; font-size: 16px; font-weight: 600;">#${numero}</p>
+                <p style="margin: 8px 0 0; color: #ea580c; font-size: 16px; font-weight: 600;">#${escapeHtml(numero)}</p>
               </div>
 
               ${approvedBanner}
 
               <!-- Greeting -->
               <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">
-                Hola <strong>${nombre}</strong>,
+                Hola <strong>${escapeHtml(nombre)}</strong>,
               </p>
 
               <!-- Custom message from admin -->
               <div style="background-color: #f9fafb; border-left: 4px solid #ea580c; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-bottom: 24px;">
-                <p style="margin: 0; color: #374151; font-size: 15px; line-height: 1.7; white-space: pre-line;">${mensaje}</p>
+                <p style="margin: 0; color: #374151; font-size: 15px; line-height: 1.7; white-space: pre-line;">${escapeHtml(mensaje)}</p>
               </div>
 
               ${paymentButton}

@@ -86,7 +86,14 @@ export function isValidOrigin(request: { headers: { get(name: string): string | 
     try {
       const u = new URL(candidate);
       if (ALLOWED_HOSTS.has(u.host)) return true;
-      if (u.host.endsWith('.vercel.app') && u.host.includes('jurmaq')) return true;
+      // Previews de Vercel: sólo fuera de producción. Cualquiera puede crear
+      // `jurmaq-lo-que-sea.vercel.app`, así que en producción ese comodín
+      // abría el chequeo CSRF a un origen controlado por un tercero.
+      if (
+        process.env.VERCEL_ENV !== 'production' &&
+        u.host.endsWith('.vercel.app') &&
+        u.host.includes('jurmaq')
+      ) return true;
       return false;
     } catch {
       return false;

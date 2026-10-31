@@ -136,7 +136,7 @@ ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacit
           ${escapeHtml(HORARIO_BARRACA.texto)}
         </p>
         <p style="margin:12px 0 0;color:#64748b;font-family:${FONT};font-size:11px;line-height:1.5;">
-          © ${year} JURMAQ · barraca.jurmaq.cl${opts.marketing ? ` · <a href="${SITE}/cuenta" style="color:#94a3b8;">Preferencias de correo</a>` : ''}
+          © ${year} JURMAQ · barraca.jurmaq.cl${opts.marketing ? ` · <a href="mailto:contacto@jurmaq.cl" style="color:#94a3b8;">Preferencias de correo</a>` : ''}
         </p>
       </td></tr>
     </table>

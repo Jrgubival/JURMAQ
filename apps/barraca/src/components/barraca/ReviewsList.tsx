@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import StarRating from './StarRating';
-import ReviewForm from './ReviewForm';
 
 interface Review {
   id: string;
@@ -26,32 +25,25 @@ interface RatingAgg {
 }
 
 /**
- * Sección completa de reviews en página de producto:
- *   - Resumen (avg + distribución por estrellas)
- *   - Form para dejar review (solo cliente logueado)
- *   - Lista de reviews aprobados ordenados por utilidad
+ * Sección de opiniones en la página de producto:
+ *   - Resumen (promedio + distribución por estrellas)
+ *   - Lista de opiniones aprobadas
  *
- * Endpoints:
- *   - GET /api/public/productos/[id]/reviews
- *   - POST /api/cuenta/reviews
- *   - POST /api/cuenta/reviews/[id]/like
+ * Sin cuentas de cliente (oct-2026): sólo opina quien compró, con el enlace
+ * que le llega por correo después de la entrega (/opinar/<numero>/<token>).
+ *
+ * Endpoint: GET /api/public/productos/[id]/reviews
  */
+
+/** Nombre público: nombre + inicial ("Juan P."), también para opiniones antiguas. */
+function nombrePublico(nombre: string): string {
+  const [primero, segundo] = (nombre || 'Cliente').trim().split(/\s+/);
+  return segundo ? `${primero} ${segundo.charAt(0).toUpperCase()}.` : primero;
+}
 export default function ReviewsList({ productoId }: { productoId: number }) {
   const [items, setItems] = useState<Review[]>([]);
   const [rating, setRating] = useState<RatingAgg | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  // Sólo quien compró el producto puede opinar (lo verifica el servidor).
-  const [puedeOpinar, setPuedeOpinar] = useState(false);
-  useEffect(() => {
-    const token = localStorage.getItem('barraca_token');
-    if (!token) return;
-    fetch(`/api/cuenta/reviews?puede=${productoId}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => (r.ok ? r.json() : { puede: false }))
-      .then((d: { puede?: boolean }) => setPuedeOpinar(!!d.puede))
-      .catch(() => setPuedeOpinar(false));
-  }, [productoId]);
-  const [liking, setLiking] = useState<string | null>(null);
 
   useEffect(() => {
     void load();
@@ -69,28 +61,6 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
       }
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function darLike(reviewId: string) {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('barraca_token') : null;
-    if (!token) {
-      window.location.href = `/cuenta/login?next=${encodeURIComponent(window.location.pathname)}`;
-      return;
-    }
-    setLiking(reviewId);
-    try {
-      const res = await fetch(`/api/cuenta/reviews/${reviewId}/like`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setItems((prev) =>
-          prev.map((r) => (r.id === reviewId ? { ...r, utiles_count: r.utiles_count + 1 } : r)),
-        );
-      }
-    } finally {
-      setLiking(null);
     }
   }
 
@@ -113,7 +83,7 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
               <p className="text-5xl font-bold text-gray-900">{avg.toFixed(1)}</p>
               <StarRating value={avg} className="justify-center my-1" />
               <p className="text-xs text-gray-500">
-                Basado en {total} {total === 1 ? 'review' : 'reviews'}
+                Basado en {total} {total === 1 ? 'opinión' : 'opiniones'}
               </p>
             </div>
             <div className="flex-1 space-y-1.5">
@@ -137,34 +107,15 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
           </div>
         )}
 
-        {puedeOpinar ? (
-          <button
-            onClick={() => setShowForm((v) => !v)}
-            className="mt-4 px-4 h-10 bg-navy-950 hover:bg-navy-800 text-white text-sm font-semibold rounded-lg"
-          >
-            {showForm ? 'Cancelar' : 'Escribir una opinión'}
-          </button>
-        ) : (
-          <p className="mt-3 text-xs text-gray-500">Solo quienes compraron este producto pueden dejar su opinión.</p>
-        )}
+        <p className="mt-3 text-xs text-gray-500">
+          Las opiniones son de clientes que compraron; te llega un enlace por correo después de la entrega.
+        </p>
       </div>
-
-      {showForm && puedeOpinar && (
-        <div className="mb-6">
-          <ReviewForm
-            productoId={productoId}
-            onSuccess={() => {
-              setShowForm(false);
-              void load();
-            }}
-          />
-        </div>
-      )}
 
       {/* Lista reviews */}
       <div className="space-y-3">
         {loading ? (
-          <div className="text-sm text-gray-500 text-center py-8">Cargando reviews…</div>
+          <div className="text-sm text-gray-500 text-center py-8">Cargando opiniones…</div>
         ) : items.length === 0 ? (
           /* Sin reseñas el resumen de arriba ya lo dijo ("Aún no hay reseñas
              para este producto"). Repetirlo acá mostraba el mismo vacío dos
@@ -195,15 +146,8 @@ export default function ReviewsList({ productoId }: { productoId: number }) {
               {r.comentario && (
                 <p className="text-sm text-gray-700 whitespace-pre-line">{r.comentario}</p>
               )}
-              <footer className="mt-2 flex items-center justify-between text-xs">
-                <span className="text-gray-500">{r.usuario_nombre.split(' ')[0]}</span>
-                <button
-                  onClick={() => darLike(r.id)}
-                  disabled={liking === r.id}
-                  className="text-gray-500 hover:text-marca-600 disabled:opacity-50"
-                >
-                  👍 Me sirvió ({r.utiles_count})
-                </button>
+              <footer className="mt-2 text-xs">
+                <span className="text-gray-500">{nombrePublico(r.usuario_nombre)}</span>
               </footer>
             </article>
           ))

@@ -40,9 +40,12 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  }
   const session = await requirePermission('barraca_promociones', 'delete');
   if (!session) return forbiddenResponse('No tienes permiso');
 

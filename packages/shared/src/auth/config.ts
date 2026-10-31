@@ -43,7 +43,8 @@ const SESSION_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.session-token`;
 const CALLBACK_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.callback-url`;
 const CSRF_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.csrf-token`;
 
-const SIGN_IN_PATH = SCOPE === 'barraca' ? '/cuenta/login' : '/login';
+// Barraca ya no tiene cuentas de cliente (oct-2026): su login es sólo admin.
+const SIGN_IN_PATH = '/login';
 
 // This config is edge-compatible (no DB imports)
 export const authConfig: NextAuthConfig = {
