@@ -17,6 +17,9 @@ import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
 import { cambiarCantidad, quitarDelCarrito, vaciarCarrito, obtenerCarrito, revisarCarrito, type ItemCarrito } from "@/lib/carrito";
 
+const SALIDA_MS = 300;
+const QUITAR_MS = 200;
+
 export default function CartDrawer({
   open,
   onClose,
@@ -28,6 +31,28 @@ export default function CartDrawer({
   const [problemas, setProblemas] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  // Entra y sale deslizándose: se mantiene montado mientras termina de salir.
+  const [montado, setMontado] = useState(open);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setMontado(true);
+      const raf = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
+      return () => cancelAnimationFrame(raf);
+    }
+    setVisible(false);
+    const t = setTimeout(() => setMontado(false), SALIDA_MS);
+    return () => clearTimeout(t);
+  }, [open]);
+  // Productos que se están quitando: primero se desvanecen y se cierran, después salen del carrito.
+  const [saliendo, setSaliendo] = useState<Set<number>>(new Set());
+  function quitar(id: number) {
+    setSaliendo((s) => new Set(s).add(id));
+    setTimeout(() => {
+      quitarDelCarrito(id);
+      setSaliendo((s) => { const n = new Set(s); n.delete(id); return n; });
+    }, QUITAR_MS);
+  }
   const triggerRef = useRef<HTMLElement | null>(null);
 
   // Focus management: move focus to close button when opened, return on close
@@ -85,12 +110,12 @@ export default function CartDrawer({
   const totalItems = items.reduce((s, i) => s + i.cantidad, 0);
   const hayProblemas = items.some((i) => problemas[i.productoId]);
 
-  if (!open) return null;
+  if (!montado) return null;
 
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300"
+        className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ease-out motion-reduce:transition-none ${visible ? "opacity-100" : "opacity-0"}`}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -99,7 +124,7 @@ export default function CartDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Carrito"
-        className="fixed top-0 right-0 h-full w-full sm:max-w-md bg-white z-[70] shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col translate-x-0 overscroll-contain"
+        className={`fixed top-0 right-0 h-full w-full sm:max-w-md bg-white z-[70] shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none flex flex-col overscroll-contain ${visible ? "translate-x-0" : "translate-x-full"}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 shrink-0">
@@ -153,8 +178,12 @@ export default function CartDrawer({
               {items.map((item) => (
                 <div
                   key={item.productoId}
-                  className="flex gap-3 p-3 bg-gray-50 rounded-xl"
+                  className={`grid transition-[grid-template-rows,opacity,transform,margin] duration-200 ease-out motion-reduce:transition-none ${
+                    saliendo.has(item.productoId) ? "grid-rows-[0fr] opacity-0 -translate-x-3 -mb-4" : "grid-rows-[1fr] opacity-100"
+                  }`}
                 >
+                <div className="min-h-0 overflow-hidden">
+                <div className="flex gap-3 p-3 bg-gray-50 rounded-xl">
                   {/* Product thumbnail */}
                   <div className="w-16 h-16 bg-gray-200 rounded-lg shrink-0 overflow-hidden">
                     <img
@@ -184,7 +213,7 @@ export default function CartDrawer({
                     </div>
                   </div>
                   <button
-                    onClick={() => quitarDelCarrito(item.productoId)}
+                    onClick={() => quitar(item.productoId)}
                     className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors self-start"
                     aria-label={`Quitar ${item.nombre} del carrito`}
                   >
@@ -192,6 +221,8 @@ export default function CartDrawer({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
+                </div>
+                </div>
                 </div>
               ))}
             </div>

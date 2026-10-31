@@ -194,7 +194,7 @@ function Navbar() {
                 {catOpen && categorias.length > 0 && (
                   /* Mega menú al modo Sodimac/Easy: cada categoría con su foto
                      en círculo y cuántos productos tiene, en 4 columnas. */
-                  <div className="absolute top-full left-0 pt-2 z-50">
+                  <div className="absolute top-full left-0 pt-2 z-50 origin-top-left menu-aparecer">
                     <div className="w-[880px] bg-white rounded-xl shadow-[0_24px_60px_-20px_rgba(8,20,40,0.45)] border border-gray-200 p-4">
                       <ul className="grid grid-cols-4 gap-1">
                         {categorias.map((cat) => (
@@ -290,7 +290,7 @@ function Navbar() {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div role="dialog" aria-label="Menú de navegación móvil" className="lg:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <div role="dialog" aria-label="Menú de navegación móvil" className="lg:hidden bg-white border-t border-gray-200 max-h-[calc(100vh-8rem)] overflow-y-auto origin-top menu-baja">
             <div className="px-4 py-4 space-y-1">
               <Link
                 href="/categorias"

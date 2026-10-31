@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
@@ -44,6 +44,15 @@ function Cantidad({ item }: { item: ItemCarrito }) {
 export default function CarritoPage() {
   const { items, problemas, cargando, total, cantidad, hayProblemas } = useCarrito({ revisar: true });
   const vista = useRef(false);
+  // Quitar con animación: el producto se desvanece y se cierra antes de salir del carrito.
+  const [saliendo, setSaliendo] = useState<Set<number>>(new Set());
+  function quitar(id: number) {
+    setSaliendo((s) => new Set(s).add(id));
+    setTimeout(() => {
+      quitarDelCarrito(id);
+      setSaliendo((s) => { const n = new Set(s); n.delete(id); return n; });
+    }, 200);
+  }
 
   useEffect(() => {
     if (cargando || vista.current || items.length === 0) return;
@@ -135,7 +144,7 @@ export default function CarritoPage() {
                 <div className="col-span-1" />
               </div>
               {items.map((item) => (
-                <div key={item.productoId} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 last:border-0 items-center">
+                <div key={item.productoId} className={`grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 last:border-0 items-center transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${saliendo.has(item.productoId) ? "opacity-0 -translate-x-3" : ""}`}>
                   <div className="col-span-5">
                     <Link href={item.slug ? `/producto/${item.slug}` : '#'} className="flex items-center gap-4 group" aria-label={`Ver ${item.nombre}`}>
                       <div className="w-16 h-16 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative">
@@ -156,7 +165,7 @@ export default function CarritoPage() {
                   <div className="col-span-2 flex justify-center"><Cantidad item={item} /></div>
                   <div className="col-span-2 text-right text-sm font-bold text-navy-950 tabular-nums">{formatCLP(item.precio * item.cantidad)}</div>
                   <div className="col-span-1 flex justify-end">
-                    <button onClick={() => quitarDelCarrito(item.productoId)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors" aria-label={`Quitar ${item.nombre} del carrito`}>
+                    <button onClick={() => quitar(item.productoId)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors" aria-label={`Quitar ${item.nombre} del carrito`}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -169,7 +178,9 @@ export default function CarritoPage() {
             {/* Mobile */}
             <div className="md:hidden space-y-3">
               {items.map((item) => (
-                <div key={item.productoId} className="bg-white border border-gray-200 rounded-xl p-4">
+                <div key={item.productoId} className={`grid transition-[grid-template-rows,opacity,transform,margin] duration-200 ease-out motion-reduce:transition-none ${saliendo.has(item.productoId) ? "grid-rows-[0fr] opacity-0 -translate-x-3 -mb-3" : "grid-rows-[1fr]"}`}>
+                <div className="min-h-0 overflow-hidden">
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
                   <div className="flex gap-3">
                     <Link href={item.slug ? `/producto/${item.slug}` : '#'} className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden relative" aria-label={`Ver ${item.nombre}`}>
                       <Image src={item.imagen || '/images/barraca/default.svg'} alt={`Producto ${item.nombre} en tu carrito`} fill sizes="80px" className="object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/barraca/default.svg'; }} />
@@ -180,7 +191,7 @@ export default function CarritoPage() {
                           <p className="text-sm font-medium text-gray-900 hover:text-marca-600 transition-colors">{item.nombre}</p>
                           {item.medida && <p className="text-xs text-gray-500">{item.medida}</p>}
                         </Link>
-                        <button onClick={() => quitarDelCarrito(item.productoId)} aria-label={`Quitar ${item.nombre} del carrito`} className="p-2 -mr-2 -mt-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500">
+                        <button onClick={() => quitar(item.productoId)} aria-label={`Quitar ${item.nombre} del carrito`} className="p-2 -mr-2 -mt-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -197,6 +208,8 @@ export default function CarritoPage() {
                     <Cantidad item={item} />
                     <p className="text-base font-bold text-navy-950 tabular-nums">{formatCLP(item.precio * item.cantidad)}</p>
                   </div>
+                </div>
+                </div>
                 </div>
               ))}
             </div>
