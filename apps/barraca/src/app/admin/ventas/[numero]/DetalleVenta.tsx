@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCLP } from "@jurmaq/shared/format";
+import { textoCombo } from "@/lib/combos";
 import type { FilaVenta } from "@/lib/admin/ventas-servidor";
 import type { EstadoPedido, EventoPedido } from "@/lib/pedidos";
 import { ESTADOS_VENTA, ETIQUETA_ESTADO, fechaCorta, medioPago } from "@/lib/admin/ventas";
@@ -323,7 +324,7 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
                   <span className="cifra w-10 shrink-0 text-[20px] leading-tight font-semibold text-navy-950 text-right">{i.cantidad}</span>
                   <span className="flex-1 min-w-0">
                     <span className="block text-[15px] text-[#111111] leading-snug">{i.nombre}</span>
-                    <span className="block text-[12.5px] text-[#8A8884]">{[i.codigo && `Cód. ${i.codigo}`, `${formatCLP(i.precio)} c/u`].filter(Boolean).join(" · ")}</span>
+                    <span className="block text-[12.5px] text-[#8A8884]">{[i.codigo && `Cód. ${i.codigo}`, `${formatCLP(i.precio)} c/u`, i.combo && textoCombo(i.combo)].filter(Boolean).join(" · ")}</span>
                   </span>
                   <span className="shrink-0 text-[15px] font-medium tabular-nums text-[#111111]">{formatCLP(i.subtotal)}</span>
                 </li>

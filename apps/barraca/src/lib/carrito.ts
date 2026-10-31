@@ -1,5 +1,7 @@
 "use client";
 
+import type { Combo } from "@/lib/combos";
+
 /**
  * Carrito de la tienda, guardado en el navegador (localStorage).
  *
@@ -30,6 +32,8 @@ export interface ItemCarrito {
   stock: number;
   /** Código Softmad (para el aviso de "sin derecho a retracto"). */
   codigo?: string | null;
+  /** Descuento por cantidad ("Lleva 2 por $12.000"); el servidor lo vuelve a revisar. */
+  combo?: Combo | null;
 }
 
 const CLAVE = "barraca_carrito_v2";
@@ -134,6 +138,7 @@ export interface ItemRevisado {
   medida: string | null;
   unidad: string | null;
   stock: number;
+  combo: Combo | null;
   /** Motivo por el que no se puede comprar (sin stock, sin precio, inactivo). */
   problema: string | null;
 }
@@ -164,6 +169,7 @@ export async function revisarCarrito(): Promise<ItemRevisado[]> {
       medida: r.medida,
       unidad: r.unidad,
       stock: r.stock,
+      combo: r.combo ?? null,
     })),
   );
   return revisados;

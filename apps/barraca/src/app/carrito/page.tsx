@@ -7,6 +7,8 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { trackEvents } from "@/lib/analytics";
 import { cambiarCantidad, quitarDelCarrito, vaciarCarrito, type ItemCarrito } from "@/lib/carrito";
 import { useCarrito } from "@/lib/useCarrito";
+import { totalLinea } from "@/lib/combos";
+import LineaCombo from "@/components/barraca/LineaCombo";
 import CantidadEditable from "@/components/barraca/CantidadEditable";
 import AvisoSinRetracto from "@/components/barraca/AvisoSinRetracto";
 import { useZonaDespacho } from "@/components/barraca/SelectorZona";
@@ -42,7 +44,7 @@ function Cantidad({ item }: { item: ItemCarrito }) {
 }
 
 export default function CarritoPage() {
-  const { items, problemas, cargando, total, cantidad, hayProblemas } = useCarrito({ revisar: true });
+  const { items, problemas, cargando, total, ahorro, cantidad, hayProblemas } = useCarrito({ revisar: true });
   const vista = useRef(false);
   // Quitar con animación: el producto se desvanece y se cierra antes de salir del carrito.
   const [saliendo, setSaliendo] = useState<Set<number>>(new Set());
@@ -158,12 +160,13 @@ export default function CarritoPage() {
                         ) : (
                           <p className="text-xs text-gray-500 mt-0.5 tabular-nums">{item.stock} disponibles</p>
                         )}
+                        <LineaCombo precio={item.precio} cantidad={item.cantidad} combo={item.combo} className="mt-0.5" />
                       </div>
                     </Link>
                   </div>
                   <div className="col-span-2 text-center text-sm font-medium text-gray-900 tabular-nums">{formatCLP(item.precio)}</div>
                   <div className="col-span-2 flex justify-center"><Cantidad item={item} /></div>
-                  <div className="col-span-2 text-right text-sm font-bold text-navy-950 tabular-nums">{formatCLP(item.precio * item.cantidad)}</div>
+                  <div className="col-span-2 text-right text-sm font-bold text-navy-950 tabular-nums">{formatCLP(totalLinea(item.precio, item.cantidad, item.combo).total)}</div>
                   <div className="col-span-1 flex justify-end">
                     <button onClick={() => quitar(item.productoId)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-500 transition-colors" aria-label={`Quitar ${item.nombre} del carrito`}>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,6 +202,7 @@ export default function CarritoPage() {
                       </div>
                       <AvisoSinRetracto codigo={item.codigo} tamano="carrito" />
                       <p className="text-sm font-semibold text-navy-950 mt-1 tabular-nums">{formatCLP(item.precio)} <span className="text-xs font-normal text-gray-500">{item.unidad ? `/${item.unidad.toLowerCase()}` : "c/u"}</span></p>
+                      <LineaCombo precio={item.precio} cantidad={item.cantidad} combo={item.combo} className="mt-0.5" />
                       {problemas[item.productoId] && (
                         <p className="text-xs font-semibold text-red-600 mt-0.5">{problemas[item.productoId]}</p>
                       )}
@@ -206,7 +210,7 @@ export default function CarritoPage() {
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                     <Cantidad item={item} />
-                    <p className="text-base font-bold text-navy-950 tabular-nums">{formatCLP(item.precio * item.cantidad)}</p>
+                    <p className="text-base font-bold text-navy-950 tabular-nums">{formatCLP(totalLinea(item.precio, item.cantidad, item.combo).total)}</p>
                   </div>
                 </div>
                 </div>
@@ -228,8 +232,14 @@ export default function CarritoPage() {
               <div className="space-y-2 mb-6 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Productos ({cantidad})</span>
-                  <span className="font-medium text-gray-900 tabular-nums">{formatCLP(total)}</span>
+                  <span className="font-medium text-gray-900 tabular-nums">{formatCLP(total + ahorro)}</span>
                 </div>
+                {ahorro > 0 && (
+                  <div className="flex justify-between text-[#2F7F4E]">
+                    <span>Ahorro por cantidad</span>
+                    <span className="tabular-nums">−{formatCLP(ahorro)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between pt-3 border-t border-gray-200">
                   <span className="text-gray-600">Neto</span>
                   <span className="tabular-nums">{formatCLP(neto)}</span>

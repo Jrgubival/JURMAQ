@@ -6,6 +6,7 @@ import { familiaDe, tituloFamilia } from "@/lib/variantes";
 import Precio from "@/components/barraca/Precio";
 import CantidadEditable from "@/components/barraca/CantidadEditable";
 import type { VistaPrecio } from "@/lib/precio-web";
+import type { Combo } from "@/lib/combos";
 import { agregarProducto } from "@/lib/agregar";
 import { cambiarCantidad, quitarDelCarrito } from "@/lib/carrito";
 import { useEnCarrito, PAUSA_AGREGAR_MS } from "@/lib/useEnCarrito";
@@ -36,11 +37,14 @@ export default function AddToCartClient({
   producto,
   variantes,
   vista,
+  combo = null,
 }: {
   producto: Producto;
   variantes: Variante[];
   /** Precio web / normal ya resuelto en el servidor (lib/precio-web.ts). */
   vista: VistaPrecio;
+  /** Descuento por cantidad vigente (lib/combos.ts). */
+  combo?: Combo | null;
 }) {
   const [cantidad, setCantidad] = useState(1);
   const [adding, setAdding] = useState(false);
@@ -75,6 +79,7 @@ export default function AddToCartClient({
         medida: producto.medida,
         unidad: producto.unidad,
         stock: unidades,
+        combo,
       },
       cantidad,
       { abrirCarrito: true },

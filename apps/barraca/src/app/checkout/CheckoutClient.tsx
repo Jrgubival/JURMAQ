@@ -7,6 +7,8 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
 import { trackEvents } from "@/lib/analytics";
 import { useCarrito } from "@/lib/useCarrito";
+import { totalLinea } from "@/lib/combos";
+import LineaCombo from "@/components/barraca/LineaCombo";
 import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carrito";
 import { rutValido } from "@/lib/rut";
 import { precioWebHastaNumerico } from "@/lib/vigencia";
@@ -219,7 +221,7 @@ function Seccion({ n, titulo, children }: { n: number; titulo: string; children:
 
 export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }) {
   const router = useRouter();
-  const { items, total, cantidad, cargando, hayProblemas } = useCarrito({ revisar: true });
+  const { items, total, ahorro, cantidad, cargando, hayProblemas } = useCarrito({ revisar: true });
   const [datos, setDatos] = useState<Datos>(VACIO);
   const [entrega, setEntrega] = useState<"retiro" | "despacho">("retiro");
   const [metodo, setMetodo] = useState<"webpay" | "transferencia">(pagoEnLinea ? "webpay" : "transferencia");
@@ -564,13 +566,17 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                   <span className="min-w-0">
                     <span className="block text-[#111111] leading-snug">{i.nombre}</span>
                     <span className="block text-xs text-[#787774] tabular-nums">{i.cantidad} × {formatCLP(i.precio)}</span>
+                    <LineaCombo precio={i.precio} cantidad={i.cantidad} combo={i.combo} />
                   </span>
-                  <span className="font-medium text-[#111111] tabular-nums shrink-0">{formatCLP(i.precio * i.cantidad)}</span>
+                  <span className="font-medium text-[#111111] tabular-nums shrink-0">{formatCLP(totalLinea(i.precio, i.cantidad, i.combo).total)}</span>
                 </li>
               ))}
             </ul>
             <div className="space-y-1.5 text-sm border-t border-gray-200 pt-3 mb-5">
-              <div className="flex justify-between"><span className="text-[#5A5A57]">Productos</span><span className="tabular-nums">{formatCLP(total)}</span></div>
+              <div className="flex justify-between"><span className="text-[#5A5A57]">Productos</span><span className="tabular-nums">{formatCLP(total + ahorro)}</span></div>
+              {ahorro > 0 && (
+                <div className="flex justify-between text-[#2F7F4E]"><span>Ahorro por cantidad</span><span className="tabular-nums">−{formatCLP(ahorro)}</span></div>
+              )}
               <div className="flex justify-between gap-3">
                 <span className="text-[#5A5A57]">{despacho ? `Despacho${cotizacion && "comuna" in cotizacion ? ` a ${cotizacion.comuna}` : ""}` : "Retiro en Molina"}</span>
                 <span className={`tabular-nums shrink-0 ${costoDespacho ? "text-[#111111]" : "text-[#5A5A57]"}`}>{montoFila}</span>

@@ -15,6 +15,8 @@ import { getActiveCategoryDiscountMap, getDailyPromotions, applyDailyPromosToPro
 import { formatCLP } from "@jurmaq/shared/format";
 import { pagoEnLineaDisponible } from "@/lib/pagos";
 import { CUOTAS_SIN_INTERES, CUOTAS_DESDE } from "@/lib/pagos/cuotas";
+import { comboValido, textoCombo } from "@/lib/combos";
+import { combosDe } from "@/lib/combos-servidor";
 import { resolvePrice } from "@/lib/pricing";
 import { vistaDesde, vistaPrecio } from "@/lib/precio-web";
 import { esComprable, unidadesDisponibles } from "@/lib/stock";
@@ -251,6 +253,7 @@ export default async function ProductoPage({
     precioResuelto.precioFinal,
     precioResuelto.precioTachado,
   );
+  const combo = vista.disponible ? comboValido((await combosDe([producto.id])).get(producto.id), vista.precioWeb) : null;
   promoPrecioDescuento = precioResuelto.tipo === 'promo_dia' ? precioResuelto.precioFinal : null;
 
   // Related products (random order via Supabase -- not natively supported, so we just get recent)
@@ -425,6 +428,9 @@ export default async function ProductoPage({
             {/* Precio web / precio normal (tachado) / No disponible: ver lib/precio-web.ts. */}
             <div className="border-t border-b border-[#EAEAEA] py-6 my-2">
               <Precio vista={vista} unidad={producto.unidad} tamano="ficha" />
+              {combo && (
+                <p className="mt-1 text-sm font-medium text-[#2F7F4E] tabular-nums">{textoCombo(combo)}</p>
+              )}
               {/* Cuotas sin interés de Webpay: sólo con Webpay activo y desde $50.000. */}
               {vista.disponible && vista.precioWeb >= CUOTAS_DESDE && pagoEnLineaDisponible() && (
                 <p className="mt-1 text-sm text-[#5A5A57] tabular-nums">
@@ -463,7 +469,7 @@ export default async function ProductoPage({
 
             {/* Variants & Add to Cart - sticky on mobile */}
             <div className="lg:relative">
-              <AddToCartClient producto={producto} variantes={variantes} vista={vista} />
+              <AddToCartClient producto={producto} variantes={variantes} vista={vista} combo={combo} />
             </div>
 
             {/* Share buttons */}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { textoCombo } from "@/lib/combos";
 import { cookies } from "next/headers";
 import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
@@ -206,6 +207,7 @@ export default async function PedidoPage({
               <span className="min-w-0">
                 <span className="block text-[#111111]">{i.nombre}</span>
                 <span className="block text-xs text-[#787774] tabular-nums">{i.cantidad} × {formatCLP(i.precio)}</span>
+                {i.combo && <span className="block text-xs text-[#2F7F4E] tabular-nums">{textoCombo(i.combo)}</span>}
               </span>
               <span className="font-medium tabular-nums shrink-0">{formatCLP(i.subtotal)}</span>
             </li>

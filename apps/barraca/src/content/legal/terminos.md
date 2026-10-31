@@ -254,9 +254,11 @@ El checkout muestra solo los medios de pago que están activos el día de tu com
 
 ## 16. Promociones y cupones
 
-16.1. Hoy la Tienda no tiene cupones de descuento ni promociones distintas del precio web de la sección 5, salvo las cuotas sin interés con tarjeta de crédito vía Webpay del punto 14.1.
+16.1. Hoy la Tienda no tiene cupones de descuento ni promociones distintas del precio web de la sección 5, salvo el descuento por cantidad del punto 16.3 y las cuotas sin interés con tarjeta de crédito vía Webpay del punto 14.1.
 
 16.2. Si en el futuro publicamos una promoción o un cupón, indicará su fecha de inicio y de término, el descuento, los productos incluidos y sus condiciones, según exige el artículo 35 de la Ley del Consumidor, y si tiene stock limitado, el número mínimo de unidades disponibles. Las condiciones de esa promoción se agregarán a estos Términos antes de ofrecerla.
+
+16.3. **Descuento por cantidad.** Algunos productos muestran en su ficha un precio por cantidad, por ejemplo "Lleva 2 por $12.000". Ese precio se aplica por cada grupo completo de esa cantidad que lleves en el mismo pedido, y las unidades que sobran se cobran al precio web. Ejemplo: con "Lleva 2 por $12.000" y un precio web de $6.500, 3 unidades cuestan $12.000 + $6.500 = $18.500. El carrito y el checkout te muestran el descuento antes de pagar. No se suma con otras promociones. Rige mientras se publique en la ficha, con la misma vigencia del precio web (punto 5.3), o hasta agotar el stock publicado.
 
 ## 17. Opiniones (reseñas)
 

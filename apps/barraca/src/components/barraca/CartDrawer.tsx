@@ -15,6 +15,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import CantidadEditable from "@/components/barraca/CantidadEditable";
 import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
+import { totalLinea } from "@/lib/combos";
+import LineaCombo from "@/components/barraca/LineaCombo";
 import { cambiarCantidad, quitarDelCarrito, vaciarCarrito, obtenerCarrito, revisarCarrito, type ItemCarrito } from "@/lib/carrito";
 
 const SALIDA_MS = 300;
@@ -106,7 +108,8 @@ export default function CartDrawer({
     return () => window.removeEventListener("cart-updated", alCambiar);
   }, []);
 
-  const total = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+  const total = items.reduce((s, i) => s + totalLinea(i.precio, i.cantidad, i.combo).total, 0);
+  const ahorro = items.reduce((s, i) => s + totalLinea(i.precio, i.cantidad, i.combo).ahorro, 0);
   const totalItems = items.reduce((s, i) => s + i.cantidad, 0);
   const hayProblemas = items.some((i) => problemas[i.productoId]);
 
@@ -201,6 +204,7 @@ export default function CartDrawer({
                       <p className="text-xs text-gray-500">{item.medida}</p>
                     )}
                     <p className="text-xs text-gray-500 mt-0.5 tabular-nums">{formatCLP(item.precio)} {item.unidad ? `/${item.unidad.toLowerCase()}` : "c/u"}</p>
+                    <LineaCombo precio={item.precio} cantidad={item.cantidad} combo={item.combo} className="mt-0.5" />
                     {problemas[item.productoId] && (
                       <p className="text-xs font-semibold text-red-600 mt-0.5">{problemas[item.productoId]}</p>
                     )}
@@ -208,7 +212,7 @@ export default function CartDrawer({
                     <div className="flex items-center justify-between mt-2">
                       <CantidadEditable chico valor={item.cantidad} max={item.stock} nombre={item.nombre} onCambio={(n) => cambiarCantidad(item.productoId, n)} />
                       <p className="text-sm font-bold text-navy-950">
-                        {formatCLP((item.precio * item.cantidad))}
+                        {formatCLP(totalLinea(item.precio, item.cantidad, item.combo).total)}
                       </p>
                     </div>
                   </div>
@@ -238,6 +242,12 @@ export default function CartDrawer({
               <span>{totalItems} {totalItems === 1 ? "item" : "items"} · IVA incl.</span>
               <span>Retiro en Molina o despacho</span>
             </div>
+            {ahorro > 0 && (
+              <div className="flex items-center justify-between text-xs text-[#2F7F4E] tabular-nums">
+                <span>Ahorro por cantidad</span>
+                <span>−{formatCLP(ahorro)}</span>
+              </div>
+            )}
             {/* Total — fila destacada estilo línea de factura */}
             <div className="flex items-baseline justify-between border-t border-gray-300 pt-3">
               <span className="text-xs font-bold uppercase tracking-wider text-gray-600">Total</span>

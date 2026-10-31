@@ -74,6 +74,8 @@ export interface ItemPedido {
   cantidad: number;
   precio: number;
   subtotal: number;
+  /** Descuento por cantidad aplicado ("Lleva 2 por $12.000"), si hubo. */
+  combo?: { cantidad: number; precio: number };
 }
 
 export interface Pedido {

@@ -132,7 +132,9 @@ export async function POST(request: NextRequest) {
       unidad: l.unidad,
       cantidad: l.cantidad,
       precio: l.precio,
-      subtotal: l.precio * l.cantidad,
+      // Con el combo aplicado (lib/combos.ts): lo calcula el servidor, nunca el navegador.
+      subtotal: l.subtotal,
+      ...(l.combo && l.ahorro > 0 ? { combo: l.combo } : {}),
     }));
     const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
     if (!Number.isInteger(subtotal) || subtotal <= 0) {

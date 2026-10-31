@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { obtenerCarrito, revisarCarrito, type ItemCarrito } from "@/lib/carrito";
+import { totalLinea } from "@/lib/combos";
 
 /**
  * Estado del carrito para componentes. Dibuja al instante con la foto guardada
@@ -48,9 +49,12 @@ export function useCarrito({ revisar = false }: { revisar?: boolean } = {}) {
     };
   }, [recargar]);
 
-  const total = items.reduce((s, i) => s + i.precio * i.cantidad, 0);
+  // Con el combo aplicado; `ahorro` es lo que descuentan los combos.
+  const lineas = items.map((i) => totalLinea(i.precio, i.cantidad, i.combo));
+  const total = lineas.reduce((s, l) => s + l.total, 0);
+  const ahorro = lineas.reduce((s, l) => s + l.ahorro, 0);
   const cantidad = items.reduce((s, i) => s + i.cantidad, 0);
   const hayProblemas = items.some((i) => problemas[i.productoId]);
 
-  return { items, problemas, cargando, errorRevision, total, cantidad, hayProblemas, recargar };
+  return { items, problemas, cargando, errorRevision, total, ahorro, cantidad, hayProblemas, recargar };
 }

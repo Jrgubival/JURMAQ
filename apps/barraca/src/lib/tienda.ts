@@ -6,6 +6,8 @@ import { resolvePrice } from '@/lib/pricing';
 import { motivoNoComprable, unidadesDisponibles } from '@/lib/stock';
 import { logSafeError } from '@jurmaq/shared/logging';
 import { COURIER_HABILITADO, type TamanoEnvio } from '@/lib/despacho/tarifas';
+import { comboValido, totalLinea, type Combo } from '@/lib/combos';
+import { combosDe } from '@/lib/combos-servidor';
 
 /**
  * Precio y stock VIGENTES de una lista de productos, leídos de la base.
@@ -27,6 +29,12 @@ export interface LineaRevisada {
   cantidad: number;
   nombre: string;
   precio: number;
+  /** Descuento por cantidad vigente (null si no hay o no conviene). */
+  combo: Combo | null;
+  /** Lo que se cobra por la línea, con el combo aplicado. */
+  subtotal: number;
+  /** Lo que el combo descuenta de precio × cantidad. */
+  ahorro: number;
   imagen: string | null;
   slug: string | null;
   medida: string | null;
@@ -92,13 +100,14 @@ export async function revisarLineas(lineas: LineaPedido[]): Promise<LineaRevisad
   const ids = [...porId.keys()];
   if (ids.length === 0) return [];
 
-  const [{ data, error }, promoMap, medidas] = await Promise.all([
+  const [{ data, error }, promoMap, medidas, combos] = await Promise.all([
     supabaseAdmin
       .from('barraca_productos')
       .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id, peso, activo')
       .in('id', ids),
     getActiveCategoryDiscountMap(),
     medidasEnvio(ids),
+    combosDe(ids),
   ]);
   if (error) throw error;
 
@@ -120,14 +129,21 @@ export async function revisarLineas(lineas: LineaPedido[]): Promise<LineaRevisad
     const stock = unidadesDisponibles(p.stock);
     const problema = motivoNoComprable({ precio, stock, solo_cotizar: p.solo_cotizar, activo: p.activo });
     const pedida = porId.get(id) ?? 1;
+    const cantidad = stock > 0 ? Math.min(pedida, stock) : pedida;
+    const unitario = Math.round(precio);
+    const combo = comboValido(combos.get(id), unitario);
+    const { total, ahorro } = totalLinea(unitario, cantidad, combo);
     out.push({
       productoId: id,
       codigo: p.codigo,
       // Nunca más de lo que hay. Sin stock la línea queda con lo pedido y el
       // problema marcado, para que el cliente vea por qué no puede pagar.
-      cantidad: stock > 0 ? Math.min(pedida, stock) : pedida,
+      cantidad,
       nombre: p.nombre,
-      precio: Math.round(precio),
+      precio: unitario,
+      combo,
+      subtotal: total,
+      ahorro,
       imagen: p.imagen,
       slug: p.slug,
       medida: p.medida,

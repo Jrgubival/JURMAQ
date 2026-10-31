@@ -1,6 +1,7 @@
 import 'server-only';
 import { env } from '@jurmaq/shared/env';
 import { transporter, renderEmailLayout, renderOrderItems, renderButton, escapeHtml, formatCLP } from '@jurmaq/shared/mail/email';
+import { textoCombo } from '@/lib/combos';
 import { avisosBarraca } from '@jurmaq/shared/mail/barraca';
 import { logSafeError } from '@jurmaq/shared/logging';
 import { HORARIO_BARRACA } from '@jurmaq/shared/seo';
@@ -98,7 +99,7 @@ function bloqueVerPedido(p: Pedido): string {
 function cuerpo(p: Pedido, intro: string, conEnlace = true): string {
   return `
 <p style="margin:0 0 16px;">${intro}</p>
-${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio })))}
+${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio, subtotal: i.subtotal, nota: i.combo ? textoCombo(i.combo) : null })))}
 ${p.entrega === 'despacho' ? `<p style="margin:16px 0 0;font-size:14px;">Despacho: ${escapeHtml(montoDespacho(p))}</p>` : ''}
 <p style="margin:16px 0;font-size:16px;"><strong>Total: ${formatCLP(p.total)}</strong> <span style="color:#6b7280;font-size:13px;">IVA incluido${p.entrega === 'despacho' && p.costo_despacho == null ? ' · despacho aparte' : ''}</span></p>
 <div style="margin:0 0 16px;">${bloqueEntrega(p)}</div>

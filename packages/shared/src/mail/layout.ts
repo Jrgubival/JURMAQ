@@ -58,6 +58,10 @@ export interface OrderItem {
   cantidad: number;
   precio: number;
   imagen?: string | null;
+  /** Total de la línea si no es precio × cantidad (p. ej. descuento por cantidad). */
+  subtotal?: number;
+  /** Nota corta bajo la línea, p. ej. "Lleva 2 por $12.000". */
+  nota?: string | null;
 }
 
 /** Resumen de pedido con miniatura + nombre + cant×precio + subtotal. */
@@ -75,10 +79,12 @@ export function renderOrderItems(items: OrderItem[]): string {
     </td>
     <td style="padding:12px 14px;border-bottom:1px solid ${BRAND.border};font-family:${FONT};font-size:14px;color:${BRAND.text};vertical-align:top;">
       ${escapeHtml(it.nombre)}<br>
-      <span style="color:${BRAND.textMuted};font-size:12px;">${it.cantidad} × ${formatCLP(it.precio)}</span>
+      <span style="color:${BRAND.textMuted};font-size:12px;">${it.cantidad} × ${formatCLP(it.precio)}</span>${
+        it.nota ? `<br><span style="color:#2F7F4E;font-size:12px;">${escapeHtml(it.nota)}</span>` : ''
+      }
     </td>
     <td style="padding:12px 0;border-bottom:1px solid ${BRAND.border};font-family:${FONT};font-size:14px;font-weight:700;color:${BRAND.text};text-align:right;white-space:nowrap;vertical-align:top;">
-      ${formatCLP(it.precio * it.cantidad)}
+      ${formatCLP(it.subtotal ?? it.precio * it.cantidad)}
     </td>
   </tr>`
     )
