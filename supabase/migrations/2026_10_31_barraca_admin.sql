@@ -56,7 +56,7 @@ on conflict (id) do nothing;
 alter table public.barraca_zonas_despacho enable row level security;
 -- Sin policies: anon/authenticated no ven ni tocan nada. La tienda pública
 -- recibe las tarifas por GET /api/tienda/zonas (servidor).
-revoke all on public.barraca_zonas_despacho from anon, authenticated;
+do $$ begin if to_regclass('public.barraca_zonas_despacho') is not null then execute 'revoke all on public.barraca_zonas_despacho from anon, authenticated'; end if; end $$;
 grant select, insert, update, delete on public.barraca_zonas_despacho to service_role;
 
 -- -----------------------------------------------------------------------------
@@ -66,19 +66,19 @@ grant select, insert, update, delete on public.barraca_zonas_despacho to service
 -- hoy un UPDATE con la anon key afecta 0 filas. Pero el GRANT de escritura
 -- sigue existiendo (PostgREST respondió 204, no 401, a un PATCH anónimo), y
 -- basta una policy mal escrita para abrirlo. Se quita el privilegio.
-revoke insert, update, delete, truncate on public.barraca_productos    from anon, authenticated;
-revoke insert, update, delete, truncate on public.barraca_categorias   from anon, authenticated;
-revoke insert, update, delete, truncate on public.barraca_promociones  from anon, authenticated;
-revoke insert, update, delete, truncate on public.barraca_reviews      from anon, authenticated;
-revoke insert, update, delete, truncate on public.barraca_cupones      from anon, authenticated;
-revoke insert, update, delete, truncate on public.barraca_cupones_usos from anon, authenticated;
+do $$ begin if to_regclass('public.barraca_productos') is not null then execute 'revoke insert, update, delete, truncate on public.barraca_productos from anon, authenticated'; end if; end $$;
+do $$ begin if to_regclass('public.barraca_categorias') is not null then execute 'revoke insert, update, delete, truncate on public.barraca_categorias from anon, authenticated'; end if; end $$;
+do $$ begin if to_regclass('public.barraca_promociones') is not null then execute 'revoke insert, update, delete, truncate on public.barraca_promociones from anon, authenticated'; end if; end $$;
+do $$ begin if to_regclass('public.barraca_reviews') is not null then execute 'revoke insert, update, delete, truncate on public.barraca_reviews from anon, authenticated'; end if; end $$;
+do $$ begin if to_regclass('public.barraca_cupones') is not null then execute 'revoke insert, update, delete, truncate on public.barraca_cupones from anon, authenticated'; end if; end $$;
+do $$ begin if to_regclass('public.barraca_cupones_usos') is not null then execute 'revoke insert, update, delete, truncate on public.barraca_cupones_usos from anon, authenticated'; end if; end $$;
 
 -- Tablas con datos personales que no tenían RLS en ningún script del repo
 -- (en producción la anon key ya recibe 401; esto lo deja escrito y fijo).
 alter table if exists public.barraca_suscriptores enable row level security;
-revoke all on public.barraca_suscriptores from anon, authenticated;
+do $$ begin if to_regclass('public.barraca_suscriptores') is not null then execute 'revoke all on public.barraca_suscriptores from anon, authenticated'; end if; end $$;
 alter table if exists public.users enable row level security;
-revoke all on public.users from anon, authenticated;
+do $$ begin if to_regclass('public.users') is not null then execute 'revoke all on public.users from anon, authenticated'; end if; end $$;
 
 -- barraca_pedidos (creada en 2026_10_26): RLS activo y sin policies; se
 -- asegura que anon/authenticated no tengan privilegios.

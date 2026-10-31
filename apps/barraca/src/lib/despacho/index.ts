@@ -4,7 +4,7 @@ import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from '@jurmaq/shared/whatsapp';
 import type { LineaRevisada } from '@/lib/tienda';
 import { COMUNAS, type Comuna } from './comunas';
 import { CATEGORIAS_CAMION, COMUNA_ORIGEN, LIMITE_COURIER, TAMANOS_ENVIO } from './tarifas';
-import { costoZona, type ZonaDespacho } from './zonas';
+import { COMUNAS_CON_ZONA, costoZona, type ZonaDespacho } from './zonas';
 import { zonasDespachoVigentes } from './tarifas-db';
 import { courierActivo, type Bulto, type Paquete } from './courier';
 
@@ -116,7 +116,9 @@ export async function cotizarDespacho(lineas: LineaRevisada[], destino: string):
   }
 
   // Una comuna que tiene zonas se elige por zona, no por código.
-  if (zonas.some((z) => z.comuna === destino)) return null;
+  // También las comunas de zonas.ts aunque estén apagadas en el panel: nunca
+  // caen al cálculo de "otra comuna".
+  if (zonas.some((z) => z.comuna === destino) || COMUNAS_CON_ZONA.has(destino)) return null;
   const comuna = comunaPorCodigo(destino);
   if (!comuna) return null;
 

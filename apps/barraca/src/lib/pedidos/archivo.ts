@@ -150,5 +150,8 @@ export function crearStoreArchivo(): PedidosStore {
       });
       return marcado;
     },
+    async desmarcarOpinionSolicitada(numero) {
+      editar(numero, (p) => { p.opinion_solicitada_at = null; });
+    },
   };
 }

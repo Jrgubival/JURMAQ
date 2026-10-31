@@ -1,7 +1,9 @@
 "use client";
 
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 import { useConsentimiento } from "@/lib/consentimiento";
+import { esRutaPrivada } from "@/lib/rutas-privadas";
 
 /**
  * Google Analytics de la barraca, cargado SÓLO después de "Aceptar" en el
@@ -13,8 +15,10 @@ import { useConsentimiento } from "@/lib/consentimiento";
  */
 export default function AnalyticsConConsentimiento() {
   const aceptado = useConsentimiento();
+  const pathname = usePathname();
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  if (!gaId || !aceptado) return null;
+  // En páginas con token en la URL (pedido, opinión, pago) no se carga GA.
+  if (!gaId || !aceptado || esRutaPrivada(pathname)) return null;
 
   return (
     <>

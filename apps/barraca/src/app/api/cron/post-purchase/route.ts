@@ -68,13 +68,20 @@ export async function POST(request: NextRequest) {
 
   for (const p of candidatos) {
     try {
-      const tomado = await pedidos().marcarOpinionSolicitada(p.numero);
-      if (!tomado) continue;
+      // La baja se revisa antes de marcar: si la consulta falla (fail-closed
+      // = "de baja") el pedido no queda marcado y se reintenta otro día.
       if (await estaDeBaja(p.email)) {
         stats.skipped_baja++;
         continue;
       }
+      const tomado = await pedidos().marcarOpinionSolicitada(p.numero);
+      if (!tomado) continue;
       if (await correoPedirOpinion(p, urlBaja(p.email))) stats.review_requests_sent++;
+      else {
+        // No salió: se desmarca para reintentarlo en la próxima pasada.
+        await pedidos().desmarcarOpinionSolicitada(p.numero);
+        stats.errors++;
+      }
     } catch (error) {
       logSafeError('post-purchase-opinion', { numero: p.numero, error: String(error) });
       stats.errors++;

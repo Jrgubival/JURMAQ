@@ -8,7 +8,8 @@ export const metadata: Metadata = {
 
 /** Solo paths relativos del mismo sitio — nunca URLs absolutas (open redirect). */
 function safeCallback(url: string | undefined): string {
-  if (!url || !url.startsWith("/") || url.startsWith("//") || url.startsWith("/\\")) return "/admin";
+  // Sólo /admin…: nada de "//", "/\\" ni caracteres de control (/%09/evil.com).
+  if (!url || !/^\/admin(?:[/?#][^\s\\]*)?$/.test(url) || /[\u0000-\u001f]/.test(url)) return "/admin";
   return url;
 }
 

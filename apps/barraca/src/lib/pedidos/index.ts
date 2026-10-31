@@ -165,6 +165,8 @@ export interface PedidosStore {
   paraPedirOpinion(opts: { desde: string; hasta: string; limite: number }): Promise<Pedido[]>;
   /** Marca que ya se pidió la opinión. Condicional: false si otro proceso ya lo marcó. */
   marcarOpinionSolicitada(numero: string): Promise<boolean>;
+  /** Deshace la marca si el correo no salió (se reintenta en la próxima pasada). */
+  desmarcarOpinionSolicitada(numero: string): Promise<void>;
 }
 
 // La tabla todavía no está en db-types (la migración no está aplicada).
@@ -282,6 +284,10 @@ const storeSupabase: PedidosStore = {
       .select('numero');
     if (error) throw error;
     return (data ?? []).length > 0;
+  },
+  async desmarcarOpinionSolicitada(numero) {
+    const { error } = await db.from('barraca_pedidos').update({ opinion_solicitada_at: null }).eq('numero', numero);
+    if (error) throw error;
   },
 };
 

@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { esRutaPrivada } from "@/lib/rutas-privadas";
 import { env } from "@jurmaq/shared/env";
 import { useConsentimiento } from "@/lib/consentimiento";
 
@@ -51,10 +52,11 @@ export default function MetaPixel() {
       primera.current = false;
       return;
     }
-    window.fbq?.("track", "PageView");
+    if (!esRutaPrivada(pathname)) window.fbq?.("track", "PageView");
   }, [pathname]);
 
-  if (!PIXEL_ID || !aceptado) return null;
+  // Si se entra directo a una página con token, el píxel ni se carga.
+  if (!PIXEL_ID || !aceptado || (primera.current && esRutaPrivada(pathname))) return null;
 
   return (
     <Script id="meta-pixel" strategy="afterInteractive">
