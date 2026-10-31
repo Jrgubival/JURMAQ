@@ -2,6 +2,8 @@ import 'server-only';
 import { cache } from 'react';
 import { supabasePublic } from '@jurmaq/shared/supabase';
 import { applyDailyPromosToProducts } from '@/lib/promotions';
+import { conCombos } from '@/lib/combos-servidor';
+import type { Combo } from '@/lib/combos';
 
 /**
  * Consulta de la grilla de una categoría, compartida por la página
@@ -118,7 +120,7 @@ export async function productosDeCategoria(
     consulta.range(desde, desde + POR_PAGINA - 1),
   ]);
 
-  const productos = await applyDailyPromosToProducts((data ?? []) as ProductoCatalogo[]);
+  const productos = await conCombos(await applyDailyPromosToProducts((data ?? []) as ProductoCatalogo[]));
   return { productos, total: count ?? 0 };
 }
 

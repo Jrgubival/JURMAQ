@@ -354,6 +354,7 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })),
+          totalProductos: total,
           nombre: datos.nombre,
           email: datos.email,
           telefono: datos.telefono,

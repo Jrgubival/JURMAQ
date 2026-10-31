@@ -4,6 +4,7 @@ import Image from "next/image";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import type { Database } from "@jurmaq/shared/db-types";
 import ProductCard from "@/components/barraca/ProductCard";
+import { conCombos } from "@/lib/combos-servidor";
 import HeroSlider from "@/components/barraca/HeroSlider";
 import MarcasCarrusel from "@/components/barraca/MarcasCarrusel";
 import PromotedProductCard from "@/components/barraca/PromotedProductCard";
@@ -314,8 +315,8 @@ export default async function BarracaHomePage() {
   const vendidos = unaPorFamilia(vendidosOrden, POR_FILA, familiasUsadas);
   const destacadosBase = [...vendidos, ...unaPorFamilia(destacadosRaw || [], POR_FILA - vendidos.length, familiasUsadas)];
   const relleno = unaPorFamilia(masStockRaw || [], POR_FILA - destacadosBase.length, familiasUsadas);
-  const destacados = await applyDailyPromosToProducts([...destacadosBase, ...relleno]);
-  const nuevos = await applyDailyPromosToProducts(unaPorFamilia(nuevosRaw || [], POR_FILA, familiasUsadas));
+  const destacados = await conCombos(await applyDailyPromosToProducts([...destacadosBase, ...relleno]));
+  const nuevos = await conCombos(await applyDailyPromosToProducts(unaPorFamilia(nuevosRaw || [], POR_FILA, familiasUsadas)));
 
   // Build category ID -> slug lookup for product images
   const allProductCatIds = [
@@ -478,7 +479,7 @@ export default async function BarracaHomePage() {
             </div>
             <div className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
               {destacados.map((p) => (
-                <div key={p.id} className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
+                <div key={p.id} className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} combo={p.combo} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
               ))}
             </div>
           </div>
@@ -499,7 +500,7 @@ export default async function BarracaHomePage() {
           </div>
           <div className="flex gap-3 overflow-x-auto riel snap-x snap-mandatory -mx-4 px-4 scroll-px-4 pb-2 md:grid md:grid-cols-3 lg:grid-cols-5 md:gap-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0">
             {nuevos.map((p) => (
-              <div key={p.id} className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
+              <div key={p.id} className="snap-start shrink-0 w-[46vw] max-w-[200px] md:w-auto md:max-w-none"><ProductCard id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} combo={p.combo} categoriaSlug={p.categoria_id != null ? (catSlugMap[p.categoria_id] || '') : ''} /></div>
             ))}
           </div>
         </section>

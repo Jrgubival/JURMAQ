@@ -103,7 +103,8 @@ function whatsappDespacho(comuna: Comuna, lineas: LineaRevisada[]): string {
  * país, un código de comuna (comunas.ts).
  */
 export async function cotizarDespacho(lineas: LineaRevisada[], destino: string): Promise<CotizacionDespacho | null> {
-  const subtotal = lineas.reduce((s, l) => s + l.precio * l.cantidad, 0);
+  // Con los combos aplicados: es lo que paga el cliente por los productos.
+  const subtotal = lineas.reduce((s, l) => s + l.subtotal, 0);
 
   // Tarifas del camión: tabla barraca_zonas_despacho (editable en /admin/despacho),
   // con respaldo en las constantes de zonas.ts si la tabla falla (tarifas-db.ts).

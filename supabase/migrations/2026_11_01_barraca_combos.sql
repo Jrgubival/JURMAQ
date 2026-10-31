@@ -12,5 +12,6 @@ alter table public.barraca_productos
 alter table public.barraca_productos
   add constraint barraca_productos_combo_chk check (
     (combo_cantidad is null and combo_precio is null)
-    or (combo_cantidad between 2 and 999 and combo_precio > 0)
+    or (combo_cantidad is not null and combo_precio is not null
+        and combo_cantidad between 2 and 999 and combo_precio > 0)
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { Combo } from "@/lib/combos";
 import Link from "@/components/barraca/Enlace";
 import ProductCard from "@/components/barraca/ProductCard";
 import OrdenarSelect from "@/components/barraca/OrdenarSelect";
@@ -44,6 +45,7 @@ export interface ProductoGrilla {
   unidad: string | null;
   imagen: string | null;
   medida: string | null;
+  combo?: Combo | null;
 }
 
 export interface Subcategoria {
@@ -435,6 +437,7 @@ export default function CatalogoCategoria({
                   stock={p.stock ?? 0}
                   unidad={p.unidad}
                   medida={p.medida}
+                  combo={p.combo}
                   categoriaSlug={slug}
                 />
               ))}

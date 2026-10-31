@@ -34,6 +34,8 @@ const schema = z
     rut: texto(14).optional().default(''),
     telefono: texto(20).min(8),
     email: z.string().trim().toLowerCase().email().max(160),
+    // Total de productos que vio el cliente; si el servidor calcula otro (p. ej. cambió un combo), se le avisa.
+    totalProductos: z.number().int().nonnegative().max(1_000_000_000).optional(),
     entrega: z.enum(['retiro', 'despacho']),
     direccion: texto(200).optional().default(''),
     // Id de zona del camión (lib/despacho/zonas.ts) o código de comuna; el nombre sale del servidor.
@@ -139,6 +141,13 @@ export async function POST(request: NextRequest) {
     const subtotal = items.reduce((s, i) => s + i.subtotal, 0);
     if (!Number.isInteger(subtotal) || subtotal <= 0) {
       return NextResponse.json({ error: 'El carrito no tiene un total válido' }, { status: 409 });
+    }
+    // Nunca cobrar un monto distinto del que vio el cliente (Términos 5.5).
+    if (d.totalProductos !== undefined && d.totalProductos !== subtotal) {
+      return NextResponse.json(
+        { error: 'Algunos precios cambiaron. Revisa tu carrito antes de pagar.', items: lineas },
+        { status: 409 },
+      );
     }
 
     // El despacho también se calcula acá: lo que mostró el checkout es sólo una vista previa.

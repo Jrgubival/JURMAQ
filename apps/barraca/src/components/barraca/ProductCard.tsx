@@ -10,6 +10,7 @@ import { useEnCarrito, PAUSA_AGREGAR_MS } from "@/lib/useEnCarrito";
 import { unidadesDisponibles } from "@/lib/stock";
 import { precioDeVenta, vistaPrecio } from "@/lib/precio-web";
 import Precio from "./Precio";
+import { comboValido, textoCombo, type Combo } from "@/lib/combos";
 import StarRating from "./StarRating";
 import { nombreMarca } from "@/lib/marcas";
 
@@ -70,6 +71,8 @@ interface ProductCardProps {
   /** Tier 4 D2: rating agregado de reviews aprobadas. Opcional. */
   rating?: number | null;
   rating_count?: number;
+  /** Descuento por cantidad ("Lleva 2 por $12.000"), si tiene. */
+  combo?: Combo | null;
 }
 
 export default function ProductCard({
@@ -89,6 +92,7 @@ export default function ProductCard({
   codigo,
   rating,
   rating_count,
+  combo,
 }: ProductCardProps) {
   const marca = nombreMarca(nombre);
   // El nombre sin su medida: se corta donde empieza la cadena dimensional. Si
@@ -114,6 +118,7 @@ export default function ProductCard({
   const pctOferta = vista.ahorroPct ?? 0;
   const unidades = unidadesDisponibles(stock);
   const comprable = vista.disponible;
+  const comboVigente = comprable ? comboValido(combo, precioVenta) : null;
 
   function handleAdd() {
     if (!comprable || adding) return;
@@ -121,7 +126,7 @@ export default function ProductCard({
     setAdding(true);
     setTimeout(() => {
       agregarProducto({
-        productoId: id, nombre, precio: precioVenta, imagen, slug, medida, unidad, stock: unidades, codigo,
+        productoId: id, nombre, precio: precioVenta, imagen, slug, medida, unidad, stock: unidades, codigo, combo: comboVigente,
       });
       setAdding(false);
     }, PAUSA_AGREGAR_MS);
@@ -231,6 +236,9 @@ export default function ProductCard({
             fila alineen precio con precio. */}
         <div className="mt-auto pt-3">
           {comprable && <Precio vista={vista} unidad={unidad} />}
+          {comboVigente && (
+            <p className="mt-1 text-xs font-medium text-[#2F7F4E] tabular-nums">{textoCombo(comboVigente)}</p>
+          )}
           {/* Sin la línea "IVA incluido · N en stock": alargaba todas las
               tarjetas. El IVA está en la ficha y el carrito; aquí sólo se
               avisa cuando quedan pocas. */}

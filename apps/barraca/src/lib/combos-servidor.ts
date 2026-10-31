@@ -59,3 +59,9 @@ export async function combosDe(ids: number[]): Promise<Map<number, Combo>> {
     return new Map();
   }
 }
+
+/** Agrega `combo` a cada producto (para las tarjetas de las grillas). */
+export async function conCombos<T extends { id: number }>(productos: T[]): Promise<Array<T & { combo: Combo | null }>> {
+  const combos = await combosDe(productos.map((p) => p.id));
+  return productos.map((p) => ({ ...p, combo: combos.get(p.id) ?? null }));
+}

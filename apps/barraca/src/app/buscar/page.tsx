@@ -3,6 +3,8 @@ import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { searchProducts } from "@/lib/search";
 import ProductCard from "@/components/barraca/ProductCard";
+import { conCombos } from "@/lib/combos-servidor";
+import type { Combo } from "@/lib/combos";
 import SearchBar from "@/components/barraca/SearchBar";
 
 export async function generateMetadata({
@@ -46,6 +48,7 @@ interface ProductoRow {
   imagen: string | null;
   medida: string | null;
   categoria_id: number | null;
+  combo?: Combo | null;
 }
 
 export default async function BuscarPage({
@@ -61,7 +64,7 @@ export default async function BuscarPage({
   if (q.length >= 2) {
     // Use the shared search engine (handles synonyms, word splitting, partial matches)
     const results = await searchProducts(q, 48);
-    productos = results as ProductoRow[];
+    productos = await conCombos(results as ProductoRow[]);
 
     // Build category ID -> slug lookup for product images
     const catIds = [...new Set(productos.map((p) => p.categoria_id).filter(Boolean))] as number[];
@@ -122,6 +125,7 @@ export default async function BuscarPage({
                   stock={p.stock}
                   unidad={p.unidad}
                   medida={p.medida}
+                  combo={p.combo}
                   categoriaSlug={p.categoria_id ? catSlugMap[p.categoria_id] || '' : ''}
                 />
               ))}

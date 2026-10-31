@@ -16,7 +16,7 @@ import { formatCLP } from "@jurmaq/shared/format";
 import { pagoEnLineaDisponible } from "@/lib/pagos";
 import { CUOTAS_SIN_INTERES, CUOTAS_DESDE } from "@/lib/pagos/cuotas";
 import { comboValido, textoCombo } from "@/lib/combos";
-import { combosDe } from "@/lib/combos-servidor";
+import { combosDe, conCombos } from "@/lib/combos-servidor";
 import { resolvePrice } from "@/lib/pricing";
 import { vistaDesde, vistaPrecio } from "@/lib/precio-web";
 import { esComprable, unidadesDisponibles } from "@/lib/stock";
@@ -272,9 +272,9 @@ export default async function ProductoPage({
   // precio lleno → inconsistencia $3.990 vs $3.791 de tu captura).
   // Sólo lo que se puede comprar (con los precios vigentes, no sólo los de la
   // base): una sugerencia "No disponible" no sirve para nada.
-  const relacionadosConPromo = (await applyDailyPromosToProducts(relacionados || []))
-    .filter((p) => vistaPrecio(p).disponible)
-    .slice(0, 4);
+  const relacionadosConPromo = await conCombos(
+    (await applyDailyPromosToProducts(relacionados || [])).filter((p) => vistaPrecio(p).disponible).slice(0, 4),
+  );
 
   // AggregateRating REAL (no fabricado): agregado de reviews moderadas
   // ('aprobada') desde la vista barraca_productos_rating. Solo se inyecta en el
@@ -532,7 +532,7 @@ export default async function ProductoPage({
             <h2 className="text-lg lg:text-2xl font-bold text-navy-950 mb-4 lg:mb-6">También te puede interesar</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
               {relacionadosConPromo.map((p) => (
-                <ProductCard key={p.id} id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} categoriaSlug={categoria?.slug || ''} />
+                <ProductCard key={p.id} id={p.id} nombre={p.nombre} codigo={p.codigo} slug={p.slug} precio={p.precio} precio_original={p.precio_original} en_oferta={p.en_oferta} solo_cotizar={p.solo_cotizar} imagen={p.imagen} stock={p.stock} unidad={p.unidad} medida={p.medida} combo={p.combo} categoriaSlug={categoria?.slug || ''} />
               ))}
             </div>
           </section>
