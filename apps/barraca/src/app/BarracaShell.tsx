@@ -324,6 +324,11 @@ function Navbar() {
       </header>
 
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+      {/* Safari de iOS 26 tiñe su barra de abajo con lo que esté fijo en el
+          borde inferior de la página. Sin esto la tiñe con el fondo casi blanco
+          y se ve una franja lechosa sobre los productos; con esta línea navy
+          queda del mismo color que el header (arriba ya pasa lo mismo). */}
+      <div aria-hidden="true" className="lg:hidden fixed bottom-0 inset-x-0 h-px bg-navy-950 pointer-events-none z-30" />
     </>
   );
 }
