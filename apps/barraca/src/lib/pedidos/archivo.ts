@@ -129,8 +129,27 @@ export function crearStoreArchivo(): PedidosStore {
       });
       return 'ok';
     },
+    async guardarMotivoCancelacion(numero, motivo) {
+      editar(numero, (x) => { if (x.estado === 'cancelado') x.cancelacion_motivo = motivo; });
+    },
+    async vencer(numero, horas) {
+      const p = leer().find((x) => x.numero === numero);
+      if (!p) return 'no_encontrado';
+      if (p.estado !== 'pendiente_pago' || p.metodo_pago !== 'transferencia' || Date.parse(p.created_at) > Date.now() - horas * 3600_000) {
+        return 'no_corresponde';
+      }
+      editar(numero, (x) => { x.estado = 'cancelado'; x.stock_descontado = false; x.cancelacion_motivo = 'vencido'; });
+      return 'vencido';
+    },
     async guardarReembolso(numero, r) {
       editar(numero, (p) => { p.reembolso = r; });
+    },
+    async tomarDevolucionHecha(numero, r) {
+      let tomado = false;
+      editar(numero, (p) => {
+        if (p.reembolso?.medio === 'transferencia' && p.reembolso.estado === 'pendiente') { p.reembolso = r; tomado = true; }
+      });
+      return tomado;
     },
     async tomarReembolso(numero, r) {
       let tomado = false;

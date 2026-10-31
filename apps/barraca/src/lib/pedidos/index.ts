@@ -47,8 +47,8 @@ export const ETIQUETA_ESTADO: Record<EstadoPedido, string> = {
   rechazado: 'No aprobado (devolución)',
 };
 
-export { MOTIVOS_RECHAZO, type MotivoRechazo } from './motivos';
-import type { MotivoRechazo } from './motivos';
+export { MOTIVOS_RECHAZO, type MotivoRechazo, MOTIVOS_CANCELACION, type MotivoCancelacion } from './motivos';
+import type { MotivoRechazo, MotivoCancelacion } from './motivos';
 
 export interface Reembolso {
   /** 'en_curso' = candado mientras se pide la anulación a Webpay. */
@@ -58,7 +58,21 @@ export interface Reembolso {
   tipo?: string | null;
   autorizacion?: string | null;
   fecha: string;
+  /** Devolución por transferencia: la cuenta que indicó el cliente (la anota la barraca). */
+  cuenta?: CuentaDevolucion | null;
+  /** Cuándo y quién marcó "Devolución hecha" en el panel. */
+  hecho_at?: string | null;
+  hecho_por?: string | null;
 }
+
+export interface CuentaDevolucion {
+  banco: string;
+  tipo: string;
+  numero: string;
+  rut: string;
+  titular: string;
+}
+
 
 /** 'webpay' = pago en línea con Webpay Plus; 'mercadopago' queda por pedidos antiguos. */
 export type MetodoPago = 'webpay' | 'mercadopago' | 'transferencia';
@@ -123,6 +137,7 @@ export interface Pedido {
   terminos_version: string | null;
   /** Pedido no aprobado por la barraca: motivo (lista cerrada), nota y devolución. */
   rechazo_motivo?: MotivoRechazo | null;
+  cancelacion_motivo?: MotivoCancelacion | null;
   rechazo_nota?: string | null;
   rechazado_at?: string | null;
   reembolso?: Reembolso | null;
@@ -188,12 +203,18 @@ export interface PedidosStore {
   reservarStock(numero: string): Promise<'reservado' | 'ya_reservado' | 'no_encontrado'>;
   /** Cancela o rechaza un pedido que no ha salido y devuelve su stock. Atómico. */
   cerrar(numero: string, estado: 'cancelado' | 'rechazado', motivo: MotivoRechazo | null, nota: string | null): Promise<'ok' | 'no_encontrado' | 'estado_invalido'>;
+  /** Guarda por qué se canceló (después de cerrar). */
+  guardarMotivoCancelacion(numero: string, motivo: MotivoCancelacion): Promise<void>;
+  /** Anula un pedido por transferencia sin pagar después de `horas` y devuelve su stock. Atómico. */
+  vencer(numero: string, horas: number): Promise<'vencido' | 'no_corresponde' | 'no_encontrado'>;
   guardarReembolso(numero: string, r: Reembolso): Promise<void>;
   /**
    * Toma el candado del reembolso: sólo si no hay uno, o el anterior falló.
    * Devuelve false si otro proceso ya lo está haciendo o ya está hecho.
    */
   tomarReembolso(numero: string, r: Reembolso): Promise<boolean>;
+  /** Marca hecha una devolución por transferencia pendiente (una sola vez aunque lleguen dos clics). */
+  tomarDevolucionHecha(numero: string, r: Reembolso): Promise<boolean>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
   /**
    * "Ya transferí": pasa a 'transferencia_informada' sólo si es transferencia
@@ -279,6 +300,15 @@ const storeSupabase: PedidosStore = {
     if (error) throw error;
     return data as 'ok' | 'no_encontrado' | 'estado_invalido';
   },
+  async guardarMotivoCancelacion(numero, motivo) {
+    const { error } = await db.from('barraca_pedidos').update({ cancelacion_motivo: motivo }).eq('numero', numero).eq('estado', 'cancelado');
+    if (error) throw error;
+  },
+  async vencer(numero, horas) {
+    const { data, error } = await db.rpc('barraca_pedido_vencer', { p_numero: numero, p_horas: horas });
+    if (error) throw error;
+    return data as 'vencido' | 'no_corresponde' | 'no_encontrado';
+  },
   async guardarReembolso(numero, r) {
     const { error } = await db.from('barraca_pedidos').update({ reembolso: r }).eq('numero', numero);
     if (error) throw error;
@@ -290,6 +320,17 @@ const storeSupabase: PedidosStore = {
       .update({ reembolso: r })
       .eq('numero', numero)
       .or('reembolso.is.null,reembolso->>estado.eq.error')
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
+  },
+  async tomarDevolucionHecha(numero, r) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({ reembolso: r })
+      .eq('numero', numero)
+      .eq('reembolso->>medio', 'transferencia')
+      .eq('reembolso->>estado', 'pendiente')
       .select('numero');
     if (error) throw error;
     return (data ?? []).length > 0;

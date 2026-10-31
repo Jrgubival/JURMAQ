@@ -6,6 +6,7 @@ import { logSafeError } from '@jurmaq/shared/logging';
 import { estaDeBaja, urlBaja } from '@/lib/baja-correos';
 import { pedidos } from '@/lib/pedidos';
 import { correoPedirOpinion } from '@/lib/pedidos/correos';
+import { vencerTransferencias } from '@/lib/pedidos/vencimiento';
 
 /**
  * POST /api/cron/post-purchase — una vez al día (vercel.json, 09:00).
@@ -50,7 +51,17 @@ export async function POST(request: NextRequest) {
   }
 
   const ahora = Date.now();
-  const stats = { review_requests_sent: 0, skipped_baja: 0, errors: 0 };
+  const stats = { review_requests_sent: 0, skipped_baja: 0, errors: 0, transferencias_vencidas: 0 };
+
+  // Pedidos por transferencia sin pagar a las 48 h: se anulan y vuelve el stock (Términos 8.3).
+  try {
+    const v = await vencerTransferencias();
+    stats.transferencias_vencidas = v.vencidos;
+    stats.errors += v.errores;
+  } catch (error) {
+    logSafeError('post-purchase-vencer', { error: String(error) });
+    stats.errors++;
+  }
 
   let candidatos;
   try {

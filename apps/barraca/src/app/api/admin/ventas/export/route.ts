@@ -3,7 +3,7 @@ import XLSX from 'xlsx';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { consultarVentas } from '@/lib/admin/ventas-servidor';
-import { ETIQUETA_ESTADO, medioPago, textoEntrega } from '@/lib/admin/ventas';
+import { ETIQUETA_ESTADO, medioPago, motivoCierre, textoDevolucion, textoEntrega } from '@/lib/admin/ventas';
 import { rutaDocumentoValida } from '@/lib/pedidos/documentos';
 import type { Pedido } from '@/lib/pedidos';
 
@@ -42,6 +42,8 @@ export async function GET(request: NextRequest) {
       Fecha: fecha.format(new Date(p.created_at)),
       'N° pedido': p.numero,
       Estado: ETIQUETA_ESTADO[p.estado] ?? p.estado,
+      'Motivo de cierre': motivoCierre(p) ?? '',
+      'Devolución': textoDevolucion(p.reembolso),
       Cliente: celda(p.nombre),
       RUT: celda(p.rut),
       Correo: celda(p.email),
@@ -56,7 +58,7 @@ export async function GET(request: NextRequest) {
       'Boleta/factura subida': rutaDocumentoValida(p.documento_path, p.numero) ? 'Sí' : 'No',
     }));
     const ws = XLSX.utils.json_to_sheet(filas);
-    ws['!cols'] = [16, 16, 22, 28, 14, 30, 16, 22, 14, 12, 12, 12, 12, 60, 12].map((wch) => ({ wch }));
+    ws['!cols'] = [16, 16, 22, 34, 18, 28, 14, 30, 16, 22, 14, 12, 12, 12, 12, 60, 12].map((wch) => ({ wch }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
     const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;

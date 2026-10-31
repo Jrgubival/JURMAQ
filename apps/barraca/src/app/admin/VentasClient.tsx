@@ -309,7 +309,8 @@ export default function VentasClient({ periodo, filtros, filas, totales, conteos
                       </span>
                       <span className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
                         <EstadoChip estado={p.estado} />
-                        <span className="text-[13px] text-[#5F5E5A]">{medioPago(p.metodo_pago)} · {textoEntrega(p)}</span>
+                        {p.devolucionPendiente && <span className="text-[12px] font-semibold text-[#7A4E00] bg-[#FFF4DB] rounded px-1.5 py-0.5">Devolución pendiente</span>}
+                        <span className="text-[13px] text-[#5F5E5A]">{p.cierre ? `${p.cierre} · ` : ""}{medioPago(p.metodo_pago)} · {textoEntrega(p)}</span>
                         {p.factura && <span className="text-[12px] font-semibold text-navy-800 bg-[#E8EDF5] rounded px-1.5 py-0.5">Factura</span>}
                       </span>
                     </Link>
@@ -341,7 +342,11 @@ export default function VentasClient({ periodo, filtros, filas, totales, conteos
                         onClick={() => router.push(`/admin/ventas/${p.numero}`)}
                         className={`cursor-pointer transition-colors ${tono === "urgente" ? "bg-marca-50/70 hover:bg-marca-50" : "hover:bg-[#F7F6F3]"}`}
                       >
-                        <td className="px-4 py-3 align-top"><EstadoChip estado={p.estado} /></td>
+                        <td className="px-4 py-3 align-top">
+                          <EstadoChip estado={p.estado} />
+                          {p.cierre && <span className="block mt-1 text-[12px] text-[#5F5E5A]">{p.cierre}</span>}
+                          {p.devolucionPendiente && <span className="block mt-1 text-[12px] font-semibold text-[#7A4E00]">Devolución pendiente</span>}
+                        </td>
                         <td className="px-3 py-3 align-top whitespace-nowrap">
                           <Link href={`/admin/ventas/${p.numero}`} onClick={(e) => e.stopPropagation()} className="font-[var(--font-mono)] text-[13px] font-medium text-navy-950 hover:underline underline-offset-2">
                             {p.numero}

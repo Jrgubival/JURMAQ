@@ -26,6 +26,11 @@ function NoEncontrado() {
   );
 }
 
+function sinCuentaSiNoPuede<T extends { reembolso?: { cuenta?: unknown } | null }>(fila: T, puede: boolean): T {
+  if (puede || !fila.reembolso?.cuenta) return fila;
+  return { ...fila, reembolso: { ...fila.reembolso, cuenta: null } };
+}
+
 export default async function DetalleVentaPage({ params }: { params: Promise<{ numero: string }> }) {
   const session = await requirePermission('barraca_ventas', 'read');
   if (!session) return <SinPermiso seccion="las ventas" />;
@@ -54,7 +59,8 @@ export default async function DetalleVentaPage({ params }: { params: Promise<{ n
 
   return (
     <DetalleVenta
-      pedido={aFila(pedido)}
+      // Los datos bancarios de una devolución sólo los ve quien puede devolver.
+      pedido={sinCuentaSiNoPuede(aFila(pedido), can(role, 'barraca_ventas', 'reembolsar'))}
       eventos={eventos}
       tieneComprobante={rutaValida(pedido.comprobante_path) && pedido.comprobante_path.startsWith(`${pedido.numero}/`)}
       tieneDocumento={rutaDocumentoValida(pedido.documento_path, pedido.numero)}

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
+import { can } from '@jurmaq/shared/roles';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { z, parseBody } from '@jurmaq/shared/validation';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
-import { pedidos, PATRON_NUMERO } from '@/lib/pedidos';
-import { correoConfirmacionComprador } from '@/lib/pedidos/correos';
+import { pedidos, PATRON_NUMERO, MOTIVOS_CANCELACION } from '@/lib/pedidos';
+import { correoCancelacionComprador, correoConfirmacionComprador } from '@/lib/pedidos/correos';
+import { devolverWebpay, pagadoConWebpay } from '@/lib/pedidos/rechazo';
 
 /**
  * PATCH /api/admin/pedidos/[numero] — cambia el estado de un pedido.
@@ -13,7 +15,12 @@ import { correoConfirmacionComprador } from '@/lib/pedidos/correos';
  */
 const schema = z.object({
   estado: z.enum(['pagado', 'en_preparacion', 'listo_retiro', 'despachado', 'entregado', 'cancelado']),
+  // Obligatorio al cancelar. 'vencido' lo pone sólo el sistema (48 h sin pago).
+  motivoCancelacion: z.enum(['cliente', 'transferencia_no_recibida', 'otro']).optional(),
 });
+
+/** Un pedido pagado también se puede cancelar, pero con devolución: sólo quien puede reembolsar. */
+const CANCELABLE_PAGADO = ['pagado', 'en_preparacion', 'listo_retiro'];
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ numero: string }> }) {
   if (!isValidOrigin(request)) {
@@ -31,6 +38,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const store = pedidos();
     const pedido = await store.porNumero(numero);
     if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
+    let reembolso: 'hecho' | 'error' | 'transferencia' | null = null;
 
     // Sólo transiciones razonables: un pedido cerrado no revive y uno sin pago no se salta el pago.
     const desde: Record<string, string[]> = {
@@ -41,10 +49,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       entregado: ['listo_retiro', 'despachado'],
       // 'pago_discrepancia' no: se cobró un monto distinto y sólo se cierra con
       // 'No aprobar' + devolución (sólo administrador).
-      cancelado: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado'],
+      cancelado: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado', ...CANCELABLE_PAGADO],
     };
     if (!desde[parsed.data.estado]?.includes(pedido.estado)) {
       return NextResponse.json({ error: 'Ese cambio de estado no corresponde para este pedido' }, { status: 409 });
+    }
+    const motivo = parsed.data.motivoCancelacion;
+    if (parsed.data.estado === 'cancelado') {
+      if (!motivo) return NextResponse.json({ error: 'Elige el motivo de la cancelación' }, { status: 400 });
+      if (CANCELABLE_PAGADO.includes(pedido.estado) && !can(session.user?.role, 'barraca_ventas', 'reembolsar')) {
+        return NextResponse.json({ error: 'Cancelar un pedido pagado (con devolución) lo hace el administrador' }, { status: 403 });
+      }
+      if (motivo === 'transferencia_no_recibida' && (pedido.metodo_pago !== 'transferencia' || pedido.pagado_at)) {
+        return NextResponse.json({ error: '«Transferencia no recibida» es sólo para pedidos por transferencia sin pago confirmado' }, { status: 409 });
+      }
     }
     // "Marcar pagado" a mano es sólo para transferencias: un pago en línea lo confirma Webpay.
     if (parsed.data.estado === 'pagado' && pedido.metodo_pago !== 'transferencia') {
@@ -62,16 +80,32 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       // Devuelve al stock lo reservado o descontado (transferencia o pagado).
       const r = await store.cerrar(numero, 'cancelado', null, null);
       if (r !== 'ok') return NextResponse.json({ error: 'Este pedido ya salió o está cerrado: no se puede cancelar' }, { status: 409 });
+      await store.guardarMotivoCancelacion(numero, motivo!);
+      // Se relee después de cerrar: el pago pudo confirmarse justo antes.
+      const cerrado = await store.porNumero(numero);
+      if (cerrado?.pagado_at) {
+        if (pagadoConWebpay(cerrado)) {
+          reembolso = (await devolverWebpay(cerrado)) ? 'hecho' : 'error';
+        } else {
+          await store.guardarReembolso(numero, { estado: 'pendiente', medio: 'transferencia', monto: cerrado.total, fecha: new Date().toISOString() });
+          reembolso = 'transferencia';
+        }
+      }
+      const final = await store.porNumero(numero);
+      if (final) await correoCancelacionComprador(final);
     } else {
       await store.cambiarEstado(numero, parsed.data.estado);
     }
     // El cambio ya quedó en el historial (trigger / store); acá se firma con quién lo hizo.
-    const motivo = parsed.data.estado === 'pagado' ? 'Transferencia confirmada en el panel' : null;
-    await pedidos().firmarEvento(numero, parsed.data.estado, session.user?.email ?? null, motivo).catch((e) =>
+    const nota =
+      parsed.data.estado === 'pagado' ? 'Transferencia confirmada en el panel'
+      : parsed.data.estado === 'cancelado' && motivo ? MOTIVOS_CANCELACION[motivo]
+      : null;
+    await pedidos().firmarEvento(numero, parsed.data.estado, session.user?.email ?? null, nota).catch((e) =>
       logSafeError('admin-pedido-evento-error', { numero, error: String(e) }),
     );
     logSafe('admin-pedido-estado', { numero, estado: parsed.data.estado, por: session.user?.id ?? null });
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, reembolso });
   } catch (error) {
     logSafeError('admin-pedido-estado-error', { numero, error: String(error) });
     return NextResponse.json({ error: 'No se pudo actualizar el pedido' }, { status: 500 });

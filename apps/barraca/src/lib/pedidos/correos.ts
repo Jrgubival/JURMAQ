@@ -6,7 +6,7 @@ import { avisosBarraca } from '@jurmaq/shared/mail/barraca';
 import { logSafeError } from '@jurmaq/shared/logging';
 import { HORARIO_BARRACA } from '@jurmaq/shared/seo';
 import { montoDespacho, textoDespacho } from '@/lib/despacho/texto';
-import { ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type DocumentoTributario, type Pedido } from './index';
+import { ETIQUETA_ESTADO, MOTIVOS_CANCELACION, MOTIVOS_RECHAZO, type DocumentoTributario, type Pedido } from './index';
 import { urlVerPedido, urlOpinar } from './enlace';
 import { MIME_COMPROBANTE, type TipoComprobante } from './comprobantes';
 
@@ -23,6 +23,23 @@ import { MIME_COMPROBANTE, type TipoComprobante } from './comprobantes';
 /** En pruebas locales (pedidos en archivo) no se mandan correos reales. */
 function modoPrueba(): boolean {
   return env.PEDIDOS_STORE === 'archivo';
+}
+
+/**
+ * Pruebas locales: en vez de mandar, deja el correo en .correos-dev/ para
+ * revisarlo en el navegador. El modo archivo no existe en producción.
+ */
+async function enviarOGuardar(nombre: string, correo: Parameters<typeof transporter.sendMail>[0]) {
+  if (!modoPrueba()) {
+    await transporter.sendMail(correo);
+    return;
+  }
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) return;
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const dir = path.join(process.cwd(), '.correos-dev');
+  await fs.mkdir(dir, { recursive: true });
+  await fs.writeFile(path.join(dir, `${nombre.replace(/[^A-Za-z0-9-]/g, '_')}.html`), String(correo.html ?? ''));
 }
 
 /**
@@ -161,7 +178,7 @@ export async function correoRechazoComprador(p: Pedido) {
       ? `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>. Ya anulamos el cobro en Webpay; el abono aparece en tu tarjeta según los plazos de tu banco.</p>`
       : p.reembolso?.medio === 'webpay'
       ? `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>, anulando el cobro en Webpay. Te avisamos cuando esté hecho; el abono aparece en tu tarjeta según los plazos de tu banco.</p>`
-      : `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>, por transferencia, dentro de 10 días hábiles. Respóndenos este correo o escríbenos por WhatsApp con tus datos bancarios.</p>`;
+      : devolucionTransferencia(p);
   const retiro = p.rechazo_motivo === 'sin_despacho'
     ? '<p style="margin:0 0 12px;">Si te sirve, puedes retirar el pedido en la barraca (Av. Poniente 2157, Molina) en vez de la devolución: respóndenos este correo.</p>'
     : '';
@@ -181,10 +198,102 @@ ${retiro}${devolucion}
 <p style="margin:0 0 12px;">Si tienes dudas, escríbenos a contacto@jurmaq.cl o al +56 9 7667 3577. También puedes reclamar ante el SERNAC si no estás conforme.</p>
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 8.4: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
-      skipAdminBcc: true,
+      // Copia a la barraca (BCC automático del transporte).
+      skipAdminBcc: false,
     });
   } catch (error) {
     logSafeError('pedido-correo-rechazo', { numero: p.numero, error: String(error) });
+  }
+}
+
+const WHATSAPP_BARRACA = '+56 9 7667 3577';
+
+/** Lo que debe mandar el cliente para devolverle una transferencia (Términos 12.1 y 12.2). */
+function devolucionTransferencia(p: Pedido): string {
+  return `<p style="margin:0 0 8px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)})</strong> por transferencia, a una cuenta de la que seas titular. Respóndenos este correo o escríbenos por WhatsApp al ${WHATSAPP_BARRACA} con:</p>
+<ul style="margin:0 0 12px;padding-left:20px;">
+<li>Banco</li><li>Tipo de cuenta</li><li>Número de cuenta</li><li>RUT del titular</li><li>Nombre del titular</li>
+</ul>
+<p style="margin:0 0 12px;">La hacemos dentro de 10 días hábiles desde que nos llegan tus datos y te avisamos por correo cuando esté hecha.</p>`;
+}
+
+/** Productos y total del pedido, para los correos de cierre. */
+function resumenItems(p: Pedido): string {
+  return `${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio, subtotal: i.subtotal, nota: i.combo ? textoCombo(i.combo) : null })))}
+<p style="margin:12px 0 16px;font-size:15px;"><strong>Total del pedido: ${formatCLP(p.total)}</strong></p>`;
+}
+
+/**
+ * Aviso al cliente de que su pedido se canceló: motivo, productos y qué pasa
+ * con la plata (no se cobró, transferencia que no llegó, devolución por
+ * transferencia o anulación en Webpay). Copia a la barraca.
+ */
+export async function correoCancelacionComprador(p: Pedido) {
+  const motivo = p.cancelacion_motivo;
+  const pagado = !!p.pagado_at;
+  const nombre = escapeHtml(p.nombre.split(' ')[0]);
+  const numero = escapeHtml(p.numero);
+  const intro =
+    motivo === 'transferencia_no_recibida'
+      ? `Hola ${nombre}, no recibimos el pago de tu pedido <strong>${numero}</strong>, por eso lo anulamos.`
+      : motivo === 'vencido'
+        ? `Hola ${nombre}, no recibimos la transferencia de tu pedido <strong>${numero}</strong> dentro de 48 horas, así que lo anulamos sin costo para ti (Términos 8.3).`
+        : motivo === 'cliente'
+          ? `Hola ${nombre}, anulamos tu pedido <strong>${numero}</strong>, como nos pediste.`
+          : `Hola ${nombre}, anulamos tu pedido <strong>${numero}</strong>.`;
+  const plata = !pagado
+    ? motivo === 'transferencia_no_recibida' || motivo === 'vencido'
+      ? `<p style="margin:0 0 12px;">No hay nada que devolver. Si crees que sí transferiste, respóndenos este correo o escríbenos por WhatsApp al ${WHATSAPP_BARRACA} con el comprobante y lo revisamos.</p>`
+      : '<p style="margin:0 0 12px;">No se cobró nada, así que no tienes que hacer nada más.</p>'
+    : p.reembolso?.medio === 'webpay'
+      ? `<p style="margin:0 0 12px;">${p.reembolso.estado === 'hecho' ? 'Ya anulamos' : 'Estamos anulando'} el cobro de <strong>${formatCLP(p.total)}</strong> en Webpay. El abono vuelve a la misma tarjeta y el plazo en que lo ves depende de tu banco o emisor.</p>`
+      : devolucionTransferencia(p);
+  try {
+    const titulo = `Anulamos tu pedido ${p.numero}`;
+    await enviarOGuardar(`${p.numero}-cancelacion`, {
+      to: p.email,
+      subject: `${titulo} | Barraca JURMAQ`,
+      html: renderEmailLayout({
+        title: titulo,
+        preheader: pagado ? 'Te devolvemos el 100% de lo pagado' : 'No se cobró nada',
+        bodyHtml: `
+<p style="margin:0 0 12px;">${intro}</p>
+${motivo ? `<p style="margin:0 0 12px;"><strong>Motivo:</strong> ${escapeHtml(MOTIVOS_CANCELACION[motivo])}.</p>` : ''}
+${resumenItems(p)}
+${plata}
+<div style="margin:0 0 12px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
+<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a contacto@jurmaq.cl o al ${WHATSAPP_BARRACA}.</p>
+<p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
+      }),
+      // Copia a la barraca (BCC automático del transporte).
+      skipAdminBcc: false,
+    });
+  } catch (error) {
+    logSafeError('pedido-correo-cancelacion', { numero: p.numero, error: String(error) });
+  }
+}
+
+/** La barraca marcó en el panel que ya transfirió la devolución. */
+export async function correoDevolucionHecha(p: Pedido) {
+  const c = p.reembolso?.cuenta;
+  const cuenta = c ? `${escapeHtml(c.banco)}, cuenta terminada en ${escapeHtml(c.numero.slice(-4))}` : 'la cuenta que nos indicaste';
+  try {
+    const titulo = `Te devolvimos el pago del pedido ${p.numero}`;
+    await enviarOGuardar(`${p.numero}-devolucion-hecha`, {
+      to: p.email,
+      subject: `${titulo} | Barraca JURMAQ`,
+      html: renderEmailLayout({
+        title: titulo,
+        preheader: `Transferimos ${formatCLP(p.reembolso?.monto ?? p.total)}`,
+        bodyHtml: `
+<p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, te transferimos <strong>${formatCLP(p.reembolso?.monto ?? p.total)}</strong> del pedido <strong>${escapeHtml(p.numero)}</strong> a ${cuenta}.</p>
+<p style="margin:0 0 12px;">Según tu banco, puede tardar hasta un día hábil en verse. Si no te llega, respóndenos este correo o escríbenos por WhatsApp al ${WHATSAPP_BARRACA}.</p>
+<p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 12: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
+      }),
+      skipAdminBcc: false,
+    });
+  } catch (error) {
+    logSafeError('pedido-correo-devolucion-hecha', { numero: p.numero, error: String(error) });
   }
 }
 

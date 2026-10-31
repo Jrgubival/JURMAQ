@@ -8,7 +8,7 @@ import { textoCombo } from "@/lib/combos";
 import type { FilaVenta } from "@/lib/admin/ventas-servidor";
 import type { EstadoPedido, EventoPedido } from "@/lib/pedidos";
 import { ESTADOS_VENTA, ETIQUETA_ESTADO, fechaCorta, medioPago } from "@/lib/admin/ventas";
-import { MOTIVOS_RECHAZO, type MotivoRechazo } from "@/lib/pedidos/motivos";
+import { MOTIVOS_CANCELACION, MOTIVOS_RECHAZO, type MotivoCancelacion, type MotivoRechazo } from "@/lib/pedidos/motivos";
 import { montoDespacho, nombreCourier } from "@/lib/despacho/texto";
 import { linkWhatsappPedido } from "@/lib/admin/whatsapp";
 import EstadoChip from "@/components/admin/ventas/EstadoChip";
@@ -29,7 +29,9 @@ interface Props {
 }
 
 /** Siguientes pasos razonables (el servidor vuelve a validarlos). */
-function acciones(p: FilaVenta): Array<{ estado: EstadoPedido; label: string; principal?: boolean }> {
+function acciones(p: FilaVenta, puedeReembolsar: boolean): Array<{ estado: EstadoPedido; label: string; principal?: boolean }> {
+  // Cancelar un pedido ya pagado implica devolver: sólo el administrador.
+  const cancelarPagado = puedeReembolsar ? [{ estado: "cancelado" as EstadoPedido, label: "Cancelar y devolver" }] : [];
   switch (p.estado) {
     case "pendiente_pago":
     case "pago_rechazado":
@@ -46,12 +48,13 @@ function acciones(p: FilaVenta): Array<{ estado: EstadoPedido; label: string; pr
       // Se cobró un monto distinto: se cierra sólo con "No aprobar" + devolución (administrador).
       return [];
     case "pagado":
-      return [{ estado: "en_preparacion", label: "Empezar a preparar", principal: true }];
+      return [{ estado: "en_preparacion", label: "Empezar a preparar", principal: true }, ...cancelarPagado];
     case "en_preparacion":
       return [p.entrega === "retiro"
         ? { estado: "listo_retiro", label: "Listo para retiro", principal: true }
-        : { estado: "despachado", label: "Salió el despacho", principal: true }];
+        : { estado: "despachado", label: "Salió el despacho", principal: true }, ...cancelarPagado];
     case "listo_retiro":
+      return [{ estado: "entregado", label: "Marcar entregado", principal: true }, ...cancelarPagado];
     case "despachado":
       return [{ estado: "entregado", label: "Marcar entregado", principal: true }];
     default:
@@ -135,12 +138,14 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
   const [rechazo, setRechazo] = useState<{ motivo: MotivoRechazo | ""; nota: string } | null>(null);
+  const [cancelacion, setCancelacion] = useState<{ motivo: MotivoCancelacion | "" } | null>(null);
+  const [cuenta, setCuenta] = useState({ banco: "", tipo: "", numero: "", rut: "", titular: "" });
   const [docTipo, setDocTipo] = useState<"boleta" | "factura">(p.documento_tipo ?? (p.documento_solicitado === "factura" ? "factura" : "boleta"));
   const [archivo, setArchivo] = useState<File | null>(null);
 
   const wa = linkWhatsappPedido(p);
   const tel = p.telefono.replace(/[^\d+]/g, "");
-  const pasos = acciones(p);
+  const pasos = acciones(p, puedeReembolsar);
   const paso = siguientePaso(p);
   const pagado = ESTADOS_VENTA.includes(p.estado);
   const factura = p.documento_solicitado === "factura";
@@ -165,11 +170,42 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
   }
 
   async function cambiar(estado: EstadoPedido) {
-    if (estado === "cancelado" && !confirm(`¿Cancelar el pedido ${p.numero}? Se devuelve el stock y no se puede deshacer.`)) return;
+    // Cancelar pide el motivo antes (cuadro de abajo).
+    if (estado === "cancelado") { setCancelacion({ motivo: "" }); return; }
     if (estado === "pagado" && !confirm(`¿Llegó la transferencia de ${formatCLP(p.total)} del pedido ${p.numero}? Revisa la cartola antes. Se le avisa al cliente por correo.`)) return;
     await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ estado }),
     }, `Listo: ${ETIQUETA_ESTADO[estado].toLowerCase()}.`);
+  }
+
+  async function cancelar() {
+    if (!cancelacion?.motivo) return;
+    const devolucion = !p.pagado_at
+      ? "No hubo cobro."
+      : p.pasarela === "webpay"
+        ? `Se anula el pago en Webpay por ${formatCLP(p.total)} (vuelve solo a la tarjeta).`
+        : `Queda una devolución pendiente de ${formatCLP(p.total)} por transferencia.`;
+    if (!confirm(`¿Cancelar el pedido ${p.numero}?\n\nMotivo: ${MOTIVOS_CANCELACION[cancelacion.motivo]}\n${devolucion}\nSe devuelve el stock y se avisa al cliente por correo. No se puede deshacer.`)) return;
+    const data = await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: "cancelado", motivoCancelacion: cancelacion.motivo }),
+    }, "Pedido cancelado. Se avisó al cliente.");
+    if (data?.reembolso === "error") setAviso({ tipo: "error", texto: "Quedó cancelado, pero Webpay no confirmó la anulación. Usa «Reintentar devolución» o revisa el portal de Transbank." });
+    if (data) setCancelacion(null);
+  }
+
+  async function guardarCuenta(e: React.FormEvent) {
+    e.preventDefault();
+    await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}/devolucion`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "cuenta", ...cuenta }),
+    }, "Cuenta del cliente guardada.");
+  }
+
+  async function devolucionHecha() {
+    if (!confirm(`¿Ya transferiste ${formatCLP(p.reembolso?.monto ?? p.total)} al cliente desde el banco? Se le avisa por correo.`)) return;
+    await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}/devolucion`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "hecha" }),
+    }, "Devolución marcada como hecha. Se avisó al cliente.");
   }
 
   async function rechazar() {
@@ -288,6 +324,33 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
               <p className="mt-3 text-[14px] text-white/80">Tu usuario sólo puede mirar este pedido.</p>
             )
           )}
+          {cancelacion && (
+            <div className="mt-4 rounded-lg bg-white px-4 py-4 text-[#111111] space-y-3">
+              <p className="text-[15px] font-semibold">¿Por qué se cancela?</p>
+              <div className="grid gap-2">
+                {(["transferencia_no_recibida", "cliente", "otro"] as const)
+                  .filter((m) => m !== "transferencia_no_recibida" || (p.metodo_pago === "transferencia" && !p.pagado_at))
+                  .map((m) => (
+                    <label key={m} className={`flex items-center gap-3 min-h-[48px] px-3 rounded-lg ring-1 ring-inset cursor-pointer ${cancelacion.motivo === m ? "ring-navy-950 bg-[#F7F6F3]" : "ring-[#D9D6CF]"}`}>
+                      <input type="radio" name="motivo-cancelacion" checked={cancelacion.motivo === m} onChange={() => setCancelacion({ motivo: m })} className="w-4 h-4 accent-[#0c1d3a]" />
+                      <span className="text-[15px]">{MOTIVOS_CANCELACION[m]}</span>
+                    </label>
+                  ))}
+              </div>
+              <p className="text-[13px] text-[#5F5E5A]">
+                {cancelacion.motivo === "transferencia_no_recibida"
+                  ? "Al cliente le llega un correo: no recibimos el pago, el pedido se anuló y no hay nada que devolver. Si cree que transfirió, que mande el comprobante."
+                  : p.pagado_at
+                    ? (p.pasarela === "webpay" ? "Se anula el cobro en Webpay y se le avisa al cliente." : "Queda «Devolución pendiente»: el cliente recibe un correo pidiendo su cuenta.")
+                    : "Al cliente le llega un correo: el pedido se anuló y no se cobró nada."}
+                {" "}El stock vuelve a la venta.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setCancelacion(null)} className={`${btn} bg-white text-[#2B2A28] ring-1 ring-inset ring-[#D9D6CF]`}>Volver</button>
+                <button type="button" disabled={!cancelacion.motivo || ocupado} onClick={cancelar} className={`${btn} bg-marca-600 text-white hover:bg-marca-700`}>Cancelar pedido</button>
+              </div>
+            </div>
+          )}
         </section>
       )}
 
@@ -390,11 +453,47 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
                 <p className="mt-3 text-[13.5px] text-[#8A8884]">No subió comprobante.</p>
               )
             )}
-            {p.reembolso && (
+            {p.reembolso && !(p.reembolso.medio === "transferencia" && p.reembolso.estado === "pendiente") && (
               <p className="mt-3 text-[14px] rounded-lg bg-[#F7F6F3] px-3 py-2">
                 Devolución {p.reembolso.medio === "webpay" ? "Webpay" : "por transferencia"} de <span className="tabular-nums">{formatCLP(p.reembolso.monto)}</span>:{" "}
-                <strong>{p.reembolso.estado === "hecho" ? "hecha" : p.reembolso.estado === "pendiente" ? "pendiente (hacerla a mano)" : p.reembolso.estado === "en_curso" ? "en curso" : "falló"}</strong>
+                <strong>{p.reembolso.estado === "hecho" ? "hecha" : p.reembolso.estado === "en_curso" ? "en curso" : "falló"}</strong>
+                {p.reembolso.estado === "hecho" && p.reembolso.hecho_at && <> el {fechaCorta(p.reembolso.hecho_at)}{p.reembolso.hecho_por ? ` (${p.reembolso.hecho_por})` : ""}</>}
+                {p.reembolso.cuenta && <><br /><span className="text-[13px] text-[#5F5E5A]">{p.reembolso.cuenta.banco} · {p.reembolso.cuenta.tipo} · {p.reembolso.cuenta.numero} · {p.reembolso.cuenta.titular} · {p.reembolso.cuenta.rut}</span></>}
               </p>
+            )}
+            {p.reembolso?.medio === "transferencia" && p.reembolso.estado === "pendiente" && (
+              <div className="mt-3 rounded-lg ring-1 ring-inset ring-[#EBD39A] bg-[#FFFaF0] px-3 py-3 space-y-3">
+                <p className="text-[15px] font-semibold text-[#7A4E00]">Devolución pendiente: <span className="tabular-nums">{formatCLP(p.reembolso.monto)}</span></p>
+                {!puedeReembolsar ? (
+                  <p className="text-[13.5px] text-[#5F5E5A]">La devolución la hace el administrador.</p>
+                ) : p.reembolso.cuenta ? (
+                  <>
+                    <dl className="grid grid-cols-[92px_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[14px]">
+                      <Dato k="Banco">{p.reembolso.cuenta.banco}</Dato>
+                      <Dato k="Tipo">{p.reembolso.cuenta.tipo}</Dato>
+                      <Dato k="N° cuenta"><span className="tabular-nums">{p.reembolso.cuenta.numero}</span></Dato>
+                      <Dato k="RUT"><span className="tabular-nums">{p.reembolso.cuenta.rut}</span></Dato>
+                      <Dato k="Titular">{p.reembolso.cuenta.titular}</Dato>
+                    </dl>
+                    <p className="text-[13px] text-[#5F5E5A]">Transfiere desde el banco y después marca aquí. Al cliente le llega un correo.</p>
+                    <button type="button" disabled={ocupado} onClick={devolucionHecha} className={`${btn} w-full bg-navy-950 text-white hover:bg-navy-900`}>Devolución hecha</button>
+                  </>
+                ) : (
+                  <form onSubmit={guardarCuenta} className="space-y-2">
+                    <p className="text-[13px] text-[#5F5E5A]">El cliente recibió un correo pidiendo su cuenta. Cuando la mande (correo o WhatsApp), anótala aquí.</p>
+                    {([
+                      ["banco", "Banco"], ["tipo", "Tipo de cuenta"], ["numero", "N° de cuenta"], ["rut", "RUT del titular"], ["titular", "Nombre del titular"],
+                    ] as const).map(([k, label]) => (
+                      <label key={k} className="block text-[13px] text-[#5F5E5A]">{label}
+                        <input required value={cuenta[k]} maxLength={k === "titular" ? 120 : 60} inputMode={k === "numero" ? "numeric" : undefined}
+                          onChange={(e) => setCuenta({ ...cuenta, [k]: e.target.value })}
+                          className="mt-1 w-full min-h-[44px] px-3 rounded-lg border border-[#D9D6CF] bg-white text-[16px] text-[#111111]" />
+                      </label>
+                    ))}
+                    <button type="submit" disabled={ocupado} className={`${btn} w-full bg-white text-navy-950 ring-1 ring-inset ring-navy-950`}>Guardar cuenta</button>
+                  </form>
+                )}
+              </div>
             )}
             {p.reembolso?.medio === "webpay" && p.reembolso.estado === "error" && (
               <button type="button" disabled={ocupado || !puedeReembolsar} onClick={reintentarReembolso} className={`${btn} mt-2 w-full bg-marca-600 text-white hover:bg-marca-700`}>
@@ -470,6 +569,13 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
               ))}
             </ol>
           </Seccion>
+
+          {p.estado === "cancelado" && (
+            <Seccion titulo="Cancelado">
+              <p className="text-[15px]">{p.cancelacion_motivo ? MOTIVOS_CANCELACION[p.cancelacion_motivo] : "Sin motivo registrado"}</p>
+              <p className="mt-1 text-[13.5px] text-[#5F5E5A]">{p.pagado_at ? "Estaba pagado: ver la devolución en Pago." : "No hubo cobro."}</p>
+            </Seccion>
+          )}
 
           {p.estado === "rechazado" && (
             <Seccion titulo="No aprobado">

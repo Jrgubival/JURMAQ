@@ -12,3 +12,12 @@ export const MOTIVOS_RECHAZO = {
   cantidad_maxima: 'Supera la cantidad máxima por pedido',
 } as const;
 export type MotivoRechazo = keyof typeof MOTIVOS_RECHAZO;
+
+/** Por qué se canceló un pedido (los "no aprobados" usan MOTIVOS_RECHAZO). */
+export const MOTIVOS_CANCELACION = {
+  cliente: 'A pedido del cliente',
+  transferencia_no_recibida: 'Transferencia no recibida',
+  vencido: 'Sin pago en 48 horas',
+  otro: 'Otro motivo',
+} as const;
+export type MotivoCancelacion = keyof typeof MOTIVOS_CANCELACION;

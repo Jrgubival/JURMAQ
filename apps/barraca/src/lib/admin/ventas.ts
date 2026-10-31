@@ -7,6 +7,7 @@
  */
 
 import type { EstadoPedido } from '@/lib/pedidos';
+import { MOTIVOS_CANCELACION, MOTIVOS_RECHAZO, type MotivoCancelacion, type MotivoRechazo } from '@/lib/pedidos/motivos';
 import { ZONAS_DESPACHO } from '@/lib/despacho/zonas';
 
 export const TZ = 'America/Santiago';
@@ -168,6 +169,9 @@ export interface PedidoVenta {
   descuento_transferencia?: number;
   costo_despacho: number | null;
   total: number;
+  cancelacion_motivo?: MotivoCancelacion | null;
+  rechazo_motivo?: MotivoRechazo | null;
+  reembolso?: { estado: string; medio: string } | null;
   created_at: string;
   pagado_at: string | null;
   documento_solicitado?: 'boleta' | 'factura' | null;
@@ -348,6 +352,26 @@ export interface FilaLista {
   razonSocial: string | null;
   documentoSubido: boolean;
   articulos: number;
+  /** Por qué se cerró (cancelado / no aprobado), o null. */
+  cierre: string | null;
+  devolucionPendiente: boolean;
+}
+
+/** "Transferencia no recibida", "Cancelado con pago (devolución)", motivo de no aprobación… */
+export function motivoCierre(p: Pick<PedidoVenta, 'estado' | 'cancelacion_motivo' | 'rechazo_motivo' | 'pagado_at'>): string | null {
+  if (p.estado === 'cancelado') {
+    const m = p.cancelacion_motivo ? MOTIVOS_CANCELACION[p.cancelacion_motivo] : 'Sin motivo';
+    return p.pagado_at ? `${m} · con pago (devolución)` : m;
+  }
+  if (p.estado === 'rechazado') return p.rechazo_motivo ? MOTIVOS_RECHAZO[p.rechazo_motivo] : 'No aprobado';
+  return null;
+}
+
+export function textoDevolucion(r: PedidoVenta['reembolso']): string {
+  if (!r) return '';
+  const medio = r.medio === 'webpay' ? 'Webpay' : 'Transferencia';
+  const estado = r.estado === 'hecho' ? 'hecha' : r.estado === 'pendiente' ? 'pendiente' : r.estado === 'en_curso' ? 'en curso' : 'falló';
+  return `${medio}: ${estado}`;
 }
 
 export function aFilaLista(p: PedidoVenta & { items?: Array<{ cantidad: number }> }): FilaLista {
@@ -366,6 +390,8 @@ export function aFilaLista(p: PedidoVenta & { items?: Array<{ cantidad: number }
     razonSocial: p.documento_solicitado === 'factura' ? p.factura_razon_social ?? null : null,
     documentoSubido: !!p.documento_path,
     articulos: (p.items ?? []).reduce((s, i) => s + (Number.isFinite(i.cantidad) ? i.cantidad : 0), 0),
+    cierre: motivoCierre(p),
+    devolucionPendiente: p.reembolso?.estado === 'pendiente' || p.reembolso?.estado === 'error',
   };
 }
 
