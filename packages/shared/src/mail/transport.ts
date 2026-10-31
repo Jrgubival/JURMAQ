@@ -25,9 +25,8 @@ const EMAIL_FROM = env.EMAIL_FROM || 'JURMAQ <noreply@jurmaq.cl>';
 const ES_BARRACA = env.AUTH_SCOPE?.trim().toLowerCase() === 'barraca';
 const ADMIN_BCC_EMAILS: string[] = ES_BARRACA
   ? // Barraca (oct-2026): la copia oculta va sólo a la casilla de la barraca,
-    // nunca a las casillas generales de la constructora. Sin
-    // BARRACA_AVISOS_EMAIL no se agrega copia oculta.
-    (env.BARRACA_AVISOS_EMAIL ? [env.BARRACA_AVISOS_EMAIL.toLowerCase()] : [])
+    // nunca a constructora@jurmaq.cl. Por defecto contacto@jurmaq.cl (Jorge, 31-10-2026).
+    [(env.BARRACA_AVISOS_EMAIL?.trim() || 'contacto@jurmaq.cl').toLowerCase()]
   : (env.ADMIN_BCC_EMAILS ||
     `${env.ADMIN_EMAIL || 'contacto@jurmaq.cl'},constructora@jurmaq.cl`)
     .split(',')
