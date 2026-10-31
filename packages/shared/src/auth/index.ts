@@ -8,7 +8,7 @@ import { rateLimitPersistent } from '../rate-limit';
 import { headers } from 'next/headers';
 import { env } from '@jurmaq/shared/env';
 import { maskEmail, maskIp } from '../logging';
-import { esScopeBarraca, verificarCodigo } from './codigo-correo';
+import { esScopeBarraca, usuarioBarracaVigente, verificarCodigo } from './codigo-correo';
 
 /** Barraca (nov-2026): el panel entra SÓLO con código por correo. */
 const ES_BARRACA = esScopeBarraca();
@@ -227,6 +227,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
     async jwt(params) {
+      // Barraca: en cada lectura de la sesión (cada página y cada API) se
+      // revisa contra la base que la cuenta siga permitida. Si no, se cierra:
+      // también corta sesiones viejas (p. ej. del antiguo login con Google,
+      // que guardaba el correo de Google en el token).
+      if (ES_BARRACA) {
+        const t = await authConfig.callbacks!.jwt!(params);
+        if (!t) return null;
+        const u = await usuarioBarracaVigente(t.sub, t.email);
+        if (!u) {
+          console.warn('[barraca-sesion-cerrada]', { user: t.sub, email: maskEmail(String(t.email ?? '')) });
+          return null;
+        }
+        t.role = u.role;
+        t.scope = u.scope as 'barraca' | 'constructora' | 'both';
+        t.name = u.name;
+        return t;
+      }
       const { token, account } = params;
       // Primer sign-in vía Google: poblar el token con los claims del
       // usuario admin de la DB (id/rol/scope), igual que hace authorize()

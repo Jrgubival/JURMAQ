@@ -39,7 +39,7 @@ const SCOPE = getAuthScope();
  * HTTPS), así que prefijamos con `dev-{scope}` solamente.
  */
 const COOKIE_PREFIX = IS_PROD ? '__Host-' : 'dev-';
-const SESSION_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.session-token`;
+export const SESSION_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.session-token`;
 const CALLBACK_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.callback-url`;
 const CSRF_COOKIE_NAME = `${COOKIE_PREFIX}${SCOPE}.csrf-token`;
 

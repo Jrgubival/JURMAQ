@@ -10,6 +10,8 @@
  * no aparece en sitemap.xml — cero impacto en indexación.
  */
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { auth } from '@jurmaq/shared/auth';
 import SessionWrapper from '@/components/admin/SessionWrapper';
 import AdminShell from '@/components/admin/AdminShell';
 
@@ -33,7 +35,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BarracaAdminLayout({ children }: { children: React.ReactNode }) {
+export default async function BarracaAdminLayout({ children }: { children: React.ReactNode }) {
+  // En cada carga: auth() revisa en la base que la cuenta siga permitida
+  // (callback jwt de @jurmaq/shared/auth). Sin sesión válida, al login.
+  const session = await auth();
+  // /api/login/salir borra la cookie (un componente de servidor no puede) y lleva al login.
+  if (!session?.user) redirect('/api/login/salir');
   return (
     <SessionWrapper>
       <AdminShell>{children}</AdminShell>

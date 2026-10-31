@@ -228,6 +228,38 @@ async function buscarUsuario(email: string): Promise<UsuarioBarraca | null> {
   };
 }
 
+/** Roles que pueden usar el panel de la barraca. */
+const ROLES_PANEL = new Set(['admin', 'gerente', 'vendedor', 'operador', 'contador']);
+
+// Revisión de la sesión en cada carga: se cachea 30 s por proceso para no
+// consultar la base en cada request de la misma página.
+const CACHE_VIGENTE_MS = 30_000;
+const cacheVigente = new Map<string, { usuario: UsuarioBarraca | null; hasta: number }>();
+
+/**
+ * ¿La sesión (id + correo del token) sigue siendo de una cuenta permitida?
+ * El correo debe estar en LOGIN_BARRACA_PERMITIDOS y la cuenta seguir en la
+ * base con ese mismo id, scope barraca/both y un rol del panel. Cualquier
+ * error → null (fail-closed: se cierra la sesión).
+ */
+export async function usuarioBarracaVigente(id: unknown, email: unknown): Promise<UsuarioBarraca | null> {
+  const correo = normalizarCorreo(email);
+  if (!correo || typeof id !== 'string' || !id) return null;
+  if (!LOGIN_BARRACA_PERMITIDOS.includes(correo)) return null;
+  const clave = `${id}:${correo}`;
+  const previo = cacheVigente.get(clave);
+  if (previo && previo.hasta > Date.now()) return previo.usuario;
+  let usuario: UsuarioBarraca | null = null;
+  try {
+    const u = await buscarUsuario(correo);
+    usuario = u && u.id === id && ROLES_PANEL.has(u.role) ? u : null;
+  } catch {
+    usuario = null;
+  }
+  cacheVigente.set(clave, { usuario, hasta: Date.now() + CACHE_VIGENTE_MS });
+  return usuario;
+}
+
 // --- API ----------------------------------------------------------------------
 
 export type ResultadoSolicitud =
