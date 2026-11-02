@@ -195,7 +195,7 @@ export async function correoRechazoComprador(p: Pedido) {
 <p style="margin:0 0 12px;"><strong>Motivo:</strong> ${escapeHtml(motivo)}.</p>
 ${retiro}${devolucion}
 <div style="margin:0 0 12px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
-<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a contacto@jurmaq.cl o al +56 9 7667 3577. También puedes reclamar ante el SERNAC si no estás conforme.</p>
+<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a contacto@jurmaq.cl o al +56 9 7667 3577.</p>
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 8.4: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
       // Copia a la barraca (BCC automático del transporte).
