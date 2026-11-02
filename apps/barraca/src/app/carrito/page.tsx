@@ -9,6 +9,8 @@ import { cambiarCantidad, quitarDelCarrito, vaciarCarrito, type ItemCarrito } fr
 import { useCarrito } from "@/lib/useCarrito";
 import { totalLinea } from "@/lib/combos";
 import LineaCombo from "@/components/barraca/LineaCombo";
+import { usePagoEnLinea } from "@/lib/pago-en-linea";
+import { CUOTAS_SIN_INTERES, CUOTAS_DESDE } from "@/lib/pagos/cuotas";
 import CantidadEditable from "@/components/barraca/CantidadEditable";
 import AvisoSinRetracto from "@/components/barraca/AvisoSinRetracto";
 import { useZonaDespacho } from "@/components/barraca/SelectorZona";
@@ -45,6 +47,7 @@ function Cantidad({ item }: { item: ItemCarrito }) {
 
 export default function CarritoPage() {
   const { items, problemas, cargando, total, ahorro, cantidad, hayProblemas } = useCarrito({ revisar: true });
+  const pagoEnLinea = usePagoEnLinea();
   const vista = useRef(false);
   // Quitar con animación: el producto se desvanece y se cierra antes de salir del carrito.
   const [saliendo, setSaliendo] = useState<Set<number>>(new Set());
@@ -275,6 +278,9 @@ export default function CarritoPage() {
                 </Link>
               )}
               <p className="text-xs text-gray-500 mt-3 text-center">Webpay (débito y crédito) o transferencia bancaria.</p>
+              {pagoEnLinea && total >= CUOTAS_DESDE && (
+                <p className="text-xs text-[#2F7F4E] font-medium mt-1 text-center">Paga en hasta {CUOTAS_SIN_INTERES} cuotas sin interés con tarjeta de crédito.</p>
+              )}
               <Link href="/categorias" className="block w-full py-2.5 mt-2 text-center text-sm font-medium text-gray-600 hover:text-navy-950 transition-colors">
                 Seguir comprando
               </Link>

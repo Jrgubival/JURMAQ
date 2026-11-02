@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono, Newsreader, Oswald } from "next/font/google";
 import BarracaShell from "./BarracaShell";
+import { PagoEnLineaProvider } from "@/lib/pago-en-linea";
+import { pagoEnLineaDisponible } from "@/lib/pagos";
 import AnalyticsConConsentimiento from "@/components/AnalyticsConConsentimiento";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
 import MetaPixel from "@/components/MetaPixel";
@@ -204,7 +206,9 @@ export default function BarracaLayout({
             quedaba no-op (0 datos GA4). Esta línea repara el bug. */}
         <AnalyticsConConsentimiento />
         <MetaPixel />
-        <BarracaShell>{children}</BarracaShell>
+        <PagoEnLineaProvider activo={pagoEnLineaDisponible()}>
+          <BarracaShell>{children}</BarracaShell>
+        </PagoEnLineaProvider>
         <CookieBanner
           productLabel="productos"
           mensaje={<>Usamos cookies propias y de Google y Meta para medir visitas y mostrar publicidad. Puedes aceptarlas o usar solo las esenciales. <a href="/privacidad" className="underline underline-offset-2 hover:text-white">Ver Política de Privacidad</a>.</>}

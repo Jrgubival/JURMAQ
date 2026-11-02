@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "@/components/barraca/Enlace";
+import { usePagoEnLinea } from "@/lib/pago-en-linea";
+import { CUOTAS_SIN_INTERES } from "@/lib/pagos/cuotas";
 import dynamic from "next/dynamic";
 import MediosPago from "@/components/barraca/MediosPago";
 import { useState, useEffect, useRef } from "react";
@@ -385,6 +387,7 @@ const URL_COMO_LLEGAR = `https://www.google.com/maps/dir/?api=1&destination=${en
    que buscas?" que había sobre el pie en la portada. */
 function Footer() {
   const titulo = "text-sm font-bold text-navy-950 mb-3";
+  const pagoEnLinea = usePagoEnLinea();
   const enlace = "text-sm text-gray-600 hover:text-navy-950 transition-colors duration-150";
   return (
     <footer role="contentinfo" className="bg-[#F4F5F7] text-gray-600 border-t border-gray-200">
@@ -463,6 +466,9 @@ function Footer() {
           <div>
             <h3 className={titulo}>Medios de pago</h3>
             <MediosPago />
+            {pagoEnLinea && (
+              <p className="mt-3 text-sm text-gray-600">Hasta {CUOTAS_SIN_INTERES} cuotas sin interés con tarjeta de crédito.</p>
+            )}
           </div>
         </div>
       </div>
