@@ -450,26 +450,29 @@ function Footer() {
             </ul>
           </nav>
 
-          {/* Comunas con landing propia: enlaces internos para SEO, en chico. */}
-          <nav aria-label="Despacho por comuna">
-            <h3 className={titulo}>Despacho</h3>
-            <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs leading-relaxed">
-              {COMUNAS_DESPACHO.map((c) => (
-                <li key={c.slug}>
-                  <Link href={`/en/${c.slug}`} className="text-gray-500 hover:text-navy-950 transition-colors duration-150" title={`Barraca en ${c.name}`}>
-                    {c.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          {/* Despacho y medios de pago en una columna: el pie queda en 4 columnas. */}
+          <div className="space-y-8">
+            {/* Comunas con landing propia: enlaces internos para SEO, en chico. */}
+            <nav aria-label="Despacho por comuna">
+              <h3 className={titulo}>Despacho</h3>
+              <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs leading-relaxed">
+                {COMUNAS_DESPACHO.map((c) => (
+                  <li key={c.slug}>
+                    <Link href={`/en/${c.slug}`} className="text-gray-500 hover:text-navy-950 transition-colors duration-150" title={`Barraca en ${c.name}`}>
+                      {c.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-          <div>
-            <h3 className={titulo}>Medios de pago</h3>
-            <MediosPago />
-            {pagoEnLinea && (
-              <p className="mt-3 text-sm text-gray-600">Hasta {CUOTAS_SIN_INTERES} cuotas sin interés con tarjeta de crédito.</p>
-            )}
+            <div>
+              <h3 className={titulo}>Medios de pago</h3>
+              <MediosPago />
+              {pagoEnLinea && (
+                <p className="mt-3 text-sm text-gray-600">Hasta {CUOTAS_SIN_INTERES} cuotas sin interés con tarjeta de crédito.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
