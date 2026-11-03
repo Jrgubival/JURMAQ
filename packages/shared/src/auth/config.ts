@@ -22,9 +22,9 @@ import { env } from '@jurmaq/shared/env';
  */
 const IS_PROD = env.NODE_ENV === 'production';
 
-function getAuthScope(): 'barraca' | 'constructora' | 'app' {
+function getAuthScope(): 'barraca' | 'constructora' | 'rental' | 'app' {
   const s = env.AUTH_SCOPE;
-  return s === 'barraca' || s === 'constructora' ? s : 'app';
+  return s === 'barraca' || s === 'constructora' || s === 'rental' ? s : 'app';
 }
 
 const SCOPE = getAuthScope();

@@ -8,10 +8,10 @@ import { rateLimitPersistent } from '../rate-limit';
 import { headers } from 'next/headers';
 import { env } from '@jurmaq/shared/env';
 import { maskEmail, maskIp } from '../logging';
-import { esScopeBarraca, revisarSesionBarraca, verificarCodigo } from './codigo-correo';
+import { revisarSesionBarraca, scopeCodigoCorreo, verificarCodigo } from './codigo-correo';
 
 /** Barraca (nov-2026): el panel entra SÓLO con código por correo. */
-const ES_BARRACA = esScopeBarraca();
+const ES_CODIGO_CORREO = scopeCodigoCorreo() !== null;
 
 class CodigoInvalido extends CredentialsSignin {
   code = 'codigo_invalido';
@@ -87,7 +87,7 @@ async function findAdminPorSsoEmail(email: string) {
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  providers: ES_BARRACA
+  providers: ES_CODIGO_CORREO
     ? [proveedorCodigoCorreo]
     : [
     // SSO Google para admins — solo se monta si hay credenciales OAuth
@@ -201,7 +201,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             // Pasamos scope al callback jwt para que lo persista en el
             // token. La sesión validará scope vs AUTH_SCOPE en cada
             // request (doble cinturón).
-            scope: user.scope as 'barraca' | 'constructora' | 'both' | undefined,
+            scope: user.scope as 'barraca' | 'constructora' | 'rental' | 'both' | undefined,
           };
         } catch (err) {
           console.error('Error en authorize NextAuth:', err);
@@ -231,7 +231,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // revisa contra la base que la cuenta siga permitida. Si no, se cierra:
       // también corta sesiones viejas (p. ej. del antiguo login con Google,
       // que guardaba el correo de Google en el token).
-      if (ES_BARRACA) {
+      if (ES_CODIGO_CORREO) {
         const t = await authConfig.callbacks!.jwt!(params);
         if (!t) return null;
         const r = await revisarSesionBarraca(t.sub, t.email);
@@ -249,7 +249,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         const u = r.usuario;
         t.role = u.role;
-        t.scope = u.scope as 'barraca' | 'constructora' | 'both';
+        t.scope = u.scope as 'barraca' | 'constructora' | 'rental' | 'both';
         t.name = u.name;
         return t;
       }
@@ -263,7 +263,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!user) return token; // signIn ya denegó; defensa extra
         token.sub = String(user.id);
         token.role = user.role;
-        token.scope = user.scope as 'barraca' | 'constructora' | 'both';
+        token.scope = user.scope as 'barraca' | 'constructora' | 'rental' | 'both';
         try {
           const hdrs = await headers();
           const fwd = hdrs.get('x-forwarded-for') || '';

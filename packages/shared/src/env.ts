@@ -285,6 +285,9 @@ const serverEnvSchema = z.object({
   /** Scope de autenticación legacy (cuenta vs constructora vs admin). */
   AUTH_SCOPE: z.string().optional(),
 
+  /** Correos con acceso al panel de rental.jurmaq.cl, separados por coma. Vacío = nadie. */
+  LOGIN_RENTAL_PERMITIDOS: z.string().optional(),
+
   /**
    * Feature flag: habilita sesiones firmadas (JWT HMAC) para el portal de
    * clientes. CRÍTICO: con el flag apagado, los tokens caen al formato legacy

@@ -42,7 +42,7 @@ import { env } from '@jurmaq/shared/env';
 // Tipos
 // ---------------------------------------------------------------------------
 
-export type SessionScope = 'constructora' | 'barraca' | 'app';
+export type SessionScope = 'constructora' | 'barraca' | 'rental' | 'app';
 
 export interface SessionPayload {
   /** Subject — user ID */
