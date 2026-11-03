@@ -7,8 +7,8 @@
  * `pendiente`; nunca se completa a mano.
  *
  * - Sin montos: la decisión de publicarlos es de Jorge.
- * - `mandante` se muestra solo si Jorge confirma que se puede nombrar. Si no,
- *   va `mandanteGenerico`. Por eso los slugs nuevos no llevan el cliente.
+ * - `mandante` va en texto, sin logo: Jorge autorizó nombrar clientes y usar las
+ *   fotos de obra, pero los logos esperan su permiso (03-11-2026).
  * - `servicios` son slugs de `servicios-obras-data.ts`.
  */
 
@@ -22,7 +22,6 @@ export interface FichaObra {
   slug: string;
   titulo: string;
   mandante: string;
-  mandanteGenerico: string;
   comuna: string;
   region: string;
   /** Año de la obra. `null` hasta que Jorge lo entregue. */
@@ -41,7 +40,6 @@ export interface FichaObra {
 
 const TENO = {
   mandante: 'Nestlé Chile S.A.',
-  mandanteGenerico: 'Planta de alimentos en Teno',
   comuna: 'Teno',
   region: 'Región del Maule',
 } as const;
@@ -70,7 +68,7 @@ export const FICHAS_OBRA: FichaObra[] = [
       { src: '/images/obras/enfierradura-espirales.jpg', alt: 'Retroexcavadora trabajando en la excavación de la fundación' },
       { src: '/images/obras/enfierradura-pedestal.jpg', alt: 'Armadura de pedestal dentro de su excavación' },
     ],
-    pendiente: ['Año', 'Número y diámetro de silos', 'Confirmar nombre de cliente'],
+    pendiente: ['Año', 'Número y diámetro de silos'],
   },
   {
     ...TENO,
@@ -92,7 +90,7 @@ export const FICHAS_OBRA: FichaObra[] = [
       { src: '/images/obras/batcheo-silo-posicionado.jpg', alt: 'Silo blanco ya posicionado en el interior de la planta' },
       { src: '/images/obras/batcheo-pasarela.jpg', alt: 'Pasarela industrial con baranda amarilla' },
     ],
-    pendiente: ['Año', 'Cantidad y capacidad de tanques', 'Confirmar nombre de cliente'],
+    pendiente: ['Año', 'Cantidad y capacidad de tanques'],
   },
   {
     ...TENO,
@@ -108,7 +106,7 @@ export const FICHAS_OBRA: FichaObra[] = [
       { src: '/images/obras/alero-bodega-nestle-3.jpg', alt: 'Vista lateral de la bodega con equipos elevadores' },
       { src: '/images/proyectos/nestle-teno-fundaciones-silos/04-silos-final.jpg', alt: 'Andamio junto al alero de la bodega' },
     ],
-    pendiente: ['Año', 'm² de alero', 'Confirmar nombre de cliente'],
+    pendiente: ['Año', 'm² de alero'],
   },
   {
     ...TENO,
@@ -124,7 +122,7 @@ export const FICHAS_OBRA: FichaObra[] = [
       { src: '/images/obras/revestimiento-bodega-2.jpg', alt: 'Fachada de la ampliación durante el revestimiento' },
       { src: '/images/obras/ampliacion-revestimiento-fachada.jpg', alt: 'Equipo en terreno al pie de la fachada revestida' },
     ],
-    pendiente: ['Año', 'm² revestidos', 'Confirmar nombre de cliente'],
+    pendiente: ['Año', 'm² revestidos'],
   },
 ];
 
