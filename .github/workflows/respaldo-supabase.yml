@@ -1,0 +1,120 @@
+# Respaldo nocturno de la base de Supabase (plan Free, sin respaldos propios)
+# hacia Cloudflare R2. Cada noche: pg_dump con un rol de sólo lectura, restaura
+# el dump en un Postgres temporal para comprobar que sirve, lo cifra con age y lo
+# sube. R2 borra los de más de 30 días (regla del bucket jurmaq-respaldos).
+#
+# Repo público: nada de datos en logs ni artefactos. Por eso la salida de
+# pg_dump, pg_restore y psql va a archivos del runner, que nunca se imprimen.
+# Sólo está aquí la llave pública de age: la privada la guarda Jorge, y sin ella
+# GitHub no puede leer los respaldos. Cómo restaurar: .github/respaldo/RESTAURAR.md
+name: Respaldo Supabase
+
+on:
+  schedule:
+    - cron: '30 7 * * *' # 04:30 de Chile en verano
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: respaldo-supabase
+  cancel-in-progress: false
+
+jobs:
+  respaldo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      AGE_RECIPIENT: age1pulkfrdpmg4gletha69amkjn5hggns7cuunlp982yjh00mlkjcjqsrmclr
+      R2_ENDPOINT: https://230b03ebbb9f51417216f36013cb32f5.r2.cloudflarestorage.com
+      R2_BUCKET: jurmaq-respaldos
+      PRUEBA_URL: postgresql://postgres:temporal@127.0.0.1:5432/prueba
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: temporal
+          POSTGRES_DB: prueba
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Instalar cliente de Postgres 17 y age
+        run: |
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y > /dev/null 2>&1 || {
+            sudo apt-get install -y postgresql-common > /dev/null
+            sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y > /dev/null
+          }
+          sudo apt-get install -y postgresql-client-17 age > /dev/null
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Volcar la base
+        env:
+          ORIGEN_URL: ${{ secrets.SUPABASE_RESPALDO_URL }}
+        run: |
+          pg_dump -d "$ORIGEN_URL" -Fc -n public -n auth -n storage \
+            -f "$RUNNER_TEMP/respaldo.dump" 2> "$RUNNER_TEMP/dump.err"
+          echo "Dump listo"
+
+      - name: Restaurar en un Postgres temporal y comparar
+        env:
+          ORIGEN_URL: ${{ secrets.SUPABASE_RESPALDO_URL }}
+        run: |
+          psql "$PRUEBA_URL" -q -v ON_ERROR_STOP=1 -f .github/respaldo/preparar-restauracion.sql > /dev/null 2> "$RUNNER_TEMP/prep.err"
+          pg_restore -d "$PRUEBA_URL" --no-owner --exit-on-error "$RUNNER_TEMP/respaldo.dump" 2> "$RUNNER_TEMP/restore.err"
+          TABLAS="select count(*) from pg_tables where schemaname in ('public', 'auth', 'storage')"
+          tablas_origen=$(psql "$ORIGEN_URL" -Atc "$TABLAS" 2> /dev/null)
+          tablas_prueba=$(psql "$PRUEBA_URL" -Atc "$TABLAS" 2> /dev/null)
+          filas_origen=$(psql "$ORIGEN_URL" -At -f .github/respaldo/conteo-filas.sql 2> /dev/null)
+          filas_prueba=$(psql "$PRUEBA_URL" -At -f .github/respaldo/conteo-filas.sql 2> /dev/null)
+          productos=$(psql "$PRUEBA_URL" -Atc "select count(*) from public.barraca_productos" 2> /dev/null)
+          # Sin imprimir los números: el log es público. El 99 % tolera lo que
+          # entre a la base entre el dump y este conteo.
+          if [ "$tablas_origen" != "$tablas_prueba" ] || [ "$productos" -le 0 ] \
+            || [ $((filas_prueba * 100)) -lt $((filas_origen * 99)) ]; then
+            echo "La restauración no coincide con el origen"
+            exit 1
+          fi
+          echo "Restauración verificada"
+
+      - name: Cifrar y subir a R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+        run: |
+          age -r "$AGE_RECIPIENT" -o "$RUNNER_TEMP/respaldo.dump.age" "$RUNNER_TEMP/respaldo.dump"
+          aws s3 cp --only-show-errors --endpoint-url "$R2_ENDPOINT" \
+            "$RUNNER_TEMP/respaldo.dump.age" \
+            "s3://$R2_BUCKET/diario/jurmaq-$(date -u +%F).dump.age" > /dev/null 2>&1
+          echo "Respaldo subido"
+
+      - name: Borrar los archivos del runner
+        if: always()
+        run: rm -f "$RUNNER_TEMP"/respaldo.dump* "$RUNNER_TEMP"/*.err
+
+      - name: Avisar por correo si falló
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          jq -n --arg url "$RUN_URL" '{
+            from: "Respaldos JURMAQ <novedades@jurmaq.cl>",
+            to: ["jrgubival@gmail.com"],
+            subject: "Falló el respaldo nocturno de Supabase",
+            text: ("El respaldo de esta noche no se completó. Detalle: " + $url)
+          }' | curl -sS -o /dev/null -f https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" -d @-
