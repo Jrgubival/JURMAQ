@@ -22,10 +22,13 @@ const geist = Geist({
   display: "swap",
 });
 
+// Mono y serif casi no se usan arriba de la página: no se precargan (menos
+// descargas compitiendo con la imagen LCP). Se bajan cuando aparecen.
 const geistMono = Geist_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
 });
 
 const newsreader = Newsreader({
@@ -34,6 +37,7 @@ const newsreader = Newsreader({
   display: "swap",
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
+  preload: false,
 });
 
 // Titulares (h1 .editorial-h1) → Oswald condensada industrial, en línea con la
@@ -139,13 +143,6 @@ export const metadata: Metadata = {
         height: 630,
         alt: "Barraca JURMAQ — Fierros y Materiales en Curicó",
       },
-      // Segundo intento por si algún crawler exótico prefiere square.
-      {
-        url: "/icon-512.png",
-        width: 512,
-        height: 512,
-        alt: "Barraca JURMAQ",
-      },
     ],
   },
   twitter: {
@@ -183,11 +180,11 @@ export default function BarracaLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         {/* Preconnect to external origins for performance */}
-        <link rel="preconnect" href="https://images.unsplash.com" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        {/* Las fotos de producto vienen de este CDN: conexión adelantada para la imagen LCP de la ficha. */}
+        <link rel="preconnect" href="https://http2.mlstatic.com" />
+        <link rel="dns-prefetch" href="https://http2.mlstatic.com" />
         <link rel="preconnect" href="https://wmoizhbdalvnveclenvf.supabase.co" />
         <link rel="dns-prefetch" href="https://wmoizhbdalvnveclenvf.supabase.co" />
-        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
         {/* Sin Speculation Rules: el prerender al presionar un enlace renderizaba
             la página completa en segundo plano (otra función + otra llamada al
             carrito) y Next la descartaba al navegar por su cuenta. Costo doble

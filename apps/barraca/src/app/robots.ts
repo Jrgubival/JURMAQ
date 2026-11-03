@@ -47,8 +47,7 @@ const BLOQUEADOS = [
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      // crawlDelay sólo para el resto; Google y Bing tienen su propio bloque.
-      { userAgent: "*", allow: "/", disallow: DISALLOW, crawlDelay: 5 },
+      { userAgent: "*", allow: "/", disallow: DISALLOW },
       ...BLOQUEADOS.map((ua) => ({ userAgent: ua, disallow: "/" })),
       { userAgent: "Googlebot", allow: "/", disallow: DISALLOW },
       { userAgent: "Bingbot", allow: "/", disallow: DISALLOW },
@@ -63,10 +62,7 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "ClaudeBot", allow: "/", disallow: DISALLOW },
       { userAgent: "GoogleOther", allow: "/", disallow: DISALLOW },
     ],
-    sitemap: [
-      "https://jurmaq.cl/sitemap.xml",
-      "https://barraca.jurmaq.cl/sitemap.xml",
-    ],
-    host: "https://barraca.jurmaq.cl",
+    // Sólo el de esta tienda (el de jurmaq.cl es otro sitio). Sin `host`: obsoleto.
+    sitemap: "https://barraca.jurmaq.cl/sitemap.xml",
   };
 }

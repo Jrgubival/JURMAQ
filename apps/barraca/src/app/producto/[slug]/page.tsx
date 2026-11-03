@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { precioWebHastaNumerico } from "@/lib/vigencia";
+import { precioWebHastaNumerico, PRECIO_WEB } from "@/lib/vigencia";
+import { nombreMarca } from "@/lib/marcas";
+import { motivoSinRetracto } from "@/lib/retracto";
+import { ZONAS_DESPACHO } from "@/lib/despacho/zonas";
 import { DespachoZonaFicha } from "@/components/barraca/SelectorZona";
 import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
@@ -126,7 +129,10 @@ export async function generateMetadata({
 
   return {
     title: `${producto.nombre} ${titlePrecio} · Barraca JURMAQ Curicó`,
-    description: `Compra ${producto.nombre} en Barraca JURMAQ Curico. ${metaDisponible ? `Precio web: ${precioFormateado}. ` : ''}${stockTexto}. Envio a Curico, Teno, Molina, Talca y toda la Region del Maule. Codigo: ${producto.codigo}.`,
+    description: `Compra ${producto.nombre} en Barraca JURMAQ, Molina. ${metaDisponible ? `Precio web: ${precioFormateado}. ` : ''}${stockTexto}. Retiro en Molina y despacho en camión a Curicó, Talca y alrededores. Código: ${producto.codigo}.`,
+    // Sin stock o sin precio no se puede comprar: fuera del índice hasta que vuelva
+    // (la ficha sigue abierta para quien llegue por un enlace). También sale del sitemap.
+    ...(metaDisponible ? {} : { robots: { index: false, follow: true } }),
     keywords: [
       producto.nombre.toLowerCase(),
       `${producto.nombre.toLowerCase()} precio`,
@@ -297,15 +303,16 @@ export default async function ProductoPage({
     // sin reviews / vista no disponible → no se emite aggregateRating
   }
 
+  const marcaLd = nombreMarca(producto.nombre);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: producto.nombre,
     description: `${producto.nombre}${producto.medida ? ` (${producto.medida})` : ""} en Barraca JURMAQ, Molina. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.`,
     image: producto.imagen || undefined,
+    // El código de Softmad es interno: va como sku, no como mpn (no es del fabricante).
     sku: producto.codigo,
-    mpn: producto.codigo,
-    brand: { "@type": "Brand", name: "JURMAQ Barraca" },
+    ...(marcaLd ? { brand: { "@type": "Brand", name: marcaLd } } : {}),
     category: categoria?.nombre || "Materiales de Construccion",
     // Solo si hay reviews reales aprobadas (ver fetch arriba). Nunca fabricado.
     ...(aggregateRating
@@ -330,14 +337,9 @@ export default async function ProductoPage({
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
-      seller: { "@id": "https://jurmaq.cl/#organization" },
-      priceValidUntil: new Date(
-        new Date().getFullYear(),
-        new Date().getMonth() + 3,
-        1
-      )
-        .toISOString()
-        .split("T")[0],
+      seller: { "@id": "https://barraca.jurmaq.cl/#organization" },
+      // La misma vigencia del precio web que se muestra (Términos 5.3).
+      ...(PRECIO_WEB.hasta ? { priceValidUntil: PRECIO_WEB.hasta } : {}),
       areaServed: [
         { "@type": "City", name: "Curicó" },
         { "@type": "City", name: "Molina" },
@@ -346,22 +348,43 @@ export default async function ProductoPage({
         { "@type": "City", name: "Talca" },
         { "@type": "AdministrativeArea", name: "Región del Maule" },
       ],
+      // Camión propio a las zonas de lib/despacho/zonas.ts (Molina gratis). Lo
+      // preparamos en 1 a 5 días hábiles (checkout).
       shippingDetails: {
         "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          currency: "CLP",
+          minValue: Math.min(...ZONAS_DESPACHO.map((z) => z.costo)),
+          maxValue: Math.max(...ZONAS_DESPACHO.map((z) => z.costo)),
+        },
         shippingDestination: {
           "@type": "DefinedRegion",
           addressCountry: "CL",
           addressRegion: "Maule",
         },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: { "@type": "QuantitativeValue", minValue: 1, maxValue: 5, unitCode: "DAY" },
+          transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 1, unitCode: "DAY" },
+        },
       },
-      hasMerchantReturnPolicy: {
-        "@type": "MerchantReturnPolicy",
-        applicableCountry: "CL",
-        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-        merchantReturnDays: 7,
-        returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn",
-      },
+      // Términos 11: retracto de 10 días corridos, en el local o lo retiramos sin
+      // costo; algunos productos no tienen retracto (lib/retracto.ts).
+      hasMerchantReturnPolicy: motivoSinRetracto(producto.codigo)
+        ? {
+            "@type": "MerchantReturnPolicy",
+            applicableCountry: "CL",
+            returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+          }
+        : {
+            "@type": "MerchantReturnPolicy",
+            applicableCountry: "CL",
+            returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+            merchantReturnDays: 10,
+            returnMethod: "https://schema.org/ReturnInStore",
+            returnFees: "https://schema.org/FreeReturn",
+          },
     } } : {}),
   };
 

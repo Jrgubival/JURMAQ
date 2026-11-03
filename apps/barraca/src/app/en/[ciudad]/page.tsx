@@ -36,6 +36,10 @@ export async function generateMetadata({
     : `Retiro en Molina (${km} km). ${COBERTURA_CORTA}`;
 
   return {
+    // Ciudades sin despacho: la página sirve a quien llegue (retiro en Molina),
+    // pero no se indexa como "barraca en <ciudad>" (texto casi igual al de las
+    // demás y una promesa que no cumplimos). También salen del sitemap.
+    ...(cubre ? {} : { robots: { index: false, follow: true } }),
     title: `Barraca de Fierros y Materiales en ${c.nombre} · JURMAQ`,
     description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y +1.600 productos para ${c.nombre} (${c.region}). ${entrega}`,
     keywords: [
@@ -64,7 +68,7 @@ export async function generateMetadata({
       locale: "es_CL",
       type: "website",
       images: [
-        { url: "/icon-512.png", width: 512, height: 512, alt: `Barraca JURMAQ en ${c.nombre}` },
+        { url: "/og-image-barraca-1200x630.png", width: 1200, height: 630, alt: `Barraca JURMAQ en ${c.nombre}` },
       ],
     },
     // Sin bloque `icons:`: en Next la página REEMPLAZA el del layout en vez

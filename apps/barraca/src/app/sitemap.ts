@@ -8,6 +8,7 @@ import { MetadataRoute } from "next";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES } from "@jurmaq/shared/seo";
 import { GUIAS } from "@/lib/guias-seo-data";
+import { despachaA } from "@/lib/cobertura";
 
 /**
  * Cachea el sitemap 24 h.
@@ -59,7 +60,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // pSEO landings por ciudad — `/en/<ciudad-slug>` (audit fase 4.7)
-  const ciudadUrls: MetadataRoute.Sitemap = CIUDADES.map((c) => ({
+  // Sólo las ciudades a las que llega el camión: las demás llevan noindex.
+  const ciudadUrls: MetadataRoute.Sitemap = CIUDADES.filter((c) => despachaA(c.nombre)).map((c) => ({
     url: `${baseUrl}/en/${c.slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,
@@ -115,6 +117,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('barraca_productos_public')
       .select('slug')
       .eq('activo', true)
+      // Sólo lo que se puede comprar: las fichas "No disponible" llevan noindex.
+      .gt('stock', 0)
+      .gt('precio', 0)
+      .not('solo_cotizar', 'is', true)
       .order('id')
       .range(desde, desde + 999);
     if (error || !data) break;

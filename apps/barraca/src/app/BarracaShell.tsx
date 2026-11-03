@@ -10,7 +10,8 @@ import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
 import SelectorZona, { EVENTO_MENU } from "@/components/barraca/SelectorZona";
 import ToastContainer from "@/components/Toast";
-import { HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
+import { CIUDADES, HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
+import { despachaA } from "@/lib/cobertura";
 import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
 import { precioWebHasta } from "@/lib/vigencia";
 import { cantidadEnCarrito } from "@/lib/carrito";
@@ -362,12 +363,9 @@ function WhatsAppFloat() {
 // Despacho propio (camión): Molina y alrededores, a pedido del dueño (oct-2026).
 // Talca y Linares salen: el fierro no se despacha tan lejos. Los montos los
 // define el dueño en el checkout.
-const COMUNAS_DESPACHO = [
-  { slug: "molina", name: "Molina" },
-  { slug: "curico", name: "Curicó" },
-  { slug: "sagrada-familia", name: "Sagrada Familia" },
-  { slug: "romeral", name: "Romeral" },
-] as const;
+// Todas las ciudades con landing a las que llega el camión (lib/cobertura.ts):
+// enlaces internos reales a cada /en/<ciudad> que está en el sitemap.
+const COMUNAS_DESPACHO = CIUDADES.filter((c) => despachaA(c.nombre)).map((c) => ({ slug: c.slug, name: c.nombre }));
 
 const CATEGORIAS_PIE = [
   { href: "/categorias/fierros-construccion", name: "Fierros de construcción" },
@@ -376,6 +374,8 @@ const CATEGORIAS_PIE = [
   { href: "/categorias/herramientas-y-maq", name: "Herramientas" },
   { href: "/categorias", name: "Todas las categorías" },
   { href: "/sucursales", name: "Despacho y retiro" },
+  { href: "/calculadora-fierro", name: "Calculadora de fierro" },
+  { href: "/guias", name: "Guías de compra" },
 ] as const;
 
 const DIRECCION_MAPS = "Av. Poniente 2157, Molina, Chile";

@@ -132,12 +132,6 @@ export const metadata: Metadata = {
         height: 630,
         alt: "Barraca de Fierros JURMAQ — Molina, Curicó y Talca",
       },
-      {
-        url: "/icon-512.png",
-        width: 512,
-        height: 512,
-        alt: "Barraca JURMAQ",
-      },
     ],
   },
   twitter: {

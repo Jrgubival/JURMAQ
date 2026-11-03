@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PRECIO_WEB } from "@/lib/vigencia";
 import { precioDeVenta, vistaPrecio } from "@/lib/precio-web";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
@@ -107,9 +108,9 @@ export async function generateMetadata({
       type: "website",
       images: [
         {
-          url: "/icon-512.png",
-          width: 512,
-          height: 512,
+          url: "/og-image-barraca-1200x630.png",
+          width: 1200,
+          height: 630,
           alt: `${cat.nombre} en Barraca JURMAQ Curicó · Molina`,
         },
       ],
@@ -223,8 +224,8 @@ export default async function CategoriaPage({
             price: effective,
             priceCurrency: "CLP",
             availability: (p.stock ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            seller: { "@id": "https://jurmaq.cl/#organization" },
-            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+            seller: { "@id": "https://barraca.jurmaq.cl/#organization" },
+            ...(PRECIO_WEB.hasta ? { priceValidUntil: PRECIO_WEB.hasta } : {}),
           } } : {}),
         },
       };
@@ -239,7 +240,7 @@ export default async function CategoriaPage({
         "@id": `https://barraca.jurmaq.cl/categorias/${categoria.slug}#catalog`,
         name: categoria.nombre,
         url: `https://barraca.jurmaq.cl/categorias/${categoria.slug}`,
-        provider: { "@id": "https://jurmaq.cl/#organization" },
+        provider: { "@id": "https://barraca.jurmaq.cl/#organization" },
         offers: {
           "@type": "AggregateOffer",
           priceCurrency: "CLP",

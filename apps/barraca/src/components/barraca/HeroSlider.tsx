@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "@/components/barraca/Enlace";
-import Image from "next/image";
 import { formatCLP } from "@jurmaq/shared/format";
 
 /**
@@ -60,6 +59,14 @@ const SLIDES_FIJAS = {
  * desliza con el dedo como en las apps de las tiendas grandes, y avanza solo
  * cada 6 s mientras nadie lo toca. Los puntos siguen al scroll.
  */
+/** Versiones de 640 y 960 px junto a la de 1600 (public/images/barraca/hero/<nombre>-640.webp). */
+const CON_VARIANTES = new Set(["local-fachada", "local-bodega", "local-ferreteria", "local-despacho"]);
+function srcSetHero(src: string): string | undefined {
+  const m = src.match(/^(.*\/)([a-z-]+)\.webp$/);
+  if (!m || !CON_VARIANTES.has(m[2])) return undefined;
+  return `${m[1]}${m[2]}-640.webp 640w, ${m[1]}${m[2]}-960.webp 960w, ${src} 1600w`;
+}
+
 export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) {
   const slides = useMemo(
     () => [
@@ -125,14 +132,22 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
             aria-roledescription="lámina"
             aria-label={`${i + 1} de ${slides.length}`}
           >
-            <Image
+            {/* <img> con srcset propio: el optimizador de imágenes está apagado
+                (next.config, images.unoptimized), así que next/image mandaría
+                la foto de 1600 px también al celular. La primera es la imagen
+                LCP de la portada: carga con prioridad alta. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={s.image}
-              alt={s.alt}
-              fill
-              priority={i === 0}
-              loading={i === 0 ? undefined : "lazy"}
+              srcSet={srcSetHero(s.image)}
               sizes="100vw"
-              className="object-cover object-center"
+              alt={s.alt}
+              width={1600}
+              height={1200}
+              fetchPriority={i === 0 ? "high" : "low"}
+              loading={i === 0 ? "eager" : "lazy"}
+              decoding={i === 0 ? "sync" : "async"}
+              className="absolute inset-0 w-full h-full object-cover object-center"
             />
             {/* Oscurece sólo donde va el texto: abajo en celular, a la izquierda en escritorio. */}
             <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/75 via-45% to-navy-950/10 lg:bg-gradient-to-r lg:from-navy-950/95 lg:via-navy-950/65 lg:to-navy-950/0" />
