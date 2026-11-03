@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ESTADOS_MAQUINA, TIPOS_PANEL } from '@/lib/esquemas';
+import { ESTADOS_MAQUINA, TIPOS_PANEL } from '@/lib/opciones';
 import { UNIDADES, UNIDAD_LABEL, type Maquina, type PrecioPeriodo, type Unidad } from '@/lib/maquinas';
 
 /** Achica en el teléfono: una foto de 8 MB sube en segundos y pesa poco en el sitio. */

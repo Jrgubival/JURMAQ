@@ -61,7 +61,7 @@ SET precios = CASE
     'unidad', unidad_tarifa,
     'valor', tarifa_neta,
     'incluye', CASE
-      WHEN unidad_tarifa = 'hora' AND minimo_unidades > 1 THEN 'Mínimo ' || trim(trailing '.0' from minimo_unidades::text) || ' horas'
+      WHEN unidad_tarifa = 'hora' AND minimo_unidades > 1 THEN 'Mínimo ' || trim_scale(minimo_unidades)::text || ' horas'
       ELSE ''
     END
   ))

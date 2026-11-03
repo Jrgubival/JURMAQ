@@ -11,7 +11,7 @@ import type { CotizacionEntrada } from './esquemas';
 export function cabecera(d: CotizacionEntrada) {
   const t = calcularTotales(d.lineas, d.descuento_neto);
   const primera = d.lineas.find((l) => l.tipo === 'maquina' && l.maquinaria_id);
-  if (!primera?.maquinaria_id) return null;
+  if (!primera?.maquinaria_id || t.total >= 9_999_999_999) return null;
   const unidad = primera.unidad === 'hora' || primera.unidad === 'dia' || primera.unidad === 'semana' || primera.unidad === 'mes'
     ? primera.unidad
     : 'dia';

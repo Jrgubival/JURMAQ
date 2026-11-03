@@ -3,10 +3,11 @@ import { notFound } from 'next/navigation';
 import { formatCLP } from '@jurmaq/shared/format';
 import AccionesCotizacion from '@/components/admin/AccionesCotizacion';
 import { calcularTotales, textoCantidad } from '@/lib/cotizacion';
-import { datosPdf, leerCotizacion } from '@/lib/panel';
+import { exigirPermiso, datosPdf, leerCotizacion } from '@/lib/panel';
 import { SITIO } from '@/lib/sitio';
 
 export default async function VerCotizacion({ params }: { params: Promise<{ id: string }> }) {
+  await exigirPermiso('cotizaciones', 'read');
   const id = Number((await params).id);
   const c = Number.isInteger(id) && id > 0 ? await leerCotizacion(id) : null;
   if (!c) notFound();

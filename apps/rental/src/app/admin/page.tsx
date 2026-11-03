@@ -1,8 +1,10 @@
+import { exigirPermiso } from '@/lib/panel';
 import Link from 'next/link';
 import { formatCLP } from '@jurmaq/shared/format';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 
 export default async function Hoy() {
+  await exigirPermiso('cotizaciones', 'read');
   const [{ data: solicitudes }, { data: abiertas }] = await Promise.all([
     supabaseAdmin
       .from('cotizaciones_arriendo')

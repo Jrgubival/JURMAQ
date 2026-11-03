@@ -38,6 +38,12 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=86400, s-maxage=2592000, stale-while-revalidate=604800" }],
       },
       { source: "/(.*)", headers: seguridad },
+      // El Worker de prueba no debe indexarse: el dominio real es rental.jurmaq.cl.
+      {
+        source: "/(.*)",
+        has: [{ type: "host", value: ".*\\.workers\\.dev" }],
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
       {
         source: "/(admin|login)(.*)",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],

@@ -2,9 +2,11 @@ import Link from 'next/link';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
 import { leerMaquina, textoPrecio } from '@/lib/maquinas';
-import { ESTADOS_MAQUINA } from '@/lib/esquemas';
+import { ESTADOS_MAQUINA } from '@/lib/opciones';
+import { exigirPermiso } from '@/lib/panel';
 
 export default async function Maquinas() {
+  await exigirPermiso('maquinarias', 'read');
   const { data } = await supabaseAdmin.from('maquinarias').select('*').order('id');
   const lista = (data ?? []).map((f) => leerMaquina(f as Record<string, unknown>));
   return (

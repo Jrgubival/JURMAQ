@@ -6,8 +6,9 @@ import { formatCLP } from '@jurmaq/shared/format';
 import { calcularTotales } from '@/lib/cotizacion';
 import { UNIDAD_LABEL, type Maquina, type Unidad } from '@/lib/maquinas';
 import { enlaceWhatsapp } from '@/lib/sitio';
+import Foto from './Foto';
 
-type Opcion = Pick<Maquina, 'id' | 'nombre' | 'precios' | 'minimoUnidades'>;
+type Opcion = Pick<Maquina, 'id' | 'nombre' | 'precios' | 'minimoUnidades' | 'fotos' | 'fotoReferencial'>;
 
 export default function Cotizador({ flota }: { flota: Opcion[] }) {
   const parametros = useSearchParams();
@@ -32,7 +33,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
     setMaquinaId(id);
     const m = flota.find((x) => x.id === id);
     const u = m?.precios[0]?.unidad;
-    if (u) setUnidad(u);
+    setUnidad(u ?? 'dia');
     if (m && u === 'hora' && m.minimoUnidades) setCantidad(String(m.minimoUnidades));
     else setCantidad('1');
   }
@@ -45,8 +46,10 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
 
   const n = Number(cantidad);
   const precio = maquina?.precios.find((p) => p.unidad === unidad);
+  // Mismo mínimo que aplica el servidor.
+  const aplicada = Math.max(n, unidad === 'hora' ? (maquina?.minimoUnidades ?? 1) : 1);
   const neto = precio && Number.isFinite(n) && n > 0
-    ? calcularTotales([{ tipo: 'maquina', cantidad: n, precio_unitario: precio.valor }], 0).neto
+    ? calcularTotales([{ tipo: 'maquina', cantidad: aplicada, precio_unitario: precio.valor }], 0).neto
     : 0;
 
   async function enviar(e: React.FormEvent) {
@@ -74,9 +77,9 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
 
   if (numero) {
     return (
-      <div className="mt-6 rounded-xl border border-hairline bg-surface p-6" role="status">
+      <div className="mt-8 max-w-2xl bg-acento p-6 text-[#111]" role="status">
         <h2 className="text-3xl">Recibimos tu solicitud</h2>
-        <p className="mt-2 text-ink-soft">Tu número es <strong>{numero}</strong>. Te contactamos con la cotización.</p>
+        <p className="mt-2">Tu número es <strong>{numero}</strong>. Te contactamos con la cotización.</p>
       </div>
     );
   }
@@ -84,7 +87,8 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
   const wa = maquina ? `Hola, quiero cotizar el arriendo de ${maquina.nombre}${lugar ? ` en ${lugar}` : ''}.` : 'Hola, quiero cotizar el arriendo de una máquina.';
 
   return (
-    <form onSubmit={enviar} className="mt-6 space-y-5">
+    <form onSubmit={enviar} className="mt-8 grid gap-8 md:grid-cols-[1.25fr_1fr] md:gap-14">
+      <div className="space-y-5">
       <div>
         <label className="etiqueta" htmlFor="maquina">Máquina</label>
         <select id="maquina" className="campo" required value={maquinaId} onChange={(e) => elegir(e.target.value ? Number(e.target.value) : '')}>
@@ -143,21 +147,26 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
         <input id="sitio" tabIndex={-1} autoComplete="off" value={sitio} onChange={(e) => setSitio(e.target.value)} />
       </div>
 
-      <div className="rounded-xl border border-hairline bg-surface p-4">
-        <p className="text-sm text-ink-muted">Valor referencial</p>
-        {neto > 0 ? (
-          <p className="font-titulo text-3xl font-semibold">{formatCLP(neto)} <span className="font-sans text-sm font-normal text-ink-muted">+ IVA</span></p>
-        ) : (
-          <p className="font-semibold">Te lo enviamos en la cotización</p>
-        )}
-        <p className="mt-1 text-sm text-ink-muted">El traslado se cotiza aparte.</p>
       </div>
 
-      {error ? <p role="alert" className="font-medium text-peligro">{error}</p> : null}
+      <div className="md:sticky md:top-24 md:self-start">
+        {maquina ? <Foto maquina={maquina} className="mb-px aspect-[16/10]" /> : null}
+        <div className="bg-acento p-5 text-[#111]">
+          <p className="font-medium">{maquina ? maquina.nombre : 'Valor referencial'}</p>
+          {neto > 0 ? (
+            <p className="mt-1 font-titulo text-5xl font-semibold tabular-nums">{formatCLP(neto)}</p>
+          ) : (
+            <p className="mt-1 font-semibold">Te lo enviamos en la cotización</p>
+          )}
+          <p className="mt-2 text-[0.9375rem]">{neto > 0 ? '+ IVA. Valor referencial. ' : ''}El traslado se cotiza aparte.</p>
+        </div>
 
-      <div className="flex flex-wrap gap-3">
-        <button type="submit" className="boton boton-principal" disabled={enviando}>{enviando ? 'Enviando…' : 'Enviar solicitud'}</button>
-        <a href={enlaceWhatsapp(wa)} rel="noopener" className="boton boton-secundario">Prefiero WhatsApp</a>
+        {error ? <p role="alert" className="mt-4 font-medium text-peligro">{error}</p> : null}
+
+        <div className="sobre-claro mt-4 grid gap-3">
+          <button type="submit" className="boton boton-principal w-full" disabled={enviando}>{enviando ? 'Enviando…' : 'Enviar solicitud'}</button>
+          <a href={enlaceWhatsapp(wa)} rel="noopener" className="boton boton-secundario w-full">Prefiero WhatsApp</a>
+        </div>
       </div>
     </form>
   );

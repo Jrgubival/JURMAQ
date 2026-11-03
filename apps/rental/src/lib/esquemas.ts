@@ -1,24 +1,7 @@
 import { z } from '@jurmaq/shared/validation';
 import { TIPOS_LINEA, UNIDADES_LINEA } from './cotizacion';
 import { UNIDADES } from './maquinas';
-
-export const TIPOS_PANEL = [
-  { valor: 'retroexcavadora', texto: 'Retroexcavadora' },
-  { valor: 'miniexcavadora', texto: 'Miniexcavadora' },
-  { valor: 'minicargador', texto: 'Minicargador' },
-  { valor: 'camion', texto: 'Camión tolva' },
-  { valor: 'brazo_articulado', texto: 'Brazo articulado' },
-  { valor: 'alzahombre', texto: 'Alzahombre o plataforma' },
-] as const;
-
-export const ESTADOS_MAQUINA = [
-  { valor: 'disponible', texto: 'Disponible' },
-  { valor: 'arrendada', texto: 'Arrendada' },
-  { valor: 'mantencion', texto: 'En mantención' },
-] as const;
-
-export const ESTADOS_COTIZACION = ['borrador', 'enviada', 'aceptada', 'rechazada', 'cancelada'] as const;
-export type EstadoCotizacion = (typeof ESTADOS_COTIZACION)[number];
+import { ESTADOS_COTIZACION, ESTADOS_MAQUINA, TIPOS_PANEL } from './opciones';
 
 const fotoUrl = z.string().max(500).regex(/^(\/images\/|https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/)/);
 

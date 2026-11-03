@@ -34,14 +34,14 @@ body {
 h1, h2, h3 {
   font-family: var(--font-titulo);
   font-weight: 600;
-  line-height: 1.02;
+  line-height: 1.06;
   text-transform: uppercase;
   text-wrap: balance;
   letter-spacing: 0;
 }
 
 .grande { font-size: clamp(2.5rem, 6.4vw, 5.25rem); }
-.medio { font-size: clamp(2rem, 4.4vw, 3.5rem); }
+.medio { font-size: clamp(2rem, 4.4vw, 3.5rem); line-height: 1.1; }
 
 :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 

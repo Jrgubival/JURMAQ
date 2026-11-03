@@ -2,7 +2,8 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from '@jurmaq/shared/validation';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { createAdminNotification } from '@jurmaq/shared/notifications/admin';
-import { isValidEmail, isValidOrigin } from '@jurmaq/shared/sanitize';
+import { isValidEmail } from '@jurmaq/shared/sanitize';
+import { origenValido } from '@/lib/origen';
 import { getClientIp, rateLimitPersistent } from '@jurmaq/shared/rate-limit';
 import { hid, logSafeError } from '@jurmaq/shared/logging';
 import { calcularTotales, textoCantidad } from '@/lib/cotizacion';
@@ -25,7 +26,7 @@ const cuerpo = z.object({
 
 /** POST /api/cotizar-arriendo — solicitud del sitio. Queda con su número COT-AR. */
 export async function POST(request: NextRequest) {
-  if (!isValidOrigin(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  if (!origenValido(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
 
   const limite = await rateLimitPersistent(supabaseAdmin, `solicitud:${getClientIp(request)}`, { maxAttempts: 5, windowSeconds: 60 });
   if (!limite.success) return NextResponse.json({ error: 'Demasiados intentos. Espera un minuto.' }, { status: 429 });

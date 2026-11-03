@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import Migas from '@/components/Migas';
+import CabezaPagina from '@/components/CabezaPagina';
 import { RECURSOS, getRecurso } from '@/data/recursos';
 import { NEGOCIO_ID } from '@/lib/jsonld';
 import { SITIO } from '@/lib/sitio';
@@ -39,9 +39,8 @@ export default async function Recurso({ params }: Props) {
   return (
     <article className="sobre-claro mx-auto max-w-3xl px-4 py-10 md:py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
-      <Migas items={[{ nombre: 'Guías', href: '/recursos' }, { nombre: r.titulo.split('·')[0].trim().slice(0, 50) }]} />
-      <h1 className="grande mt-4">{r.h1}</h1>
-      <p className="mt-4 text-lg text-ink-soft">{r.resumen}</p>
+      <CabezaPagina migas={[{ nombre: 'Guías', href: '/recursos' }, { nombre: r.titulo.split('·')[0].trim().slice(0, 50) }]} titulo={r.h1} bajada={r.resumen} />
+      <div className="mx-auto max-w-3xl px-4 pb-16">
       <div className="prosa mt-4">
         {r.secciones.map((s) => (
           <section key={s.h2}>
@@ -60,6 +59,7 @@ export default async function Recurso({ params }: Props) {
         </section>
       ) : null}
       <Link href="/cotizar-arriendo" prefetch={false} className="boton boton-principal mt-8">Cotizar</Link>
+      </div>
     </article>
   );
 }

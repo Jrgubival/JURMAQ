@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { forbiddenResponse, requirePermission } from '@jurmaq/shared/auth/guard';
 import { logSafeError } from '@jurmaq/shared/logging';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { origenValido } from '@/lib/origen';
 import { cabecera, crearCotizacion } from '@/lib/cotizaciones-servidor';
 import { CotizacionEsquema } from '@/lib/esquemas';
 import { leerCotizacion } from '@/lib/panel';
 
 /** Copia con número nuevo. Las fechas se limpian: son de la cotización anterior. */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!isValidOrigin(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  if (!origenValido(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   if (!(await requirePermission('cotizaciones', 'create'))) return forbiddenResponse();
   const id = Number((await params).id);
   const o = Number.isInteger(id) && id > 0 ? await leerCotizacion(id) : null;

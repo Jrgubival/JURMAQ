@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { forbiddenResponse, requirePermission } from '@jurmaq/shared/auth/guard';
 import { logSafeError } from '@jurmaq/shared/logging';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { origenValido } from '@/lib/origen';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { MaquinaEsquema } from '@/lib/esquemas';
 import { camposMaquina } from '@/lib/maquinas-servidor';
 import { revalidarMaquina } from '@/lib/revalidar';
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!isValidOrigin(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  if (!origenValido(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   if (!(await requirePermission('maquinarias', 'update'))) return forbiddenResponse();
   const id = Number((await params).id);
   if (!Number.isInteger(id) || id <= 0) return NextResponse.json({ error: 'No encontrada' }, { status: 404 });

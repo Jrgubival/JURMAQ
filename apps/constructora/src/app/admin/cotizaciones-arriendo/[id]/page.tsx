@@ -11,11 +11,12 @@ interface Cotizacion {
   id: number;
   numero: string;
   cliente_nombre: string;
-  cliente_email: string;
+  cliente_email: string | null;
+  contacto_email?: string | null;
   cliente_telefono?: string;
   cliente_rut?: string;
   cliente_empresa?: string;
-  fecha_servicio: string;
+  fecha_servicio: string | null;
   ubicacion_servicio: string;
   distancia_km: number;
   unidades_solicitadas: number;
@@ -137,7 +138,7 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
           <h2 className="font-bold mb-3 text-navy-950">Servicio</h2>
           <dl className="text-sm space-y-2">
             <div><dt className="text-gray-500 inline">Máquina:</dt> <dd className="font-semibold inline">{cot.maquinarias?.nombre || '—'}</dd></div>
-            <div><dt className="text-gray-500 inline">Fecha:</dt> <dd className="inline">{new Date(cot.fecha_servicio).toLocaleDateString('es-CL')}</dd></div>
+            <div><dt className="text-gray-500 inline">Fecha:</dt> <dd className="inline">{cot.fecha_servicio ? new Date(cot.fecha_servicio).toLocaleDateString('es-CL') : 'Por definir'}</dd></div>
             <div><dt className="text-gray-500 inline">Ubicación:</dt> <dd className="inline">{cot.ubicacion_servicio}</dd></div>
             <div><dt className="text-gray-500 inline">Duración:</dt> <dd className="inline">{cot.unidades_solicitadas} {cot.unidad}{cot.unidades_solicitadas !== 1 ? 's' : ''}</dd></div>
             {cot.distancia_km > 0 && <div><dt className="text-gray-500 inline">Distancia:</dt> <dd className="inline">{cot.distancia_km} km (×2 ida+vuelta)</dd></div>}
@@ -252,12 +253,12 @@ export default function CotArriendoDetalle({ params }: { params: Promise<{ id: s
       <SendManualEmailModal
         open={showEmailModal}
         onClose={() => setShowEmailModal(false)}
-        defaultTo={cot.cliente_email}
+        defaultTo={cot.cliente_email ?? cot.contacto_email ?? ''}
         defaultVars={{
           nombre: cot.cliente_nombre,
           numero_cotizacion: cot.numero,
           maquinaria: cot.maquinarias?.nombre,
-          fecha: new Date(cot.fecha_servicio).toLocaleDateString('es-CL'),
+          fecha: cot.fecha_servicio ? new Date(cot.fecha_servicio).toLocaleDateString('es-CL') : 'Por definir',
           ubicacion: cot.ubicacion_servicio,
         }}
         cotizacionArriendoId={cot.id}

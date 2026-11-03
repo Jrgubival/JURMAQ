@@ -44,7 +44,7 @@ export async function GET(
     return NextResponse.json({ error: 'No encontrada' }, { status: 404 });
   }
 
-  const fechaFmt = new Date(cot.fecha_servicio).toLocaleDateString('es-CL', {
+  const fechaFmt = !cot.fecha_servicio ? 'Por definir' : new Date(cot.fecha_servicio).toLocaleDateString('es-CL', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -115,7 +115,7 @@ export async function GET(
     <div class="info-block">
       <h3>Cliente</h3>
       <dd>${escapeHtml(cot.cliente_nombre)}</dd>
-      <dt>Email</dt><dd>${escapeHtml(cot.cliente_email)}</dd>
+      <dt>Email</dt><dd>${escapeHtml(cot.cliente_email ?? cot.contacto_email ?? '')}</dd>
       ${cot.cliente_telefono ? `<dt>Teléfono</dt><dd>${escapeHtml(cot.cliente_telefono)}</dd>` : ''}
       ${cot.cliente_rut ? `<dt>RUT</dt><dd>${escapeHtml(cot.cliente_rut)}</dd>` : ''}
       ${cot.cliente_empresa ? `<dt>Empresa</dt><dd>${escapeHtml(cot.cliente_empresa)}</dd>` : ''}
@@ -124,7 +124,7 @@ export async function GET(
       <h3>Servicio</h3>
       <dt>Maquinaria</dt><dd>${escapeHtml(cot.maquinarias?.nombre || '—')}</dd>
       <dt>Fecha</dt><dd>${escapeHtml(fechaFmt)}</dd>
-      <dt>Ubicación</dt><dd>${escapeHtml(cot.ubicacion_servicio)}</dd>
+      <dt>Ubicación</dt><dd>${escapeHtml(cot.ubicacion_servicio ?? '')}</dd>
       <dt>Duración</dt><dd>${cot.unidades_solicitadas} ${escapeHtml(cot.unidad)}${cot.unidades_solicitadas !== 1 ? 's' : ''}</dd>
     </div>
   </div>

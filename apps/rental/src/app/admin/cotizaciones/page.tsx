@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { formatCLP } from '@jurmaq/shared/format';
-import { escapeLikePattern, escapeOrFilter } from '@jurmaq/shared/sanitize';
+import { escapeOrFilter } from '@jurmaq/shared/sanitize';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
-import { ESTADOS_COTIZACION } from '@/lib/esquemas';
+import { ESTADOS_COTIZACION } from '@/lib/opciones';
+import { exigirPermiso } from '@/lib/panel';
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
 export default async function Cotizaciones({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await exigirPermiso('cotizaciones', 'read');
   const { q = '', estado = '', desde = '', hasta = '' } = await searchParams;
   let consulta = supabaseAdmin
     .from('cotizaciones_arriendo')
@@ -16,7 +18,7 @@ export default async function Cotizaciones({ searchParams }: { searchParams: Pro
     .limit(100);
   const texto = q.trim().slice(0, 80);
   if (texto) {
-    const patron = escapeOrFilter(`%${escapeLikePattern(texto)}%`);
+    const patron = `%${escapeOrFilter(texto)}%`;
     consulta = consulta.or(`cliente_nombre.ilike.${patron},numero.ilike.${patron}`);
   }
   if ((ESTADOS_COTIZACION as readonly string[]).includes(estado)) consulta = consulta.eq('estado', estado);

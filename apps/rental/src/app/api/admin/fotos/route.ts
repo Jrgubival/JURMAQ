@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { forbiddenResponse, requirePermission } from '@jurmaq/shared/auth/guard';
 import { logSafeError } from '@jurmaq/shared/logging';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { origenValido } from '@/lib/origen';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 
 const BUCKET = 'rental-fotos';
@@ -19,7 +19,7 @@ function tipoReal(b: Uint8Array): { ext: string; mime: string } | null {
 
 /** POST /api/admin/fotos — sube una foto ya achicada en el navegador. */
 export async function POST(request: NextRequest) {
-  if (!isValidOrigin(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  if (!origenValido(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   if (!(await requirePermission('maquinarias', 'update'))) return forbiddenResponse();
 
   const form = await request.formData().catch(() => null);

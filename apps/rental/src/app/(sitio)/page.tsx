@@ -50,7 +50,7 @@ export default async function Inicio() {
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/95 via-black/55 to-black/10 md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-transparent" />
         {heroe?.fotoReferencial ? <span className="absolute right-3 top-3 bg-negro/75 px-2 py-1 text-xs">Imagen referencial</span> : null}
         <div className="mx-auto w-full max-w-[1320px] px-4 pb-24 pt-32 md:px-8 md:pb-20">
-          <h1 className="entra max-w-[13ch] text-[clamp(3.25rem,10vw,8rem)] leading-[0.95]" style={{ '--i': 0 } as React.CSSProperties}>Maquinaria en arriendo en el Maule</h1>
+          <h1 className="entra max-w-[13ch] text-[clamp(3.25rem,10vw,8rem)] leading-[1]" style={{ '--i': 0 } as React.CSSProperties}>Maquinaria en arriendo en el Maule</h1>
           <p className="entra mt-5 max-w-[34ch] text-lg text-white/85 md:text-xl" style={{ '--i': 1 } as React.CSSProperties}>Retroexcavadoras, minicargadores, camión tolva y equipos de altura. Desde {SITIO.anioInicio}.</p>
           <div className="entra mt-7 hidden md:block" style={{ '--i': 2 } as React.CSSProperties}><AccionesContacto cotizar="/cotizar-arriendo" texto={texto} /></div>
         </div>

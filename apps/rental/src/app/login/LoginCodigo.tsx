@@ -107,7 +107,7 @@ export default function LoginCodigo({ callbackUrl }: { callbackUrl: string }) {
           <p className="text-sm text-white/70 mt-2">Panel de administración</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-7">
+        <div className="bg-white rounded shadow-xl p-6 sm:p-7">
           {paso === 'correo' ? (
             <form onSubmit={enviarCorreo} noValidate className="space-y-5">
               <div>

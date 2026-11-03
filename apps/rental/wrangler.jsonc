@@ -2,8 +2,6 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   // rental.jurmaq.cl en Cloudflare Workers (OpenNext). Los secretos van con
   // `wrangler secret put`, nunca en este archivo ni en .env del build.
-  // PENDIENTE antes del primer despliegue: crear el bucket R2 y la base D1,
-  // y poner aquí su database_id.
   "name": "jurmaq-rental",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-10-01",
@@ -12,7 +10,7 @@
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "jurmaq-rental" }],
   "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "jurmaq-rental-cache" }],
   "d1_databases": [
-    { "binding": "NEXT_TAG_CACHE_D1", "database_name": "jurmaq-rental-tags", "database_id": "PENDIENTE" }
+    { "binding": "NEXT_TAG_CACHE_D1", "database_name": "jurmaq-rental-tags", "database_id": "f2a0f369-9fd8-4d4b-b15d-4bc0c173bc83" }
   ],
   "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],

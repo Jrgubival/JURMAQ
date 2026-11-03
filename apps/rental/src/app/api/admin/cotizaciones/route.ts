@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { forbiddenResponse, requirePermission } from '@jurmaq/shared/auth/guard';
 import { logSafeError } from '@jurmaq/shared/logging';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { origenValido } from '@/lib/origen';
 import { CotizacionEsquema } from '@/lib/esquemas';
 import { cabecera, crearCotizacion } from '@/lib/cotizaciones-servidor';
 
 export async function POST(request: NextRequest) {
-  if (!isValidOrigin(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  if (!origenValido(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   if (!(await requirePermission('cotizaciones', 'create'))) return forbiddenResponse();
   const p = CotizacionEsquema.safeParse(await request.json().catch(() => null));
   if (!p.success) return NextResponse.json({ error: 'Revisa los datos.' }, { status: 400 });

@@ -1,6 +1,7 @@
 import 'server-only';
 import { redirect } from 'next/navigation';
 import { auth } from '@jurmaq/shared/auth';
+import { can, type Action, type Module } from '@jurmaq/shared/roles';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import type { CotizacionPdf } from './pdf-cotizacion';
 import type { TipoLinea, UnidadLinea } from './cotizacion';
@@ -9,6 +10,13 @@ import type { TipoLinea, UnidadLinea } from './cotizacion';
 export async function exigirSesion() {
   const sesion = await auth();
   if (!sesion?.user) redirect('/api/login/salir');
+  return sesion;
+}
+
+/** Las páginas leen con service_role: el permiso se revisa aquí, igual que en la API. */
+export async function exigirPermiso(modulo: Module, accion: Action) {
+  const sesion = await exigirSesion();
+  if (!can((sesion.user as { role?: string }).role, modulo, accion)) redirect('/api/login/salir');
   return sesion;
 }
 
@@ -57,12 +65,31 @@ export async function leerCotizacion(id: number): Promise<CotizacionGuardada | n
     .eq('origen', 'panel')
     .maybeSingle();
   if (!data) return null;
-  const fila = data as unknown as CotizacionGuardada & { lineas: (LineaGuardada & { orden: number })[] };
+  const fila = data as unknown as Omit<CotizacionGuardada, 'lineas'> & { lineas: (LineaGuardada & { orden: number })[] };
   const lineas = [...fila.lineas]
     .sort((a, b) => a.orden - b.orden)
     .map(({ orden: _orden, ...l }) => ({ ...l, cantidad: Number(l.cantidad), precio_unitario: Number(l.precio_unitario) }));
+  // Lista cerrada: costos internos y reservas no viajan al navegador.
   return {
-    ...fila,
+    id: fila.id,
+    numero: fila.numero,
+    estado: fila.estado,
+    origen: fila.origen,
+    fecha_emision: fila.fecha_emision,
+    cliente_nombre: fila.cliente_nombre,
+    cliente_rut: fila.cliente_rut,
+    cliente_contacto: fila.cliente_contacto,
+    contacto_email: fila.contacto_email,
+    cliente_telefono: fila.cliente_telefono,
+    cliente_direccion: fila.cliente_direccion,
+    servicio_detalle: fila.servicio_detalle,
+    entrega_at: fila.entrega_at,
+    retiro_fecha: fila.retiro_fecha,
+    destino_nombre: fila.destino_nombre,
+    ubicacion_servicio: fila.ubicacion_servicio,
+    validez_dias: fila.validez_dias,
+    notas_cliente: fila.notas_cliente,
+    solicitud_id: fila.solicitud_id,
     subtotal_neto: Number(fila.subtotal_neto),
     iva: Number(fila.iva),
     total: Number(fila.total),

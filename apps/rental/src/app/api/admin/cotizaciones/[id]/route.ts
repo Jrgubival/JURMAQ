@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { forbiddenResponse, requirePermission } from '@jurmaq/shared/auth/guard';
 import { logSafeError } from '@jurmaq/shared/logging';
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { origenValido } from '@/lib/origen';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { cabecera, filasLineas } from '@/lib/cotizaciones-servidor';
-import { CotizacionEsquema, ESTADOS_COTIZACION, EstadoEsquema } from '@/lib/esquemas';
+import { CotizacionEsquema, EstadoEsquema } from '@/lib/esquemas';
+import { ESTADOS_COTIZACION } from '@/lib/opciones';
 
 async function cargable(raw: string) {
   const id = Number(raw);
@@ -21,7 +22,7 @@ async function cargable(raw: string) {
 
 /** PATCH con `{ estado }` cambia el estado; con la cotización completa la reemplaza. */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!isValidOrigin(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  if (!origenValido(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   if (!(await requirePermission('cotizaciones', 'update'))) return forbiddenResponse();
   const actual = await cargable((await params).id);
   if (!actual) return NextResponse.json({ error: 'No encontrada' }, { status: 404 });
@@ -50,12 +51,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     logSafeError('[panel] líneas');
     return NextResponse.json({ error: 'No se pudo guardar.' }, { status: 500 });
   }
-  const ids = (viejas ?? []).map((l) => l.id);
-  if (ids.length > 0) await supabaseAdmin.from('cotizacion_arriendo_lineas').delete().in('id', ids);
   const { error } = await supabaseAdmin.from('cotizaciones_arriendo').update(cab).eq('id', actual.id);
   if (error) {
+    // Sin cabecera nueva, vuelve a quedar sólo lo anterior.
+    const antiguas = (viejas ?? []).map((l) => l.id);
+    await supabaseAdmin.from('cotizacion_arriendo_lineas').delete().eq('cotizacion_id', actual.id).not('id', 'in', `(${antiguas.join(',') || 0})`);
     logSafeError('[panel] editar cotización');
     return NextResponse.json({ error: 'No se pudo guardar.' }, { status: 500 });
   }
+  const ids = (viejas ?? []).map((l) => l.id);
+  if (ids.length > 0) await supabaseAdmin.from('cotizacion_arriendo_lineas').delete().in('id', ids);
   return NextResponse.json({ ok: true });
 }

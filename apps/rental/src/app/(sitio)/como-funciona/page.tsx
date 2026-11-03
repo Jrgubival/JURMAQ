@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Migas from '@/components/Migas';
+import CabezaPagina from '@/components/CabezaPagina';
 import { SITIO } from '@/lib/sitio';
 
 export const metadata: Metadata = {
@@ -18,18 +18,20 @@ const PASOS = [
 
 export default function ComoFunciona() {
   return (
-    <div className="sobre-claro mx-auto max-w-3xl px-4 py-10 md:py-16">
-      <Migas items={[{ nombre: 'Cómo funciona' }]} />
-      <h1 className="grande mt-4">Cómo funciona el arriendo</h1>
-      <ol className="mt-6 divide-y divide-hairline border-y border-hairline">
+    <div className="sobre-claro">
+      <CabezaPagina migas={[{ nombre: 'Cómo funciona' }]} titulo="Cómo funciona el arriendo" />
+      <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-20">
+      <ol className="grid gap-px bg-[#111]/15 md:grid-cols-4">
         {PASOS.map((p, i) => (
-          <li key={p.t} className="flex gap-4 py-5">
-            <span className="font-titulo text-3xl font-semibold text-ink-muted">{i + 1}</span>
-            <div><h2 className="text-xl">{p.t}</h2><p className="mt-1 text-ink-soft">{p.d}</p></div>
+          <li key={p.t} className="bg-canvas p-5 md:min-h-72">
+            <span className="font-titulo text-6xl font-semibold">{i + 1}</span>
+            <h2 className="mt-6 text-2xl">{p.t}</h2>
+            <p className="mt-2 text-ink-soft">{p.d}</p>
           </li>
         ))}
       </ol>
-      <Link href="/cotizar-arriendo" prefetch={false} className="boton boton-principal mt-6">Cotizar</Link>
+      <Link href="/cotizar-arriendo" prefetch={false} className="boton boton-principal mt-8">Cotizar</Link>
+      </div>
     </div>
   );
 }

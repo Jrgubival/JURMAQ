@@ -1,8 +1,10 @@
+import { exigirPermiso } from '@/lib/panel';
 import FormCotizacion, { type Inicial } from '@/components/admin/FormCotizacion';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { catalogoPanel } from '@/lib/catalogo-panel';
 
 export default async function NuevaCotizacion({ searchParams }: { searchParams: Promise<{ solicitud?: string }> }) {
+  await exigirPermiso('cotizaciones', 'create');
   const catalogo = await catalogoPanel();
   const id = Number((await searchParams).solicitud);
   let inicial: Inicial | undefined;

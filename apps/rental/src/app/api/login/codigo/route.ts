@@ -1,10 +1,10 @@
-import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { origenValido } from '@/lib/origen';
 import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from '@jurmaq/shared/validation';
 import { getClientIp } from '@jurmaq/shared/rate-limit';
 import {
   MENSAJE_CODIGO_ENVIADO,
-  esScopeBarraca,
+  scopeCodigoCorreo,
   solicitarCodigo,
 } from '@jurmaq/shared/auth/codigo-correo';
 
@@ -19,8 +19,8 @@ const cuerpo = z.object({ email: z.string().max(254) }).strict();
  * corre con after(), después de responder).
  */
 export async function POST(req: NextRequest) {
-  if (!isValidOrigin(req)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
-  if (!esScopeBarraca()) {
+  if (!origenValido(req)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
+  if (scopeCodigoCorreo() !== 'rental') {
     return NextResponse.json({ error: 'No disponible' }, { status: 404 });
   }
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ESTADOS_COTIZACION } from '@/lib/esquemas';
+import { ESTADOS_COTIZACION } from '@/lib/opciones';
 import type { CotizacionPdf } from '@/lib/pdf-cotizacion';
 
 export default function AccionesCotizacion({
@@ -72,7 +72,9 @@ export default function AccionesCotizacion({
     } else {
       descargar(f);
       const digitos = telefono?.replace(/\D/g, '') ?? '';
-      window.open(`https://wa.me/${digitos}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
+      // Un celular chileno escrito sin código de país trae 9 dígitos.
+      const destino = digitos.length === 9 ? `56${digitos}` : digitos;
+      window.open(`https://wa.me/${destino}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
     }
     if (estado === 'borrador') await marcar('enviada');
   });

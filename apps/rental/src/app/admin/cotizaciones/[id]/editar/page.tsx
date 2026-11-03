@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
 import FormCotizacion from '@/components/admin/FormCotizacion';
 import { catalogoPanel } from '@/lib/catalogo-panel';
-import { leerCotizacion } from '@/lib/panel';
+import { exigirPermiso, leerCotizacion } from '@/lib/panel';
 
 export default async function EditarCotizacion({ params }: { params: Promise<{ id: string }> }) {
+  await exigirPermiso('cotizaciones', 'update');
   const id = Number((await params).id);
   const c = Number.isInteger(id) && id > 0 ? await leerCotizacion(id) : null;
   if (!c) notFound();

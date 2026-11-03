@@ -8,9 +8,9 @@ interface CotArriendo {
   id: number;
   numero: string;
   cliente_nombre: string;
-  cliente_email: string;
-  fecha_servicio: string;
-  ubicacion_servicio: string;
+  cliente_email: string | null;
+  fecha_servicio: string | null;
+  ubicacion_servicio: string | null;
   unidades_solicitadas: number;
   unidad: string;
   total: number;
@@ -60,7 +60,7 @@ export default function CotizacionesArriendoListPage() {
       if (
         !c.numero.toLowerCase().includes(q) &&
         !c.cliente_nombre.toLowerCase().includes(q) &&
-        !c.cliente_email.toLowerCase().includes(q)
+        !(c.cliente_email ?? '').toLowerCase().includes(q)
       )
         return false;
     }
@@ -141,7 +141,7 @@ export default function CotizacionesArriendoListPage() {
                   </td>
                   <td className="px-4 py-3 text-sm">{c.maquinarias?.nombre || '—'}</td>
                   <td className="px-4 py-3 text-sm">
-                    {new Date(c.fecha_servicio).toLocaleDateString('es-CL')}
+                    {c.fecha_servicio ? new Date(c.fecha_servicio).toLocaleDateString('es-CL') : 'Sin fecha'}
                     <p className="text-xs text-gray-500">
                       {c.unidades_solicitadas} {c.unidad}
                     </p>
