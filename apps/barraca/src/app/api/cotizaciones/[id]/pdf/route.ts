@@ -484,7 +484,7 @@ export async function GET(
     <div class="header">
       <div class="header-left">
         <h1>${LEGAL_INFO.nombreComercial}</h1>
-        <div class="subtitle">${LEGAL_INFO.nombreLegal}</div>
+        <div class="subtitle">${LEGAL_INFO.brands.barraca.razonSocial}</div>
       </div>
       <div class="header-right">
         Av. Poniente 2157, Molina<br>
@@ -591,7 +591,7 @@ export async function GET(
     </div>
 
     <div class="footer">
-      <p><strong>${LEGAL_INFO.nombreLegal}</strong> - ${LEGAL_INFO.brands.barraca.direccion}, Chile</p>
+      <p><strong>${LEGAL_INFO.brands.barraca.razonSocial}</strong> - ${LEGAL_INFO.brands.barraca.direccion}, Chile</p>
       <p>Tel: ${LEGAL_INFO.brands.barraca.telefonoDisplay} | contacto@jurmaq.cl</p>
       <p style="margin-top: 8px; font-style: italic;">Los precios son referenciales y pueden variar segun disponibilidad. Cotizacion valida por 15 dias.</p>
     </div>

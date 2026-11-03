@@ -57,6 +57,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    // Identidad del vendedor y políticas (Google Merchant Center).
+    ...["/contacto", "/nosotros", "/envios-y-devoluciones"].map((ruta) => ({
+      url: `${baseUrl}${ruta}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
   ];
 
   // pSEO landings por ciudad — `/en/<ciudad-slug>` (audit fase 4.7)

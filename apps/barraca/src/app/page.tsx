@@ -57,7 +57,6 @@ export const metadata: Metadata = {
     // Brand + value prop
     "barraca jurmaq",
     "comprar fierro en línea",
-    "mejor precio fierros Curicó",
     // Geo · barraca
     "barraca de fierros Curicó",
     "barraca de fierros Molina",
@@ -359,8 +358,8 @@ export default async function BarracaHomePage() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Inicio", item: "https://jurmaq.cl" },
-              { "@type": "ListItem", position: 2, name: "Barraca de Fierros", item: "https://barraca.jurmaq.cl" },
+              // Sólo la barraca: la constructora (jurmaq.cl) es otro negocio.
+              { "@type": "ListItem", position: 1, name: "Barraca de Fierros JURMAQ", item: "https://barraca.jurmaq.cl" },
             ],
           }),
         }}

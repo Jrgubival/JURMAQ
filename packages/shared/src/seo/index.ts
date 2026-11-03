@@ -957,10 +957,12 @@ export const TOP_PRODUCTOS_BARRACA: ProductoBarracaSEO[] = [
 export function buildFooterCopyright(brand: 'constructora' | 'barraca'): string {
   const b = LEGAL_INFO.brands[brand];
   const year = new Date().getFullYear();
-  // LEGAL_INFO.rut es el RUT de la constructora: no va en el pie de la
-  // barraca. RUT de la barraca: pendiente (lo entrega el dueño).
-  const rut = brand === 'constructora' ? ` · RUT ${LEGAL_INFO.rut}` : '';
-  return `© ${year} ${b.nombre}${rut} · ${b.direccion}. Todos los derechos reservados.`;
+  // Cada negocio con su propia razón social y RUT (la barraca es otra sociedad).
+  if (brand === 'barraca') {
+    const bb = LEGAL_INFO.brands.barraca;
+    return `© ${year} ${bb.razonSocial} · RUT ${bb.rut} · ${bb.direccion}. Todos los derechos reservados.`;
+  }
+  return `© ${year} ${b.nombre} · RUT ${LEGAL_INFO.rut} · ${b.direccion}. Todos los derechos reservados.`;
 }
 
 export const HQ = {
@@ -1092,6 +1094,12 @@ export const LEGAL_INFO = {
     },
     barraca: {
       nombre: "Barraca de Fierros JURMAQ",
+      // La barraca es otra sociedad, distinta de la constructora: su razón
+      // social y RUT van en su sitio, sus documentos y su JSON-LD (Google
+      // Merchant Center revisa que el vendedor sea uno solo y coincida).
+      razonSocial: "Barraca de Fierros JURMAQ SpA",
+      rut: "77.722.788-2",
+      instagram: "https://www.instagram.com/barracajurmaq/",
       direccion: "Av. Poniente 2157, Molina, Maule",
       streetAddress: "Av. Poniente 2157",
       addressLocality: "Molina",

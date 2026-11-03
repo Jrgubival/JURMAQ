@@ -8,6 +8,7 @@ import AnalyticsConConsentimiento from "@/components/AnalyticsConConsentimiento"
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
 import MetaPixel from "@/components/MetaPixel";
 import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
+import { ZONAS_DESPACHO } from "@/lib/despacho/zonas";
 // Side-effect import: valida env vars al startup. Si falta una required en
 // prod, Zod tira un error explícito en lugar de propagar `undefined`.
 import "@jurmaq/shared/env";
@@ -194,7 +195,7 @@ export default function BarracaLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: safeJsonLd(buildJsonLdGraph('barraca')),
+            __html: safeJsonLd(buildJsonLdGraph('barraca', { areaServed: ZONAS_DESPACHO.map((z) => z.nombre) })),
           }}
         />
       </head>

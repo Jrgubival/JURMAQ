@@ -45,22 +45,6 @@ interface Categoria {
 
 const CATEGORY_ICON_DEFAULT = "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4";
 
-/**
- * Switcher de las tres unidades JURMAQ.
- *
- * Debe ser idéntico en los tres sitios (jurmaq.cl, constructora.jurmaq.cl y
- * barraca.jurmaq.cl): jurmaq.cl es el hub y desde cualquier página se salta a
- * cualquier vertical. El gemelo vive en
- * `apps/constructora/src/components/public/Navbar.tsx` — si cambia uno, cambia
- * el otro. Está duplicado y no en shared porque cada app usa su propio sistema
- * de color (naranja acá, gold en constructora) y compartirlo obligaría a
- * parametrizar más de lo que ahorra.
- */
-const VERTICALES = [
-  { key: 'arriendo', label: 'Arriendo', sub: 'Maquinaria', url: 'https://jurmaq.cl' },
-  { key: 'constructora', label: 'Constructora', sub: 'Obras civiles', url: 'https://constructora.jurmaq.cl' },
-  { key: 'barraca', label: 'Barraca', sub: 'Fierros y materiales', url: '/' },
-] as const;
 
 
 function Navbar() {
@@ -374,6 +358,14 @@ const CATEGORIAS_PIE = [
   { href: "/guias", name: "Guías de compra" },
 ] as const;
 
+const EMPRESA_PIE = [
+  { href: "/nosotros", name: "Quiénes somos" },
+  { href: "/contacto", name: "Contacto" },
+  { href: "/envios-y-devoluciones", name: "Envíos y devoluciones" },
+  { href: "/terminos", name: "Términos y condiciones" },
+  { href: "/privacidad", name: "Política de privacidad" },
+] as const;
+
 const DIRECCION_MAPS = "Av. Poniente 2157, Molina, Chile";
 const URL_COMO_LLEGAR = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(DIRECCION_MAPS)}`;
 
@@ -434,6 +426,19 @@ function Footer() {
             </div>
           </div>
 
+          {/* Quién vende y sus políticas, a la vista en todo el sitio (Google Merchant
+              Center: identidad del vendedor y políticas fáciles de encontrar). */}
+          <nav aria-label="Empresa">
+            <h3 className={titulo}>Empresa</h3>
+            <ul className="space-y-2">
+              {EMPRESA_PIE.map((c) => (
+                <li key={c.href}>
+                  <Link href={c.href} className={enlace}>{c.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
           <nav aria-label="Tienda">
             <h3 className={titulo}>Tienda</h3>
             <ul className="space-y-2">
@@ -472,19 +477,6 @@ function Footer() {
       {/* Barra legal + grupo JURMAQ en una línea discreta */}
       <div className="border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24 space-y-3 text-xs text-gray-500">
-          <nav aria-label="Unidades de negocio JURMAQ" className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
-            <span>Grupo JURMAQ:</span>
-            {VERTICALES.map((v, i) => (
-              <span key={v.key} className="inline-flex items-center gap-2">
-                {i > 0 && <span className="text-navy-700" aria-hidden="true">·</span>}
-                {v.key === 'barraca' ? (
-                  <span className="text-gray-600" aria-current="page">{v.label}</span>
-                ) : (
-                  <a href={v.url} className="hover:text-navy-950 transition-colors duration-150">{v.label}</a>
-                )}
-              </span>
-            ))}
-          </nav>
           {precioWebHasta() && (
             <p className="mb-3 text-center sm:text-left">
               Precio web: precio de la tienda online, válido hasta el {precioWebHasta()}. Precio normal: el de nuestro local en Molina.{" "}

@@ -121,10 +121,23 @@ const OPENING_HOURS_CONSTRUCTORA = [
   },
 ];
 
-export function buildJsonLdGraph(brand: JsonLdBrand): Record<string, unknown> {
+export function buildJsonLdGraph(
+  brand: JsonLdBrand,
+  opciones: { areaServed?: string[] } = {},
+): Record<string, unknown> {
   const config = BRAND_CONFIG[brand];
   const brandData = LEGAL_INFO.brands[brand];
   const baseUrl = config.url;
+  const barraca = LEGAL_INFO.brands.barraca;
+  // Identidad del vendedor: la barraca es su propia sociedad (no la constructora).
+  const identidad =
+    brand === 'barraca'
+      ? { name: barraca.nombre, legalName: barraca.razonSocial, taxID: barraca.rut, sameAs: [barraca.instagram] }
+      : { name: LEGAL_INFO.nombreComercial, legalName: LEGAL_INFO.nombreLegal, sameAs: ['https://www.instagram.com/jurmaq.cl'] };
+  // Lugares a los que llega cada negocio (la barraca pasa sus zonas de despacho).
+  const areaServed = opciones.areaServed?.length
+    ? [...opciones.areaServed.map((name) => ({ '@type': 'City', name })), { '@type': 'AdministrativeArea', name: 'Región del Maule' }]
+    : AREA_SERVED;
 
   const postalAddress = {
     '@type': 'PostalAddress',
@@ -140,8 +153,9 @@ export function buildJsonLdGraph(brand: JsonLdBrand): Record<string, unknown> {
       {
         '@type': 'Organization',
         '@id': `${baseUrl}/#organization`,
-        name: LEGAL_INFO.nombreComercial,
-        legalName: LEGAL_INFO.nombreLegal,
+        name: identidad.name,
+        legalName: identidad.legalName,
+        ...('taxID' in identidad ? { taxID: identidad.taxID } : {}),
         url: baseUrl,
         logo: `${baseUrl}/icon-512.png`,
         image: `${baseUrl}/icon-512.png`,
@@ -149,8 +163,8 @@ export function buildJsonLdGraph(brand: JsonLdBrand): Record<string, unknown> {
         telephone: brandData.telefono,
         description: config.localBusinessDescription,
         address: postalAddress,
-        areaServed: AREA_SERVED,
-        sameAs: ['https://www.instagram.com/jurmaq.cl'],
+        areaServed,
+        sameAs: identidad.sameAs,
       },
       {
         '@type': config.localBusinessType,
