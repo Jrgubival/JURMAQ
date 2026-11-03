@@ -1,0 +1,175 @@
+/* Hub jurmaq.cl. Lo común vive en @jurmaq/shared/styles/grupo.css. */
+.h-raiz {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--g-fondo);
+  color: var(--g-tinta);
+  font-family: var(--g-sans);
+}
+.h-main { flex: 1; }
+
+.h-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: var(--g-ancho);
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.125rem var(--g-margen);
+}
+.h-cabecera nav { display: flex; gap: 1.5rem; font-size: 0.9375rem; font-weight: 500; }
+.h-cabecera nav a {
+  padding: 0.5rem 0;
+  color: var(--g-tinta-media);
+  text-decoration: none;
+  transition: color var(--g-hover) ease;
+}
+.h-cabecera nav a[aria-current='page'] { color: var(--g-tinta); font-weight: 600; }
+
+.h-titular {
+  font-family: var(--g-titular);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.005em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* --- Portada ------------------------------------------------------- */
+.h-intro {
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) var(--g-margen) clamp(1.75rem, 4vw, 3rem);
+}
+.h-intro .h-titular { max-width: 18ch; font-size: clamp(2.25rem, 5.5vw, 4.25rem); }
+.h-intro p {
+  max-width: 46ch;
+  margin: 1rem 0 0;
+  color: var(--g-tinta-media);
+  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  line-height: 1.5;
+}
+
+.h-entradas {
+  display: grid;
+  gap: 2.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.h-entrada { display: block; color: inherit; text-decoration: none; }
+.h-entrada__foto {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--g-alterno);
+  border-bottom: 6px solid var(--acento);
+}
+.h-entrada__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 320ms var(--g-ease-out);
+}
+.h-entrada__nota {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 2px;
+  background: rgb(17 17 17 / 0.72);
+  color: #fff;
+  font-size: 0.6875rem;
+}
+.h-entrada__texto { padding: 1rem var(--g-margen) 0; }
+.h-entrada__texto h2 {
+  font-family: var(--g-titular);
+  font-size: clamp(1.625rem, 2.6vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0;
+}
+.h-entrada__texto p {
+  margin: 0.5rem 0 0;
+  color: var(--g-tinta-media);
+  line-height: 1.5;
+}
+.h-entrada__ir {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: var(--acento-texto);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.h-entrada:focus-visible { outline: 2px solid var(--g-tinta); outline-offset: 2px; }
+
+.h-cierre {
+  max-width: var(--g-ancho);
+  margin: clamp(3rem, 6vw, 5rem) auto;
+  padding: 0 var(--g-margen);
+  font-size: 1.125rem;
+}
+.h-cierre p { margin: 0; }
+
+/* --- Páginas interiores -------------------------------------------- */
+.h-pagina {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) var(--g-margen) clamp(3rem, 6vw, 5rem);
+}
+.h-pagina .h-titular { font-size: clamp(2.25rem, 5vw, 3.5rem); }
+.h-entradilla {
+  margin: 1rem 0 0;
+  color: var(--g-tinta-media);
+  font-size: 1.1875rem;
+  line-height: 1.55;
+}
+.h-seccion { margin-top: 2.5rem; padding-top: 1.75rem; border-top: 1px solid var(--g-linea); }
+.h-seccion h2 {
+  font-family: var(--g-titular);
+  font-size: 1.625rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+}
+.h-seccion p { margin: 0 0 0.5rem; color: var(--g-tinta-media); line-height: 1.6; }
+.h-datos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.9375rem;
+}
+.h-datos dt { color: var(--g-tinta-suave); }
+.h-datos dd { margin: 0; }
+
+.h-form { display: grid; gap: 1rem; margin-top: 1.25rem; }
+.h-form__dos { display: grid; gap: 1rem; }
+.h-check { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.9375rem; color: var(--g-tinta-media); }
+.h-check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--g-tinta); }
+.h-estado { margin: 0; font-size: 0.9375rem; }
+.h-estado--error { color: #9f2f2d; }
+.h-estado--ok { color: #346538; }
+
+@media (min-width: 640px) {
+  .h-form__dos { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 900px) {
+  .h-entradas { grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--g-fondo); }
+  .h-entrada__foto { aspect-ratio: 4 / 5; }
+  .h-entrada__texto { padding: 1.125rem 1.5rem 0; }
+  .h-entradas > li:first-child .h-entrada__texto { padding-left: max(var(--g-margen), calc((100vw - var(--g-ancho)) / 2 + var(--g-margen))); }
+}
+@media (hover: hover) and (pointer: fine) {
+  .h-cabecera nav a:hover { color: var(--g-tinta); }
+  .h-entrada:hover .h-entrada__foto img { transform: scale(1.02); }
+  .h-entrada:hover .h-entrada__ir { text-decoration-thickness: 2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .h-entrada__foto img { transition: none; }
+  .h-entrada:hover .h-entrada__foto img { transform: none; }
+}
