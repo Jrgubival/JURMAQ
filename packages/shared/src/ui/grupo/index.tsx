@@ -78,7 +78,7 @@ export function FranjaGrupo({ actual }: { actual: Marca }) {
 export function PieLegal({ marca, children }: { marca: Marca; children?: ReactNode }) {
   const negocios = marca === 'hub' ? ORDEN_NEGOCIOS : [marca];
   return (
-    <footer className="g-pie">
+    <footer className="g-pie" data-tema="oscuro">
       <div className="g-pie__ancho">
         <ul className="g-pie__negocios">
           {negocios.map((n) => {

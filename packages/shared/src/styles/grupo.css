@@ -29,9 +29,16 @@
   --g-ancho: 1200px;
   --g-margen: clamp(16px, 4vw, 40px);
 
+  /* Escala de display: Oswald grande es la voz del grupo. */
+  --g-display-xl: clamp(3rem, 7vw, 6rem);
+  --g-display-l: clamp(2.5rem, 5vw, 4.5rem);
+  --g-display-m: clamp(1.75rem, 3vw, 2.5rem);
+
   --g-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --g-ease-mover: cubic-bezier(0.77, 0, 0.175, 1);
   --g-presion: 160ms;
   --g-hover: 180ms;
+  --g-revelar: 420ms; /* bloques de color y fotos */
 
   /* Acentos de cada negocio, para usarlos fuera de su propio sitio. */
   --g-barraca: #c90319;
@@ -43,6 +50,23 @@
   --sobre-acento: #ffffff;
   /* Acento legible como texto o línea sobre fondo claro. */
   --acento-texto: var(--g-tinta);
+}
+
+/* Tema oscuro para portadas, bandas y pies: data-tema="oscuro" en un contenedor. */
+[data-tema="oscuro"] {
+  --g-fondo: #121211;
+  --g-superficie: #1b1b1a;
+  --g-alterno: #1b1b1a;
+  --g-tinta: #f4f3f0;
+  --g-tinta-media: #d6d5d0;
+  --g-tinta-suave: #a7a6a1;
+  --g-linea: #2e2e2c;
+  --acento: #f4f3f0;
+  --acento-hover: #ffffff;
+  --sobre-acento: #121211;
+  --acento-texto: #f4f3f0;
+  background-color: var(--g-fondo);
+  color: var(--g-tinta);
 }
 
 [data-marca="barraca"] {
@@ -66,6 +90,19 @@
   --acento-texto: var(--g-constructora);
 }
 
+/* Sobre oscuro el acento debe aclararse para leerse como texto. */
+[data-tema="oscuro"] [data-marca="barraca"],
+[data-tema="oscuro"][data-marca="barraca"] { --acento-texto: #ff8a94; }
+[data-tema="oscuro"] [data-marca="arriendo"],
+[data-tema="oscuro"][data-marca="arriendo"] { --acento-texto: var(--g-arriendo); }
+[data-tema="oscuro"] [data-marca="constructora"],
+[data-tema="oscuro"][data-marca="constructora"] { --acento-texto: #9cc6e0; }
+
+/* Plancha laminada: el mismo rayado de los fondos de la barraca. */
+.g-textura-acero {
+  background-image: repeating-linear-gradient(135deg, rgb(255 255 255 / 0.03) 0 1px, transparent 1px 10px);
+}
+
 /* --- Marca ---------------------------------------------------------- */
 .g-marca {
   font-family: var(--g-titular);
@@ -75,6 +112,17 @@
   line-height: 1;
   color: var(--g-tinta);
   text-decoration: none;
+}
+
+/* Titular grande del grupo. */
+.g-display {
+  margin: 0;
+  font-family: var(--g-titular);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
 }
 
 /* --- Botón ---------------------------------------------------------- */
@@ -148,6 +196,7 @@
   outline: 2px solid var(--g-tinta);
   outline-offset: 2px;
 }
+.g-boton--grande { min-height: 52px; padding: 0.75rem 1.75rem; font-size: 1.0625rem; }
 
 /* --- Franja del grupo: línea delgada para pasar de un sitio a otro ---- */
 .g-franja {
