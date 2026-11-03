@@ -17,12 +17,14 @@ export default function GrupoLayout({ children }: { children: React.ReactNode })
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(grafoGrupo()) }}
       />
-      <header className="h-cabecera">
-        <MarcaGrupo />
-        <nav aria-label="Principal">
-          <Link href="/nosotros">Nosotros</Link>
-          <Link href="/contacto">Contacto</Link>
-        </nav>
+      <header className="h-cabecera g-textura-acero" data-tema="oscuro">
+        <div className="h-cabecera__fila">
+          <MarcaGrupo />
+          <nav aria-label="Principal">
+            <Link href="/nosotros">Nosotros</Link>
+            <Link href="/contacto">Contacto</Link>
+          </nav>
+        </div>
       </header>
       <main className="h-main">{children}</main>
       <PieLegal marca="hub">

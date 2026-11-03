@@ -14,32 +14,33 @@ export const metadata: Metadata = {
 
 export default function Contacto() {
   return (
-    <article className="h-pagina">
-      <h1 className="h-titular">Contacto</h1>
-      <p className="h-entradilla">
-        Escríbenos a <a className="g-enlace" href={`mailto:${CONTACTO_GRUPO}`}>{CONTACTO_GRUPO}</a>{' '}
-        o llama directo al negocio que necesitas.
-      </p>
-
-      <section className="h-seccion">
-        <dl className="h-datos">
-          {(Object.keys(NEGOCIOS) as Negocio[]).map((clave) => (
-            <div key={clave} style={{ display: 'contents' }}>
-              <dt>{NEGOCIOS[clave].nombre}</dt>
-              <dd>
-                <a className="g-enlace" href={`tel:${NEGOCIOS[clave].telefono}`}>
-                  {NEGOCIOS[clave].telefonoDisplay}
-                </a>
-              </dd>
-            </div>
-          ))}
-        </dl>
+    <>
+      <section className="h-banda g-textura-acero" data-tema="oscuro">
+        <div className="h-banda__texto">
+          <h1 className="g-display">Contacto</h1>
+          <p>
+            Escríbenos a <a className="g-enlace" href={`mailto:${CONTACTO_GRUPO}`}>{CONTACTO_GRUPO}</a>{' '}
+            o llama directo al negocio que necesitas.
+          </p>
+        </div>
       </section>
 
-      <section className="h-seccion">
-        <h2>Déjanos tu mensaje</h2>
-        <FormularioContacto />
-      </section>
-    </article>
+      <div className="h-contacto">
+        <section>
+          <h2>Déjanos tu mensaje</h2>
+          <FormularioContacto />
+        </section>
+        <section aria-label="Teléfonos">
+          <ul className="h-telefonos">
+            {(Object.keys(NEGOCIOS) as Negocio[]).map((clave) => (
+              <li key={clave}>
+                <p>{NEGOCIOS[clave].nombre}</p>
+                <a href={`tel:${NEGOCIOS[clave].telefono}`}>{NEGOCIOS[clave].telefonoDisplay}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </>
   );
 }
