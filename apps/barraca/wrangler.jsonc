@@ -15,6 +15,9 @@
   ],
   "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
+  // Dominio de producción (antes CNAME a Vercel).
+  "workers_dev": true,
+  "routes": [{ "pattern": "barraca.jurmaq.cl", "custom_domain": true }],
   "vars": { "AUTH_SCOPE": "barraca", "DESPLIEGUE": "cloudflare" },
   "observability": { "enabled": true },
   // Antes en vercel.json.
