@@ -155,10 +155,6 @@ details[open] .mas { transform: rotate(45deg); }
   @keyframes entra { from { opacity: 0; transform: translateY(22px); } }
   @keyframes asienta { from { transform: scale(1.06); } }
 
-  /* Al bajar, cada bloque llega una vez. Sin JavaScript. */
-  @supports (animation-timeline: view()) {
-    .revela { animation: entra linear both; animation-timeline: view(); animation-range: entry 0% entry 42%; }
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

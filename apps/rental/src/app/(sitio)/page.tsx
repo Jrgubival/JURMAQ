@@ -109,7 +109,7 @@ export default async function Inicio() {
         <h2 id="pasos" className="grande">Cómo arrendar</h2>
         <ol className="mt-7 grid gap-6 md:grid-cols-3 md:gap-0 md:divide-x md:divide-hairline">
           {PASOS.map((p, i) => (
-            <li key={p.t} className="flex gap-4 md:px-8 md:first:pl-0 md:last:pr-0">
+            <li key={p.t} data-revela className="flex gap-4 md:px-8 md:first:pl-0 md:last:pr-0">
               <span className="font-titulo text-5xl font-semibold leading-none text-acento-texto">{i + 1}</span>
               <div><h3 className="text-2xl">{p.t}</h3><p className="mt-1 text-ink-soft">{p.d}</p></div>
             </li>
@@ -126,7 +126,7 @@ export default async function Inicio() {
             </div>
             <Link href="/arriendo-en/region-del-maule" prefetch={false} className="boton boton-principal mt-5 md:mt-0">Ver cobertura <ArrowRight size={18} weight="bold" aria-hidden /></Link>
           </div>
-          <ul className="mt-7 flex flex-wrap gap-2">
+          <ul data-revela className="mt-7 flex flex-wrap gap-2">
             {COMUNAS.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="chip comuna presionable">{c.nombre}</Link></li>)}
           </ul>
         </div>

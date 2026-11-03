@@ -215,6 +215,9 @@ importers:
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
+      gsap:
+        specifier: 3.13.0
+        version: 3.13.0
       next:
         specifier: 16.4.3
         version: 16.4.3(@babel/core@7.29.0)(@types/node@20.19.41)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
