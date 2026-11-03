@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ENLACES } from '@/lib/enlaces';
+import EnlacesNav from './EnlacesNav';
 import Menu from './Menu';
 
 export default function Cabecera() {
@@ -10,9 +10,7 @@ export default function Cabecera() {
           JURMAQ <span className="text-sm font-medium text-acento">Rental</span>
         </Link>
         <nav aria-label="Principal" className="hidden items-center gap-7 md:flex">
-          {ENLACES.map((e) => (
-            <Link key={e.href} href={e.href} prefetch={false} className="text-[0.9375rem] font-medium text-white/75 transition-colors duration-150 hover:text-white">{e.texto}</Link>
-          ))}
+          <EnlacesNav />
           <Link href="/cotizar-arriendo" prefetch={false} className="boton boton-principal !min-h-11">Cotizar</Link>
         </nav>
         <Menu />

@@ -18,7 +18,7 @@ export default function TarjetaMaquina({ maquina, className = '', alto = 'aspect
         <h3 className="text-[clamp(1.5rem,2.6vw,2.25rem)]">{maquina.nombre}</h3>
         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-white/85">
           <PrecioCorto precios={maquina.precios} />
-          <p className="text-sm">{textoOperador(maquina.tipo)}</p>
+          <p className="self-end text-sm">{textoOperador(maquina.tipo)}</p>
         </div>
       </div>
     </Link>
@@ -31,7 +31,7 @@ export function MosaicoFlota({ flota }: { flota: Maquina[] }) {
   return (
     <div className="grid grid-cols-1 gap-1 md:auto-rows-[300px] md:grid-cols-12">
       {flota.map((m, i) => (
-        <TarjetaMaquina key={m.id} maquina={m} className={PATRON[i % PATRON.length]} alto="aspect-[4/3] md:aspect-auto" />
+        <TarjetaMaquina key={m.id} maquina={m} className={PATRON[i % PATRON.length]} alto="aspect-[16/10] md:aspect-auto" prioridad={i < 2} />
       ))}
     </div>
   );

@@ -104,6 +104,21 @@ textarea.campo { padding: 0.75rem 0.875rem; }
 .prosa a { text-decoration: underline; text-underline-offset: 3px; }
 .prosa table { margin-top: 1rem; width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
 
+.chip {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 0.875rem;
+  border: 1px solid currentColor;
+  border-radius: var(--g-radio);
+  font-weight: 500;
+}
+
+/* El panel lo usa gente mayor: todo un punto más grande. */
+.panel .etiqueta { font-size: 1.125rem; }
+.panel .campo { font-size: 1.25rem; min-height: 60px; }
+.panel .boton { font-size: 1.25rem; min-height: 60px; }
+
 /* Cajón del menú en celular. */
 .cajon { transform: translateY(-100%); transition: transform 320ms var(--ease-cajon); }
 .cajon[data-abierto="true"] { transform: translateY(0); }

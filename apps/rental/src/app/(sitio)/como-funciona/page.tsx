@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { BarraMovil } from '@/components/AccionesContacto';
 import CabezaPagina from '@/components/CabezaPagina';
 import { SITIO } from '@/lib/sitio';
 
@@ -32,6 +33,7 @@ export default function ComoFunciona() {
       </ol>
       <Link href="/cotizar-arriendo" prefetch={false} className="boton boton-principal mt-8">Cotizar</Link>
       </div>
+      <BarraMovil cotizar="/cotizar-arriendo" texto="Hola, quiero cotizar el arriendo de una máquina." />
     </div>
   );
 }

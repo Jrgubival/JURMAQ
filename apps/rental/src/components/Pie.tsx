@@ -12,14 +12,14 @@ export default function Pie({ tipos, comunas }: { tipos: { slug: string; nombre:
         </div>
         <div>
           <p className="font-semibold text-white">Máquinas</p>
-          <ul className="mt-3 space-y-2">
-            {tipos.map((t) => <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="hover:text-white">{t.nombre}</Link></li>)}
+          <ul className="mt-2">
+            {tipos.map((t) => <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="inline-flex min-h-11 items-center hover:text-white">{t.nombre}</Link></li>)}
           </ul>
         </div>
         <div>
           <p className="font-semibold text-white">Comunas</p>
-          <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
-            {comunas.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="hover:text-white">{c.nombre}</Link></li>)}
+          <ul className="mt-2 grid grid-cols-2 gap-x-4">
+            {comunas.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="inline-flex min-h-11 items-center hover:text-white">{c.nombre}</Link></li>)}
           </ul>
         </div>
         <address className="not-italic">

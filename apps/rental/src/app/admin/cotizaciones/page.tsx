@@ -39,17 +39,17 @@ export default async function Cotizaciones({ searchParams }: { searchParams: Pro
           {ESTADOS_COTIZACION.map((e) => <option key={e} value={e}>{e[0].toUpperCase() + e.slice(1)}</option>)}
         </select>
         <button className="boton boton-suave">Buscar</button>
-        <label className="text-sm">Desde<input name="desde" type="date" className="campo mt-1" defaultValue={FECHA.test(desde) ? desde : ''} /></label>
-        <label className="text-sm">Hasta<input name="hasta" type="date" className="campo mt-1" defaultValue={FECHA.test(hasta) ? hasta : ''} /></label>
+        <label className="text-lg">Desde<input name="desde" type="date" className="campo mt-1" defaultValue={FECHA.test(desde) ? desde : ''} /></label>
+        <label className="text-lg">Hasta<input name="hasta" type="date" className="campo mt-1" defaultValue={FECHA.test(hasta) ? hasta : ''} /></label>
       </form>
       {(data ?? []).length === 0 ? <p className="mt-6 text-ink-muted">No hay cotizaciones.</p> : (
         <ul className="mt-4 space-y-2">
           {(data ?? []).map((c) => (
             <li key={c.id}>
-              <Link href={`/admin/cotizaciones/${c.id}`} prefetch={false} className="presionable block rounded-xl border border-hairline bg-surface p-4">
+              <Link href={`/admin/cotizaciones/${c.id}`} prefetch={false} className="presionable block rounded-[var(--g-radio)] border border-hairline bg-surface p-4">
                 <span className="flex justify-between gap-3"><span className="font-semibold">N.º {c.numero}</span><span>{formatCLP(Number(c.total))}</span></span>
                 <span className="block">{c.cliente_nombre}</span>
-                <span className="block text-sm capitalize text-ink-muted">{c.estado} · {c.fecha_emision}</span>
+                <span className="block text-lg capitalize text-ink-muted">{c.estado}, {new Date(`${c.fecha_emision}T12:00`).toLocaleDateString('es-CL')}</span>
               </Link>
             </li>
           ))}

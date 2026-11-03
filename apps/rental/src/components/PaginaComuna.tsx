@@ -47,15 +47,15 @@ export function FlotaComuna({ flota, titulo }: { flota: Maquina[]; titulo: strin
         <ul className="grid content-start gap-3">
           {resto.map((m) => (
             <li key={m.id}>
-              <Link href={fichaHref(m)} prefetch={false} className="tile presionable grid grid-cols-[112px_1fr] items-center gap-4">
-                <Foto maquina={{ ...m, fotoReferencial: false }} className="aspect-[4/3]" />
+              <Link href={fichaHref(m)} prefetch={false} className="tile presionable grid grid-cols-[136px_1fr] items-center gap-4">
+                <Foto maquina={m} className="aspect-[4/3] [&>span]:text-[0.625rem]" />
                 <span><span className="block font-titulo text-xl font-semibold uppercase leading-tight">{m.nombre}</span><PrecioCorto precios={m.precios} /></span>
               </Link>
             </li>
           ))}
         </ul>
       </div>
-      <p className="mt-4 text-sm text-ink-muted">Imágenes referenciales. Valores referenciales y netos.</p>
+      <p className="mt-4 text-sm text-ink-muted">Valores referenciales y netos.</p>
     </section>
   );
 }

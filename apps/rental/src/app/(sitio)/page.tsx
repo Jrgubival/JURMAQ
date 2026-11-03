@@ -75,13 +75,13 @@ export default async function Inicio() {
         </div>
       </section>
 
-      <section aria-labelledby="flota" className="mx-auto max-w-[1320px] px-1 py-16 md:px-8 md:py-24">
-        <div className="mb-8 flex items-end justify-between gap-4 px-3 md:px-0">
+      <section aria-labelledby="flota" className="mx-auto max-w-[1320px] py-16 md:px-8 md:py-24">
+        <div className="mb-8 flex items-end justify-between gap-4 px-4 md:px-0">
           <h2 id="flota" className="grande">Flota y valores</h2>
           <Link href="/maquinarias" prefetch={false} className="mb-2 whitespace-nowrap font-medium underline underline-offset-4">Ver todas</Link>
         </div>
         <MosaicoFlota flota={flota} />
-        <p className="mt-4 px-3 text-sm text-ink-muted md:px-0">Valores referenciales y netos. El traslado se cotiza aparte.</p>
+        <p className="mt-4 px-4 text-sm text-ink-muted md:px-0">Valores referenciales y netos. El traslado se cotiza aparte.</p>
       </section>
 
       <section aria-labelledby="cobertura" className="bg-negro text-white">

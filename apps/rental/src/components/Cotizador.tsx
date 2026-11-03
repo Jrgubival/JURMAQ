@@ -109,6 +109,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
           </select>
         </div>
       </div>
+      {neto > 0 ? <p aria-live="polite" className="font-semibold md:hidden">Referencia: {formatCLP(neto)} + IVA, sin traslado</p> : null}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
@@ -150,8 +151,8 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
       </div>
 
       <div className="md:sticky md:top-24 md:self-start">
-        {maquina ? <Foto maquina={maquina} className="mb-px aspect-[16/10]" /> : null}
-        <div className="bg-acento p-5 text-[#111]">
+        {maquina ? <Foto maquina={maquina} className="mb-px hidden aspect-[16/10] md:block" /> : null}
+        <div className="hidden bg-negro p-5 text-white md:block">
           <p className="font-medium">{maquina ? maquina.nombre : 'Valor referencial'}</p>
           {neto > 0 ? (
             <p className="mt-1 font-titulo text-5xl font-semibold tabular-nums">{formatCLP(neto)}</p>

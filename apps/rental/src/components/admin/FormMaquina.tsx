@@ -136,15 +136,18 @@ export default function FormMaquina({ maquina }: { maquina?: Maquina }) {
         {precios.length === 0 ? <p className="text-ink-muted">Sin valores, el sitio muestra "Cotizar".</p> : null}
         <ul className="space-y-3">
           {precios.map((p, i) => (
-            <li key={p.unidad} className="rounded-xl border border-hairline bg-surface p-3">
+            <li key={p.unidad} className="rounded-[var(--g-radio)] border border-hairline bg-surface p-3">
               <div className="grid grid-cols-2 gap-3">
-                <select aria-label="Período" className="campo" value={p.unidad} onChange={(e) => cambiarPrecio(i, { unidad: e.target.value as Unidad })}>
+                <label className="etiqueta" htmlFor={`pe-${i}`}>Período</label>
+                <label className="etiqueta" htmlFor={`va-${i}`}>Valor</label>
+                <select id={`pe-${i}`} className="campo" value={p.unidad} onChange={(e) => cambiarPrecio(i, { unidad: e.target.value as Unidad })}>
                   {UNIDADES.filter((u) => u === p.unidad || libres.includes(u)).map((u) => <option key={u} value={u}>Por {UNIDAD_LABEL[u].uno}</option>)}
                 </select>
-                <input aria-label="Valor" className="campo" type="number" inputMode="numeric" min="1" step="1" required placeholder="Valor" value={p.valor} onChange={(e) => cambiarPrecio(i, { valor: e.target.value })} />
+                <input id={`va-${i}`} className="campo" type="number" inputMode="numeric" min="1" step="1" required value={p.valor} onChange={(e) => cambiarPrecio(i, { valor: e.target.value })} />
               </div>
-              <input aria-label="Qué incluye" className="campo mt-3" maxLength={160} placeholder="Qué incluye, ej: mínimo 6 horas" value={p.incluye} onChange={(e) => cambiarPrecio(i, { incluye: e.target.value })} />
-              <button type="button" className="mt-2 text-sm underline underline-offset-4" onClick={() => setPrecios((l) => l.filter((_, j) => j !== i))}>Quitar</button>
+              <label className="etiqueta mt-3" htmlFor={`in-${i}`}>Qué incluye</label>
+              <input id={`in-${i}`} className="campo" maxLength={160} placeholder="Ej: mínimo 6 horas" value={p.incluye} onChange={(e) => cambiarPrecio(i, { incluye: e.target.value })} />
+              <button type="button" className="mt-2 text-lg underline underline-offset-4" onClick={() => { if (window.confirm('¿Quitar este valor?')) setPrecios((l) => l.filter((_, j) => j !== i)); }}>Quitar</button>
             </li>
           ))}
         </ul>
@@ -155,15 +158,15 @@ export default function FormMaquina({ maquina }: { maquina?: Maquina }) {
 
       <fieldset>
         <legend className="etiqueta">Fotos</legend>
-        <p className="text-sm text-ink-muted">La primera es la principal.</p>
+        <p className="text-lg text-ink-muted">La primera es la principal.</p>
         <ul className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {fotos.map((f, i) => (
-            <li key={f} className="rounded-xl border border-hairline bg-surface p-2">
+            <li key={f} className="rounded-[var(--g-radio)] border border-hairline bg-surface p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={f} alt={`Foto ${i + 1}`} className="aspect-[4/3] w-full rounded object-cover" />
-              <div className="mt-2 flex justify-between text-sm">
+              <div className="mt-2 flex justify-between text-lg">
                 {i > 0 ? <button type="button" className="underline underline-offset-4" onClick={() => setFotos((l) => [f, ...l.filter((x) => x !== f)])}>Principal</button> : <span>Principal</span>}
-                <button type="button" className="underline underline-offset-4" onClick={() => setFotos((l) => l.filter((x) => x !== f))}>Quitar</button>
+                <button type="button" className="underline underline-offset-4" onClick={() => { if (window.confirm('¿Quitar esta foto?')) setFotos((l) => l.filter((x) => x !== f)); }}>Quitar</button>
               </div>
             </li>
           ))}
@@ -184,7 +187,7 @@ export default function FormMaquina({ maquina }: { maquina?: Maquina }) {
       </label>
 
       {error ? <p role="alert" className="font-medium text-peligro">{error}</p> : null}
-      {guardado ? <p role="status" className="font-medium text-exito">Guardado y publicado.</p> : null}
+      {guardado ? <p role="status" className="font-medium text-exito">{publicada ? 'Guardado y publicado.' : 'Guardado. No se muestra en el sitio.'}</p> : null}
       <button type="submit" className="boton boton-principal w-full" disabled={guardando || subiendo}>{guardando ? 'Guardando…' : 'Guardar'}</button>
     </form>
   );

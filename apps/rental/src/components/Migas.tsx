@@ -4,6 +4,7 @@ import { SITIO } from '@/lib/sitio';
 
 export default function Migas({ items }: { items: { nombre: string; href?: string }[] }) {
   const lista = [{ nombre: 'Inicio', href: '/' }, ...items];
+  const anterior = lista[lista.length - 2];
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -16,7 +17,8 @@ export default function Migas({ items }: { items: { nombre: string; href?: strin
   };
   return (
     <nav aria-label="Migas" className="text-sm">
-      <ol className="flex flex-wrap gap-x-2">
+      {anterior?.href ? <Link href={anterior.href} prefetch={false} className="inline-flex min-h-11 items-center md:hidden">{'<'} {anterior.nombre}</Link> : null}
+      <ol className="hidden flex-wrap gap-x-2 md:flex">
         {lista.map((it, i) => (
           <li key={it.nombre} className="flex gap-2">
             {i > 0 ? <span aria-hidden>/</span> : null}

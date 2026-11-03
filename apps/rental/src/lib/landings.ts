@@ -32,6 +32,12 @@ export function distanciaDesdeBase(slug: string): { km: number; tiempo: string }
   return d ?? null;
 }
 
+/** Fotos con resolución para una portada a todo el ancho. */
+export function fotoPortada<T extends { tipo: string; nombre: string }>(flota: T[], indice: number): T | undefined {
+  const grandes = flota.filter((m) => m.tipo === 'retroexcavadora' || m.tipo === 'camion' || /S650/.test(m.nombre));
+  return grandes[indice % grandes.length] ?? flota[0];
+}
+
 export function tipoPorSlug(slug: string): TipoMaquinaSEO | undefined {
   return TIPOS.find((t) => t.slug === slug);
 }

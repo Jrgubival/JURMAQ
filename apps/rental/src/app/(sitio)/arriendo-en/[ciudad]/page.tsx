@@ -8,7 +8,7 @@ import PortadaLanding from '@/components/PortadaLanding';
 import { COMUNAS } from '@/data/comunas';
 import { obtenerFlota } from '@/lib/flota';
 import { jsonLdServicio } from '@/lib/jsonld';
-import { TIPOS_MENU, distanciaDesdeBase } from '@/lib/landings';
+import { TIPOS_MENU, distanciaDesdeBase, fotoPortada } from '@/lib/landings';
 import { SITIO } from '@/lib/sitio';
 
 export const revalidate = 2592000;
@@ -44,14 +44,14 @@ export default async function ArriendoComuna({ params }: Props) {
   return (
     <div className="sobre-claro">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdServicio(`Arriendo de maquinaria en ${c.nombre}`, c.intro, url, c.nombre)) }} />
-      <PortadaLanding migas={[{ nombre: 'Región del Maule', href: '/arriendo-en/region-del-maule' }, { nombre: c.nombre }]} titulo={`Arriendo de maquinaria en ${c.nombre}`} bajada={c.intro} foto={flota[0]} cotizar="/cotizar-arriendo" texto={texto} />
+      <PortadaLanding migas={[{ nombre: 'Región del Maule', href: '/arriendo-en/region-del-maule' }, { nombre: c.nombre }]} titulo={`Arriendo de maquinaria en ${c.nombre}`} bajada={c.intro} foto={fotoPortada(flota, COMUNAS.indexOf(c))} cotizar="/cotizar-arriendo" texto={texto} />
       <TrabajosComuna comuna={c} km={d?.km ?? null} />
       <FlotaComuna flota={flota} titulo={`Máquinas para ${c.nombre}`} />
       <section className="bg-negro text-white">
         <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-8">
           <h2 className="medio">Por tipo de máquina</h2>
-          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-lg">
-            {TIPOS_MENU.map((t) => <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="underline-offset-4 hover:underline">{t.nombrePlural}</Link></li>)}
+          <ul className="mt-6 flex flex-wrap gap-2">
+            {TIPOS_MENU.map((t) => <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="chip">{t.nombrePlural}</Link></li>)}
           </ul>
         </div>
       </section>

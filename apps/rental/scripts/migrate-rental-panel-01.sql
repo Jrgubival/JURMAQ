@@ -72,6 +72,13 @@ ALTER TABLE public.maquinarias
   ALTER COLUMN precios SET DEFAULT '[]'::jsonb,
   ALTER COLUMN precios SET NOT NULL;
 
+-- Acentos que faltan en nombres y descripciones de la flota.
+UPDATE public.maquinarias SET
+  nombre = regexp_replace(nombre, '^Camion\y', 'Camión'),
+  descripcion = replace(replace(replace(replace(replace(
+    descripcion, 'versatil', 'versátil'), 'multiples', 'múltiples'), 'construccion', 'construcción'),
+    'electrico', 'eléctrico'), 'electrica', 'eléctrica');
+
 -- ----------------------------------------------------------------------------
 -- 2. cotizaciones_arriendo: cotizaciones hechas a mano desde el panel
 -- ----------------------------------------------------------------------------

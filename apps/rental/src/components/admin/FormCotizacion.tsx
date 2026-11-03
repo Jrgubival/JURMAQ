@@ -220,21 +220,33 @@ export default function FormCotizacion({ catalogo, inicial, id }: { catalogo: Op
         <h2 className="text-2xl">Máquinas</h2>
         <ul className="mt-3 space-y-3">
           {lineas.map((l) => (
-            <li key={l.clave} className="rounded-xl border border-hairline bg-surface p-3">
+            <li key={l.clave} className="rounded-[var(--g-radio)] border border-hairline bg-surface p-3">
               <label className="etiqueta" htmlFor={`d-${l.clave}`}>Descripción</label>
               <input id={`d-${l.clave}`} className="campo" required maxLength={300} value={l.descripcion} onChange={(e) => cambiar(l.clave, { descripcion: e.target.value })} />
               {l.tipo === 'maquina' ? (
-                <input aria-label="Período" className="campo mt-2" maxLength={300} placeholder="Período, ej: 24 al 27 de noviembre" value={l.detalle} onChange={(e) => cambiar(l.clave, { detalle: e.target.value })} />
+                <div className="mt-2">
+                  <label className="etiqueta" htmlFor={`p-${l.clave}`}>Período (opcional)</label>
+                  <input id={`p-${l.clave}`} className="campo" maxLength={300} placeholder="Ej: 24 al 27 de noviembre" value={l.detalle} onChange={(e) => cambiar(l.clave, { detalle: e.target.value })} />
+                </div>
               ) : null}
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                <input aria-label="Cantidad" className="campo" type="number" inputMode="decimal" min="0.5" max="999" step="0.5" required value={l.cantidad} onChange={(e) => cambiar(l.clave, { cantidad: e.target.value })} />
-                <select aria-label="Unidad" className="campo" value={l.unidad} onChange={(e) => cambiarUnidad(l, e.target.value as UnidadLinea)}>
-                  {UNIDADES_FORM.map((u) => <option key={u.valor} value={u.valor}>{u.texto}</option>)}
-                </select>
-                <input aria-label="Precio neto" className="campo" type="number" inputMode="numeric" min="0" step="1" required placeholder="Precio" value={l.precio} onChange={(e) => cambiar(l.clave, { precio: e.target.value })} />
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <div>
+                  <label className="etiqueta" htmlFor={`c-${l.clave}`}>Cantidad</label>
+                  <input id={`c-${l.clave}`} className="campo" type="number" inputMode="decimal" min="0.5" max="999" step="0.5" required value={l.cantidad} onChange={(e) => cambiar(l.clave, { cantidad: e.target.value })} />
+                </div>
+                <div>
+                  <label className="etiqueta" htmlFor={`u-${l.clave}`}>Unidad</label>
+                  <select id={`u-${l.clave}`} className="campo" value={l.unidad} onChange={(e) => cambiarUnidad(l, e.target.value as UnidadLinea)}>
+                    {UNIDADES_FORM.map((u) => <option key={u.valor} value={u.valor}>{u.texto}</option>)}
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="etiqueta" htmlFor={`v-${l.clave}`}>Precio neto</label>
+                  <input id={`v-${l.clave}`} className="campo" type="number" inputMode="numeric" min="0" step="1" required value={l.precio} onChange={(e) => cambiar(l.clave, { precio: e.target.value })} />
+                </div>
               </div>
-              <div className="mt-2 flex justify-between text-sm">
-                <button type="button" className="underline underline-offset-4" onClick={() => setLineas((x) => x.filter((y) => y.clave !== l.clave))}>Quitar</button>
+              <div className="mt-2 flex justify-between text-lg">
+                <button type="button" className="min-h-12 text-peligro underline underline-offset-4" onClick={() => { if (window.confirm('¿Quitar esta línea?')) setLineas((x) => x.filter((y) => y.clave !== l.clave)); }}>Quitar</button>
                 <span className="font-semibold">{formatCLP(Math.round((Number(l.cantidad) || 0) * (Number(l.precio) || 0)))}</span>
               </div>
             </li>
@@ -282,9 +294,9 @@ export default function FormCotizacion({ catalogo, inicial, id }: { catalogo: Op
 
       {error ? <p role="alert" className="font-medium text-peligro">{error}</p> : null}
 
-      <div className="sticky bottom-20 z-10 rounded-xl border border-hairline bg-surface p-3 md:bottom-4">
+      <div className="sticky bottom-3 z-10 rounded-[var(--g-radio)] border border-hairline bg-surface p-3 md:bottom-4">
         <div className="mb-2 flex items-baseline justify-between">
-          <span className="text-sm text-ink-muted">Neto {formatCLP(totales.neto)} · IVA {formatCLP(totales.iva)}</span>
+          <span className="text-lg text-ink-muted">Neto {formatCLP(totales.neto)} · IVA {formatCLP(totales.iva)}</span>
           <span className="font-titulo text-2xl font-semibold">{formatCLP(totales.total)}</span>
         </div>
         <button type="submit" className="boton boton-principal w-full" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar'}</button>

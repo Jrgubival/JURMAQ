@@ -39,10 +39,10 @@ export default async function Hoy() {
             const maquina = (s.maquinarias as unknown as { nombre?: string } | null)?.nombre;
             return (
               <li key={s.id}>
-                <Link href={`/admin/cotizaciones/nueva?solicitud=${s.id}`} prefetch={false} className="presionable block rounded-xl border border-hairline bg-surface p-4">
+                <Link href={`/admin/cotizaciones/nueva?solicitud=${s.id}`} prefetch={false} className="presionable block rounded-[var(--g-radio)] border border-hairline bg-surface p-4">
                   <p className="font-semibold">{s.cliente_nombre}</p>
                   <p className="text-ink-muted">{maquina} · {s.ubicacion_servicio}</p>
-                  <p className="mt-1 text-sm underline underline-offset-4">Hacer cotización</p>
+                  <p className="mt-1 text-lg underline underline-offset-4">Hacer cotización</p>
                 </Link>
               </li>
             );
@@ -55,7 +55,7 @@ export default async function Hoy() {
         <ul className="mt-3 space-y-2">
           {(abiertas ?? []).map((c) => (
             <li key={c.id}>
-              <Link href={`/admin/cotizaciones/${c.id}`} prefetch={false} className="presionable flex items-center justify-between gap-3 rounded-xl border border-hairline bg-surface p-4">
+              <Link href={`/admin/cotizaciones/${c.id}`} prefetch={false} className="presionable flex items-center justify-between gap-3 rounded-[var(--g-radio)] border border-hairline bg-surface p-4">
                 <span><span className="font-semibold">N.º {c.numero}</span> · {c.cliente_nombre}</span>
                 <span className="whitespace-nowrap">{formatCLP(Number(c.total))}</span>
               </Link>

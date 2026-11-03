@@ -40,8 +40,8 @@ export default async function RegionMaule() {
           ))}
         </ul>
       </section>
-      <section className="mx-auto max-w-[1320px] px-1 py-14 md:px-8 md:py-20">
-        <h2 className="medio mb-6 px-3 md:px-0">Flota</h2>
+      <section className="mx-auto max-w-[1320px] py-14 md:px-8 md:py-20">
+        <h2 className="medio mb-6 px-4 md:px-0">Flota</h2>
         <MosaicoFlota flota={flota} />
       </section>
       <BarraMovil cotizar="/cotizar-arriendo" texto={texto} />

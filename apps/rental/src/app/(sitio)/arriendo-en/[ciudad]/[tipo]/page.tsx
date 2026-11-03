@@ -52,7 +52,7 @@ export default async function ArriendoCruce({ params }: Props) {
   return (
     <div className="sobre-claro">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdServicio(`Arriendo de ${t.nombre} en ${c.nombre}`, t.descripcionCorta, url, c.nombre)) }} />
-      <PortadaLanding migas={[{ nombre: c.nombre, href: `/arriendo-en/${c.slug}` }, { nombre: t.nombre }]} titulo={`Arriendo de ${t.nombre.toLowerCase()} en ${c.nombre}`} bajada={`${t.descripcionCorta} ${c.intro}`} foto={flota[0]} cotizar={cotizar} texto={texto} />
+      <PortadaLanding migas={[{ nombre: c.nombre, href: `/arriendo-en/${c.slug}` }, { nombre: t.nombre }]} titulo={`Arriendo de ${t.nombre.toLowerCase()} en ${c.nombre}`} bajada={`${t.descripcionCorta} ${c.intro}`} foto={flota[0]} angosta={!['retroexcavadora', 'minicargador', 'camion-tolva'].includes(t.slug)} cotizar={cotizar} texto={texto} />
       <FlotaComuna flota={flota} titulo="En nuestra flota" />
       <TrabajosComuna comuna={c} km={distanciaDesdeBase(c.slug)?.km ?? null} />
       <Preguntas preguntas={t.preguntasFrecuentes} />

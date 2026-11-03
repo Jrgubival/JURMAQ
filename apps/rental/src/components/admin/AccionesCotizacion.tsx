@@ -25,6 +25,7 @@ export default function AccionesCotizacion({
   const router = useRouter();
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState('');
+  const [aviso, setAviso] = useState('');
   const nombreArchivo = `Cotizacion ${numero} ${cliente}`.replace(/[^\p{L}\p{N} .-]/gu, '').slice(0, 80) + '.pdf';
   const mensaje = `Hola, te envío la cotización N.º ${numero} de JURMAQ.`;
 
@@ -102,11 +103,12 @@ export default function AccionesCotizacion({
       <button type="button" className="boton boton-suave w-full" disabled={ocupado} onClick={duplicar}>Duplicar</button>
       <div>
         <label className="etiqueta" htmlFor="estado">Estado</label>
-        <select id="estado" className="campo" value={estado} disabled={ocupado} onChange={(e) => correr(() => marcar(e.target.value))}>
+        <select id="estado" className="campo" value={estado} disabled={ocupado} onChange={(e) => correr(async () => { await marcar(e.target.value); setAviso('Estado guardado'); })}>
           {ESTADOS_COTIZACION.map((x) => <option key={x} value={x}>{x[0].toUpperCase() + x.slice(1)}</option>)}
           {!(ESTADOS_COTIZACION as readonly string[]).includes(estado) ? <option value={estado}>{estado}</option> : null}
         </select>
       </div>
+      {aviso ? <p role="status" className="font-medium text-exito">{aviso}</p> : null}
       {error ? <p role="alert" className="font-medium text-peligro">{error}</p> : null}
     </div>
   );

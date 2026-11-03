@@ -15,14 +15,14 @@ export default async function VerCotizacion({ params }: { params: Promise<{ id: 
   const t = calcularTotales(c.lineas, c.descuento_neto);
   return (
     <>
-      <p className="text-sm capitalize text-ink-muted">{c.estado}</p>
+      <p className="text-lg capitalize text-ink-muted">{c.estado}</p>
       <h1 className="text-3xl">Cotización N.º {c.numero}</h1>
       <p className="mt-1 text-lg">{c.cliente_nombre}</p>
 
       <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
         {c.lineas.map((l, i) => (
           <li key={i} className="flex justify-between gap-3 py-3">
-            <span>{l.descripcion}<span className="block text-sm text-ink-muted">{textoCantidad(l.cantidad, l.unidad)} × {formatCLP(l.precio_unitario)}</span></span>
+            <span>{l.descripcion}<span className="block text-lg text-ink-muted">{textoCantidad(l.cantidad, l.unidad)} × {formatCLP(l.precio_unitario)}</span></span>
             <span className="whitespace-nowrap font-medium">{formatCLP(Math.round(l.cantidad * l.precio_unitario))}</span>
           </li>
         ))}

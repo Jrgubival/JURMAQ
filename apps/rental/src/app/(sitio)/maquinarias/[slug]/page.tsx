@@ -104,8 +104,8 @@ export default async function Ficha({ params }: Props) {
       ) : null}
 
       {otras.length > 0 ? (
-        <section className="mx-auto max-w-[1320px] px-1 py-14 md:px-8 md:py-20">
-          <h2 className="medio mb-6 px-3 md:px-0">Otras máquinas</h2>
+        <section className="mx-auto max-w-[1320px] py-14 md:px-8 md:py-20">
+          <h2 className="medio mb-6 px-4 md:px-0">Otras máquinas</h2>
           <div className="grid gap-1 md:grid-cols-3">
             {otras.map((x) => <TarjetaMaquina key={x.id} maquina={x} />)}
           </div>

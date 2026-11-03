@@ -18,14 +18,14 @@ export default async function Maquinas() {
       <ul className="mt-4 space-y-2">
         {lista.map((m) => (
           <li key={m.id}>
-            <Link href={`/admin/maquinas/${m.id}`} prefetch={false} className="presionable flex items-center gap-3 rounded-xl border border-hairline bg-surface p-3">
+            <Link href={`/admin/maquinas/${m.id}`} prefetch={false} className="presionable flex items-center gap-3 rounded-[var(--g-radio)] border border-hairline bg-surface p-3">
               {m.fotos[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={m.fotos[0]} alt="" width={80} height={60} className="h-15 w-20 rounded object-cover" />
               ) : <span className="h-15 w-20 rounded bg-surface-alt" />}
               <span className="min-w-0">
                 <span className="block font-semibold">{m.nombre}</span>
-                <span className="block text-sm text-ink-muted">
+                <span className="block text-lg text-ink-muted">
                   {m.precios[0] ? textoPrecio(m.precios[0], formatCLP) : 'Cotizar'} · {ESTADOS_MAQUINA.find((e) => e.valor === m.estado)?.texto ?? m.estado}
                   {m.publicada ? '' : ' · Oculta'}
                 </span>
