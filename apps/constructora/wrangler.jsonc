@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // jurmaq.cl y constructora.jurmaq.cl en Cloudflare Workers (OpenNext). Los dos
+  // dominios son esta misma app: el middleware separa por Host. Los secretos van
+  // con `wrangler secret put`, nunca en este archivo ni en .env del build.
+  "name": "jurmaq-app",
+  "main": "custom-worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "jurmaq-app" }],
+  // Caché de ISR: páginas en R2, revalidatePath en D1, regeneración en un DO.
+  "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "jurmaq-app-cache" }],
+  "d1_databases": [
+    { "binding": "NEXT_TAG_CACHE_D1", "database_name": "jurmaq-app-tags", "database_id": "394c1fd9-fb5b-4449-a092-c6a9336d3655" }
+  ],
+  "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
+  // Chromium para los PDF de contratos (lib/pdf-generator.ts).
+  "browser": { "binding": "BROWSER" },
+  "workers_dev": true,
+  "vars": { "AUTH_SCOPE": "constructora", "DESPLIEGUE": "cloudflare" },
+  "observability": { "enabled": true }
+}

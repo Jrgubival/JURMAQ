@@ -27,8 +27,8 @@ export interface ProyectoCaseStudy {
   ubicacionGeo?: { lat: number; lng: number };
   /** Año de inicio de la obra (string para soportar "2018" o "2023"). */
   anoInicio: string;
-  /** Texto humano: "8 meses", "14 meses", "Contrato permanente". */
-  duracion: string;
+  /** Texto humano: "8 meses", "Contrato permanente". Sólo si está respaldado. */
+  duracion?: string;
   /** Monto UF — solo declarado si la home lo respalda. */
   montoUF?: number;
   descripcionCorta: string;
@@ -42,12 +42,6 @@ export interface ProyectoCaseStudy {
   materialesPrincipales: string[];
   desafiosTecnicos: string[];
   resultados: string[];
-  testimonio?: {
-    autor: string;
-    cargo: string;
-    texto: string;
-    rating: number;
-  };
   /** Path a la imagen hero. Si el archivo no existe, el detail muestra placeholder navy. */
   imagenHero?: string;
   /** Galería 4-6 imágenes adicionales. */
@@ -77,12 +71,11 @@ export const PROYECTOS: ProyectoCaseStudy[] = [
     ubicacion: "Planta Nestlé, Teno · Región del Maule",
     ubicacionGeo: { lat: -34.8744, lng: -71.1644 },
     anoInicio: "2023",
-    duracion: "14 meses",
     montoUF: 76000,
     descripcionCorta:
       "Fundaciones para silos de granos, expansión del área de batcheo y molienda, montaje de equipos, pavimentos y movimiento de tierras en planta operativa.",
     descripcionLarga:
-      "Obra de gran envergadura ejecutada para Nestlé Chile en su planta de Teno, una de las instalaciones agroindustriales más relevantes del Maule. El proyecto contempló tres frentes paralelos: fundaciones especiales para los nuevos silos de almacenamiento de granos, expansión del área de batcheo y molienda, y montaje de equipos industriales con pavimentación complementaria.\n\nEl desafío principal fue coordinar el avance de obra con producción operativa: la planta no podía detener procesos críticos durante los 14 meses de ejecución, por lo que cada hito —desde el movimiento de tierras hasta el hormigonado masivo de las losas de fundación— se planificó en ventanas de bajo flujo. La cubicación final superó los UF 76.000, posicionándolo como uno de nuestros proyectos industriales más relevantes en la región.\n\nLa entrega final incluyó silos calibrados, batcheo expandido en un 35% sobre la capacidad original, y pavimentos industriales certificados para tráfico de camiones pesados. La obra fue recibida sin observaciones por la inspección técnica de Nestlé.",
+      "Obra de gran envergadura ejecutada para Nestlé Chile en su planta de Teno, una de las instalaciones agroindustriales más relevantes del Maule. El proyecto contempló tres frentes paralelos: fundaciones especiales para los nuevos silos de almacenamiento de granos, expansión del área de batcheo y molienda, y montaje de equipos industriales con pavimentación complementaria.\n\nEl desafío principal fue coordinar el avance de obra con producción operativa: la planta no podía detener procesos críticos durante la ejecución, por lo que cada hito —desde el movimiento de tierras hasta el hormigonado masivo de las losas de fundación— se planificó en ventanas de bajo flujo. La cubicación final superó los UF 76.000, posicionándolo como uno de nuestros proyectos industriales más relevantes en la región.\n\nLa entrega final incluyó silos calibrados, batcheo expandido y pavimentos industriales certificados para tráfico de camiones pesados. La obra fue recibida sin observaciones por la inspección técnica de Nestlé.",
     servicios: [
       "Movimiento de tierras",
       "Fundaciones especiales",
@@ -110,10 +103,8 @@ export const PROYECTOS: ProyectoCaseStudy[] = [
       "Montaje de silos con tolerancias milimétricas para alineación con cintas transportadoras existentes.",
     ],
     resultados: [
-      "+35% en capacidad de batcheo respecto a la planta original.",
-      "Cero días de detención de producción durante los 14 meses de obra.",
+      "Cero días de detención de producción durante la obra.",
       "Recepción final sin observaciones por la inspección técnica.",
-      "Habilitación de 3 silos nuevos con capacidad combinada >8.000 toneladas.",
     ],
     imagenHero: "/images/proyectos/nestle-teno-fundaciones-silos/hero.jpg",
     galeria: [
@@ -225,47 +216,23 @@ export const PROYECTOS: ProyectoCaseStudy[] = [
     slug: "surfrut-romeral-obras",
     cliente: "Surfrut",
     clienteLogo: "/images/clientes/surfrut.svg",
-    titulo: "Bodega Refrigerada · Surfrut Romeral",
+    titulo: "Montajes y Obras · Surfrut Romeral",
     ubicacion: "Romeral · Región del Maule",
     ubicacionGeo: { lat: -34.9667, lng: -71.1417 },
     anoInicio: "2024",
-    duracion: "5 meses",
-    montoUF: 14200,
     descripcionCorta:
-      "Construcción de bodega refrigerada de 1.800 m² con cámaras a -25°C para almacenamiento de fruta congelada.",
+      "Ductos, cámaras, piscinas de fruta, cambio de cubierta de galpón y montajes estructurales para la industria de procesamiento de fruta.",
     descripcionLarga:
-      "Surfrut, uno de los principales procesadores de fruta del Maule, requería una nueva bodega refrigerada de gran escala para complementar su capacidad de almacenamiento de fruta congelada. JURMAQ ejecutó la obra civil completa: fundaciones, estructura, cubierta, pisos industriales con tratamiento epóxico, y los muelles de carga para camiones refrigerados.\n\nLa coordinación con los instaladores de equipos de refrigeración fue clave: cada partida —pisos, paredes con paneles aislantes, cubierta— debía entregarse en secuencia precisa para que el sistema de cámaras frigoríficas pudiera instalarse sin retrabajos.\n\nLa bodega quedó operativa con 1.800 m² útiles y cámaras certificadas a -25°C, permitiendo a Surfrut ampliar significativamente su capacidad de almacenamiento durante la temporada alta de cosecha.",
+      "Para Surfrut, procesador de fruta del Maule, JURMAQ ejecutó ductos, cámaras, piscinas de fruta, cambio de cubierta de galpón y montajes estructurales en Romeral.",
     servicios: [
       "Obras civiles",
-      "Fundaciones",
-      "Pisos industriales epóxicos",
-      "Estructura metálica",
-      "Muelles de carga",
+      "Cubiertas",
+      "Montajes estructurales",
     ],
-    maquinariaUsada: [
-      { nombre: "Plataforma articulada 22m", tipoSlug: "brazo-articulado" },
-      { nombre: "Minicargador Caterpillar 232D", tipoSlug: "minicargador" },
-      { nombre: "Retroexcavadora", tipoSlug: "retroexcavadora" },
-      { nombre: "Camión tolva", tipoSlug: "camion-tolva" },
-    ],
-    materialesPrincipales: [
-      "Paneles aislantes 200mm",
-      "Piso epóxico industrial",
-      "Hormigón H-30 con fibras",
-      "Acero estructural",
-    ],
-    desafiosTecnicos: [
-      "Pisos industriales con tratamiento epóxico — secado controlado por humedad ambiente.",
-      "Aislación térmica continua sin puentes térmicos para mantener -25°C.",
-      "Coordinación con instaladores de equipos de refrigeración en cada partida.",
-      "Muelles de carga con sellos para camiones refrigerados.",
-    ],
-    resultados: [
-      "1.800 m² útiles entregados certificados a -25°C.",
-      "Cero retrabajos coordinados con instalación de equipos de refrigeración.",
-      "Habilitación previa al inicio de la temporada alta de cosecha.",
-      "Capacidad de almacenamiento ampliada significativamente sobre la planta original.",
-    ],
+    maquinariaUsada: [],
+    materialesPrincipales: [],
+    desafiosTecnicos: [],
+    resultados: [],
     fechaPublicacion: "2024-11-10",
     estado: "completado",
   },
@@ -273,45 +240,22 @@ export const PROYECTOS: ProyectoCaseStudy[] = [
     slug: "cementos-biobio-mantencion",
     cliente: "Cementos Biobío (CBB)",
     clienteLogo: "/images/clientes/cbb-cementos.png",
-    titulo: "Modernización Silos · Cementos Biobío",
-    ubicacion: "Curicó · Región del Maule",
-    ubicacionGeo: { lat: -34.9853, lng: -71.2367 },
+    titulo: "Obras Civiles · Cementos Biobío",
+    ubicacion: "Región del Maule",
     anoInicio: "2024",
-    duracion: "4 meses",
-    montoUF: 9800,
     descripcionCorta:
-      "Modernización de silos de cemento, instalación de nueva tolva de descarga y obras civiles complementarias en planta CBB.",
+      "Sala eléctrica, muro de contención, cierres perimetrales y pavimentos para la industria del cemento.",
     descripcionLarga:
-      "Cementos Biobío encargó a JURMAQ la modernización de sus silos en la planta de Curicó. El proyecto contempló refuerzo estructural de los silos existentes, instalación de una nueva tolva de descarga y obras civiles complementarias para mejorar la operación logística de carga de camiones.\n\nTrabajar en una planta cementera activa exige planificación rigurosa: cada intervención sobre los silos debía coordinarse con paradas técnicas programadas, y las obras civiles complementarias avanzaron en paralelo sin afectar el flujo de camiones de despacho.\n\nLa obra se entregó dentro del plazo de 4 meses, con la nueva tolva operativa y los silos reforzados estructuralmente para extender su vida útil otra década.",
+      "Para Cementos Biobío, JURMAQ ejecuta sala eléctrica, muro de contención, cierres perimetrales y pavimentos.",
     servicios: [
-      "Refuerzo estructural",
-      "Montaje industrial",
       "Obras civiles",
-      "Estructuras metálicas",
+      "Muros de contención",
+      "Pavimentos",
     ],
-    maquinariaUsada: [
-      { nombre: "Brazo articulado 26m", tipoSlug: "brazo-articulado" },
-      { nombre: "Camión tolva 12m³", tipoSlug: "camion-tolva" },
-      { nombre: "Plataforma elevadora", tipoSlug: "plataforma-elevadora" },
-    ],
-    materialesPrincipales: [
-      "Perfiles estructurales",
-      "Fierro estriado especial",
-      "Hormigón armado",
-      "Anticorrosivos industriales",
-    ],
-    desafiosTecnicos: [
-      "Trabajos en altura sobre silos en operación.",
-      "Coordinación con paradas técnicas programadas para intervenciones críticas.",
-      "Refuerzo estructural sin descargar los silos completamente.",
-      "Continuidad del despacho de camiones durante toda la obra.",
-    ],
-    resultados: [
-      "Silos con vida útil extendida estructuralmente.",
-      "Nueva tolva de descarga operativa al final del plazo.",
-      "Cero detenciones imprevistas durante la obra.",
-      "Entrega dentro de los 4 meses comprometidos.",
-    ],
+    maquinariaUsada: [],
+    materialesPrincipales: [],
+    desafiosTecnicos: [],
+    resultados: [],
     fechaPublicacion: "2025-02-20",
     estado: "completado",
   },

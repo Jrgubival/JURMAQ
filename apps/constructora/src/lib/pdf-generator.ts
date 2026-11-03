@@ -1,38 +1,21 @@
 /**
  * Render an HTML string into a PDF buffer using headless Chromium.
  *
- * Why this stack:
- *  - puppeteer-core (no bundled browser, ~3MB) + @sparticuz/chromium-min
- *    (downloads a Vercel-Lambda-compatible Chromium binary on demand) is
- *    the standard way to do HTML→PDF on Vercel serverless functions.
- *  - We import dynamically so the heavy chromium binary is only loaded
- *    when this function is actually called (avoids bundling cost on cold
- *    starts of unrelated routes).
+ * Usa Cloudflare Browser Rendering (binding BROWSER en wrangler.jsonc): el
+ * Chromium corre en Cloudflare, no dentro del Worker. Si falla, el correo cae
+ * al enlace de descarga (ver signed-contract-email.ts).
  *
- * Caveats:
- *  - First invocation per cold start downloads ~50MB Chromium → ~5-10s
- *    extra latency. Subsequent calls reuse the cached binary.
- *  - Function memory must be ≥ 1024 MB. Set in vercel.json or via the
- *    `runtime` export of the calling route.
- *  - This is server-only code. Never import from a "use client" file.
+ * This is server-only code. Never import from a "use client" file.
  */
 import 'server-only';
-
-const CHROMIUM_TAR =
-  'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export async function htmlToPdfBuffer(html: string): Promise<Buffer> {
   // Lazy import — only load when actually generating a PDF.
-  const [{ default: chromium }, puppeteer] = await Promise.all([
-    import('@sparticuz/chromium-min'),
-    import('puppeteer-core'),
-  ]);
+  const { default: puppeteer } = await import('@cloudflare/puppeteer');
+  const { env } = await getCloudflareContext({ async: true });
 
-  const browser = await puppeteer.default.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(CHROMIUM_TAR),
-    headless: true,
-  });
+  const browser = await puppeteer.launch((env as unknown as { BROWSER: Parameters<typeof puppeteer.launch>[0] }).BROWSER);
 
   try {
     const page = await browser.newPage();

@@ -18,8 +18,7 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
  * pre-genera todas las páginas en build time — útil para SEO y para que el
  * sitemap conozca las URLs sin requerir DB.
  *
- * JSON-LD: `Article` + `BreadcrumbList` + opcionalmente `Review` embebido si
- * el proyecto tiene `testimonio`.
+ * JSON-LD: `Article` + `BreadcrumbList`.
  */
 
 interface PageProps {
@@ -68,7 +67,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
 
   const url = getProyectoUrl(slug);
 
-  // JSON-LD: Article + BreadcrumbList (+ Review si hay testimonio).
+  // JSON-LD: Article + BreadcrumbList.
   const jsonLdGraph: Record<string, unknown>[] = [
     {
       "@context": "https://schema.org",
@@ -114,25 +113,6 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
       ],
     },
   ];
-
-  if (proyecto.testimonio) {
-    jsonLdGraph.push({
-      "@context": "https://schema.org",
-      "@type": "Review",
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: proyecto.testimonio.rating,
-        bestRating: 5,
-      },
-      author: {
-        "@type": "Organization",
-        name: proyecto.cliente,
-      },
-      reviewBody: proyecto.testimonio.texto,
-      datePublished: proyecto.fechaPublicacion,
-      itemReviewed: PROVEEDOR_JSONLD,
-    });
-  }
 
   // Otros proyectos para sección "ver más".
   const otrosProyectos = PROYECTOS.filter((p) => p.slug !== slug).slice(0, 3);
@@ -329,6 +309,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
                       </dd>
                     </div>
                   )}
+                  {proyecto.duracion && (
                   <div>
                     <dt className="text-[10px] uppercase tracking-[0.22em] text-white/55 font-semibold mb-2">
                       Duración
@@ -344,6 +325,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
                       {proyecto.duracion}
                     </dd>
                   </div>
+                  )}
                   <div>
                     <dt className="text-[10px] uppercase tracking-[0.22em] text-white/55 font-semibold mb-2">
                       Año de inicio
@@ -479,6 +461,7 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
             </div>
 
             {/* Desafíos técnicos */}
+            {proyecto.desafiosTecnicos.length > 0 && (
             <div>
               <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-4">
                 Desafíos técnicos
@@ -519,8 +502,10 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
                 ))}
               </ol>
             </div>
+            )}
 
             {/* Resultados */}
+            {proyecto.resultados.length > 0 && (
             <div>
               <p className="text-[10px] font-semibold text-[#787774] uppercase tracking-[0.22em] mb-4">
                 Resultados
@@ -566,11 +551,13 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
                 ))}
               </ul>
             </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* ===== MAQUINARIA UTILIZADA (con links a /arriendo) ===== */}
+      {(proyecto.maquinariaUsada.length > 0 || proyecto.materialesPrincipales.length > 0) && (
       <section className="py-20 lg:py-24 bg-white border-y border-[#EAEAEA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
@@ -701,36 +688,6 @@ export default async function ProyectoCaseStudyPage({ params }: PageProps) {
           </div>
         </div>
       </section>
-
-      {/* ===== TESTIMONIO EMBEDDED (si existe) ===== */}
-      {proyecto.testimonio && (
-        <section className="py-20 lg:py-28 bg-navy-950">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-[10px] font-semibold text-gold-400 uppercase tracking-[0.22em] mb-6 text-center">
-              Testimonio del cliente
-            </p>
-            <blockquote
-              className="text-white text-center leading-relaxed mb-8 max-w-3xl mx-auto"
-              style={{
-                fontFamily: "var(--font-serif)",
-                fontSize: "clamp(1.25rem, 2.5vw, 1.875rem)",
-                fontStyle: "italic",
-                fontWeight: 400,
-                letterSpacing: "-0.005em",
-              }}
-            >
-              &ldquo;{proyecto.testimonio.texto}&rdquo;
-            </blockquote>
-            <footer className="text-center">
-              <p className="text-base font-semibold text-white">
-                {proyecto.testimonio.autor}
-              </p>
-              <p className="text-sm text-white/55 mt-1">
-                {proyecto.testimonio.cargo} · {proyecto.cliente}
-              </p>
-            </footer>
-          </div>
-        </section>
       )}
 
       {/* ===== GALERÍA ===== */}

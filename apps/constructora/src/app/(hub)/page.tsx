@@ -11,8 +11,6 @@ import { IconWhatsapp, IconBolt } from "@jurmaq/shared/icons";
 import { LEGAL_INFO } from "@jurmaq/shared/seo";
 import HeroSearch from "@/components/public/HeroSearch";
 import CategoriasShowcase, { type TipoCategoria } from "@/components/public/CategoriasShowcase";
-import TestimoniosGrid from "@/components/public/TestimoniosGrid";
-import { getTestimoniosDestacados } from "@/lib/testimonios-data";
 import { getProyectosStats } from "@/lib/proyectos-data";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
@@ -162,11 +160,6 @@ export default async function HomePage() {
     const t = (m as any).tipo as TipoCategoria;
     categoryCounts[t] = (categoryCounts[t] || 0) + 1;
   }
-
-  // Testimonios B2B — fuente estática `testimonios-data.ts` hasta que la
-  // migration `constructora_testimonios` se aplique en Supabase.
-  // Future: cambiar a `await supabasePublic.from('constructora_testimonios')...`
-  const testimoniosDestacados = getTestimoniosDestacados(3);
 
   return (
     <>
@@ -607,15 +600,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ===== TESTIMONIOS B2B ===== */}
-      <TestimoniosGrid
-        testimonios={testimoniosDestacados}
-        variant="light"
-        title="Lo que dicen quienes confiaron"
-        subtitle="Empresas agroindustriales y constructoras que llevan años trabajando con JURMAQ."
-        eyebrow="Testimonios"
-        ctaLink={{ label: "Ver todos los proyectos", href: "/proyectos" }}
-      />
 
       {/* ===== CTA SECTION ===== */}
         <section className="bg-navy-950 py-20 lg:py-28 border-t border-navy-800">

@@ -1,16 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import NextAuth from 'next-auth';
-import { authConfig } from '@jurmaq/shared/auth/config';
 
-const authMiddleware = NextAuth({
-  ...authConfig,
-  pages: {
-    ...authConfig.pages,
-    // Login admin propio de jurmaq.cl (SSO Google + fallback a credenciales).
-    // Antes rebotaba a barraca.jurmaq.cl/cuenta/login cruzando dominios.
-    signIn: '/login',
-  },
-}).auth;
+/**
+ * NextAuth sólo se carga al entrar a /admin: el middleware corre en cada página
+ * pública y cargarlo ahí era buena parte de su tiempo (11% en Vercel).
+ */
+let authMiddleware: Promise<unknown> | undefined;
+
+function getAuthMiddleware() {
+  authMiddleware ??= Promise.all([
+    import('next-auth'),
+    import('@jurmaq/shared/auth/config'),
+  ]).then(([{ default: NextAuth }, { authConfig }]) =>
+    NextAuth({
+      ...authConfig,
+      pages: {
+        ...authConfig.pages,
+        // Login admin propio de jurmaq.cl (SSO Google + fallback a credenciales).
+        // Antes rebotaba a barraca.jurmaq.cl/cuenta/login cruzando dominios.
+        signIn: '/login',
+      },
+    }).auth,
+  );
+  return authMiddleware;
+}
 
 /**
  * Rutas internas del subdominio constructora.jurmaq.cl.
@@ -70,8 +82,8 @@ export default async function middleware(request: NextRequest) {
   // bypass de autenticación dependiente del Host—. Poniéndolo primero, el
   // control es fail-closed en cualquier dominio que sirva esta app.
   if (pathname.startsWith('/admin')) {
-    // @ts-expect-error — NextAuth middleware spread compatibility
-    return authMiddleware(request);
+    const auth = (await getAuthMiddleware()) as (req: NextRequest) => Promise<Response>;
+    return auth(request);
   }
 
   // ── constructora.jurmaq.cl ────────────────────────────────────────────────

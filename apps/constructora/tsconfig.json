@@ -16,5 +16,5 @@
     "../../packages/shared/src/next-auth.d.ts",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", ".next"]
+  "exclude": ["node_modules", ".next", ".open-next", "custom-worker.ts"]
 }

@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { PROYECTOS, getProyectosStats } from "@/lib/proyectos-data";
-import { getTestimoniosDestacados } from "@/lib/testimonios-data";
-import TestimoniosGrid from "@/components/public/TestimoniosGrid";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
@@ -13,14 +11,14 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
  * Prodalam, Rendalomaq, MTS) muestra obras reales con cliente identificado.
  * Cada card linkea a `/proyectos/[slug]` con el detail page completo.
  *
- * Las fuentes de datos viven en `@/lib/proyectos-data` y `@/lib/testimonios-data`
+ * Las fuentes de datos viven en `@/lib/proyectos-data`
  * para reusar en el sitemap y la home.
  */
 
 export const metadata: Metadata = {
   title: "Proyectos JURMAQ · 27 años construyendo en el Maule",
   description:
-    "Casos reales: silos Nestlé Teno, bodega de cubas Miguel Torres, mantención industrial Iansagro, bodega refrigerada Surfrut, modernización CBB. Mira las máquinas usadas, materiales aplicados y testimonios del cliente en cada obra.",
+    "Casos reales: silos Nestlé Teno, bodega de cubas Miguel Torres, mantención industrial Iansagro, montajes Surfrut, obras civiles CBB. Mira las máquinas usadas y los materiales aplicados en cada obra.",
   alternates: { canonical: "https://constructora.jurmaq.cl/proyectos" },
   openGraph: {
     title: "Proyectos JURMAQ · Obras reales en el Maule",
@@ -33,7 +31,6 @@ export const metadata: Metadata = {
 
 export default function ProyectosPage() {
   const { totalUF, totalObras, clientesUnicos } = getProyectosStats();
-  const testimonios = getTestimoniosDestacados(3);
 
   // JSON-LD: ItemList de proyectos para que Google entienda la página como
   // listado de obras (similar a un CollectionPage).
@@ -294,14 +291,6 @@ export default function ProyectosPage() {
         </div>
       </section>
 
-      {/* ===== TESTIMONIOS ===== */}
-      <TestimoniosGrid
-        testimonios={testimonios}
-        variant="light"
-        title="Lo que dicen quienes confiaron"
-        subtitle="Empresas agroindustriales y constructoras que llevan años trabajando con JURMAQ."
-        eyebrow="Testimonios"
-      />
 
       {/* ===== CTA ===== */}
       <section className="py-20 lg:py-28 bg-navy-950 text-white border-t border-white/10">
