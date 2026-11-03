@@ -1,4 +1,5 @@
 import 'server-only';
+import { revalidarFichasDePedido } from '@/lib/revalidar';
 import { logSafeError } from '@jurmaq/shared/logging';
 import { pedidos } from '@/lib/pedidos';
 import { correoCancelacionComprador } from '@/lib/pedidos/correos';
@@ -23,6 +24,7 @@ export async function vencerTransferencias(): Promise<{ vencidos: number; errore
     try {
       if ((await store.vencer(p.numero, PLAZO_TRANSFERENCIA_HORAS)) !== 'vencido') continue;
       r.vencidos++;
+      await revalidarFichasDePedido(p.items);
       await correoCancelacionComprador({ ...p, estado: 'cancelado', cancelacion_motivo: 'vencido' });
     } catch (error) {
       r.errores++;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidarFichasDePedido } from '@/lib/revalidar';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { can } from '@jurmaq/shared/roles';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
@@ -75,7 +76,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         return NextResponse.json({ error: r === 'ya_procesado' ? 'El pedido ya estaba pagado o cerrado' : 'No se pudo marcar como pagado' }, { status: 409 });
       }
       const actualizado = await store.porNumero(numero);
-      if (actualizado) await correoConfirmacionComprador(actualizado);
+      if (actualizado) await Promise.all([correoConfirmacionComprador(actualizado), revalidarFichasDePedido(actualizado.items)]);
     } else if (parsed.data.estado === 'cancelado') {
       // Una sola operación en la base: estado, motivo, stock y devolución
       // pendiente si se pagó por transferencia. Sin permiso de reembolsar no
@@ -85,6 +86,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       if (r === 'motivo_invalido') return NextResponse.json({ error: '«Transferencia no recibida» es sólo para pedidos por transferencia sin pago confirmado' }, { status: 409 });
       if (r !== 'ok') return NextResponse.json({ error: 'Este pedido ya salió o está cerrado: no se puede cancelar' }, { status: 409 });
       const cerrado = await store.porNumero(numero);
+      await revalidarFichasDePedido(cerrado?.items);
       if (cerrado?.pagado_at) {
         if (pagadoConWebpay(cerrado)) {
           const ok = await devolverWebpay(cerrado);

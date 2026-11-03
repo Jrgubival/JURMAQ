@@ -134,7 +134,9 @@ export async function generateMetadata({
 // dinámica: cada visita y cada bot ejecutaba una función y ~8 consultas a
 // Supabase. Los filtros ahora corren en el navegador (CatalogoCategoria) contra
 // /api/catalogo, que sale de caché. Ver src/lib/catalogo.ts.
-export const revalidate = 3600;
+// Nov-2026: 1 día (antes 1 h). Los cambios de catálogo revalidan al instante
+// (lib/revalidar.ts); la hora extra sólo gastaba CPU de Vercel.
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   const { data } = await supabasePublic

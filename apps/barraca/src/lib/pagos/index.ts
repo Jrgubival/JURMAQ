@@ -1,4 +1,5 @@
 import 'server-only';
+import { revalidarFichasDePedido } from '@/lib/revalidar';
 import { env } from '@jurmaq/shared/env';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { pedidos, esProduccion, type ResultadoPago } from '@/lib/pedidos';
@@ -48,7 +49,7 @@ export async function aplicarEstadoPago(
     if (r === 'pagado') {
       logSafe('pedido-pagado', { numero: estado.numero, pasarela });
       const p = await store.porNumero(estado.numero);
-      if (p) await Promise.all([correoConfirmacionComprador(p), correoAvisoBarraca(p, 'pagado')]);
+      if (p) await Promise.all([correoConfirmacionComprador(p), correoAvisoBarraca(p, 'pagado'), revalidarFichasDePedido(p.items)]);
     } else if (r === 'monto_distinto') {
       logSafeError('pedido-monto-distinto', { numero: estado.numero, monto: estado.monto, pago: estado.pagoId });
     }

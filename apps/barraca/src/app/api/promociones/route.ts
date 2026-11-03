@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { conRevalidacion } from '@/lib/revalidar';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function manejarPOST(request: NextRequest) {
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+async function manejarPUT(request: NextRequest) {
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
@@ -125,7 +126,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+async function manejarDELETE(request: NextRequest) {
   if (!isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
@@ -157,3 +158,9 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+
+// Una promoción cambia el precio de toda una categoría: las fichas (7 días de
+// caché) y los listados tienen que regenerarse.
+export const POST = conRevalidacion(manejarPOST);
+export const PUT = conRevalidacion(manejarPUT);
+export const DELETE = conRevalidacion(manejarDELETE);

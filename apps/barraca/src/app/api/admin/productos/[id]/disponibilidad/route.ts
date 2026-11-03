@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { z, parseBody } from '@jurmaq/shared/validation';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
-import { revalidarCatalogo } from '@/lib/revalidar';
+import { revalidarFichas } from '@/lib/revalidar';
 import { esComprable } from '@/lib/stock';
 import { precioDeVenta } from '@/lib/precio-web';
 
@@ -54,7 +54,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (error) throw error;
 
     logSafe('admin-producto-stock', { productoId: id, antes: antes.stock, despues: stock, por: session.user?.id ?? null });
-    revalidarCatalogo();
+    await revalidarFichas([id]);
 
     const precio = precioDeVenta(p);
     const disponible = esComprable({ precio, stock: p.stock, solo_cotizar: p.solo_cotizar, activo: p.activo });

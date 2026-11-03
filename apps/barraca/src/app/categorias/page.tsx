@@ -7,7 +7,9 @@ import { COBERTURA_CORTA } from "@/lib/cobertura";
 
 // Estática con refresco horario: toma cambios de imagen/nombre de la base
 // sin esperar un deploy.
-export const revalidate = 3600;
+// Nov-2026: 1 día (antes 1 h). Los cambios de catálogo revalidan al instante
+// (lib/revalidar.ts); la hora extra sólo gastaba CPU de Vercel.
+export const revalidate = 86400;
 type BarracaCategoriaRow = Pick<
   Database['public']['Tables']['barraca_categorias']['Row'],
   'id' | 'nombre' | 'slug' | 'imagen' | 'padre_id'

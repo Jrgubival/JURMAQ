@@ -40,7 +40,11 @@ import { describir, especificaciones } from '@/lib/ficha';
 // al guardar un producto: el que cambió se refresca al instante y el resto no
 // se toca. Si un precio se ve viejo en el sitio, el bug está en que falta el
 // revalidatePath en el endpoint que lo editó, no acá.
-export const revalidate = 86400;
+//
+// Nov-2026: techo de 7 días. Con 24 h los bots volvían a generar las ~2.000
+// fichas cada día y eso agotó la CPU del plan Hobby. Todo cambio de precio,
+// stock, foto, combo o promoción pasa por un endpoint que revalida.
+export const revalidate = 604800;
 
 // Sin generateStaticParams la ruta quedaba DINÁMICA (ƒ en el build): el
 // revalidate de arriba no tenía efecto y cada visita, bot y prefetch
@@ -195,16 +199,6 @@ export default async function ProductoPage({
 
   if (!producto) notFound();
 
-  let categoria: CategoriaRow | undefined = undefined;
-  if (producto.categoria_id) {
-    const { data: cat } = await supabasePublic
-      .from('barraca_categorias')
-      .select('id, nombre, slug')
-      .eq('id', producto.categoria_id)
-      .single();
-    if (cat) categoria = cat as CategoriaRow;
-  }
-
   // Hermanas de familia: la misma pieza en otra medida.
   //
   // El ancla de cada familia es la variante de menor id y tiene
@@ -213,15 +207,50 @@ export default async function ProductoPage({
   // anterior sólo pedía `.eq('producto_padre_id', parentId)`, así que desde
   // una variante hija nunca aparecía el ancla, y estando parada en el ancla
   // no aparecía ninguna — con la columna vacía, el bloque no se dibujó nunca.
-  let variantes: VarianteRow[] = [];
   const anclaId = producto.producto_padre_id || producto.id;
-  const { data: varData } = await supabasePublic
-    .from('barraca_productos')
-    .select('id, nombre, slug, precio, stock, medida')
-    .eq('activo', true)
-    .or(`producto_padre_id.eq.${anclaId},id.eq.${anclaId}`)
-    .order('id');
-  variantes = (varData || []) as VarianteRow[];
+
+  // Todo lo que depende sólo del producto va en paralelo. Antes eran ~8
+  // consultas en fila: ~2 s por ficha generada, y las fichas fueron el 53% del
+  // tiempo de funciones de la cuenta de Vercel en oct-2026 (bloqueo del plan
+  // Hobby el 03-11-2026).
+  const [categoria, variantes, promoMapOrNull, combosMap, relacionados, ratingRow] = await Promise.all([
+    producto.categoria_id
+      ? Promise.resolve(
+          supabasePublic.from('barraca_categorias').select('id, nombre, slug').eq('id', producto.categoria_id).single(),
+        ).then((r) => (r.data as CategoriaRow | null) ?? undefined)
+      : Promise.resolve(undefined),
+    Promise.resolve(
+      supabasePublic
+        .from('barraca_productos')
+        .select('id, nombre, slug, precio, stock, medida')
+        .eq('activo', true)
+        .or(`producto_padre_id.eq.${anclaId},id.eq.${anclaId}`)
+        .order('id'),
+    ).then((r) => (r.data || []) as VarianteRow[]),
+    getActiveCategoryDiscountMap().catch(() => null),
+    combosDe([producto.id]),
+    // Related products (random order via Supabase -- not natively supported, so we just get recent)
+    Promise.resolve(
+      supabasePublic
+        .from('barraca_productos')
+        .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
+        .eq('categoria_id', producto.categoria_id)
+        .eq('activo', true)
+        .gt('stock', 0)
+        .gt('precio', 0)
+        .neq('id', producto.id)
+        .order('stock', { ascending: false })
+        .limit(12),
+    ).then((r) => r.data),
+    // Sin reviews / vista no disponible → null y no se emite aggregateRating.
+    Promise.resolve(
+      supabasePublic
+        .from('barraca_productos_rating')
+        .select('total_reviews, rating_promedio')
+        .eq('producto_id', producto.id)
+        .maybeSingle(),
+    ).then((r) => r.data, () => null),
+  ]);
 
   // Mirror the listing-page promo logic: any active promo on this product's
   // category (or parent category, via cascade) applies, regardless of whether
@@ -231,7 +260,7 @@ export default async function ProductoPage({
   let dailyPromoTitle: string | null = null;
   let promoPrecioDescuento: number | null = null;
   try {
-    const promoMap = await getActiveCategoryDiscountMap();
+    const promoMap = promoMapOrNull ?? new Map<number, number>();
     const discountPct = producto.categoria_id != null ? promoMap.get(producto.categoria_id) : undefined;
     if (discountPct && discountPct > 0 && producto.precio > 0) {
       dailyPromoDiscount = discountPct;
@@ -259,20 +288,9 @@ export default async function ProductoPage({
     precioResuelto.precioFinal,
     precioResuelto.precioTachado,
   );
-  const combo = vista.disponible ? comboValido((await combosDe([producto.id])).get(producto.id), vista.precioWeb) : null;
+  const combo = vista.disponible ? comboValido(combosMap.get(producto.id), vista.precioWeb) : null;
   promoPrecioDescuento = precioResuelto.tipo === 'promo_dia' ? precioResuelto.precioFinal : null;
 
-  // Related products (random order via Supabase -- not natively supported, so we just get recent)
-  const { data: relacionados } = await supabasePublic
-    .from('barraca_productos')
-    .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
-    .eq('categoria_id', producto.categoria_id)
-    .eq('activo', true)
-    .gt('stock', 0)
-    .gt('precio', 0)
-    .neq('id', producto.id)
-    .order('stock', { ascending: false })
-    .limit(12);
   // FIX (audit jun-2026): aplicar la promo de categoría a los relacionados para
   // que muestren el MISMO precio normal+oferta que la ficha (antes mostraban el
   // precio lleno → inconsistencia $3.990 vs $3.791 de tu captura).
@@ -288,11 +306,6 @@ export default async function ProductoPage({
   // hay reviews, NO se emite (política de Google: prohibido inventar ratings).
   let aggregateRating: { ratingValue: number; reviewCount: number } | null = null;
   try {
-    const { data: ratingRow } = await supabasePublic
-      .from('barraca_productos_rating')
-      .select('total_reviews, rating_promedio')
-      .eq('producto_id', producto.id)
-      .maybeSingle();
     if (ratingRow && Number(ratingRow.total_reviews) > 0 && ratingRow.rating_promedio != null) {
       aggregateRating = {
         ratingValue: Math.round(Number(ratingRow.rating_promedio) * 10) / 10,

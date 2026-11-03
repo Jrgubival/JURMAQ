@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidarFichasDePedido } from '@/lib/revalidar';
 import { z, parseBody } from '@jurmaq/shared/validation';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
@@ -239,6 +240,7 @@ export async function POST(request: NextRequest) {
       // pedido se cancela o no se aprueba (barraca_pedido_cerrar).
       try {
         await store.reservarStock(pedido.numero);
+        await revalidarFichasDePedido(pedido.items);
       } catch (e) {
         logSafeError('pedido-reservar-stock-error', { numero: pedido.numero, error: String(e) });
       }
