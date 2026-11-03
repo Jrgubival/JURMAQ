@@ -67,6 +67,9 @@ const nextConfig: NextConfig = {
   // /login/credenciales. 307 (no permanente) por si algún día vuelven.
   async redirects() {
     return [
+      // Fichas duplicadas que se ocultaron (Jorge, 03-11-2026): llevan a la que queda.
+      { source: "/producto/angulo-lam-40x40-en-3mm-x-6mts-127", destination: "/producto/angulo-lam-40x40-en-3mm-x-6mts-126", permanent: true },
+      { source: "/producto/fierro-a-63-18mm-x-6-mt-estriado-1-99kg-675", destination: "/producto/fe-estriado-a63-18-mm-x-6-0-m-667", permanent: true },
       {
         source: "/cuenta/login",
         has: [{ type: "query", key: "source", value: "admin" }],
