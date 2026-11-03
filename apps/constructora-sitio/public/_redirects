@@ -1,0 +1,15 @@
+# Comunas sin obra documentada: siguen los 301 que hacía el middleware.
+/obras-civiles-en/molina /servicios 301
+/obras-civiles-en/sagrada-familia /servicios 301
+/obras-civiles-en/rauco /servicios 301
+/obras-civiles-en/talca /servicios 301
+/obras-civiles-en/san-javier /servicios 301
+/obras-civiles-en/constitucion /servicios 301
+# El portafolio ubica a Iansagro en Curicó. Revisar si Jorge confirma Linares.
+/obras-civiles-en/linares /obras-civiles-en/curico 301
+
+# Pendiente del OK de Jorge: mover el acceso a jurmaq.cl.
+# /cuenta/* https://jurmaq.cl/cuenta/:splat 302
+# /login https://jurmaq.cl/login 302
+# /contrato/* https://jurmaq.cl/contrato/:splat 302
+# /admin/* https://jurmaq.cl/admin/:splat 302

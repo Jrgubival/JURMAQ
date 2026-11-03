@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // constructora.jurmaq.cl: solo assets estáticos, sin Worker que ejecute código.
+  // El dominio se agrega cuando Jorge dé el OK de publicar.
+  "name": "constructora-sitio",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./out", "html_handling": "auto-trailing-slash", "not_found_handling": "404-page" },
+  "workers_dev": true
+}

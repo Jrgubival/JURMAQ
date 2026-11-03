@@ -1,0 +1,66 @@
+{
+  "alero-andamio": {
+    "h": 1280,
+    "w": 960
+  },
+  "alero-bodega": {
+    "h": 960,
+    "w": 1280
+  },
+  "alero-lateral": {
+    "h": 575,
+    "w": 1280
+  },
+  "batcheo-interior": {
+    "h": 960,
+    "w": 1280
+  },
+  "batcheo-izado": {
+    "h": 1156,
+    "w": 650
+  },
+  "batcheo-pasarela": {
+    "h": 1156,
+    "w": 650
+  },
+  "batcheo-silo": {
+    "h": 1156,
+    "w": 650
+  },
+  "revestimiento-avance": {
+    "h": 960,
+    "w": 1280
+  },
+  "revestimiento-brazo": {
+    "h": 960,
+    "w": 1280
+  },
+  "revestimiento-fachada": {
+    "h": 1280,
+    "w": 960
+  },
+  "silos-armadura": {
+    "h": 960,
+    "w": 1280
+  },
+  "silos-excavacion": {
+    "h": 960,
+    "w": 1280
+  },
+  "silos-fundacion": {
+    "h": 960,
+    "w": 1280
+  },
+  "silos-general": {
+    "h": 960,
+    "w": 1280
+  },
+  "silos-moldaje": {
+    "h": 780,
+    "w": 1040
+  },
+  "silos-pedestal": {
+    "h": 1280,
+    "w": 960
+  }
+}
