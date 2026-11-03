@@ -70,6 +70,8 @@ const ALLOWED_HOSTS = new Set([
   'www.jurmaq.cl',
   'barraca.jurmaq.cl',
   'constructora.jurmaq.cl',
+  'rental.jurmaq.cl',
+  'jurmaq-rental.jrgubival.workers.dev',
   'jurmaq-app.vercel.app',
   'localhost:3000',
   'localhost',
