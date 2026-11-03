@@ -23,7 +23,7 @@ export default function Foto({
       alt={foto.alt}
       loading={prioridad ? "eager" : "lazy"}
       fetchPriority={prioridad ? "high" : undefined}
-      decoding="async"
+      decoding={prioridad ? "sync" : "async"}
     />
   );
 }

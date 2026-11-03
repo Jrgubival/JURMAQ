@@ -56,9 +56,9 @@ export default async function PaginaServicio({ params }: Props) {
         <h1>{s.nombre}</h1>
         <p className="bajada">{s.intro}</p>
       </div>
-      <section className="seccion" style={{ paddingTop: 0 }}>
+      <section className="seccion">
         <div className="contenedor">
-          <h2 style={{ marginBottom: 14 }}>Qué incluye</h2>
+          <h2 className="sub">Qué incluye</h2>
           <ul className="lista">
             {s.incluye.map((i) => (
               <li key={i}>{i}</li>
@@ -69,7 +69,7 @@ export default async function PaginaServicio({ params }: Props) {
       {obras.length > 0 && (
         <section className="seccion">
           <div className="contenedor">
-            <h2 style={{ marginBottom: 14 }}>Obras de este servicio</h2>
+            <h2 className="sub">Obras de este servicio</h2>
             <div className="filas">
               {obras.map((o) => (
                 <FilaObra key={o.slug} obra={o} />

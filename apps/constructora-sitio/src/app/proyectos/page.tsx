@@ -24,7 +24,7 @@ export default function Proyectos() {
         <h1>Proyectos</h1>
         <p className="bajada">Obras ejecutadas por JURMAQ dentro de plantas en operación.</p>
       </div>
-      <section className="seccion" style={{ paddingTop: 0 }}>
+      <section className="seccion">
         <div className="contenedor filas">
           {OBRAS_CON_FOTO.map((o) => (
             <FilaObra key={o.slug} obra={o} />
@@ -33,13 +33,13 @@ export default function Proyectos() {
       </section>
       <section className="seccion">
         <div className="contenedor">
-          <h2 style={{ marginBottom: 14 }}>Otros clientes y obras</h2>
+          <h2 className="sub">Otros clientes y obras</h2>
           <div className="filas">
             {OBRAS_SIN_FOTO.map((o) => (
               <FilaObra key={o.slug} obra={o} />
             ))}
           </div>
-          <ul className="lista" style={{ marginTop: 28 }}>
+          <ul className="lista lista-separada">
             {OTRAS_OBRAS.map((t) => (
               <li key={t}>{t}</li>
             ))}
@@ -49,7 +49,7 @@ export default function Proyectos() {
       </section>
       <section className="seccion">
         <div className="contenedor">
-          <h2 style={{ marginBottom: 14 }}>Contratos por cliente</h2>
+          <h2 className="sub">Contratos por cliente</h2>
           <table className="tabla">
             <caption>Montos aproximados acumulados por cliente</caption>
             <thead>

@@ -7,7 +7,7 @@ import JsonLd from "@/components/JsonLd";
 import Migas from "@/components/Migas";
 import { ORGANIZACION_ID, url } from "@/data/empresa";
 import medidas from "@/data/fotos.json";
-import { getObra, OBRAS } from "@/data/obras";
+import { getObra, OBRAS, type FotoObra } from "@/data/obras";
 import { getServicio } from "@/data/servicios";
 import { getZona } from "@/data/zonas";
 
@@ -44,6 +44,9 @@ export default async function PaginaObra({ params }: Props) {
   const ruta = `/proyectos/${o.slug}`;
   const servicios = o.servicios.flatMap((s) => getServicio(s) ?? []);
   const zona = o.zona ? getZona(o.zona) : undefined;
+  // Tres fotos verticales van en una fila; si se mezclan, todas en 4:3.
+  const resto = o.fotos.slice(1);
+  const esVertical = (f: FotoObra) => medidas[f.nombre].h > medidas[f.nombre].w;
   return (
     <>
       <JsonLd
@@ -72,7 +75,7 @@ export default async function PaginaObra({ params }: Props) {
         <h1>{o.titulo}</h1>
         <p className="bajada">{o.resumen}</p>
       </div>
-      <section className="seccion" style={{ paddingTop: 0 }}>
+      <section className="seccion">
         <div className="contenedor dos-columnas">
           <dl className="ficha">
             <div>
@@ -113,10 +116,10 @@ export default async function PaginaObra({ params }: Props) {
             </div>
           </dl>
           <div>
-            <h2 style={{ fontSize: "1.3rem", marginBottom: 10 }}>Servicios</h2>
+            <h2 className="sub sub-chica">Servicios</h2>
             <ul>
               {servicios.map((s) => (
-                <li key={s.slug} style={{ paddingBlock: 3 }}>
+                <li key={s.slug} className="item-corto">
                   <Link className="enlace" href={`/servicios/${s.slug}`}>
                     {s.nombre}
                   </Link>
@@ -130,9 +133,8 @@ export default async function PaginaObra({ params }: Props) {
         <section className="seccion">
           <div className="contenedor galeria">
             {o.fotos.map((f, i) => {
-              const { w, h } = medidas[f.nombre];
               return (
-                <figure key={f.nombre} className={i > 0 && h > w ? "vertical" : undefined}>
+                <figure key={f.nombre} className={resto.every(esVertical) && i > 0 ? "vertical" : undefined}>
                   <Foto foto={f} sizes={i === 0 ? "(max-width: 1212px) 100vw, 1180px" : "(max-width: 860px) 100vw, 590px"} prioridad={i === 0} />
                 </figure>
               );

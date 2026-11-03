@@ -46,9 +46,9 @@ export default async function PaginaZona({ params }: Props) {
         <h1>Obras civiles e industriales en {z.nombre}</h1>
         <p className="bajada">{z.intro}</p>
       </div>
-      <section className="seccion" style={{ paddingTop: 0 }}>
+      <section className="seccion">
         <div className="contenedor">
-          <h2 style={{ marginBottom: 14 }}>Obras en {z.nombre}</h2>
+          <h2 className="sub">Obras en {z.nombre}</h2>
           <div className="filas">
             {obras.map((o) => (
               <FilaObra key={o.slug} obra={o} />
@@ -58,7 +58,7 @@ export default async function PaginaZona({ params }: Props) {
       </section>
       <section className="seccion">
         <div className="contenedor">
-          <h2 style={{ marginBottom: 14 }}>Servicios ejecutados en {z.nombre}</h2>
+          <h2 className="sub">Servicios ejecutados en {z.nombre}</h2>
           <div className="indice">
             {servicios.map((s) => (
               <Link key={s.slug} href={`/servicios/${s.slug}`}>

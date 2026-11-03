@@ -43,11 +43,11 @@ export default function Nosotros() {
           y del Maule.
         </p>
       </div>
-      <section className="seccion" style={{ paddingTop: 0 }}>
+      <section className="seccion">
         <div className="contenedor dos-columnas">
           <div>
-            <h2 style={{ marginBottom: 6 }}>Para mandantes y licitaciones</h2>
-            <p style={{ marginBottom: 14 }}>
+            <h2 className="sub">Para mandantes y licitaciones</h2>
+            <p className="sub">
               Trabajamos desde 2000 con equipos que incluyen prevencionista de riesgos, supervisores y administrador de
               obra.
             </p>
@@ -61,8 +61,8 @@ export default function Nosotros() {
             </dl>
           </div>
           <div>
-            <h2 style={{ marginBottom: 14 }}>Cómo trabajamos</h2>
-            <ol className="lista" style={{ margin: 0, paddingLeft: 0, listStylePosition: "inside" }}>
+            <h2 className="sub">Cómo trabajamos</h2>
+            <ol className="lista lista-numerada">
               {PROCESO.map((p) => (
                 <li key={p}>{p}</li>
               ))}
@@ -91,7 +91,7 @@ export default function Nosotros() {
             </div>
           </dl>
           <div>
-            <h2 style={{ marginBottom: 6 }}>Clientes</h2>
+            <h2 className="sub">Clientes</h2>
             <LogosClientes />
           </div>
         </div>

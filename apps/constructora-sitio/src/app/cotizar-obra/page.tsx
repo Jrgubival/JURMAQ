@@ -26,7 +26,7 @@ export default function CotizarObra() {
           <a href={EMPRESA.whatsapp}>WhatsApp</a>.
         </p>
       </div>
-      <section className="seccion" style={{ paddingTop: 0 }}>
+      <section className="seccion">
         <div className="contenedor">
           <FormularioObra />
         </div>

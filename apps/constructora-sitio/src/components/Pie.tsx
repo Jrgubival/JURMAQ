@@ -42,7 +42,7 @@ export default function Pie() {
                 <a href="https://jurmaq.cl/maquinarias">Arriendo de maquinaria</a>
               </li>
             </ul>
-            <h2 style={{ marginTop: 16 }}>Zonas</h2>
+            <h2 className="pie-segundo">Zonas</h2>
             <ul>
               {ZONAS.map((z) => (
                 <li key={z.slug}>

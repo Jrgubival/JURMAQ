@@ -70,10 +70,26 @@ export default function Inicio() {
               </Link>
             </div>
           </div>
-          <figure className="portada-foto" style={{ margin: 0 }}>
+          <figure className="portada-foto">
             <Foto foto={principal.fotos[0]} sizes="(max-width: 1212px) 100vw, 1180px" prioridad />
-            <figcaption className="pie-foto">
-              {principal.titulo}, {principal.mandante}, {principal.comuna}
+            <figcaption className="rotulo">
+              <dl>
+                <div>
+                  <dt>Obra</dt>
+                  <dd>{principal.titulo}</dd>
+                </div>
+                <div>
+                  <dt>Mandante</dt>
+                  <dd>{principal.mandante}</dd>
+                </div>
+                <div>
+                  <dt>Comuna</dt>
+                  <dd>{principal.comuna}</dd>
+                </div>
+              </dl>
+              <Link href={`/proyectos/${principal.slug}`} className="enlace">
+                Ver ficha
+              </Link>
             </figcaption>
           </figure>
           <dl className="tira">
@@ -122,7 +138,7 @@ export default function Inicio() {
               </Link>
             ))}
           </div>
-          <p className="pie-foto" style={{ marginTop: 16 }}>
+          <p className="pie-foto nota-zonas">
             Obras en{" "}
             {ZONAS.map((z, i) => (
               <span key={z.slug}>

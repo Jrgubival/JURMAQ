@@ -24,7 +24,7 @@ export default function Servicios() {
         <h1>Servicios</h1>
         <p className="bajada">Obras civiles, maestranza y montaje para plantas en operación.</p>
       </div>
-      <section className="seccion" style={{ paddingTop: 0 }}>
+      <section className="seccion">
         <div className="contenedor indice">
           {SERVICIOS.map((s) => (
             <Link key={s.slug} href={`/servicios/${s.slug}`}>
