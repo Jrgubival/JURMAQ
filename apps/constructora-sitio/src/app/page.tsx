@@ -70,9 +70,9 @@ export default function Inicio() {
             <Link href="/proyectos" className="boton">
               Ver proyectos
             </Link>
-            <Link href="/cotizar-obra" className="boton boton-claro">
-              Cotizar obra
-            </Link>
+            <a href={EMPRESA.whatsapp} className="boton boton-claro">
+              WhatsApp
+            </a>
           </div>
         </div>
       </section>

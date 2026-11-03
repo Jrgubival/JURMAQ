@@ -13,6 +13,9 @@ export default function Cierre() {
           <Link href="/cotizar-obra" className="boton">
             Cotizar obra
           </Link>
+          <a href={EMPRESA.whatsapp} className="boton boton-claro">
+            WhatsApp
+          </a>
           <a href={`tel:${EMPRESA.telefono}`} className="boton boton-claro">
             {EMPRESA.telefonoVisible}
           </a>

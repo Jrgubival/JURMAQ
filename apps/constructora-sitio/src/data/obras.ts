@@ -83,7 +83,7 @@ export const OBRAS: Obra[] = [
     titulo: "Expansión de batcheo y molienda",
     tituloSeo: "Expansión de batcheo y molienda en Teno",
     resumen:
-      "Izado y posicionamiento de tanques industriales de polietileno y obras interiores en una planta en operación.",
+      "Izado y posicionamiento de tanques industriales de polietileno y obras interiores en una planta en operación en Teno, Región del Maule.",
     alcance: [
       "Izado y posicionamiento de tanques",
       "Instalaciones interiores",
@@ -118,7 +118,7 @@ export const OBRAS: Obra[] = [
     slug: "revestimiento-ampliacion-bodega-teno",
     titulo: "Revestimiento de ampliación de bodega",
     tituloSeo: "Revestimiento de ampliación de bodega, Teno",
-    resumen: "Revestimiento exterior de la ampliación de bodega en planta Teno, con brazo articulado y la planta en operación.",
+    resumen: "Revestimiento exterior de la ampliación de bodega en la planta de Teno, Región del Maule, con brazo articulado y la planta en operación.",
     alcance: ["Revestimiento de fachada", "Trabajo en altura con brazo articulado"],
     servicios: ["cubiertas-y-revestimientos-industriales", "bodegas-y-ampliaciones-industriales"],
     fotos: [
@@ -139,7 +139,7 @@ export const OBRAS: Obra[] = [
     periodo: "Desde 2000",
     m2: null,
     resumen:
-      "Bodega de cubas, traslado de cubas entre plantas, portería central, mejoramiento de riles y mantención permanente.",
+      "Bodega de cubas, traslado de cubas entre plantas, portería central, mejoramiento de riles y mantención permanente en Curicó.",
     alcance: [
       "Bodega de cubas, segunda etapa",
       "Traslado de 14 cubas de 50.000 litros entre plantas",
@@ -167,7 +167,7 @@ export const OBRAS: Obra[] = [
     region: "Región del Maule",
     periodo: "Desde 2002",
     m2: null,
-    resumen: "Sala eléctrica, muro de contención, cierres perimetrales, pavimentos y veredas. Contrato activo.",
+    resumen: "Sala eléctrica, muro de contención, cierres perimetrales, pavimentos y veredas en Teno, cliente desde 2002. Contrato activo.",
     alcance: ["Sala eléctrica", "Muro de contención", "Cierres perimetrales", "Pavimentos y veredas"],
     servicios: ["fundaciones-y-obra-civil-industrial", "pavimentos-industriales"],
     zona: "teno",

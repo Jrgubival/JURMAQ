@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, type KeyboardEvent } from "react";
 import Foto from "@/components/Foto";
 import type { FotoObra } from "@/data/obras";
 
@@ -8,11 +8,12 @@ import type { FotoObra } from "@/data/obras";
 export default function GaleriaObra({ fotos, titulo }: { fotos: FotoObra[]; titulo: string }) {
   const visor = useRef<HTMLDialogElement>(null);
   const pista = useRef<HTMLDivElement>(null);
-  const [actual, setActual] = useState(0);
+  // Ref y no estado: varias pulsaciones seguidas no deben leer un índice viejo.
+  const actual = useRef(0);
 
   function ir(indice: number, suave = true) {
     const destino = (indice + fotos.length) % fotos.length;
-    setActual(destino);
+    actual.current = destino;
     pista.current?.children[destino]?.scrollIntoView({ behavior: suave ? "smooth" : "instant", inline: "center" });
   }
 
@@ -23,16 +24,28 @@ export default function GaleriaObra({ fotos, titulo }: { fotos: FotoObra[]; titu
 
   function alDeslizar() {
     const p = pista.current;
-    if (p) setActual(Math.round(p.scrollLeft / p.clientWidth));
+    if (p) actual.current = Math.round(p.scrollLeft / p.clientWidth);
+  }
+
+  function alPulsarTecla(e: KeyboardEvent) {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    // Sin esto, la pista se desplaza sola y pelea con el cambio de foto.
+    e.preventDefault();
+    ir(actual.current + (e.key === "ArrowRight" ? 1 : -1));
   }
 
   return (
     <>
       <div className="galeria">
         {fotos.map((f, i) => (
-          <button key={f.nombre} type="button" className="galeria-foto" onClick={() => abrir(i)}>
+          <button
+            key={f.nombre}
+            type="button"
+            className="galeria-foto"
+            aria-label={`Ampliar foto: ${f.alt}`}
+            onClick={() => abrir(i)}
+          >
             <Foto foto={f} sizes="(max-width: 860px) 100vw, 50vw" />
-            <span className="sr">Ampliar: {f.alt}</span>
           </button>
         ))}
       </div>
@@ -40,12 +53,9 @@ export default function GaleriaObra({ fotos, titulo }: { fotos: FotoObra[]; titu
         ref={visor}
         className="visor"
         aria-label={`Fotos de ${titulo}`}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowRight") ir(actual + 1);
-          if (e.key === "ArrowLeft") ir(actual - 1);
-        }}
+        onKeyDown={alPulsarTecla}
       >
-        <div className="visor-pista" ref={pista} onScrollEnd={alDeslizar}>
+        <div className="visor-pista" ref={pista} tabIndex={-1} onScrollEnd={alDeslizar}>
           {fotos.map((f) => (
             <figure key={f.nombre}>
               <Foto foto={f} sizes="100vw" />
@@ -55,10 +65,10 @@ export default function GaleriaObra({ fotos, titulo }: { fotos: FotoObra[]; titu
         </div>
         {fotos.length > 1 && (
           <div className="visor-controles">
-            <button type="button" onClick={() => ir(actual - 1)}>
+            <button type="button" onClick={() => ir(actual.current - 1)}>
               Anterior
             </button>
-            <button type="button" onClick={() => ir(actual + 1)}>
+            <button type="button" onClick={() => ir(actual.current + 1)}>
               Siguiente
             </button>
           </div>

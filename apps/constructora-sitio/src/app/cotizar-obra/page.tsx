@@ -35,7 +35,9 @@ export default function CotizarObra() {
             <div>
               <dt>WhatsApp</dt>
               <dd>
-                <a href={EMPRESA.whatsapp}>Escribir por WhatsApp</a>
+                <a href={EMPRESA.whatsapp} className="boton">
+                  Escribir por WhatsApp
+                </a>
               </dd>
             </div>
             <div>
