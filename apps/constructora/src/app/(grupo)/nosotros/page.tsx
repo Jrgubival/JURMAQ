@@ -33,8 +33,8 @@ const FICHAS: { negocio: Negocio; titulo: string; texto: string; foto: string; a
     negocio: 'constructora',
     titulo: 'Constructora',
     texto: 'Obras civiles e industriales en la Región del Maule.',
-    foto: '/images/proyectos/nestle-teno-fundaciones-silos/04-silos-final.jpg',
-    alt: 'Silos terminados en la planta Nestlé de Teno',
+    foto: '/images/proyectos/nestle-teno-fundaciones-silos/01-fundaciones.jpg',
+    alt: 'Fundación de silos en construcción en la planta Nestlé de Teno',
   },
 ];
 

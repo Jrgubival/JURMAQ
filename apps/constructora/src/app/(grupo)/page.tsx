@@ -60,11 +60,11 @@ export default function InicioGrupo() {
         </div>
 
         <ul className="h-puertas">
-          {ENTRADAS.map((e, i) => (
+          {ENTRADAS.map((e) => (
             <li key={e.negocio} data-marca={e.negocio}>
               <a className="h-puerta" href={NEGOCIOS[e.negocio].url}>
                 <div className="h-puerta__foto">
-                  <Image src={e.foto} alt={e.alt} fill sizes="(min-width: 900px) 50vw, 100vw" priority={i === 0} />
+                  <Image src={e.foto} alt={e.alt} fill sizes="(min-width: 900px) 50vw, 100vw" priority />
                 </div>
                 <div className="h-puerta__panel">
                   <h2 className="h-puerta__nombre">{e.nombre}</h2>
