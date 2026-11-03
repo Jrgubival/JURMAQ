@@ -8,6 +8,8 @@ _tmp_docs_maquinaria
 instagram-strategy
 docs
 *.pdf
+# Catálogo público de fierro (barraca.jurmaq.cl/catalogo-fierro.pdf)
+!apps/barraca/public/catalogo-fierro.pdf
 faviconbarraca.png
 faviconjurmaq.png
 *.md
