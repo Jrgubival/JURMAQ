@@ -105,7 +105,7 @@ export default function Inicio() {
                 <Link href={`/servicios/${s.slug}`}>
                   <span className="numero">{String(i + 1).padStart(2, "0")}</span>
                   <strong>{s.nombre}</strong>
-                  <span className="detalle">{s.incluye.slice(0, 3).join(", ")}.</span>
+                  <span className="detalle">{s.resumen}</span>
                   <Flecha />
                 </Link>
               </li>

@@ -12,6 +12,8 @@ export interface Servicio {
   tituloSeo: string;
   descripcion: string;
   intro: string;
+  /** Una línea para la lista de especialidades. */
+  resumen: string;
   incluye: string[];
   /** Foto de cabecera, en `public/obras`. */
   foto: keyof typeof medidas;
@@ -20,6 +22,7 @@ export interface Servicio {
 export const SERVICIOS: Servicio[] = [
   {
     slug: "fundaciones-y-obra-civil-industrial",
+    resumen: "Fundaciones especiales, hormigón armado y muros de contención.",
     foto: "silos-moldaje",
     nombre: "Fundaciones y obra civil industrial",
     corto: "Fundaciones y obra civil",
@@ -37,6 +40,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "estructuras-metalicas-y-montaje-industrial",
+    resumen: "Fabricación en maestranza y montaje de vigas, columnas y pasarelas.",
     foto: "batcheo-pasarela",
     nombre: "Estructuras metálicas y maestranza",
     corto: "Estructuras y maestranza",
@@ -55,6 +59,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "montaje-e-izado-de-equipos",
+    resumen: "Izado y posicionamiento de silos, estanques y equipos.",
     foto: "batcheo-izado",
     nombre: "Montaje e izado de equipos",
     corto: "Montaje e izado",
@@ -73,6 +78,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "bodegas-y-ampliaciones-industriales",
+    resumen: "Bodegas, ampliaciones, cobertizos y aleros.",
     foto: "alero-bodega",
     nombre: "Bodegas y ampliaciones industriales",
     corto: "Bodegas y ampliaciones",
@@ -90,6 +96,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "pavimentos-industriales",
+    resumen: "Pavimentos y veredas dentro de planta.",
     foto: "alero-lateral",
     nombre: "Pavimentos industriales",
     corto: "Pavimentos",
@@ -102,6 +109,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "cubiertas-y-revestimientos-industriales",
+    resumen: "Cambio de cubiertas, revestimientos y cierres perimetrales.",
     foto: "revestimiento-brazo",
     nombre: "Cubiertas y revestimientos industriales",
     corto: "Cubiertas y revestimientos",
@@ -114,6 +122,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "mantencion-industrial-y-refuerzo-estructural",
+    resumen: "Mantención permanente de estructuras e infraestructura.",
     foto: "batcheo-interior",
     nombre: "Mantención industrial",
     corto: "Mantención industrial",
@@ -126,6 +135,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "movimiento-de-tierras-y-preparacion-de-terreno",
+    resumen: "Excavaciones, nivelaciones, compactaciones y demoliciones.",
     foto: "silos-excavacion",
     nombre: "Movimiento de tierras y preparación de terreno",
     corto: "Movimiento de tierras",

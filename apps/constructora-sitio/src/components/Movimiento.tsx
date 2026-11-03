@@ -55,27 +55,6 @@ export default function Movimiento() {
           );
         });
 
-        // Las cifras cuentan una sola vez; el HTML ya trae el valor final.
-        gsap.utils.toArray<HTMLElement>(".montos strong").forEach((el) => {
-          const final = Number(el.textContent?.replace(/\D/g, ""));
-          if (!final) return;
-          const texto = el.textContent ?? "";
-          const cuenta = { valor: 0 };
-          gsap.to(cuenta, {
-            valor: final,
-            duration: 1.2,
-            ease: "power2.out",
-            snap: { valor: 100 },
-            scrollTrigger: { trigger: el, start: "top 90%", once: true },
-            onUpdate: () => {
-              el.textContent = `UF ${cuenta.valor.toLocaleString("es-CL")}+`;
-            },
-            onComplete: () => {
-              el.textContent = texto;
-            },
-          });
-        });
-
         const portada = document.querySelector<HTMLElement>(".hero > img");
         if (portada) {
           gsap.fromTo(
