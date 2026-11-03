@@ -152,7 +152,7 @@ function buildHtml(args: BuildArgs): string {
         </tr>
         <tr>
           <td style="background-color:#0c1d3a;padding:16px 32px;text-align:center;border-radius:0 0 12px 12px;">
-            <p style="margin:0;color:#9ca3af;font-size:12px;">&copy; ${new Date().getFullYear()} JURMAQ Arriendo · Más de 25 años en la Región del Maule</p>
+            <p style="margin:0;color:#9ca3af;font-size:12px;">&copy; ${new Date().getFullYear()} JURMAQ Arriendo · En la Región del Maule desde 2000</p>
           </td>
         </tr>
       </table>
