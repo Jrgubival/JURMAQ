@@ -77,7 +77,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
 
   if (numero) {
     return (
-      <div className="mt-8 max-w-2xl bg-acento p-6 text-[#111]" role="status">
+      <div className="mt-8 max-w-2xl bg-surface-alt p-6 text-ink" role="status">
         <h2 className="text-3xl">Recibimos tu solicitud</h2>
         <p className="mt-2">Tu número es <strong>{numero}</strong>. Te contactamos con la cotización.</p>
       </div>

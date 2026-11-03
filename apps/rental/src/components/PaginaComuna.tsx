@@ -2,7 +2,6 @@ import Link from 'next/link';
 import type { ComunaRental } from '@/data/comunas';
 import { fichaHref, type Maquina } from '@/lib/maquinas';
 import { PrecioCorto } from './Precios';
-import { textoOperador } from './TarjetaMaquina';
 import Foto from './Foto';
 
 /** Flota en el orden que más se pide en esa comuna: distinta en cada página. */
@@ -16,7 +15,7 @@ export function ordenarParaComuna(flota: Maquina[], comuna: ComunaRental): Maqui
 
 export function TrabajosComuna({ comuna, km }: { comuna: ComunaRental; km: number | null }) {
   return (
-    <section className="bg-acento text-[#111]">
+    <section className="bg-surface-alt">
       <div className="mx-auto grid max-w-[1320px] gap-8 px-4 py-14 md:grid-cols-2 md:px-8 md:py-20">
         <div>
           <h2 className="medio">Trabajos típicos en {comuna.nombre}</h2>
@@ -24,7 +23,7 @@ export function TrabajosComuna({ comuna, km }: { comuna: ComunaRental; km: numbe
           {comuna.nota ? <p className="mt-4 text-lg font-medium">{comuna.nota}</p> : null}
         </div>
         <ul>
-          {comuna.trabajos.map((t) => <li key={t} className="border-t-2 border-[#111] py-4 font-titulo text-[clamp(1.375rem,2.4vw,1.875rem)] font-semibold uppercase leading-tight">{t}</li>)}
+          {comuna.trabajos.map((t) => <li key={t} className="border-t border-negro/25 py-4 font-titulo text-[clamp(1.375rem,2.4vw,1.75rem)] font-semibold leading-tight">{t}</li>)}
         </ul>
       </div>
     </section>
@@ -42,14 +41,14 @@ export function FlotaComuna({ flota, titulo }: { flota: Maquina[]; titulo: strin
         <Link href={fichaHref(primera)} prefetch={false} className="tile presionable block">
           <Foto maquina={primera} className="aspect-[4/3]" />
           <h3 className="mt-3 text-3xl">{primera.nombre}</h3>
-          <div className="mt-1 flex flex-wrap gap-x-4 text-ink-soft"><PrecioCorto precios={primera.precios} /><p className="text-sm">{textoOperador(primera.tipo)}</p></div>
+          <div className="mt-1 flex flex-wrap gap-x-4 text-ink-soft"><PrecioCorto precios={primera.precios} /></div>
         </Link>
         <ul className="grid content-start gap-3">
           {resto.map((m) => (
             <li key={m.id}>
               <Link href={fichaHref(m)} prefetch={false} className="tile presionable grid grid-cols-[136px_1fr] items-center gap-4">
                 <Foto maquina={m} className="aspect-[4/3] [&>span]:text-[0.625rem]" />
-                <span><span className="block font-titulo text-xl font-semibold uppercase leading-tight">{m.nombre}</span><PrecioCorto precios={m.precios} /></span>
+                <span><span className="block font-titulo text-xl font-semibold leading-tight">{m.nombre}</span><PrecioCorto precios={m.precios} /></span>
               </Link>
             </li>
           ))}

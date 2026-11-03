@@ -97,7 +97,7 @@ export default async function Ficha({ params }: Props) {
               <p className="mt-4"><Link href={`/arriendo/${tipo.slug}`} prefetch={false} className="font-medium underline underline-offset-4">Arriendo de {tipo.nombrePlural.toLowerCase()} en el Maule</Link></p>
             </div>
             <ul className="space-y-3 text-lg">
-              {tipo.casosDeUso.map((c) => <li key={c} className="border-t border-[#111]/20 pt-3">{c}</li>)}
+              {tipo.casosDeUso.map((c) => <li key={c} className="border-t border-negro/20 pt-3">{c}</li>)}
             </ul>
           </div>
         </section>
@@ -106,7 +106,7 @@ export default async function Ficha({ params }: Props) {
       {otras.length > 0 ? (
         <section className="mx-auto max-w-[1320px] py-14 md:px-8 md:py-20">
           <h2 className="medio mb-6 px-4 md:px-0">Otras máquinas</h2>
-          <div className="grid gap-1 md:grid-cols-3">
+          <div className="grid gap-4 px-4 md:grid-cols-3 md:px-0">
             {otras.map((x) => <TarjetaMaquina key={x.id} maquina={x} />)}
           </div>
         </section>

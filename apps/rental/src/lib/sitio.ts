@@ -4,7 +4,7 @@
  */
 export const SITIO = {
   url: 'https://rental.jurmaq.cl',
-  nombre: 'JURMAQ Rental',
+  nombre: 'JURMAQ Arriendo',
   marca: 'JURMAQ',
   razonSocial: 'Constructora Jorge Ubilla Rivera E.I.R.L.',
   rut: '76.624.872-1',

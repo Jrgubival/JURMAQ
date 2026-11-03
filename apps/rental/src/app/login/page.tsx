@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import LoginCodigo from './LoginCodigo';
 
 export const metadata: Metadata = {
-  title: 'Acceso · JURMAQ Rental',
+  title: 'Acceso · JURMAQ Arriendo',
   robots: { index: false, follow: false },
 };
 

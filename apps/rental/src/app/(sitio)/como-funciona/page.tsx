@@ -22,7 +22,7 @@ export default function ComoFunciona() {
     <div className="sobre-claro">
       <CabezaPagina migas={[{ nombre: 'Cómo funciona' }]} titulo="Cómo funciona el arriendo" />
       <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-20">
-      <ol className="grid gap-px bg-[#111]/15 md:grid-cols-4">
+      <ol className="grid gap-px bg-negro/15 md:grid-cols-4">
         {PASOS.map((p, i) => (
           <li key={p.t} className="bg-canvas p-5 md:min-h-72">
             <span className="font-titulo text-6xl font-semibold">{i + 1}</span>

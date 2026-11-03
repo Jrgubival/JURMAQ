@@ -57,6 +57,16 @@ function leerPrecios(fila: Record<string, unknown>): PrecioPeriodo[] {
   return [];
 }
 
+/** La flota se cargó sin acentos; la migración lo corrige en la base. */
+function conAcentos(t: string): string {
+  return t
+    .replace(/\bversatil\b/gi, 'versátil')
+    .replace(/\bmultiples\b/gi, 'múltiples')
+    .replace(/\bconstruccion\b/gi, 'construcción')
+    .replace(/\belectric([oa])\b/gi, 'eléctric$1')
+    .replace(/^Camion\b/, 'Camión');
+}
+
 export function leerMaquina(fila: Record<string, unknown>): Maquina {
   const imagenes = Array.isArray(fila.imagenes)
     ? fila.imagenes.filter((f): f is string => typeof f === 'string' && f.length > 0)
@@ -67,7 +77,7 @@ export function leerMaquina(fila: Record<string, unknown>): Maquina {
     id: Number(fila.id),
     nombre: String(fila.nombre ?? '').replace(/^Camion\b/, 'Camión'),
     tipo: String(fila.tipo ?? ''),
-    descripcion: String(fila.descripcion ?? ''),
+    descripcion: conAcentos(String(fila.descripcion ?? '')),
     estado: String(fila.estado ?? ''),
     fotos: imagenes.length > 0 ? imagenes : imagen ? [imagen] : [],
     fotoReferencial: fila.foto_referencial !== false,

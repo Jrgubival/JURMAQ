@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Plus } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, Plus, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import { AccionesContacto, BarraMovil } from '@/components/AccionesContacto';
-import { MosaicoFlota } from '@/components/TarjetaMaquina';
+import { BarraMovil } from '@/components/AccionesContacto';
+import Foto from '@/components/Foto';
+import TarjetaMaquina from '@/components/TarjetaMaquina';
 import { COMUNAS } from '@/data/comunas';
 import { obtenerFlota } from '@/lib/flota';
 import { jsonLdNegocio } from '@/lib/jsonld';
-import { COMUNAS_MAULE, distanciaDesdeBase } from '@/lib/landings';
-import { SITIO } from '@/lib/sitio';
+import { COMUNAS_MAULE } from '@/lib/landings';
+import { SITIO, enlaceWhatsapp } from '@/lib/sitio';
 
 export const revalidate = 2592000;
 
@@ -19,105 +20,139 @@ export const metadata: Metadata = {
 };
 
 const TRABAJOS = [
-  { trabajo: 'Zanjas y fundaciones', tipo: 'retroexcavadora', maquina: 'Retroexcavadora' },
-  { trabajo: 'Excavar donde no cabe otra', tipo: 'miniexcavadora', maquina: 'Miniexcavadora' },
-  { trabajo: 'Cargar y limpiar', tipo: 'minicargador', maquina: 'Minicargador' },
-  { trabajo: 'Mover tierra y áridos', tipo: 'camion-tolva', maquina: 'Camión tolva' },
-  { trabajo: 'Llegar alto y lejos', tipo: 'brazo-articulado', maquina: 'Brazo articulado' },
-  { trabajo: 'Subir en vertical', tipo: 'alzahombre', maquina: 'Alzahombre' },
+  { trabajo: 'Zanjas y fundaciones', tipo: 'retroexcavadora' },
+  { trabajo: 'Excavar en espacios chicos', tipo: 'miniexcavadora' },
+  { trabajo: 'Cargar y limpiar', tipo: 'minicargador' },
+  { trabajo: 'Mover tierra y áridos', tipo: 'camion-tolva' },
+  { trabajo: 'Llegar alto y lejos', tipo: 'brazo-articulado' },
+  { trabajo: 'Subir en vertical', tipo: 'alzahombre' },
+];
+
+// Los seis equipos de la portada, en este orden.
+const DESTACADAS = [1, 2, 5, 3, 4, 6];
+
+const PASOS = [
+  { t: 'Elige la máquina', d: 'Revisa los equipos y sus valores referenciales.' },
+  { t: 'Solicita tu cotización', d: 'Indícanos la comuna, las fechas y cuánto tiempo la necesitas.' },
+  { t: 'Coordina el arriendo', d: 'Confirmamos disponibilidad y traslado, y preparamos el contrato.' },
 ];
 
 const PREGUNTAS = [
-  { q: '¿La máquina viene con operador?', a: 'Retroexcavadora, miniexcavadora y minicargador van con operador, y el camión tolva con conductor. Brazo articulado y plataformas los opera tu personal, con curso vigente.' },
-  { q: '¿El valor incluye traslado?', a: 'No. El traslado se cotiza aparte según la comuna de la obra.' },
+  { q: '¿El arriendo incluye operador?', a: 'Retroexcavadora, miniexcavadora y minicargador van con operador, y el camión tolva con conductor. Brazo articulado y plataformas los opera tu personal, con curso vigente.' },
+  { q: '¿Cómo se calcula el traslado?', a: 'Se cotiza aparte, según el equipo y la comuna de la obra.' },
+  { q: '¿Puedo arrendar por hora o por día?', a: 'Depende de la máquina. Cada ficha muestra sus valores y su mínimo.' },
+  { q: '¿Qué necesito para cotizar?', a: 'La máquina, la comuna de la obra, las fechas y cuánto tiempo la necesitas.' },
   { q: '¿Los valores incluyen IVA?', a: 'No. Son valores netos y referenciales. La cotización detalla neto, IVA y total.' },
-  { q: '¿Dónde arriendan?', a: 'En toda la Región del Maule, desde nuestra base en Maquehua, Curicó.' },
 ];
 
 export default async function Inicio() {
   const flota = await obtenerFlota();
+  const seis = DESTACADAS.flatMap((id) => flota.filter((m) => m.id === id));
   const heroe = flota.find((m) => m.tipo === 'retroexcavadora') ?? flota[0];
+  const camion = flota.find((m) => m.tipo === 'camion') ?? flota[0];
   const texto = 'Hola, quiero cotizar el arriendo de una máquina.';
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdNegocio(COMUNAS_MAULE)) }} />
 
-      <section className="relative isolate flex min-h-[calc(100dvh-68px)] items-end overflow-hidden bg-negro text-white">
+      <section className="relative isolate overflow-hidden bg-negro text-white">
         {heroe?.fotos[0] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={heroe.fotos[0]} alt={heroe.nombre} width={1600} height={1066} fetchPriority="high" className="foto-hero absolute inset-0 -z-20 h-full w-full object-cover object-[60%_50%]" />
+          <div className="relative aspect-[3/2] md:absolute md:inset-y-0 md:right-0 md:-z-10 md:aspect-auto md:w-[62%]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={heroe.fotos[0]} alt={heroe.nombre} width={1600} height={1066} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
+            <div aria-hidden className="absolute inset-0 hidden bg-gradient-to-r from-negro via-negro/30 to-transparent md:block" />
+            {heroe.fotoReferencial ? <span className="absolute bottom-2 right-2 bg-negro/80 px-2 py-1 text-xs">Imagen referencial</span> : null}
+          </div>
         ) : null}
-        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-black/95 via-black/55 to-black/10 md:bg-gradient-to-r md:from-black/90 md:via-black/50 md:to-transparent" />
-        {heroe?.fotoReferencial ? <span className="absolute right-3 top-3 bg-negro/75 px-2 py-1 text-xs">Imagen referencial</span> : null}
-        <div className="mx-auto w-full max-w-[1320px] px-4 pb-24 pt-32 md:px-8 md:pb-20">
-          <h1 className="entra max-w-[13ch] text-[clamp(3.25rem,10vw,8rem)] leading-[1]" style={{ '--i': 0 } as React.CSSProperties}>Maquinaria en arriendo en el Maule</h1>
-          <p className="entra mt-5 max-w-[34ch] text-lg text-white/85 md:text-xl" style={{ '--i': 1 } as React.CSSProperties}>Retroexcavadoras, minicargadores, camión tolva y equipos de altura. Desde {SITIO.anioInicio}.</p>
-          <div className="entra mt-7 hidden md:block" style={{ '--i': 2 } as React.CSSProperties}><AccionesContacto cotizar="/cotizar-arriendo" texto={texto} /></div>
+        <div className="mx-auto max-w-[1320px] px-4 py-9 md:flex md:min-h-[560px] md:flex-col md:justify-center md:px-8 md:py-16">
+          <h1 className="entra max-w-[12ch] text-[clamp(2.75rem,6.6vw,5.25rem)]">Arriendo de maquinaria en el Maule</h1>
+          <p className="entra mt-4 max-w-[36ch] text-lg text-white/85" style={{ '--i': 1 } as React.CSSProperties}>Retroexcavadora, miniexcavadora, minicargador, camión tolva y equipos de altura. Desde {SITIO.anioInicio}.</p>
+          <div className="entra mt-6 hidden flex-wrap gap-3 md:flex" style={{ '--i': 2 } as React.CSSProperties}>
+            <a href="#equipos" className="boton boton-principal">Ver equipos <ArrowRight size={18} weight="bold" aria-hidden /></a>
+            <a href={enlaceWhatsapp(texto)} rel="noopener" className="boton boton-secundario"><WhatsappLogo size={20} aria-hidden /> WhatsApp</a>
+          </div>
         </div>
       </section>
 
-      <section aria-labelledby="trabajo" className="bg-acento text-[#111]">
-        <div className="mx-auto max-w-[1320px] px-4 py-16 md:px-8 md:py-24">
-          <h2 id="trabajo" className="grande revela">¿Qué trabajo tienes?</h2>
-          <ul className="mt-10 grid gap-x-12 md:grid-cols-2">
+      <section id="equipos" aria-labelledby="flota" className="mx-auto max-w-[1320px] scroll-mt-20 px-4 py-12 md:px-8 md:py-16">
+        <h2 id="flota" className="grande">Maquinarias para arrendar</h2>
+        <div className="mt-5">
+          <p className="font-semibold">¿Qué trabajo tienes?</p>
+          <ul className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
             {TRABAJOS.map((t) => (
-              <li key={t.tipo} className="border-t-2 border-[#111]">
-                <Link href={`/arriendo/${t.tipo}`} prefetch={false} className="fila-trabajo presionable flex items-center justify-between gap-4 py-5">
-                  <span>
-                    <span className="block font-titulo text-[clamp(1.625rem,3vw,2.5rem)] font-semibold uppercase leading-tight">{t.trabajo}</span>
-                    <span className="mt-1 block text-[0.9375rem]">{t.maquina}</span>
-                  </span>
-                  <ArrowRight size={30} className="flecha shrink-0" aria-hidden />
-                </Link>
-              </li>
+              <li key={t.tipo} className="shrink-0"><Link href={`/arriendo/${t.tipo}`} prefetch={false} className="chip presionable bg-surface text-negro">{t.trabajo}</Link></li>
             ))}
           </ul>
         </div>
+        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {seis.map((m, i) => <TarjetaMaquina key={m.id} maquina={m} prioridad={i < 2} />)}
+        </div>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[0.9375rem] text-ink-soft">Valores netos + IVA. Consulta disponibilidad, mínimo y traslado.</p>
+          <Link href="/maquinarias" prefetch={false} className="font-semibold text-acento-texto underline underline-offset-4">Ver toda la flota</Link>
+        </div>
       </section>
 
-      <section aria-labelledby="flota" className="mx-auto max-w-[1320px] py-16 md:px-8 md:py-24">
-        <div className="mb-8 flex items-end justify-between gap-4 px-4 md:px-0">
-          <h2 id="flota" className="grande">Flota y valores</h2>
-          <Link href="/maquinarias" prefetch={false} className="mb-2 whitespace-nowrap font-medium underline underline-offset-4">Ver todas</Link>
+      <section aria-labelledby="zona" className="bg-surface-alt">
+        <div className="mx-auto grid max-w-[1320px] items-center gap-8 px-4 py-12 md:grid-cols-2 md:gap-12 md:px-8 md:py-16">
+          {camion ? <Foto maquina={camion} className="aspect-[3/2] rounded-[var(--g-radio)]" /> : null}
+          <div>
+            <h2 id="zona" className="grande">Arriendo de maquinaria en Molina y Curicó</h2>
+            <p className="mt-4 max-w-[52ch] text-lg text-ink-soft">Arrendamos para obras civiles, faenas agrícolas e industriales desde nuestra base en Maquehua, Curicó.</p>
+            <p className="mt-3 max-w-[52ch] text-lg text-ink-soft">Cuéntanos dónde es el trabajo y te cotizamos el equipo y el traslado.</p>
+            <p className="mt-5"><Link href="/arriendo-en/molina" prefetch={false} className="font-semibold underline underline-offset-4">Molina</Link> <span className="px-1 text-ink-muted">y</span> <Link href="/arriendo-en/curico" prefetch={false} className="font-semibold underline underline-offset-4">Curicó</Link></p>
+          </div>
         </div>
-        <MosaicoFlota flota={flota} />
-        <p className="mt-4 px-4 text-sm text-ink-muted md:px-0">Valores referenciales y netos. El traslado se cotiza aparte.</p>
+      </section>
+
+      <section aria-labelledby="pasos" className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-16">
+        <h2 id="pasos" className="grande">Cómo arrendar</h2>
+        <ol className="mt-7 grid gap-6 md:grid-cols-3 md:gap-0 md:divide-x md:divide-hairline">
+          {PASOS.map((p, i) => (
+            <li key={p.t} className="flex gap-4 md:px-8 md:first:pl-0 md:last:pr-0">
+              <span className="font-titulo text-5xl font-semibold leading-none text-acento-texto">{i + 1}</span>
+              <div><h3 className="text-2xl">{p.t}</h3><p className="mt-1 text-ink-soft">{p.d}</p></div>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section aria-labelledby="cobertura" className="bg-negro text-white">
-        <div className="mx-auto max-w-[1320px] px-4 py-16 md:px-8 md:py-24">
-          <h2 id="cobertura" className="grande revela max-w-[14ch]">Toda la Región del Maule</h2>
-          <p className="mt-4 max-w-[46ch] text-lg text-white/75">Arrendamos desde nuestra base en Maquehua, Curicó.</p>
-          <ul className="mt-10 grid grid-cols-2 gap-px bg-white/15 md:grid-cols-4">
-            {COMUNAS.map((c) => {
-              const d = distanciaDesdeBase(c.slug);
-              return (
-                <li key={c.slug} className="bg-negro">
-                  <Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="comuna presionable flex min-h-24 flex-col justify-between p-4">
-                    <span className="font-titulo text-2xl font-semibold uppercase leading-tight">{c.nombre}</span>
-                    {d ? <span className="font-cifra text-sm text-white/60">{d.km} km</span> : null}
-                  </Link>
-                </li>
-              );
-            })}
+        <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-16">
+          <div className="md:flex md:items-end md:justify-between md:gap-8">
+            <div>
+              <h2 id="cobertura" className="grande">Equipos para tu faena en el Maule</h2>
+              <p className="mt-3 text-lg text-white/80">Traslado según la comuna de la obra.</p>
+            </div>
+            <Link href="/arriendo-en/region-del-maule" prefetch={false} className="boton boton-principal mt-5 md:mt-0">Ver cobertura <ArrowRight size={18} weight="bold" aria-hidden /></Link>
+          </div>
+          <ul className="mt-7 flex flex-wrap gap-2">
+            {COMUNAS.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="chip comuna presionable">{c.nombre}</Link></li>)}
           </ul>
         </div>
       </section>
 
-      <section aria-labelledby="preguntas" className="sobre-claro mx-auto grid max-w-[1320px] gap-10 px-4 py-16 md:grid-cols-[1fr_1.4fr] md:px-8 md:py-24">
+      <section aria-labelledby="preguntas" className="sobre-claro mx-auto grid max-w-[1320px] gap-8 px-4 py-12 md:grid-cols-[1fr_1.8fr] md:px-8 md:py-16">
+        <h2 id="preguntas" className="grande">Preguntas frecuentes</h2>
         <div>
-          <h2 id="preguntas" className="medio">Lo que más nos preguntan</h2>
-          <div className="mt-6 hidden md:block"><AccionesContacto cotizar="/cotizar-arriendo" texto={texto} /></div>
-        </div>
-        <div>
-          {PREGUNTAS.map((p) => (
-            <details key={p.q} className="border-t border-[#111]/20 last:border-b">
+          {PREGUNTAS.map((p, i) => (
+            <details key={p.q} open={i === 0} className="border-t border-negro/20 last:border-b">
               <summary className="presionable flex min-h-16 items-center justify-between gap-4 py-4 text-lg font-semibold">
-                {p.q}<Plus size={22} className="mas shrink-0" aria-hidden />
+                {p.q}<Plus size={22} className="mas shrink-0 text-acento-texto" aria-hidden />
               </summary>
               <p className="pb-5 text-ink-soft">{p.a}</p>
             </details>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-surface-alt">
+        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-5 px-4 py-10 md:px-8">
+          <div>
+            <h2 className="medio">Cotiza por WhatsApp</h2>
+            <p className="mt-1 text-lg text-ink-soft">Indícanos el equipo, la comuna y las fechas.</p>
+          </div>
+          <a href={enlaceWhatsapp(texto)} rel="noopener" className="boton boton-principal"><WhatsappLogo size={20} aria-hidden /> Escribir por WhatsApp</a>
         </div>
       </section>
 

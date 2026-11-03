@@ -3,6 +3,22 @@
 
 /* Línea del grupo en styles/grupo.css. Aquí sólo lo propio del arriendo:
    foto grande, tinta profunda y amarillo de maquinaria como relleno. */
+/* Arriendo: naranja sobre marino. Naranja con texto blanco da 2,8:1: siempre
+   lleva texto marino (5,9:1). Sobre fondo claro, el texto usa --color-acento-texto. */
+:root {
+  --g-arriendo: #f07a0e;
+  --marino: #0b1f3a;
+  --g-tinta: #0b1f3a;
+  --g-tinta-media: #2b3a50;
+  --g-tinta-suave: #5a6778;
+}
+[data-marca="arriendo"] {
+  --acento: var(--g-arriendo);
+  --acento-hover: #ff8c2a;
+  --sobre-acento: var(--marino);
+  --acento-texto: #b85208;
+}
+
 @theme {
   --color-canvas: var(--g-fondo);
   --color-surface: var(--g-superficie);
@@ -12,8 +28,9 @@
   --color-ink-muted: var(--g-tinta-suave);
   --color-hairline: var(--g-linea);
   --color-acento: var(--g-arriendo);
-  --color-acento-hondo: #dca604;
-  --color-negro: #0e0e0d;
+  --color-acento-hondo: #ff8c2a;
+  --color-acento-texto: #b85208;
+  --color-negro: #0b1f3a;
   --color-peligro: #9f2f2d;
   --color-exito: #346538;
   --font-titulo: var(--font-titular), "Arial Narrow", sans-serif;
@@ -34,14 +51,14 @@ body {
 h1, h2, h3 {
   font-family: var(--font-titulo);
   font-weight: 600;
-  line-height: 1.06;
-  text-transform: uppercase;
+  line-height: 1.1;
   text-wrap: balance;
   letter-spacing: 0;
 }
+h1 { text-transform: uppercase; line-height: 1.06; }
 
-.grande { font-size: clamp(2.5rem, 6.4vw, 5.25rem); }
-.medio { font-size: clamp(2rem, 4.4vw, 3.5rem); line-height: 1.1; }
+.grande { font-size: clamp(2.25rem, 5vw, 4rem); }
+.medio { font-size: clamp(1.875rem, 3.4vw, 2.75rem); }
 
 :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 
@@ -63,23 +80,25 @@ h1, h2, h3 {
 .boton svg { transition: transform 200ms var(--ease-salida); }
 .boton:active { transform: scale(0.97); }
 .boton:disabled { opacity: 0.55; cursor: not-allowed; }
-.boton-principal { background: var(--g-arriendo); color: #111; }
+.boton-principal { background: var(--g-arriendo); color: var(--marino); }
 .boton-secundario { border: 1px solid currentColor; }
 .boton-suave { border: 1px solid #cfcec9; background: #fff; color: #111; }
 
 @media (hover: hover) and (pointer: fine) {
-  .boton-principal:hover { background: #ffc91a; }
+  .boton-principal:hover { background: #ff8c2a; }
   .boton-secundario:hover { background: #fff; color: #111; border-color: #fff; }
-  .sobre-claro .boton-secundario:hover { background: #111; color: #fff; border-color: #111; }
+  .sobre-claro .boton-secundario:hover { background: var(--marino); color: #fff; border-color: var(--marino); }
   .boton-suave:hover { border-color: #111; }
   .boton:hover svg { transform: translateX(3px); }
   .tile:hover img { transform: scale(1.035); }
-  .fila-trabajo:hover .flecha { transform: translateX(8px); }
-  .comuna:hover { background: #f2b705; color: #111; }
-  .comuna:hover span { color: #111; }
+  .fila-trabajo:hover .flecha { transform: translateX(6px); }
+  .tarjeta:hover { border-color: var(--marino); }
+  .comuna:hover { background: var(--g-arriendo); color: var(--marino); }
+  .comuna:hover span { color: var(--marino); }
 }
 
 .tile img { transition: transform 700ms var(--ease-salida); }
+.tarjeta { transition: border-color 180ms ease; }
 .flecha { transition: transform 240ms var(--ease-salida); }
 .comuna { transition: background-color 160ms ease, color 160ms ease; }
 

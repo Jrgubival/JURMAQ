@@ -98,11 +98,11 @@ export default function LoginCodigo({ callbackUrl }: { callbackUrl: string }) {
   }
 
   return (
-    <div className="bg-ink min-h-[100dvh] flex flex-col items-center justify-center px-4 py-10 sm:py-16">
+    <div className="bg-negro min-h-[100dvh] flex flex-col items-center justify-center px-4 py-10 sm:py-16">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p className="text-3xl font-extrabold text-white tracking-tight">
-            JURMAQ<span className="text-xl font-semibold text-acento ml-1.5">Rental</span>
+            JURMAQ<span className="text-xl font-semibold text-acento ml-1.5">Arriendo</span>
           </p>
           <p className="text-sm text-white/70 mt-2">Panel de administración</p>
         </div>

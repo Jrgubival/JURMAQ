@@ -51,7 +51,7 @@ export default async function ArriendoTipo({ params }: Props) {
 
       <section className="mx-auto max-w-[1320px] py-14 md:px-8 md:py-20">
         <h2 className="medio mb-6 px-4 md:px-0">En nuestra flota</h2>
-        <div className={`grid gap-1 ${flota.length > 1 ? 'md:grid-cols-2' : 'md:max-w-3xl'}`}>
+        <div className={`grid gap-4 px-4 md:px-0 ${flota.length > 1 ? 'md:grid-cols-2' : 'md:max-w-xl'}`}>
           {flota.map((m) => <TarjetaMaquina key={m.id} maquina={m} />)}
         </div>
         <p className="mt-6 max-w-[64ch] px-4 text-lg text-ink-soft md:px-0">{t.descripcionLarga}</p>
@@ -65,7 +65,7 @@ export default async function ArriendoTipo({ params }: Props) {
           <h2 className="medio">En toda la región</h2>
           <ul className="mt-6 flex flex-wrap gap-2">
             {CIUDADES_RENTAL.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="chip">{c.nombre}</Link></li>)}
-            <li><Link href="/arriendo-en/region-del-maule" prefetch={false} className="chip bg-white text-[#111]">Región del Maule</Link></li>
+            <li><Link href="/arriendo-en/region-del-maule" prefetch={false} className="chip bg-white text-negro">Región del Maule</Link></li>
           </ul>
         </div>
       </section>

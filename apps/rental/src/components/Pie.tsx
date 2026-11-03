@@ -7,8 +7,8 @@ export default function Pie({ tipos, comunas }: { tipos: { slug: string; nombre:
     <footer className="bg-negro pb-24 text-white/70 md:pb-0">
       <div className="mx-auto grid max-w-[1320px] gap-10 px-4 py-14 text-[0.9375rem] md:grid-cols-[1.3fr_1fr_1.5fr_1.2fr] md:px-8">
         <div>
-          <p className="font-titulo text-4xl font-semibold uppercase leading-none text-white">JURMAQ <span className="text-acento">Rental</span></p>
-          <p className="mt-3 max-w-[26ch]">Arriendo de maquinaria en el Maule desde {SITIO.anioInicio}.</p>
+          <p className="font-titulo text-4xl font-semibold uppercase leading-none text-white">JURMAQ <span className="text-acento">Arriendo</span></p>
+          <p className="mt-3 max-w-[26ch]">Arriendo de maquinaria en la Región del Maule desde {SITIO.anioInicio}.</p>
         </div>
         <div>
           <p className="font-semibold text-white">Máquinas</p>
