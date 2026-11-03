@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import Cabecera from "@/components/Cabecera";
+import Movimiento from "@/components/Movimiento";
 import Pie from "@/components/Pie";
 import { EMPRESA, SITIO_URL } from "@/data/empresa";
 import "@jurmaq/shared/styles/grupo.css";
@@ -35,6 +36,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Cabecera />
         <main id="contenido">{children}</main>
         <Pie />
+        <Movimiento />
+        {/* Solo prefetch: el sitio es estático y ayuda a la página siguiente. */}
+        <script
+          type="speculationrules"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({ prefetch: [{ where: { href_matches: "/*" }, eagerness: "moderate" }] }),
+          }}
+        />
       </body>
     </html>
   );

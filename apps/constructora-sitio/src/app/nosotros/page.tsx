@@ -36,7 +36,7 @@ export default function Nosotros() {
   return (
     <>
       <CabezaPagina
-        migas={[{ nombre: "Nosotros", ruta: "/nosotros" }]}
+        migas={[{ nombre: "Empresa", ruta: "/nosotros" }]}
         titulo="Empresa constructora con base en Curicó"
         bajada="Obras industriales, civiles y metalmecánicas para el sector agroindustrial, alimenticio y productivo, en O'Higgins y el Maule."
         foto={{ nombre: "alero-lateral", alt: "Bodega industrial con equipos elevadores" }}

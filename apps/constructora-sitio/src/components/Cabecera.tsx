@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Flecha from "@/components/Flecha";
 
 const ENLACES = [
-  { ruta: "/servicios", nombre: "Servicios" },
-  { ruta: "/proyectos", nombre: "Proyectos" },
-  { ruta: "/nosotros", nombre: "Nosotros" },
+  { ruta: "/nosotros", nombre: "Empresa" },
+  { ruta: "/servicios", nombre: "Especialidades" },
+  { ruta: "/proyectos", nombre: "Experiencia" },
 ];
 
 export default function Cabecera() {
@@ -15,8 +16,7 @@ export default function Cabecera() {
     <header className="cabecera">
       <div className="contenedor cabecera-fila">
         <Link href="/" className="marca">
-          <strong>JURMAQ</strong>
-          <span>Constructora</span>
+          <strong>JURMAQ</strong> <span>Constructora</span>
         </Link>
         <nav className="nav" aria-label="Principal">
           {ENLACES.map((e) => (
@@ -24,9 +24,10 @@ export default function Cabecera() {
               {e.nombre}
             </Link>
           ))}
+          <a href="#contacto">Contacto</a>
         </nav>
-        <Link href="/cotizar-obra" className="boton boton-chico">
-          Cotizar obra
+        <Link href="/cotizar-obra" className="boton boton-chico boton-borde">
+          Enviar proyecto <Flecha />
         </Link>
         {/* Sin JavaScript: el menú celular es un <details> y sus enlaces recargan para cerrarlo. */}
         <details className="menu">
@@ -37,7 +38,7 @@ export default function Cabecera() {
                 {e.nombre}
               </a>
             ))}
-            <a href="/cotizar-obra">Cotizar obra</a>
+            <a href="/cotizar-obra">Enviar proyecto</a>
           </nav>
         </details>
       </div>

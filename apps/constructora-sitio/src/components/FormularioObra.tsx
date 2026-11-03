@@ -89,7 +89,7 @@ export default function FormularioObra() {
       )}
       <div>
         <button className="boton boton-formulario" type="submit" disabled={estado === "enviando"}>
-          {estado === "enviando" ? "Enviando…" : "Enviar solicitud"}
+          {estado === "enviando" ? "Enviando…" : "Enviar proyecto"}
         </button>
       </div>
     </form>

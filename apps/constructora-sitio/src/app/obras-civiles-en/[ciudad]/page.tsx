@@ -39,7 +39,7 @@ export default async function PaginaZona({ params }: Props) {
     <>
       <CabezaPagina
         migas={[
-          { nombre: "Servicios", ruta: "/servicios" },
+          { nombre: "Especialidades", ruta: "/servicios" },
           { nombre: `Obras en ${z.nombre}`, ruta: `/obras-civiles-en/${z.slug}` },
         ]}
         titulo={`Obras civiles e industriales en ${z.nombre}`}
@@ -54,7 +54,7 @@ export default async function PaginaZona({ params }: Props) {
       </section>
       <section className="servicios">
         <div className="contenedor servicios-grilla">
-          <h2>Servicios en {z.nombre}</h2>
+          <h2>Especialidades en {z.nombre}</h2>
           <ul>
             {servicios.map((s) => (
               <li key={s.slug}>

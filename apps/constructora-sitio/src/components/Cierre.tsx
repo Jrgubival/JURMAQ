@@ -11,13 +11,10 @@ export default function Cierre() {
         <p>Cuéntanos el alcance y coordinamos la visita.</p>
         <div className="acciones">
           <Link href="/cotizar-obra" className="boton">
-            Cotizar obra
+            Enviar proyecto
           </Link>
           <a href={EMPRESA.whatsapp} className="boton boton-claro">
             WhatsApp
-          </a>
-          <a href={`tel:${EMPRESA.telefono}`} className="boton boton-claro">
-            {EMPRESA.telefonoVisible}
           </a>
         </div>
       </div>

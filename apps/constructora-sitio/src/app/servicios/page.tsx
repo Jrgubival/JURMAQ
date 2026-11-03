@@ -21,8 +21,8 @@ export default function Servicios() {
   return (
     <>
       <CabezaPagina
-        migas={[{ nombre: "Servicios", ruta: "/servicios" }]}
-        titulo="Servicios"
+        migas={[{ nombre: "Especialidades", ruta: "/servicios" }]}
+        titulo="Especialidades en construcción industrial"
         bajada="Obras civiles, maestranza y montaje para plantas en operación."
         foto={{ nombre: "batcheo-interior", alt: "Interior de una planta en obra con plataforma de tijera" }}
       />

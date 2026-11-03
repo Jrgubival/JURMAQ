@@ -21,8 +21,8 @@ export default function Proyectos() {
   return (
     <>
       <CabezaPagina
-        migas={[{ nombre: "Proyectos", ruta: "/proyectos" }]}
-        titulo="Proyectos"
+        migas={[{ nombre: "Experiencia", ruta: "/proyectos" }]}
+        titulo="Experiencia en obras industriales"
         bajada="Obras ejecutadas por JURMAQ dentro de plantas en operación."
         foto={{ nombre: "silos-fundacion", alt: "Armadura circular de una fundación junto a tres silos" }}
       />

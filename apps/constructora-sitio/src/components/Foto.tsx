@@ -1,3 +1,4 @@
+import { preload } from "react-dom";
 import medidas from "@/data/fotos.json";
 import type { FotoObra } from "@/data/obras";
 
@@ -18,11 +19,13 @@ export default function Foto({
 }) {
   const { w, h, lqip } = medidas[foto.nombre];
   const base = `/obras/${foto.nombre}`;
+  const srcSet = `${base}-640.webp ${Math.min(w, 640)}w, ${base}-1280.webp ${w}w`;
+  if (prioridad) preload(`${base}-1280.webp`, { as: "image", imageSrcSet: srcSet, imageSizes: sizes, fetchPriority: "high" });
   return (
     <img
       className={className}
       src={`${base}-1280.webp`}
-      srcSet={`${base}-640.webp ${Math.min(w, 640)}w, ${base}-1280.webp ${w}w`}
+      srcSet={srcSet}
       sizes={sizes}
       width={w}
       height={h}

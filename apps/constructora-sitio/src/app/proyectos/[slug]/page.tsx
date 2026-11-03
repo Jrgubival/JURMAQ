@@ -65,7 +65,7 @@ export default async function PaginaObra({ params }: Props) {
       />
       <CabezaPagina
         migas={[
-          { nombre: "Proyectos", ruta: "/proyectos" },
+          { nombre: "Experiencia", ruta: "/proyectos" },
           { nombre: o.titulo, ruta },
         ]}
         titulo={o.titulo}
@@ -109,7 +109,7 @@ export default async function PaginaObra({ params }: Props) {
                 <li key={a}>{a}</li>
               ))}
             </ul>
-            <h2 className="sub sub-chica">Servicios</h2>
+            <h2 className="sub sub-chica">Especialidades</h2>
             <ul>
               {servicios.map((s) => (
                 <li key={s.slug} className="item-enlace">

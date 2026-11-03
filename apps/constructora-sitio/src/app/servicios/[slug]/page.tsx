@@ -48,7 +48,7 @@ export default async function PaginaServicio({ params }: Props) {
       />
       <CabezaPagina
         migas={[
-          { nombre: "Servicios", ruta: "/servicios" },
+          { nombre: "Especialidades", ruta: "/servicios" },
           { nombre: s.corto, ruta },
         ]}
         titulo={s.nombre}

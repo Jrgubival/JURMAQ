@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Cierre from "@/components/Cierre";
 import Cifras from "@/components/Cifras";
+import Flecha from "@/components/Flecha";
 import Foto from "@/components/Foto";
 import JsonLd from "@/components/JsonLd";
 import LogosClientes from "@/components/LogosClientes";
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: { title: TITULO, url: url("/") },
 };
 
-const EQUIPO = ["Prevencionista de riesgos", "Supervisores de terreno", "Administrador de obra"];
+const ANTECEDENTES = ["Ubicación", "Planos disponibles", "Alcance", "Plazos previstos"];
 
 export default function Inicio() {
   return (
@@ -35,6 +35,7 @@ export default function Inicio() {
           telephone: EMPRESA.telefono,
           email: EMPRESA.correo,
           image: url("/og.jpg"),
+          sameAs: ["https://www.instagram.com/jurmaq.cl"],
           address: {
             "@type": "PostalAddress",
             streetAddress: EMPRESA.streetAddress,
@@ -64,15 +65,27 @@ export default function Inicio() {
           prioridad
         />
         <div className="contenedor hero-texto">
-          <h1>Constructora industrial en Curicó y el Maule</h1>
-          <p className="bajada">Obras civiles, maestranza y montaje dentro de plantas que siguen operando.</p>
-          <div className="acciones">
-            <Link href="/proyectos" className="boton">
-              Ver proyectos
+          <h1>
+            Obras civiles e industriales <span>Curicó, Región del Maule</span>
+          </h1>
+        </div>
+      </section>
+
+      <section className="seccion">
+        <div className="contenedor dos-columnas">
+          <h2>La empresa</h2>
+          <div className="texto">
+            <p>
+              Constructora JURMAQ ejecuta obras industriales, civiles y metalmecánicas para el sector agroindustrial,
+              alimenticio y productivo.
+            </p>
+            <p>
+              Desde 2000 trabajamos dentro de plantas en operación en O&apos;Higgins y el Maule, con prevencionista de
+              riesgos, supervisores y administrador de obra.
+            </p>
+            <Link href="/nosotros" className="enlace">
+              Conocer la empresa <Flecha />
             </Link>
-            <a href={EMPRESA.whatsapp} className="boton boton-claro">
-              WhatsApp
-            </a>
           </div>
         </div>
       </section>
@@ -83,54 +96,94 @@ export default function Inicio() {
         </div>
       </section>
 
-      <Cifras />
+      <section className="seccion">
+        <div className="contenedor">
+          <h2 className="sub">Especialidades</h2>
+          <ol className="especialidades">
+            {SERVICIOS.map((s, i) => (
+              <li key={s.slug}>
+                <Link href={`/servicios/${s.slug}`}>
+                  <span className="numero">{String(i + 1).padStart(2, "0")}</span>
+                  <strong>{s.nombre}</strong>
+                  <span className="detalle">{s.incluye.slice(0, 3).join(", ")}.</span>
+                  <Flecha />
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="destacada">
+        <div className="destacada-foto">
+          <Foto
+            foto={{ nombre: "silos-armadura", alt: "Trabajadores amarrando la armadura circular de una fundación" }}
+            sizes="(max-width: 860px) 100vw, 60vw"
+          />
+        </div>
+        <div className="destacada-panel">
+          <h2>Obras industriales en Teno</h2>
+          <p>Fundaciones para silos, expansión de batcheo y molienda, montaje de equipos y pavimentos.</p>
+          <dl>
+            <div>
+              <dt>Mandante</dt>
+              <dd>Nestlé Chile S.A.</dd>
+            </div>
+            <div>
+              <dt>Ubicación</dt>
+              <dd>Teno, Región del Maule</dd>
+            </div>
+          </dl>
+          <Link href="/obras-civiles-en/teno" className="enlace">
+            Ver obras en Teno <Flecha />
+          </Link>
+        </div>
+      </section>
 
       <section className="seccion">
         <div className="contenedor">
           <div className="seccion-cabeza">
-            <h2>Proyectos</h2>
+            <h2>Experiencia</h2>
             <Link href="/proyectos" className="enlace">
-              Ver todos los proyectos
+              Ver todas las obras <Flecha />
             </Link>
           </div>
           <Mosaico obras={OBRAS_CON_FOTO} portada />
         </div>
       </section>
 
-      <section className="servicios">
-        <div className="contenedor servicios-grilla">
-          <h2>Servicios</h2>
-          <ul>
-            {SERVICIOS.map((s) => (
-              <li key={s.slug}>
-                <Link href={`/servicios/${s.slug}`}>{s.nombre}</Link>
-              </li>
-            ))}
-          </ul>
+      <Cifras />
+
+      <section className="seccion">
+        <div className="contenedor recursos">
+          <div>
+            <h2 className="sub">Recursos propios</h2>
+            <p>Lo que usamos en nuestras obras viene de la empresa y del grupo.</p>
+            <ul className="lista">
+              <li>Maestranza en Curicó para fabricación y soldadura</li>
+              <li>Flota de maquinaria para movimiento de tierras y altura</li>
+              <li>Barraca de Fierros JURMAQ en Molina para materiales</li>
+            </ul>
+          </div>
+          <div>
+            <h2 className="sub">Evaluación de proyectos</h2>
+            <p>Partimos con una reunión técnica y preparamos la propuesta con ingeniería.</p>
+            <ul className="lista">
+              {ANTECEDENTES.map((a) => (
+                <li key={a}>{a}</li>
+              ))}
+            </ul>
+            <div className="acciones">
+              <Link href="/cotizar-obra" className="boton">
+                Enviar proyecto <Flecha />
+              </Link>
+              <a href={EMPRESA.whatsapp} className="boton boton-linea">
+                WhatsApp
+              </a>
+            </div>
+          </div>
         </div>
       </section>
-
-      <section className="equipo">
-        <div className="equipo-foto">
-          <Foto
-            foto={{ nombre: "revestimiento-brazo", alt: "Brazo articulado junto a la fachada de una ampliación" }}
-            sizes="(max-width: 860px) 100vw, 50vw"
-          />
-        </div>
-        <div className="equipo-texto">
-          <h2>Equipos completos en cada obra</h2>
-          <ul>
-            {EQUIPO.map((e) => (
-              <li key={e}>{e}</li>
-            ))}
-          </ul>
-          <Link href="/nosotros" className="enlace">
-            Cómo trabajamos
-          </Link>
-        </div>
-      </section>
-
-      <Cierre />
     </>
   );
 }

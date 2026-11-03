@@ -18,9 +18,9 @@ export default function CotizarObra() {
   return (
     <>
       <CabezaPagina
-        migas={[{ nombre: "Cotizar obra", ruta: "/cotizar-obra" }]}
-        titulo="Cotiza tu obra"
-        bajada="Cuéntanos qué necesitas ejecutar."
+        migas={[{ nombre: "Enviar proyecto", ruta: "/cotizar-obra" }]}
+        titulo="Enviar proyecto"
+        bajada="Indícanos ubicación, planos disponibles, alcance y plazos previstos."
       />
       <section className="seccion">
         <div className="contenedor ficha-grilla">

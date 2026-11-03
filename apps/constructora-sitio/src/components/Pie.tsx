@@ -5,11 +5,14 @@ import { EMPRESA } from "@/data/empresa";
 
 export default function Pie() {
   return (
-    <footer className="pie">
+    <footer className="pie" id="contacto">
       <div className="contenedor">
         <div className="pie-columnas">
           <div>
-            <p className="pie-marca">JURMAQ</p>
+            <p className="pie-marca">
+              JURMAQ <span>Constructora</span>
+            </p>
+            <p>Obras civiles e industriales en Curicó y la Región del Maule.</p>
             <p>{EMPRESA.direccion}</p>
             <ul>
               <li>
@@ -24,7 +27,7 @@ export default function Pie() {
             </ul>
           </div>
           <div>
-            <h2>Servicios</h2>
+            <h2>Especialidades</h2>
             <ul>
               {SERVICIOS.slice(0, 4).map((s) => (
                 <li key={s.slug}>

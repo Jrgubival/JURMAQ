@@ -17,5 +17,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...OBRAS.map((o) => `/proyectos/${o.slug}`),
     ...ZONAS.map((z) => `/obras-civiles-en/${z.slug}`),
   ];
-  return rutas.map((ruta) => ({ url: url(ruta), lastModified: ACTUALIZADO }));
+  return rutas.map((ruta) => {
+    const obra = OBRAS.find((o) => ruta === `/proyectos/${o.slug}`);
+    return {
+      url: url(ruta),
+      lastModified: ACTUALIZADO,
+      ...(obra?.fotos.length && { images: obra.fotos.map((f) => url(`/obras/${f.nombre}-1280.webp`)) }),
+    };
+  });
 }
