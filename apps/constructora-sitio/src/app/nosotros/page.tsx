@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Cierre from "@/components/Cierre";
+import LogosClientes from "@/components/LogosClientes";
 import Migas from "@/components/Migas";
 import { EMPRESA, url } from "@/data/empresa";
 
@@ -85,7 +86,10 @@ export default function Nosotros() {
               <dd>Jorge Ubilla Rivera, Ingeniero Mecánico</dd>
             </div>
           </dl>
-          <div />
+          <div>
+            <h2 style={{ marginBottom: 6 }}>Clientes</h2>
+            <LogosClientes />
+          </div>
         </div>
       </section>
       <Cierre />

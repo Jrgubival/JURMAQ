@@ -95,6 +95,9 @@ ul { margin: 0; padding: 0; list-style: none; }
 .tira dt { font-family: var(--mono); font-size: 0.74rem; color: var(--tenue); }
 .tira dd { margin: 4px 0 0; font-weight: 500; font-size: 0.98rem; }
 
+.logos { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 36px; margin-top: 22px; }
+.logos img { background: none; }
+
 /* Secciones */
 .seccion { padding-block: clamp(44px, 6vw, 76px); }
 .seccion + .seccion { padding-top: 0; }

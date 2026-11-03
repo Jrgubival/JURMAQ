@@ -8,8 +8,10 @@
 # El portafolio ubica a Iansagro en Curicó. Revisar si Jorge confirma Linares.
 /obras-civiles-en/linares /obras-civiles-en/curico 301
 
-# Pendiente del OK de Jorge: mover el acceso a jurmaq.cl.
-# /cuenta/* https://jurmaq.cl/cuenta/:splat 302
-# /login https://jurmaq.cl/login 302
-# /contrato/* https://jurmaq.cl/contrato/:splat 302
-# /admin/* https://jurmaq.cl/admin/:splat 302
+# Sitio sin panel (decisión de Jorge, 03-11-2026): el acceso vive en jurmaq.cl.
+/cuenta https://jurmaq.cl/cuenta 302
+/cuenta/* https://jurmaq.cl/cuenta/:splat 302
+/login https://jurmaq.cl/login 302
+/contrato/* https://jurmaq.cl/contrato/:splat 302
+/admin https://jurmaq.cl/admin 302
+/admin/* https://jurmaq.cl/admin/:splat 302

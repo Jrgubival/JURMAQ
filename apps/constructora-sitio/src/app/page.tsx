@@ -4,6 +4,7 @@ import Cierre from "@/components/Cierre";
 import FilaObra from "@/components/FilaObra";
 import Foto from "@/components/Foto";
 import JsonLd from "@/components/JsonLd";
+import LogosClientes from "@/components/LogosClientes";
 import { EMPRESA, ORGANIZACION_ID, SITIO_URL, url } from "@/data/empresa";
 import { OBRAS, OBRAS_CON_FOTO } from "@/data/obras";
 import { SERVICIOS } from "@/data/servicios";
@@ -89,6 +90,7 @@ export default function Inicio() {
               <dd>Clientes desde 2017</dd>
             </div>
           </dl>
+          <LogosClientes />
         </div>
       </section>
 
