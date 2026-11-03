@@ -359,10 +359,6 @@ function WhatsAppFloat() {
 }
 
 
-// Comunas con landing propia (/en/[comuna]). Se enlazan desde el pie por SEO.
-// Despacho propio (camión): Molina y alrededores, a pedido del dueño (oct-2026).
-// Talca y Linares salen: el fierro no se despacha tan lejos. Los montos los
-// define el dueño en el checkout.
 // Todas las ciudades con landing a las que llega el camión (lib/cobertura.ts):
 // enlaces internos reales a cada /en/<ciudad> que está en el sitemap.
 const COMUNAS_DESPACHO = CIUDADES.filter((c) => despachaA(c.nombre)).map((c) => ({ slug: c.slug, name: c.nombre }));

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PRECIO_WEB } from "@/lib/vigencia";
+import { precioWebVigenteHasta } from "@/lib/vigencia";
 import { precioDeVenta, vistaPrecio } from "@/lib/precio-web";
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { notFound } from "next/navigation";
@@ -225,7 +225,7 @@ export default async function CategoriaPage({
             priceCurrency: "CLP",
             availability: (p.stock ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             seller: { "@id": "https://barraca.jurmaq.cl/#organization" },
-            ...(PRECIO_WEB.hasta ? { priceValidUntil: PRECIO_WEB.hasta } : {}),
+            ...(precioWebVigenteHasta() ? { priceValidUntil: precioWebVigenteHasta() } : {}),
           } } : {}),
         },
       };
@@ -248,7 +248,7 @@ export default async function CategoriaPage({
           highPrice,
           offerCount: pricedProducts.length,
           availability: "https://schema.org/InStock",
-          seller: { "@id": "https://jurmaq.cl/#organization" },
+          seller: { "@id": "https://barraca.jurmaq.cl/#organization" },
         },
       }
     : null;

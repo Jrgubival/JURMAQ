@@ -4,15 +4,17 @@ import { applyDailyPromosToProducts } from '@/lib/promotions';
 import { vistaPrecio } from '@/lib/precio-web';
 import { describir } from '@/lib/ficha';
 import { nombreMarca } from '@/lib/marcas';
-import { PRECIO_WEB } from '@/lib/vigencia';
+import { PRECIO_WEB, precioWebVigenteHasta } from '@/lib/vigencia';
 
 /**
  * GET /feeds/google-merchant.xml — feed de productos para Google Merchant
  * Center (listados gratis en Shopping). Google lo descarga una vez al día.
  *
  * Mismo precio que la ficha y el checkout (vistaPrecio + promociones del día),
- * leído de la base en cada regeneración (cada hora): cuando venza el precio web
- * (PRECIO_WEB.hasta) o cambie un precio, el feed se actualiza solo.
+ * leído de la base en cada regeneración (cada hora): si cambia un precio en la
+ * tienda, el feed lo toma solo. La fecha de término del precio web
+ * (PRECIO_WEB.hasta) se informa mientras esté vigente; si vence sin renovarse,
+ * se deja de informar (los precios de la base no cambian solos con esa fecha).
  *   · Sólo productos que se pueden comprar (activo, con stock y precio).
  *   · Sólo con foto propia: la placa genérica de la categoría no es una foto
  *     del producto y Google la rechaza.
@@ -71,9 +73,10 @@ async function productos(): Promise<FilaFeed[]> {
   return todos;
 }
 
+/** Período del precio web; null si ya venció (Google no recibe una vigencia pasada). */
 function vigencia(): string | null {
-  const hasta = PRECIO_WEB.hasta;
-  if (!hasta || !/^\d{4}-\d{2}-\d{2}$/.test(hasta)) return null;
+  const hasta = precioWebVigenteHasta();
+  if (!hasta) return null;
   const desde = PRECIO_WEB.desde && /^\d{4}-\d{2}-\d{2}$/.test(PRECIO_WEB.desde)
     ? PRECIO_WEB.desde
     : new Date().toISOString().slice(0, 10);

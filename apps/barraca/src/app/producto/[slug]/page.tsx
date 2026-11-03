@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { precioWebHastaNumerico, PRECIO_WEB } from "@/lib/vigencia";
+import { precioWebHastaNumerico, precioWebVigenteHasta } from "@/lib/vigencia";
 import { nombreMarca } from "@/lib/marcas";
 import { motivoSinRetracto } from "@/lib/retracto";
 import { ZONAS_DESPACHO } from "@/lib/despacho/zonas";
@@ -339,7 +339,7 @@ export default async function ProductoPage({
       itemCondition: "https://schema.org/NewCondition",
       seller: { "@id": "https://barraca.jurmaq.cl/#organization" },
       // La misma vigencia del precio web que se muestra (Términos 5.3).
-      ...(PRECIO_WEB.hasta ? { priceValidUntil: PRECIO_WEB.hasta } : {}),
+      ...(precioWebVigenteHasta() ? { priceValidUntil: precioWebVigenteHasta() } : {}),
       areaServed: [
         { "@type": "City", name: "Curicó" },
         { "@type": "City", name: "Molina" },
@@ -365,8 +365,8 @@ export default async function ProductoPage({
         },
         deliveryTime: {
           "@type": "ShippingDeliveryTime",
+          // Sólo la preparación, que es lo que prometen los Términos (sin plazo de tránsito).
           handlingTime: { "@type": "QuantitativeValue", minValue: 1, maxValue: 5, unitCode: "DAY" },
-          transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 1, unitCode: "DAY" },
         },
       },
       // Términos 11: retracto de 10 días corridos, en el local o lo retiramos sin

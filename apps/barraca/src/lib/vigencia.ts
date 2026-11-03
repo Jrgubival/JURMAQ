@@ -37,3 +37,15 @@ export function precioWebHastaNumerico(): string | null {
   const h = PRECIO_WEB.hasta;
   return h && /^\d{4}-\d{2}-\d{2}$/.test(h) ? `${h.slice(8, 10)}-${h.slice(5, 7)}-${h.slice(0, 4)}` : null;
 }
+
+/**
+ * Fecha de término del precio web SÓLO si todavía no pasa (hoy en Chile <=
+ * hasta). Para los datos que lee Google (JSON-LD y feed de Merchant Center):
+ * una vigencia vencida se omite en vez de publicarse.
+ */
+export function precioWebVigenteHasta(): string | null {
+  const h = PRECIO_WEB.hasta;
+  if (!h || !/^\d{4}-\d{2}-\d{2}$/.test(h)) return null;
+  const hoy = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago' }).format(new Date());
+  return hoy <= h ? h : null;
+}
