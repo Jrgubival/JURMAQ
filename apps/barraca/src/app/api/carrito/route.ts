@@ -65,7 +65,15 @@ function attachSessionCookie(response: NextResponse, sessionId: string, request:
   });
 }
 
+// El carrito es de quien tiene la cookie: nunca en caché (ni del CDN ni de una
+// regla de Cloudflare).
 export async function GET(request: NextRequest) {
+  const res = await obtenerCarrito(request);
+  res.headers.set('Cache-Control', 'private, no-store');
+  return res;
+}
+
+async function obtenerCarrito(request: NextRequest): Promise<Response> {
   try {
     // Rate limit: 60 reads/min per IP (cart reads happen on every page nav)
     const ip = getClientIp(request);

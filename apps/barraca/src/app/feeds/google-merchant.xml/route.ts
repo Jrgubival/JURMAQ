@@ -11,8 +11,8 @@ import { PRECIO_WEB, precioWebVigenteHasta } from '@/lib/vigencia';
  * Center (listados gratis en Shopping). Google lo descarga una vez al día.
  *
  * Mismo precio que la ficha y el checkout (vistaPrecio + promociones del día),
- * leído de la base en cada regeneración (cada hora): si cambia un precio en la
- * tienda, el feed lo toma solo. La fecha de término del precio web
+ * leído de la base en cada regeneración (al día, o al instante cuando cambia el
+ * catálogo: lib/revalidar.ts). La fecha de término del precio web
  * (PRECIO_WEB.hasta) se informa mientras esté vigente; si vence sin renovarse,
  * se deja de informar (los precios de la base no cambian solos con esa fecha).
  *   · Sólo productos que se pueden comprar (activo, con stock y precio).
@@ -25,7 +25,9 @@ import { PRECIO_WEB, precioWebVigenteHasta } from '@/lib/vigencia';
  *     estable aunque un código de Softmad se repita.
  * El envío (Molina gratis) y las devoluciones se configuran en Merchant Center.
  */
-export const revalidate = 3600;
+// 1 día: Merchant lo descarga una vez al día y todo cambio de precio o stock
+// lo invalida al instante (lib/revalidar.ts). Antes 1 h.
+export const revalidate = 86400;
 
 const TIENDA = 'https://barraca.jurmaq.cl';
 const POR_PAGINA = 1000;
@@ -138,7 +140,7 @@ ${items.join('\n')}
   return new Response(cuerpo, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=86400',
       'X-Robots-Tag': 'noindex',
     },
   });

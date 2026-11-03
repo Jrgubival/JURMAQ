@@ -14,6 +14,7 @@ export function revalidarCatalogo(): void {
   revalidatePath('/categorias/[slug]', 'page');
   revalidatePath('/categorias');
   revalidatePath('/');
+  revalidatePath('/feeds/google-merchant.xml');
 }
 
 /**
@@ -34,6 +35,7 @@ export async function revalidarFichas(productoIds: number[]): Promise<void> {
     }
     revalidatePath('/categorias/[slug]', 'page');
     revalidatePath('/');
+    revalidatePath('/feeds/google-merchant.xml');
   } catch (error) {
     logSafeError('revalidar-fichas-error', { error: String(error) });
   }
