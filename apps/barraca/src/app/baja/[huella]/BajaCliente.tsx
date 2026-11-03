@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function BajaCliente({ huella }: { huella: string }) {
+export default function BajaCliente({ huella, origen }: { huella: string; origen: string | null }) {
   const [estado, setEstado] = useState<"inicial" | "enviando" | "listo" | "error">("inicial");
   const [mensaje, setMensaje] = useState("");
 
@@ -12,7 +12,7 @@ export default function BajaCliente({ huella }: { huella: string }) {
       const r = await fetch("/api/baja", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ huella }),
+        body: JSON.stringify({ huella, origen }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "No pudimos registrar la baja.");
@@ -24,7 +24,7 @@ export default function BajaCliente({ huella }: { huella: string }) {
   }
 
   if (estado === "listo") {
-    return <p className="rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-green-800 font-medium">Listo. No te enviaremos más correos automáticos.</p>;
+    return <p className="rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-green-800 font-medium">Listo, no le enviaremos más correos.</p>;
   }
   return (
     <div>

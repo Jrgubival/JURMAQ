@@ -34,6 +34,11 @@ export function huellaValida(h: string): boolean {
   return /^[a-f0-9]{64}$/.test(h);
 }
 
+/** Origen de la baja (para saber de qué correo vino). Lista cerrada de forma. */
+export function origenValido(o: unknown): string | null {
+  return typeof o === 'string' && /^[a-z0-9:_-]{1,60}$/.test(o) ? o : null;
+}
+
 function usarArchivo(): boolean {
   if (env.PEDIDOS_STORE !== 'archivo') return false;
   if (esProduccion()) throw new Error('Bajas en archivo no permitidas en producción');
@@ -48,7 +53,7 @@ function leerArchivo(): string[] {
   }
 }
 
-export async function registrarBaja(huella: string): Promise<void> {
+export async function registrarBaja(huella: string, origen: string | null = null): Promise<void> {
   if (!huellaValida(huella)) throw new Error('huella inválida');
   if (usarArchivo()) {
     const lista = new Set(leerArchivo());
@@ -58,7 +63,8 @@ export async function registrarBaja(huella: string): Promise<void> {
   }
   const { error } = await supabaseAdmin
     .from('barraca_correos_baja' as never)
-    .upsert({ huella } as never, { onConflict: 'huella' });
+    // ignoreDuplicates: una segunda baja no pisa la fecha ni el origen de la primera.
+    .upsert({ huella, origen: origenValido(origen) } as never, { onConflict: 'huella', ignoreDuplicates: true });
   if (error) throw error;
 }
 

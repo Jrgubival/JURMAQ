@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
-import { huellaValida, registrarBaja } from '@/lib/baja-correos';
+import { huellaValida, origenValido, registrarBaja } from '@/lib/baja-correos';
 
 /**
  * POST /api/baja { huella } — deja de enviar correos automáticos a ese correo.
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   const huella = typeof body?.huella === 'string' ? body.huella.trim() : '';
   if (!huellaValida(huella)) return NextResponse.json({ error: 'Enlace inválido' }, { status: 400 });
   try {
-    await registrarBaja(huella);
+    await registrarBaja(huella, origenValido(body?.origen));
     return NextResponse.json({ ok: true });
   } catch {
     console.error('[baja-correos-fail]');
