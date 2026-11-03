@@ -42,8 +42,8 @@
 
   /* Acentos de cada negocio, para usarlos fuera de su propio sitio. */
   --g-barraca: #c90319;
-  --g-arriendo: #f2b705;
-  --g-constructora: #2c5a7a;
+  --g-arriendo: #f07a0e;
+  --g-constructora: #e8b017;
 
   --acento: var(--g-tinta);
   --acento-hover: #2f3437;
@@ -92,19 +92,20 @@
   --sobre-acento: #ffffff;
   --acento-texto: var(--g-barraca);
 }
-/* Amarillo sobre fondo claro da 1,8:1: sólo como relleno, con texto negro.
-   Por eso su --acento-texto es la tinta y no el amarillo. */
+/* Naranja y dorado sobre fondo claro dan 2,7:1 y 1,9:1: ahí van sólo como
+   relleno, con texto marino (6,6:1 y 9,3:1). El blanco encima tampoco alcanza.
+   Por eso su --acento-texto es la tinta y no el color. */
 [data-marca="arriendo"] {
   --acento: var(--g-arriendo);
-  --acento-hover: #dca604;
-  --sobre-acento: #111111;
+  --acento-hover: #d96c08;
+  --sobre-acento: #081428;
   --acento-texto: var(--g-tinta);
 }
 [data-marca="constructora"] {
   --acento: var(--g-constructora);
-  --acento-hover: #1f4359;
-  --sobre-acento: #ffffff;
-  --acento-texto: var(--g-constructora);
+  --acento-hover: #d49f12;
+  --sobre-acento: #081428;
+  --acento-texto: var(--g-tinta);
 }
 
 /* Sobre oscuro el acento debe aclararse para leerse como texto. */
@@ -119,7 +120,7 @@
 [data-tema="oscuro"] [data-marca="constructora"],
 [data-tema="oscuro"][data-marca="constructora"],
 [data-tema="marino"] [data-marca="constructora"],
-[data-tema="marino"][data-marca="constructora"] { --acento-texto: #8fc0e0; }
+[data-tema="marino"][data-marca="constructora"] { --acento-texto: var(--g-constructora); }
 
 /* Plancha laminada: el mismo rayado de los fondos de la barraca. */
 .g-textura-acero {
