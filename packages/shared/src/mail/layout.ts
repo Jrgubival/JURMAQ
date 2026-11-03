@@ -1,5 +1,5 @@
 import { escapeHtml, formatCLP } from './utils';
-import { HORARIO_BARRACA } from '../seo';
+import { HORARIO_BARRACA, LEGAL_INFO } from '../seo';
 import { whatsappCtaBarracaCotizar } from '../whatsapp';
 
 /**
@@ -142,7 +142,7 @@ ${opts.preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacit
           ${escapeHtml(HORARIO_BARRACA.texto)}
         </p>
         <p style="margin:12px 0 0;color:#64748b;font-family:${FONT};font-size:11px;line-height:1.5;">
-          © ${year} JURMAQ · barraca.jurmaq.cl${opts.marketing ? ` · <a href="mailto:contacto@jurmaq.cl" style="color:#94a3b8;">Preferencias de correo</a>` : ''}
+          © ${year} ${escapeHtml(LEGAL_INFO.brands.barraca.razonSocial)} · RUT ${LEGAL_INFO.brands.barraca.rut} · barraca.jurmaq.cl${opts.marketing ? ` · <a href="mailto:contacto@jurmaq.cl" style="color:#94a3b8;">Preferencias de correo</a>` : ''}
         </p>
       </td></tr>
     </table>

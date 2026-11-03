@@ -76,7 +76,7 @@ export default function HeroSlider({ precios = {} }: { precios?: PreciosHero }) 
       {
         eyebrow: "Perfiles y planchas",
         title: "Tubos, ángulos, canales y planchas",
-        sub: "Todas las medidas en stock en nuestra bodega de Molina.",
+        sub: "Con stock en nuestra bodega de Molina: revisa cada medida en la tienda.",
         precio: precios.tubo ?? null,
         precioNota: "el tubo de 6 metros",
         cta: { label: "Ver perfiles", href: "/categorias/perfiles-y-planchas" },

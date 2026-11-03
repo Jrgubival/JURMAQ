@@ -22,8 +22,8 @@ export async function generateMetadata({
       ? `Resultados para "${qShort}" · Barraca JURMAQ`
       : "Buscar productos · Barraca JURMAQ",
     description: q
-      ? `Resultados de búsqueda para "${qShort}" en Barraca JURMAQ. Materiales de construcción con precios competitivos y retiro en Molina o despacho en camión a Molina, Curicó, Talca y alrededores.`
-      : "Busca entre mas de 1.600 productos de construccion en Barraca JURMAQ. Fierros, perfiles, planchas, herramientas y mas.",
+      ? `Resultados de búsqueda para "${qShort}" en Barraca JURMAQ. Materiales de construcción con retiro en Molina o despacho en camión a Molina, Curicó, Talca y alrededores.`
+      : "Busca productos de construcción en Barraca JURMAQ: fierros, perfiles, planchas, herramientas y más.",
     alternates: {
       canonical: "https://barraca.jurmaq.cl/buscar",
     },

@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   title:
     "Barraca de Fierros y Materiales · Curicó · JURMAQ",
   description:
-    `Fierro estriado, perfiles, planchas, tubos, mallas Acma, pinturas y +1.600 productos en Barraca JURMAQ Curicó · Molina. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.`,
+    `Fierro estriado, perfiles, planchas, tubos, mallas Acma, pinturas y materiales de construcción en Barraca JURMAQ Curicó · Molina. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.`,
   keywords: [
     // Brand + value prop
     "barraca jurmaq",
@@ -119,7 +119,7 @@ export const metadata: Metadata = {
     title:
       "Barraca de Fierros JURMAQ · Molina · Despacho a Curicó, Talca y alrededores",
     description:
-      "+1.600 productos: fierros, perfiles, planchas, tubos, mallas, pinturas. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.",
+      "Fierros, perfiles, planchas, tubos, mallas y pinturas. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.",
     url: "https://barraca.jurmaq.cl",
     siteName: "Barraca JURMAQ",
     locale: "es_CL",

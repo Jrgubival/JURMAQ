@@ -41,7 +41,7 @@ export async function generateMetadata({
     // demás y una promesa que no cumplimos). También salen del sitemap.
     ...(cubre ? {} : { robots: { index: false, follow: true } }),
     title: `Barraca de Fierros y Materiales en ${c.nombre} · JURMAQ`,
-    description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y +1.600 productos para ${c.nombre} (${c.region}). ${entrega}`,
+    description: `Barraca de fierros, perfiles, planchas, tubos, mallas Acma, cementos y materiales de construcción para ${c.nombre} (${c.region}). ${entrega}`,
     keywords: [
       `barraca de fierros ${c.nombre}`,
       `barraca fierros ${c.nombre}`,
@@ -62,7 +62,7 @@ export async function generateMetadata({
     ],
     openGraph: {
       title: `Barraca JURMAQ para ${c.nombre}`,
-      description: `+1.600 productos. ${entrega}`,
+      description: `Fierros, perfiles, planchas y materiales de construcción. ${entrega}`,
       url: `https://barraca.jurmaq.cl/en/${c.slug}`,
       siteName: "Barraca JURMAQ",
       locale: "es_CL",
@@ -114,7 +114,7 @@ export default async function BarracaEnCiudadPage({
         "@id": `https://barraca.jurmaq.cl/en/${c.slug}#store`,
         name: cubre ? `Barraca JURMAQ — Despacho a ${c.nombre}` : `Barraca JURMAQ — Molina`,
         description: cubre
-          ? `Barraca de fierros y materiales de construcción con despacho en camión a ${c.nombre} desde Molina. +1.600 productos disponibles.`
+          ? `Barraca de fierros y materiales de construcción con despacho en camión a ${c.nombre} desde Molina, con precio y stock publicados en línea.`
           : `Barraca de fierros y materiales de construcción en Molina. ${COBERTURA_CORTA}`,
         url: `https://barraca.jurmaq.cl/en/${c.slug}`,
         telephone: HQ.telefono,
@@ -166,7 +166,7 @@ export default async function BarracaEnCiudadPage({
             name: `¿Qué materiales tienen disponibles?`,
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Fierros estriados, perfiles, planchas zinc/galvanizadas, tubos, mallas Acma, cementos, áridos, pinturas y +1.600 productos de barraca. Todos con stock real y precio publicado en línea.",
+              text: "Fierros estriados, perfiles, planchas zinc/galvanizadas, tubos, mallas Acma, cementos, áridos, pinturas y materiales de construcción, con el precio y el stock de cada producto publicados en línea.",
             },
           },
         ],
@@ -232,7 +232,7 @@ export default async function BarracaEnCiudadPage({
               {cubre ? `Materiales que despachamos a ${c.nombre}` : "Materiales de la barraca"}
             </h2>
             <p className="text-gray-700 mb-8">
-              Más de 1.600 productos con precio publicado y stock real.
+              Precio y stock de cada producto publicados en línea.
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {categorias.map((cat) => (
@@ -326,7 +326,7 @@ export default async function BarracaEnCiudadPage({
                 <dt className="font-semibold text-navy-950 mb-1">¿Qué materiales tienen?</dt>
                 <dd className="text-gray-700 text-sm">
                   Fierros estriados, perfiles, planchas zinc, tubos, mallas Acma, cementos, áridos, pinturas y
-                  +1.600 productos. Todos con stock real y precio publicado.
+                  Precio y stock de cada producto publicados en línea.
                 </dd>
               </div>
             </dl>

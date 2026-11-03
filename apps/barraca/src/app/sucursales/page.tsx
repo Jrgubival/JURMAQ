@@ -36,7 +36,6 @@ import { LUGARES_DESPACHO } from '@/lib/cobertura';
  */
 
 const BARRACA = LEGAL_INFO.brands.barraca;
-const CONSTRUCTORA = LEGAL_INFO.brands.constructora;
 
 const TITLE = 'Dónde estamos · Barraca en Molina · Despacho a Curicó, Talca y alrededores · JURMAQ';
 const DESCRIPTION =
@@ -253,33 +252,6 @@ export default function SucursalesPage() {
         </div>
       </div>
 
-      {/* ── La otra unidad ───────────────────────────────────────────────── */}
-      <div className="bg-gray-50 border-t border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <h2 className="text-lg font-bold text-navy-950">
-            ¿Buscabas la constructora o el arriendo de maquinaria?
-          </h2>
-          <p className="mt-2 text-gray-600 max-w-2xl leading-relaxed">
-            Son otra unidad de JURMAQ y operan desde la oficina en{' '}
-            {CONSTRUCTORA.addressLocality} ({CONSTRUCTORA.streetAddress}), no
-            desde la barraca.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <a
-              href="https://constructora.jurmaq.cl"
-              className="inline-flex items-center px-5 py-2.5 border border-gray-300 hover:border-navy-950 text-navy-950 font-semibold rounded-lg text-sm transition-colors"
-            >
-              Obras civiles →
-            </a>
-            <a
-              href="https://jurmaq.cl/maquinarias"
-              className="inline-flex items-center px-5 py-2.5 border border-gray-300 hover:border-navy-950 text-navy-950 font-semibold rounded-lg text-sm transition-colors"
-            >
-              Arriendo de maquinaria →
-            </a>
-          </div>
-        </div>
-      </div>
     </>
   );
 }
