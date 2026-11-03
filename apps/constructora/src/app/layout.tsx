@@ -83,7 +83,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Arriendo retroexcavadora, miniexcavadora, minicargador y maquinaria pesada en Curicó, Teno, Molina, Talca y toda la Región del Maule. Constructora, maestranza y barraca de fierros JURMAQ. +25 años. Tráenos tu cotización de la barraca y te mejoramos el precio.",
+    "Arriendo retroexcavadora, miniexcavadora, minicargador y maquinaria pesada en Curicó, Teno, Molina, Talca y toda la Región del Maule. Constructora, maestranza y barraca de fierros JURMAQ, desde 2000. Tráenos tu cotización de la barraca y te mejoramos el precio.",
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -174,7 +174,7 @@ export const metadata: Metadata = {
     title:
       "JURMAQ · Arriendo Maquinaria, Constructora y Barraca de Fierros en Curicó y Maule",
     description:
-      "+25 años en arriendo de maquinaria pesada (retros, miniexcavadoras, minicargadores, brazos articulados), constructora industrial y barraca de fierros con +1.600 productos. Tráenos tu cotización de la barraca y te mejoramos el precio.",
+      "Desde 2000 en arriendo de maquinaria pesada (retros, miniexcavadoras, minicargadores, brazos articulados), constructora industrial y barraca de fierros con +1.600 productos. Tráenos tu cotización de la barraca y te mejoramos el precio.",
     url: "https://jurmaq.cl",
     siteName: "JURMAQ",
     locale: "es_CL",

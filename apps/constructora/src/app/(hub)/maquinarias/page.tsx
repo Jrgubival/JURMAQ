@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title:
     "Arriendo de Maquinaria Pesada en Curicó y Maule · JURMAQ",
   description:
-    "Arriendo de maquinaria en Curicó y el Maule: retroexcavadora, miniexcavadora, minicargador y camión tolva con operador incluido. +25 años. Cotiza por WhatsApp.",
+    "Arriendo de maquinaria en Curicó y el Maule: retroexcavadora, miniexcavadora, minicargador y camión tolva con operador incluido. Desde 2000. Cotiza por WhatsApp.",
   keywords: [
     "arriendo maquinaria Curicó",
     "arriendo maquinaria Maule",

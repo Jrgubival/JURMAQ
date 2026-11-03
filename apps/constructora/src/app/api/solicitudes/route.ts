@@ -44,9 +44,45 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST is public (contact form) - no auth required
+// El formulario de constructora-sitio (Worker propio) envía desde otro dominio.
+const ORIGENES_CORS = new Set([
+  'https://constructora.jurmaq.cl',
+  'https://constructora-sitio.jrgubival.workers.dev',
+]);
+
+function origenCors(request: NextRequest): string | null {
+  const origin = request.headers.get('origin');
+  return origin && ORIGENES_CORS.has(origin) ? origin : null;
+}
+
+function headersCors(origin: string): Record<string, string> {
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+  };
+}
+
+export async function OPTIONS(request: NextRequest) {
+  const origin = origenCors(request);
+  if (!origin) return new NextResponse(null, { status: 403 });
+  return new NextResponse(null, { status: 204, headers: headersCors(origin) });
+}
+
 export async function POST(request: NextRequest) {
-  if (!isValidOrigin(request)) {
+  const origin = origenCors(request);
+  const respuesta = await crearSolicitud(request, !!origin);
+  if (origin) {
+    for (const [k, v] of Object.entries(headersCors(origin))) respuesta.headers.set(k, v);
+  }
+  return respuesta;
+}
+
+// POST is public (contact form) - no auth required
+async function crearSolicitud(request: NextRequest, origenPermitido: boolean) {
+  if (!origenPermitido && !isValidOrigin(request)) {
     return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   }
 

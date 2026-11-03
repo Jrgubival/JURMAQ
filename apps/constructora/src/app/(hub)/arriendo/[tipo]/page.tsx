@@ -51,7 +51,7 @@ export async function generateMetadata({
 
   return {
     title: `Arriendo de ${tipoData.nombrePlural}${marcaSuffix} en Curicó y Maule · JURMAQ`,
-    description: `Arriendo de ${tipoData.nombre.toLowerCase()}${marcaSuffix ? ` (${marcaSuffix.trim()})` : ""}${tipoData.operadorIncluido ? (tipoData.tipoDb === "camion" ? " con conductor incluido en la tarifa" : " con operador incluido en la tarifa") : ""} en ${cities} y toda la Región del Maule. ${tipoData.descripcionCorta} JURMAQ +25 años. Cotiza por WhatsApp.`,
+    description: `Arriendo de ${tipoData.nombre.toLowerCase()}${marcaSuffix ? ` (${marcaSuffix.trim()})` : ""}${tipoData.operadorIncluido ? (tipoData.tipoDb === "camion" ? " con conductor incluido en la tarifa" : " con operador incluido en la tarifa") : ""} en ${cities} y toda la Región del Maule. ${tipoData.descripcionCorta} JURMAQ, desde 2000. Cotiza por WhatsApp.`,
     keywords: [
       `arriendo ${tipoData.nombre.toLowerCase()}`,
       ...CIUDADES.map((c) => `arriendo ${tipoData.nombre.toLowerCase()} ${c.nombre}`),

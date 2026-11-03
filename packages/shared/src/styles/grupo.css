@@ -1,0 +1,223 @@
+/* ====================================================================
+   Línea del Grupo JURMAQ: mismo papel, misma letra; sólo cambia el acento.
+
+   Lo importan el hub (jurmaq.cl), rental y constructora-sitio. La barraca
+   NO lo importa todavía: Merchant Center revisa su identidad de vendedor.
+
+   Es CSS sin Tailwind para que sirva igual en cualquier app. Todo va con
+   prefijo `g-`/`--g-`, así no pisa nada de globals.css.
+
+   Uso: poner data-marca="arriendo|barraca|constructora|hub" en <html> o en
+   un contenedor. Fuentes: cada app declara Geist, Geist Mono y Oswald con
+   next/font en --font-sans, --font-mono y --font-titular (o --font-heading).
+   ==================================================================== */
+
+:root {
+  --g-fondo: #fbfbfa;
+  --g-superficie: #ffffff;
+  --g-alterno: #f7f6f3;
+  --g-tinta: #111111;
+  --g-tinta-media: #2f3437;
+  --g-tinta-suave: #6b6a67; /* 5,2:1 sobre el fondo; #787774 no alcanzaba AA */
+  --g-linea: #eaeaea;
+
+  --g-sans: var(--font-sans), system-ui, sans-serif;
+  --g-titular: var(--font-titular, var(--font-heading)), "Arial Narrow", sans-serif;
+  --g-mono: var(--font-mono), ui-monospace, monospace;
+
+  --g-radio: 4px;
+  --g-ancho: 1200px;
+  --g-margen: clamp(16px, 4vw, 40px);
+
+  --g-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --g-presion: 160ms;
+  --g-hover: 180ms;
+
+  /* Acentos de cada negocio, para usarlos fuera de su propio sitio. */
+  --g-barraca: #c90319;
+  --g-arriendo: #f2b705;
+  --g-constructora: #2c5a7a;
+
+  --acento: var(--g-tinta);
+  --acento-hover: #2f3437;
+  --sobre-acento: #ffffff;
+  /* Acento legible como texto o línea sobre fondo claro. */
+  --acento-texto: var(--g-tinta);
+}
+
+[data-marca="barraca"] {
+  --acento: var(--g-barraca);
+  --acento-hover: #a80418;
+  --sobre-acento: #ffffff;
+  --acento-texto: var(--g-barraca);
+}
+/* Amarillo sobre fondo claro da 1,8:1: sólo como relleno, con texto negro.
+   Por eso su --acento-texto es la tinta y no el amarillo. */
+[data-marca="arriendo"] {
+  --acento: var(--g-arriendo);
+  --acento-hover: #dca604;
+  --sobre-acento: #111111;
+  --acento-texto: var(--g-tinta);
+}
+[data-marca="constructora"] {
+  --acento: var(--g-constructora);
+  --acento-hover: #1f4359;
+  --sobre-acento: #ffffff;
+  --acento-texto: var(--g-constructora);
+}
+
+/* --- Marca ---------------------------------------------------------- */
+.g-marca {
+  font-family: var(--g-titular);
+  font-weight: 600;
+  font-size: 1.375rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--g-tinta);
+  text-decoration: none;
+}
+
+/* --- Botón ---------------------------------------------------------- */
+.g-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.625rem 1.25rem;
+  border: 1px solid var(--acento);
+  border-radius: var(--g-radio);
+  background: var(--acento);
+  color: var(--sobre-acento);
+  font-family: var(--g-sans);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--g-presion) var(--g-ease-out),
+    background-color var(--g-hover) ease,
+    border-color var(--g-hover) ease;
+}
+.g-boton:active:not(:disabled) { transform: scale(0.97); }
+.g-boton:disabled { opacity: 0.55; cursor: not-allowed; }
+.g-boton--linea {
+  background: transparent;
+  border-color: var(--g-tinta);
+  color: var(--g-tinta);
+}
+
+/* --- Enlace --------------------------------------------------------- */
+.g-enlace {
+  color: var(--acento-texto);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-thickness var(--g-hover) ease;
+}
+
+/* --- Campos de formulario ------------------------------------------- */
+.g-campo { display: grid; gap: 0.375rem; }
+.g-campo > label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--g-tinta-media);
+}
+.g-campo input,
+.g-campo select,
+.g-campo textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #c9c8c4;
+  border-radius: var(--g-radio);
+  background: var(--g-superficie);
+  color: var(--g-tinta);
+  font-family: var(--g-sans);
+  font-size: 1rem; /* 16px: iOS no hace zoom al enfocar */
+  transition: border-color var(--g-hover) ease;
+}
+.g-campo :is(input, select, textarea):focus-visible,
+.g-boton:focus-visible,
+.g-enlace:focus-visible,
+.g-marca:focus-visible,
+.g-franja a:focus-visible,
+.g-pie a:focus-visible {
+  outline: 2px solid var(--g-tinta);
+  outline-offset: 2px;
+}
+
+/* --- Franja del grupo: línea delgada para pasar de un sitio a otro ---- */
+.g-franja {
+  background: var(--g-tinta);
+  color: #d9d8d4;
+  font-family: var(--g-sans);
+  font-size: 0.8125rem;
+}
+.g-franja ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: 0 var(--g-margen);
+  list-style: none;
+}
+.g-franja a {
+  display: inline-block;
+  padding: 0.5rem 0;
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--g-hover) ease;
+}
+.g-franja a[aria-current="page"] { color: #ffffff; font-weight: 600; }
+
+/* --- Pie legal ------------------------------------------------------ */
+.g-pie {
+  border-top: 1px solid var(--g-linea);
+  background: var(--g-fondo);
+  color: var(--g-tinta-suave);
+  font-family: var(--g-sans);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.g-pie__ancho {
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: 2.5rem var(--g-margen);
+}
+.g-pie__negocios {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.g-pie__negocios p { margin: 0; }
+.g-pie__nombre { color: var(--g-tinta); font-weight: 600; }
+.g-pie__legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--g-linea);
+}
+.g-pie a { color: inherit; }
+@media (min-width: 768px) {
+  .g-pie__negocios { grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .g-boton:hover:not(:disabled) { background: var(--acento-hover); border-color: var(--acento-hover); }
+  .g-boton--linea:hover:not(:disabled) { background: var(--g-tinta); border-color: var(--g-tinta); color: #ffffff; }
+  .g-enlace:hover { text-decoration-thickness: 2px; }
+  .g-franja a:hover { color: #ffffff; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-boton { transition: background-color var(--g-hover) ease, border-color var(--g-hover) ease; }
+  .g-boton:active:not(:disabled) { transform: none; }
+}

@@ -39,7 +39,7 @@ export async function generateMetadata({
 
   return {
     title: `Arriendo de Maquinaria en ${c.nombre} · JURMAQ ${c.region}`,
-    description: `Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado y maquinaria pesada en ${c.nombre} (${c.region}). Despacho desde Curicó en ${DISTANCIAS_CONSTRUCTORA[c.slug].tiempo}. Servicio para ${c.rubroLocal.slice(0, 2).join(" y ")}. JURMAQ +25 años.`,
+    description: `Arriendo de retroexcavadora, miniexcavadora, minicargador, brazo articulado y maquinaria pesada en ${c.nombre} (${c.region}). Despacho desde Curicó en ${DISTANCIAS_CONSTRUCTORA[c.slug].tiempo}. Servicio para ${c.rubroLocal.slice(0, 2).join(" y ")}. JURMAQ, desde 2000.`,
     keywords: [
       `arriendo maquinaria ${c.nombre}`,
       `arriendo retroexcavadora ${c.nombre}`,
