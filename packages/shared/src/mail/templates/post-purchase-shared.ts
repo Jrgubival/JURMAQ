@@ -68,7 +68,7 @@ export function buildPostPurchaseHtml(opts: BuildEmailOptions): string {
               Tel: +56 9 7667 3577 · contacto@jurmaq.cl<br>
               Av. Poniente 2157, Molina, Maule
             </p>
-            <p style="margin:0;color:#9ca3af;font-size:11px;font-style:italic;">Más de 25 años en la Región del Maule</p>
+            <p style="margin:0;color:#9ca3af;font-size:11px;font-style:italic;">Desde 2000 en la Región del Maule</p>
           </td>
         </tr>
         <tr>
