@@ -48,7 +48,9 @@
     "./ui/ViewItemTracker": "./src/ui/ViewItemTracker.tsx",
     "./ui/Breadcrumbs": "./src/ui/Breadcrumbs.tsx",
     "./ui/CrossLinksGrid": "./src/ui/CrossLinksGrid.tsx",
-    "./styles/globals.css": "./src/styles/globals.css"
+    "./ui/grupo": "./src/ui/grupo/index.tsx",
+    "./styles/globals.css": "./src/styles/globals.css",
+    "./styles/grupo.css": "./src/styles/grupo.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
