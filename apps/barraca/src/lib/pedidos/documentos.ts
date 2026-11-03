@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { env } from '@jurmaq/shared/env';
-import { esProduccion, PATRON_NUMERO } from './index';
+import { esProduccion, esServidorDesplegado, PATRON_NUMERO } from './index';
 
 /**
  * Boletas y facturas (PDF) que la barraca sube desde el panel para mandarlas
@@ -40,7 +40,7 @@ function destino(): Destino {
     if (esProduccion()) throw new Error('documentos locales no permitidos en producción');
     return 'local';
   }
-  if (!process.env.VERCEL) throw new Error('documentos en Storage sólo desde Vercel');
+  if (!esServidorDesplegado()) throw new Error('documentos en Storage sólo desde el servidor desplegado');
   return 'storage';
 }
 

@@ -499,9 +499,18 @@ const storeSupabase: PedidosStore = {
   },
 };
 
-/** Producción real (Vercel production). Los modos de prueba se niegan acá. */
+/**
+ * ¿Corre en un servidor desplegado (Vercel o Cloudflare Workers)? Un `next dev`
+ * local apunta a la base de producción y no debe escribir en Storage.
+ * Cloudflare: DESPLIEGUE=cloudflare en wrangler.jsonc (vars).
+ */
+export function esServidorDesplegado(): boolean {
+  return !!process.env.VERCEL || process.env.DESPLIEGUE?.trim() === 'cloudflare';
+}
+
+/** Producción real (Vercel production o Workers). Los modos de prueba se niegan acá. */
 export function esProduccion(): boolean {
-  return process.env.VERCEL_ENV === 'production' || (process.env.NODE_ENV === 'production' && !!process.env.VERCEL);
+  return process.env.VERCEL_ENV === 'production' || (process.env.NODE_ENV === 'production' && esServidorDesplegado());
 }
 
 let store: PedidosStore | null = null;

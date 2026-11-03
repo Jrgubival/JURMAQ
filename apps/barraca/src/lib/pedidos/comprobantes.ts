@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { env } from '@jurmaq/shared/env';
-import { esProduccion, PATRON_NUMERO } from './index';
+import { esProduccion, esServidorDesplegado, PATRON_NUMERO } from './index';
 
 /**
  * Comprobantes de transferencia ("Ya transferí"). Son datos bancarios del
@@ -62,7 +62,7 @@ function destino(): Destino {
   }
   // Sólo un servidor desplegado en Vercel escribe en Storage. Un `next dev`
   // local apunta a la base de producción: ahí no se sube nada.
-  if (!process.env.VERCEL) throw new Error('comprobantes en Storage sólo desde Vercel');
+  if (!esServidorDesplegado()) throw new Error('comprobantes en Storage sólo desde el servidor desplegado');
   return 'storage';
 }
 

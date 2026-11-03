@@ -90,6 +90,8 @@ export function isValidOrigin(request: { headers: { get(name: string): string | 
       // `jurmaq-lo-que-sea.vercel.app`, así que en producción ese comodín
       // abría el chequeo CSRF a un origen controlado por un tercero.
       if (
+        // Sólo en un preview de Vercel: en Workers VERCEL_ENV no existe.
+        !!process.env.VERCEL &&
         process.env.VERCEL_ENV !== 'production' &&
         u.host.endsWith('.vercel.app') &&
         u.host.includes('jurmaq')

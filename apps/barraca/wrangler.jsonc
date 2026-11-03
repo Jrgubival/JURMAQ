@@ -15,7 +15,7 @@
   ],
   "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
-  "vars": { "AUTH_SCOPE": "barraca" },
+  "vars": { "AUTH_SCOPE": "barraca", "DESPLIEGUE": "cloudflare" },
   "observability": { "enabled": true },
   // Antes en vercel.json.
   "triggers": { "crons": ["0 9 * * *"] }
