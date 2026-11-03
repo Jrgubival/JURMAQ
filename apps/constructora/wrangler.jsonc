@@ -18,7 +18,15 @@
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
   // Chromium para los PDF de contratos (lib/pdf-generator.ts).
   "browser": { "binding": "BROWSER" },
+  // Dominios de producción (antes en Vercel).
   "workers_dev": true,
+  "routes": [
+    { "pattern": "jurmaq.cl", "custom_domain": true },
+    { "pattern": "www.jurmaq.cl", "custom_domain": true },
+    { "pattern": "constructora.jurmaq.cl", "custom_domain": true }
+  ],
   "vars": { "AUTH_SCOPE": "constructora", "DESPLIEGUE": "cloudflare" },
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // Antes en vercel.json; cada horario llama a su ruta en custom-worker.ts.
+  "triggers": { "crons": ["0 3 * * *", "0 4 * * *", "0 5 * * *", "0 6 * * *", "0 8 * * *", "0 8 1 * *"] }
 }

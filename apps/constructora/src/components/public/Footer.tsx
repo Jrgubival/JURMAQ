@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { LEGAL_INFO, buildFooterCopyright } from "@jurmaq/shared/seo";
-import CuentaLinks from "./CuentaLinks";
 
 /**
  * Footer constructora — Editorial Luxury.
@@ -10,7 +9,7 @@ import CuentaLinks from "./CuentaLinks";
  * + nav landmarks + skip target).
  *
  * Estructura:
- *  - Top row: brand + tagline + nav columns (4: Empresa, Servicios, Cuenta, Contacto)
+ *  - Top row: brand + tagline + nav columns (3: Empresa, Servicios, Contacto)
  *  - Bottom row: copyright + legales hairline-divided
  */
 
@@ -167,10 +166,6 @@ export default function Footer({ vertical = 'arriendo' }: { vertical?: FooterVer
                 </ul>
               </div>
             ))}
-            {/* Mi cuenta solo en el hub: /cuenta/* no existe en el subdominio
-                (el middleware lo deja pasar sin reescribir, pero el portal
-                del cliente vive en jurmaq.cl). */}
-            {!esConstructora && <CuentaLinks />}
           </nav>
         </div>
 

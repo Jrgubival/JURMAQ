@@ -176,18 +176,6 @@ export default function Navbar({ vertical = 'arriendo' }: { vertical?: Vertical 
                   {link.label}
                 </Link>
               ))}
-              {!esConstructora && (
-                <Link
-                  href="/cuenta/login"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-gold-400 transition-colors"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  Mi cuenta
-                </Link>
-              )}
               <WhatsappLink
                 href={waHref}
                 source={esConstructora ? 'navbar_desktop_constructora' : 'navbar_desktop'}
@@ -230,15 +218,6 @@ export default function Navbar({ vertical = 'arriendo' }: { vertical?: Vertical 
                   {link.label}
                 </Link>
               ))}
-              {!esConstructora && (
-                <Link
-                  href="/cuenta/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-white/90 hover:text-gold-400 text-base font-medium"
-                >
-                  Mi cuenta
-                </Link>
-              )}
               <WhatsappLink
                 href={waHref}
                 source={esConstructora ? 'navbar_mobile_constructora' : 'navbar_mobile'}
