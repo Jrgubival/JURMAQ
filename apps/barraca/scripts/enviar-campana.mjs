@@ -6,23 +6,26 @@
  * Reglas:
  *   · Se envía de a uno, con pausa, y como máximo TOPE_DIARIO por día (hora de
  *     Chile) sumando todas las campañas, para no gastar la cuota diaria que
- *     usan los pedidos y los códigos del panel.
- *   · Antes de cada envío salta a quien esté de baja (barraca_correos_baja,
- *     fail-closed: si no se puede consultar, no se envía) y a quien ya tenga
- *     fila en barraca_campana_envios para esa campaña.
- *   · La fila se RESERVA antes de enviar (unique campaña + huella): dos
- *     corridas a la vez, o un reintento, nunca mandan dos veces lo mismo. Si el
- *     envío falla queda en 'error' y no se reintenta solo.
- *   · El enlace de baja va firmado (huella HMAC del correo con AUTH_SECRET,
- *     la misma de lib/baja-correos.ts) y además va en los encabezados
- *     List-Unsubscribe + List-Unsubscribe-Post (botón de Gmail, RFC 8058).
+ *     usan los pedidos y los códigos del panel. El tope se vuelve a contar antes
+ *     de cada envío (reservados + enviados), así que dos corridas a la vez
+ *     tampoco lo pasan.
+ *   · Antes de cada envío salta a quien esté de baja (barraca_correos_baja o la
+ *     columna unsubscribed de la lista; fail-closed: si no se puede consultar,
+ *     no se envía) y a quien ya tenga fila en barraca_campana_envios.
+ *   · La fila se RESERVA antes de enviar (unique campaña + huella) y el envío
+ *     lleva idempotencyKey: dos corridas, un reintento o un error a medio camino
+ *     nunca mandan dos veces lo mismo. Lo que falla o queda a medias NO se
+ *     reenvía solo: se avisa al inicio para revisarlo en Resend.
+ *   · El enlace de baja va firmado (huella HMAC del correo con AUTH_SECRET, la
+ *     misma de lib/baja-correos.ts). El encabezado List-Unsubscribe (botón de
+ *     Gmail, RFC 8058) lleva además una firma propia del POST de un clic.
  *   · Sin copia oculta y sin el correo en claro en la base ni en la consola.
  *
  * Por defecto es SIMULACIÓN: muestra a quién le tocaría y no envía nada.
  *
  * Uso (desde apps/barraca, con .env.local de producción):
  *   node scripts/enviar-campana.mjs --campana catalogo-fierro-nov26 \
- *     --html "<CORREO_FINAL.html>" --lista "<IMPORTAR_RESEND.csv>" \
+ *     --html "<CORREO_FINAL.html>" --lista "<lista.csv>" \
  *     --asunto "Publicidad: catálogo de fierro JURMAQ" [--aplicar]
  *   Prueba a una sola dirección (no toca la lista; campaña "<campana>-prueba"):
  *     ... --prueba jrgubival@gmail.com --aplicar
@@ -64,6 +67,8 @@ function salir(msg) {
 if (!campanaBase || !/^[a-z0-9_-]{3,50}$/.test(campanaBase)) salir('Falta --campana (minúsculas, números, - o _).');
 if (!rutaHtml || !fs.existsSync(rutaHtml)) salir('Falta --html con el archivo del correo.');
 if (!asunto || asunto.length > 150) salir('Falta --asunto (máx. 150 caracteres).');
+// Ley 19.496 art. 28 B: la comunicación promocional se identifica como tal.
+if (!/publicidad/i.test(asunto)) salir('El asunto debe decir "Publicidad" (Ley 19.496, art. 28 B).');
 if (!prueba && (!rutaLista || !fs.existsSync(rutaLista))) salir('Falta --lista con el CSV de destinatarios.');
 
 const campana = prueba ? `${campanaBase}-prueba` : campanaBase;
@@ -78,36 +83,70 @@ if (!html.includes(MARCADOR_BAJA)) salir(`El HTML no tiene el marcador de baja $
 // ---------------------------------------------------------------------------
 const normalizar = (e) => String(e ?? '').trim().toLowerCase();
 const correoValido = (e) => e.length <= 254 && /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(e);
-// Igual que huellaCorreo() de lib/baja-correos.ts.
-const huellaCorreo = (e) => crypto.createHmac('sha256', AUTH_SECRET).update(`baja:${normalizar(e)}`).digest('hex');
+// Igual que huellaCorreo() y firmaUnClic() de lib/baja-correos.ts.
+const hmac = (texto) => crypto.createHmac('sha256', AUTH_SECRET).update(texto).digest('hex');
+const huellaCorreo = (e) => hmac(`baja:${normalizar(e)}`);
+const firmaUnClic = (huella) => hmac(`1clic:${huella}`);
 const enmascarar = (e) => e.replace(/^(.{2}).*(@.*)$/, '$1***$2');
+const sinCorreos = (t) => String(t).replace(/[^\s<>"']+@[^\s<>"']+/g, '***').slice(0, 300);
 const escaparAtributo = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
+/** CSV con comillas (RFC 4180): campos con comas, comillas dobles y saltos de línea. */
+function parsearCsv(texto) {
+  const filas = [];
+  let fila = [];
+  let campo = '';
+  let comillas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const ch = texto[i];
+    if (comillas) {
+      if (ch === '"' && texto[i + 1] === '"') { campo += '"'; i++; }
+      else if (ch === '"') comillas = false;
+      else campo += ch;
+    } else if (ch === '"') comillas = true;
+    else if (ch === ',') { fila.push(campo); campo = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && texto[i + 1] === '\n') i++;
+      fila.push(campo);
+      campo = '';
+      if (fila.some((c) => c.trim())) filas.push(fila);
+      fila = [];
+    } else campo += ch;
+  }
+  fila.push(campo);
+  if (fila.some((c) => c.trim())) filas.push(fila);
+  return filas;
+}
+
 function leerLista(ruta) {
-  const filas = fs.readFileSync(ruta, 'utf8').replace(/^﻿/, '').split(/\r?\n/).filter((l) => l.trim());
-  const cab = filas.shift().split(',').map((c) => c.trim().toLowerCase());
+  const filas = parsearCsv(fs.readFileSync(ruta, 'utf8').replace(/^﻿/, ''));
+  const cab = (filas.shift() ?? []).map((c) => c.trim().toLowerCase());
   const iCorreo = cab.findIndex((c) => c === 'email' || c === 'correo');
   const iBaja = cab.indexOf('unsubscribed');
   if (iCorreo < 0) salir('La lista no tiene columna email ni correo.');
+  // Sin la columna de bajas no se envía: podría escribirle a alguien que ya pidió la baja.
+  if (iBaja < 0) salir('La lista no tiene la columna unsubscribed.');
   const vistos = new Set();
   const out = [];
-  for (const f of filas) {
-    const c = f.split(',');
+  for (const c of filas) {
+    if (c.length !== cab.length) salir(`Una fila de la lista tiene ${c.length} columnas y la cabecera ${cab.length}: revisa el CSV.`);
     const email = normalizar(c[iCorreo]);
     if (!correoValido(email) || vistos.has(email)) continue;
     vistos.add(email);
-    out.push({ email, bajaEnLista: iBaja >= 0 && String(c[iBaja]).trim().toLowerCase() === 'true' });
+    out.push({ email, bajaEnLista: String(c[iBaja]).trim().toLowerCase() === 'true' });
   }
   return out;
 }
 
+/** Medianoche de hoy en Chile, en UTC. Prueba los offsets posibles y usa el que da 00:00 en Santiago (sirve en los cambios de hora). */
 function inicioDiaChile() {
   const hoy = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago' }).format(new Date());
-  // Medianoche de Chile en UTC (tolerancia de horario de verano: se calcula con el offset actual).
-  const offset = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Santiago', timeZoneName: 'shortOffset' })
-    .formatToParts(new Date()).find((p) => p.type === 'timeZoneName')?.value.replace('GMT', '') || '-3';
-  const h = Number(offset);
-  return new Date(`${hoy}T00:00:00${h <= 0 ? '-' : '+'}${String(Math.abs(h)).padStart(2, '0')}:00`).toISOString();
+  const hora = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Santiago', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  for (const off of ['-03:00', '-04:00', '-02:00', '-05:00']) {
+    const d = new Date(`${hoy}T00:00:00${off}`);
+    if (hora.format(d) === '00:00') return d.toISOString();
+  }
+  return new Date(`${hoy}T00:00:00-02:00`).toISOString(); // lo más estricto: cuenta desde más temprano
 }
 
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -122,20 +161,36 @@ async function estaDeBaja(huella) {
   return !!data;
 }
 
+/** Envíos de hoy de todas las campañas, contando también los reservados (en curso o colgados). */
 async function enviadosHoy() {
   const { count, error } = await db
     .from('barraca_campana_envios')
     .select('id', { count: 'exact', head: true })
-    .gte('enviado_at', inicioDiaChile())
-    .eq('estado', 'enviado');
+    .gte('created_at', inicioDiaChile())
+    .in('estado', ['reservado', 'enviado']);
   if (error) throw error;
   return count ?? 0;
+}
+
+/** Filas que quedaron a medias en corridas anteriores: se revisan a mano en Resend, nunca se reenvían solas. */
+async function avisarColgados() {
+  const { data, error } = await db
+    .from('barraca_campana_envios')
+    .select('estado')
+    .eq('campana', campana)
+    .in('estado', ['reservado', 'error']);
+  if (error) throw error;
+  const n = (e) => (data ?? []).filter((x) => x.estado === e).length;
+  if (n('reservado') || n('error')) {
+    console.log(`AVISO: en "${campana}" hay ${n('reservado')} reservados sin confirmar y ${n('error')} con error de corridas anteriores. No se reenvían; revísalos en Resend.`);
+  }
 }
 
 async function main() {
   const destinatarios = prueba ? [{ email: normalizar(prueba), bajaEnLista: false }] : leerLista(rutaLista);
   if (prueba && !correoValido(destinatarios[0].email)) salir('Correo de prueba inválido.');
 
+  await avisarColgados();
   const yaHoy = await enviadosHoy();
   let cupo = Math.max(0, TOPE_DIARIO - yaHoy);
   console.log(`Campaña "${campana}" · ${destinatarios.length} en la lista · enviados hoy (todas las campañas): ${yaHoy} · cupo: ${cupo}`);
@@ -154,12 +209,15 @@ async function main() {
 
     if (!aplicar) { console.log(`  enviaría a ${enmascarar(d.email)}`); cupo--; continue; }
 
+    // Se vuelve a contar antes de cada envío: si corre otra tanda a la vez, el tope igual se respeta.
+    if ((await enviadosHoy()) >= TOPE_DIARIO) { r.sinCupo++; cupo = 0; continue; }
+
     // Reserva ANTES de enviar: si otra corrida ya la tomó, el insert choca y no se envía.
     const { error: eRes } = await db.from('barraca_campana_envios').insert({ campana, huella, estado: 'reservado' });
     if (eRes) { r.yaEnviados++; continue; }
 
     const urlBaja = `${TIENDA}/baja/${huella}?o=${encodeURIComponent(`campana:${campanaBase}`.slice(0, 60))}`;
-    const urlUnClic = `${TIENDA}/api/baja/${huella}?o=${encodeURIComponent('gmail-un-clic')}`;
+    const urlUnClic = `${TIENDA}/api/baja/${huella}?o=gmail-un-clic&s=${firmaUnClic(huella)}`;
     const cuerpo = html.split(MARCADOR_BAJA).join(escaparAtributo(urlBaja));
     try {
       const res = await resend.emails.send({
@@ -169,23 +227,26 @@ async function main() {
         subject: asunto,
         html: cuerpo,
         headers: {
-          'List-Unsubscribe': `<${urlUnClic}>, <mailto:${RESPONDER_A}?subject=Baja%20de%20correos>`,
+          // Sólo https: un mailto dependería de que alguien lo procese a mano.
+          'List-Unsubscribe': `<${urlUnClic}>`,
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         },
-      });
+      }, { idempotencyKey: `${campana}/${huella}` });
       if (res.error) throw new Error(res.error.message || 'Resend rechazó el envío');
-      await db.from('barraca_campana_envios')
+      const { error: eUpd } = await db.from('barraca_campana_envios')
         .update({ estado: 'enviado', resend_id: res.data?.id ?? null, enviado_at: new Date().toISOString() })
         .eq('campana', campana).eq('huella', huella);
+      // Salió, pero no quedó marcado: se detiene para no descuadrar el tope ni el registro.
+      if (eUpd) salir(`Se envió a ${enmascarar(d.email)} pero no se pudo marcar como enviado. Detenido: revisa la tabla antes de seguir.`);
       r.enviados++;
       cupo--;
       console.log(`  enviado a ${enmascarar(d.email)}`);
     } catch (e) {
-      await db.from('barraca_campana_envios')
-        .update({ estado: 'error', error: String(e instanceof Error ? e.message : e).slice(0, 300) })
+      const { error: eErr } = await db.from('barraca_campana_envios')
+        .update({ estado: 'error', error: sinCorreos(e instanceof Error ? e.message : e) })
         .eq('campana', campana).eq('huella', huella);
       r.errores++;
-      console.log(`  ERROR con ${enmascarar(d.email)}`);
+      console.log(`  ERROR con ${enmascarar(d.email)}${eErr ? ' (y no se pudo anotar el error)' : ''}`);
     }
     await dormir(PAUSA_MS);
   }
@@ -193,6 +254,6 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error('Falló la campaña:', e instanceof Error ? e.message : e);
+  console.error('Falló la campaña:', sinCorreos(e instanceof Error ? e.message : e));
   process.exit(1);
 });

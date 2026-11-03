@@ -26,6 +26,15 @@ export function huellaCorreo(email: string): string {
   return crypto.createHmac('sha256', env.AUTH_SECRET).update(`baja:${email.trim().toLowerCase()}`).digest('hex');
 }
 
+/**
+ * Firma del POST de baja "de un clic" (encabezado List-Unsubscribe de las
+ * campañas). Sin ella el endpoint no registra nada, así nadie puede llenar la
+ * tabla con huellas inventadas.
+ */
+export function firmaUnClic(huella: string): string {
+  return crypto.createHmac('sha256', env.AUTH_SECRET).update(`1clic:${huella}`).digest('hex');
+}
+
 export function urlBaja(email: string): string {
   return `${URL_TIENDA}/baja/${huellaCorreo(email)}`;
 }
