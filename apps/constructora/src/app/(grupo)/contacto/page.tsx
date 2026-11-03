@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function Contacto() {
   return (
     <>
-      <section className="h-banda g-textura-acero" data-tema="oscuro">
+      <section className="h-banda" data-tema="marino">
         <div className="h-banda__texto">
           <h1 className="g-display">Contacto</h1>
           <p>

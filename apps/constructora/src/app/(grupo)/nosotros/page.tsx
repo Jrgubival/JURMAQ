@@ -41,7 +41,7 @@ const FICHAS: { negocio: Negocio; titulo: string; texto: string; foto: string; a
 export default function Nosotros() {
   return (
     <>
-      <section className="h-banda g-textura-acero" data-tema="oscuro">
+      <section className="h-banda" data-tema="marino">
         <div className="h-banda__texto">
           <h1 className="g-display">Quiénes somos</h1>
           <p>

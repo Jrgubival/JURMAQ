@@ -69,6 +69,23 @@
   color: var(--g-tinta);
 }
 
+/* Azul marino del grupo: el mismo #081428 de las franjas de la barraca. */
+[data-tema="marino"] {
+  --g-fondo: #081428;
+  --g-superficie: #0f2038;
+  --g-alterno: #0f2038;
+  --g-tinta: #f4f3f0;
+  --g-tinta-media: #d5d9e0;
+  --g-tinta-suave: #a3adbc;
+  --g-linea: #243650;
+  --acento: #f4f3f0;
+  --acento-hover: #ffffff;
+  --sobre-acento: #081428;
+  --acento-texto: #f4f3f0;
+  background-color: var(--g-fondo);
+  color: var(--g-tinta);
+}
+
 [data-marca="barraca"] {
   --acento: var(--g-barraca);
   --acento-hover: #a80418;
@@ -92,11 +109,17 @@
 
 /* Sobre oscuro el acento debe aclararse para leerse como texto. */
 [data-tema="oscuro"] [data-marca="barraca"],
-[data-tema="oscuro"][data-marca="barraca"] { --acento-texto: #ff8a94; }
+[data-tema="oscuro"][data-marca="barraca"],
+[data-tema="marino"] [data-marca="barraca"],
+[data-tema="marino"][data-marca="barraca"] { --acento-texto: #ff6470; }
 [data-tema="oscuro"] [data-marca="arriendo"],
-[data-tema="oscuro"][data-marca="arriendo"] { --acento-texto: var(--g-arriendo); }
+[data-tema="oscuro"][data-marca="arriendo"],
+[data-tema="marino"] [data-marca="arriendo"],
+[data-tema="marino"][data-marca="arriendo"] { --acento-texto: var(--g-arriendo); }
 [data-tema="oscuro"] [data-marca="constructora"],
-[data-tema="oscuro"][data-marca="constructora"] { --acento-texto: #9cc6e0; }
+[data-tema="oscuro"][data-marca="constructora"],
+[data-tema="marino"] [data-marca="constructora"],
+[data-tema="marino"][data-marca="constructora"] { --acento-texto: #8fc0e0; }
 
 /* Plancha laminada: el mismo rayado de los fondos de la barraca. */
 .g-textura-acero {

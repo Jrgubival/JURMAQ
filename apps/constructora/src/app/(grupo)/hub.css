@@ -1,6 +1,6 @@
 /* Hub jurmaq.cl. Lo común vive en @jurmaq/shared/styles/grupo.css.
-   Idea: la portada son tres puertas de foto; al pasar, la puerta se abre y su
-   color sube desde abajo. Ese es el único gesto fuerte del sitio. */
+   Base azul marino, fotos reales de obra y bordes rectos. El único gesto fuerte
+   es el color de cada negocio subiendo por su panel. */
 .h-raiz {
   flex: 1;
   display: flex;
@@ -33,100 +33,184 @@
 
 /* --- Portada ------------------------------------------------------- */
 .h-portada {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
 }
-.h-portada__texto {
-  max-width: var(--g-ancho);
+/* Foto real de obra teñida de marino: textura, no protagonista. */
+.h-portada__fondo { position: absolute; inset: 0; z-index: -1; background: #081428; }
+.h-portada__fondo img {
   width: 100%;
-  margin: 0 auto;
-  padding: clamp(0.75rem, 2vw, 1.5rem) var(--g-margen) clamp(1.5rem, 3vw, 2.5rem);
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 20%;
+  opacity: 0.34;
+  mix-blend-mode: luminosity;
 }
-.h-portada__texto .g-display { font-size: clamp(2.75rem, 5.6vw, 5.25rem); }
-.h-portada__texto p {
-  margin: 0.875rem 0 0;
+.h-portada__ancho {
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem) var(--g-margen) clamp(2rem, 5vw, 4rem);
+}
+.h-portada .g-display { font-size: clamp(2.75rem, 5.6vw, 5.25rem); }
+.h-portada__baja {
+  margin: 0.75rem 0 clamp(1.75rem, 3.5vw, 3rem);
   color: var(--g-tinta-media);
   font-size: clamp(1.125rem, 1.6vw, 1.375rem);
 }
 
-.h-puertas {
+.h-empresas {
   display: grid;
+  gap: 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
+  scroll-margin-top: 1rem;
 }
-.h-puerta {
+.h-empresa {
   position: relative;
-  display: grid;
-  grid-template-rows: minmax(200px, 44dvh) auto;
-  overflow: hidden;
-  color: var(--sobre-acento);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--g-tinta);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
-.h-puerta__foto { position: relative; overflow: hidden; background: #1b1b1a; }
-.h-puerta__foto img {
-  position: absolute;
-  inset: 0;
+.h-empresa__foto {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #0f2038;
+}
+.h-empresa__foto img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 700ms var(--g-ease-out);
 }
-/* Celular y pantallas táctiles: foto arriba, bloque del color del negocio abajo. */
-.h-puerta__panel {
+.h-empresa__panel {
   position: relative;
-  padding: 1.25rem var(--g-margen) 1.5rem;
+  flex: 1;
+  padding: 1.25rem 1.5rem 1.375rem;
+  background: var(--g-superficie);
+  transition: color 160ms ease;
+}
+/* El color del negocio sube por el panel al pasar. */
+.h-empresa__panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: var(--acento);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 220ms var(--g-ease-out);
 }
-.h-puerta__nombre {
-  position: relative;
-  margin: 0;
+.h-empresa__panel > * { position: relative; }
+.h-empresa__marca {
+  display: block;
   font-family: var(--g-titular);
-  font-size: clamp(2.25rem, 3.9vw, 4.25rem);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+.h-empresa__nombre {
+  margin: 0;
+  color: var(--acento-texto);
+  font-family: var(--g-titular);
+  font-size: clamp(2.5rem, 3.6vw, 3.25rem);
   font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.005em;
+  line-height: 1.05;
   text-transform: uppercase;
+  transition: color 160ms ease;
 }
-.h-puerta__detalle {
-  position: relative;
-  max-width: 36ch;
-  margin: 0.5rem 0 0;
-  font-size: 1rem;
-  line-height: 1.45;
-}
-.h-puerta__pie {
-  position: relative;
+.h-empresa__detalle { margin: 0.5rem 0 0; color: inherit; line-height: 1.45; }
+.h-empresa__pie {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
   margin-top: 0.875rem;
 }
-.h-puerta__ir {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 24px;
+.h-empresa__ir {
   font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
 }
-.h-puerta__ir svg { width: 20px; height: 20px; transition: transform var(--g-revelar) var(--g-ease-out); }
-.h-puerta__nota { font-size: 0.75rem; opacity: 0.85; }
-.h-puerta:active .h-puerta__foto img { transform: scale(1.02); }
-.h-puerta:focus-visible { outline: 3px solid #f4f3f0; outline-offset: -3px; }
+.h-empresa__nota { font-size: 0.8125rem; opacity: 0.8; }
+.h-empresa:active .h-empresa__foto img { transform: scale(1.02); }
+.h-empresa:focus-visible { outline: 3px solid #f4f3f0; outline-offset: 2px; }
 
-/* --- Cierre -------------------------------------------------------- */
-.h-cierre__fila {
-  display: flex;
-  flex-wrap: wrap;
+/* --- Sección Nosotros de la portada --------------------------------- */
+.h-grupo {
+  display: grid;
+  gap: 1.5rem;
   align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem 2rem;
   max-width: var(--g-ancho);
   margin: 0 auto;
-  padding: clamp(2.5rem, 6vw, 4.5rem) var(--g-margen);
+  padding: clamp(3rem, 7vw, 5.5rem) var(--g-margen);
 }
-.h-cierre .g-display { font-size: var(--g-display-m); }
+.h-grupo h2 { margin: 0; font-size: var(--g-display-l); }
+.h-grupo p { max-width: 42ch; margin: 1rem 0 1.25rem; color: var(--g-tinta-media); font-size: 1.125rem; line-height: 1.55; }
+.h-grupo__foto { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--g-alterno); }
+.h-grupo__foto img { width: 100%; height: 100%; object-fit: cover; }
+
+/* --- Contacto de la portada ----------------------------------------- */
+.h-llamar__ancho {
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: clamp(3rem, 7vw, 5rem) var(--g-margen);
+}
+.h-llamar h2 { margin: 0; font-size: var(--g-display-l); }
+.h-llamar p { margin: 0.75rem 0 1.75rem; color: var(--g-tinta-media); font-size: 1.125rem; }
+.h-llamar__botones { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.h-llamar__boton {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 56px;
+  padding: 0.875rem 1.25rem;
+  border: 1.5px solid var(--acento-texto);
+  color: var(--acento-texto);
+  font-family: var(--g-titular);
+  font-size: 1.375rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    transform var(--g-presion) var(--g-ease-out),
+    background-color var(--g-hover) ease,
+    color var(--g-hover) ease;
+}
+.h-llamar__boton span:last-child { font-size: 1.125rem; font-weight: 400; }
+.h-llamar__boton:active { transform: scale(0.98); }
+.h-llamar__boton:focus-visible { outline: 2px solid #f4f3f0; outline-offset: 2px; }
+
+/* --- Pie del hub ---------------------------------------------------- */
+.h-pie { font-size: 0.9375rem; line-height: 1.6; border-top: 1px solid var(--g-linea); }
+.h-pie__ancho {
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: clamp(2.5rem, 5vw, 3.5rem) var(--g-margen) 2rem;
+}
+.h-pie__columnas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem 1.5rem; }
+.h-pie__marca { grid-column: 1 / -1; }
+.h-pie .g-marca { font-size: 1.875rem; }
+.h-pie h2 { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 600; }
+.h-pie ul { margin: 0; padding: 0; list-style: none; }
+.h-pie li a { display: inline-block; padding: 0.25rem 0; color: var(--g-tinta-media); text-decoration: none; transition: color var(--g-hover) ease; }
+.h-pie a:focus-visible { outline: 2px solid var(--g-tinta); outline-offset: 2px; }
+.h-pie__legal {
+  display: grid;
+  gap: 0.25rem;
+  margin: 2rem 0 0;
+  padding: 1.25rem 0 0;
+  border-top: 1px solid var(--g-linea);
+  color: var(--g-tinta-suave);
+  font-size: 0.875rem;
+  list-style: none;
+}
 
 /* --- Banda de páginas interiores ------------------------------------ */
 .h-banda__texto {
@@ -225,76 +309,42 @@
   .h-contacto { grid-template-columns: 7fr 4fr; }
 }
 
-/* --- Puertas en escritorio: tres columnas a todo el alto ------------- */
+@media (min-width: 768px) {
+  .h-empresas { grid-template-columns: repeat(3, 1fr); transition: grid-template-columns 480ms var(--g-ease-out); }
+  .h-empresa__nombre { font-size: clamp(2rem, 3.6vw, 3.25rem); }
+  .h-llamar__botones { grid-template-columns: repeat(3, 1fr); }
+  .h-pie__columnas { grid-template-columns: 2fr 1fr 1fr 1.4fr; }
+  .h-pie__marca { grid-column: auto; }
+}
+@media (min-width: 900px) {
+  .h-grupo { grid-template-columns: 5fr 7fr; gap: clamp(2rem, 5vw, 4.5rem); }
+  /* Alto igual: los tres nombres quedan alineados. */
+  .h-empresa__detalle { min-height: calc(2 * 1.45em); }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  .h-empresa__detalle { min-height: calc(3 * 1.45em); }
+}
+
 @media (min-width: 900px) and (hover: hover) and (pointer: fine) {
-  .h-portada { min-height: calc(100dvh - 70px); }
-  .h-puertas {
-    flex: 1;
-    min-height: 460px;
-    grid-template-columns: 1fr 1fr 1fr;
-    transition: grid-template-columns 520ms var(--g-ease-out);
-  }
-  .h-puertas:has(> li:nth-child(1) > .h-puerta:is(:hover, :focus-visible)) { grid-template-columns: 1.3fr 1fr 1fr; }
-  .h-puertas:has(> li:nth-child(2) > .h-puerta:is(:hover, :focus-visible)) { grid-template-columns: 1fr 1.3fr 1fr; }
-  .h-puertas:has(> li:nth-child(3) > .h-puerta:is(:hover, :focus-visible)) { grid-template-columns: 1fr 1fr 1.3fr; }
-
-  .h-puertas > li { min-width: 0; }
-  .h-puerta { display: block; height: 100%; color: #fff; }
-  .h-puerta__foto { position: absolute; inset: 0; }
-  .h-puerta__foto img {
-    transform: scale(1.06);
-    transition: transform 700ms var(--g-ease-out);
-  }
-  /* Velo para que el nombre se lea sobre cualquier foto. */
-  .h-puerta__foto::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgb(12 12 11 / 0.82) 0%, rgb(12 12 11 / 0.4) 34%, transparent 62%);
-  }
-  /* Las puertas no elegidas se apagan. */
-  .h-puerta::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: #0c0c0b;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 300ms ease;
-  }
-  .h-puertas:has(.h-puerta:is(:hover, :focus-visible)) .h-puerta:not(:hover, :focus-visible)::after { opacity: 0.5; }
-
-  .h-puerta__panel {
-    position: absolute;
-    inset: auto 0 0;
-    padding: 1.75rem clamp(1.25rem, 2vw, 2.5rem) 2rem;
-    background: none;
-    transition: color 160ms ease;
-  }
-  /* El color del negocio sube desde abajo, detrás del texto. */
-  .h-puerta__panel::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--acento);
-    transform: scaleY(0);
-    transform-origin: bottom;
-    transition: transform 240ms var(--g-ease-out);
-  }
-  /* Mismo alto de texto: los tres nombres quedan a la misma altura. */
-  .h-puerta__detalle { min-height: calc(2 * 1.45em); }
-  @media (max-width: 1200px) { .h-puerta__detalle { min-height: calc(3 * 1.45em); } }
-  .h-puerta:is(:hover, :focus-visible) .h-puerta__foto img { transform: scale(1); }
-  .h-puerta:is(:hover, :focus-visible) .h-puerta__panel { color: var(--sobre-acento); transition-delay: 60ms; }
-  .h-puerta:is(:hover, :focus-visible) .h-puerta__panel::before {
+  .h-empresas:has(> li:nth-child(1) > .h-empresa:is(:hover, :focus-visible)) { grid-template-columns: 1.22fr 1fr 1fr; }
+  .h-empresas:has(> li:nth-child(2) > .h-empresa:is(:hover, :focus-visible)) { grid-template-columns: 1fr 1.22fr 1fr; }
+  .h-empresas:has(> li:nth-child(3) > .h-empresa:is(:hover, :focus-visible)) { grid-template-columns: 1fr 1fr 1.22fr; }
+  .h-empresas > li { min-width: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .h-empresa__foto img { transform: scale(1.04); }
+  .h-empresa:is(:hover, :focus-visible) .h-empresa__foto img { transform: scale(1); }
+  .h-empresa:is(:hover, :focus-visible) .h-empresa__panel { color: var(--sobre-acento); transition-delay: 60ms; }
+  .h-empresa:is(:hover, :focus-visible) .h-empresa__nombre { color: var(--sobre-acento); transition-delay: 60ms; }
+  .h-empresa:is(:hover, :focus-visible) .h-empresa__panel::before {
     transform: scaleY(1);
     transition-duration: var(--g-revelar);
   }
-  .h-puerta:is(:hover, :focus-visible) .h-puerta__ir svg { transform: translateX(6px); }
-  .h-cabecera nav a:hover { color: var(--g-tinta); }
+  .h-cabecera nav a:hover, .h-pie li a:hover { color: var(--g-tinta); }
+  .h-llamar__boton:hover { background: var(--acento-texto); color: #081428; }
 }
 
-/* Entrada: las puertas se levantan una tras otra, sólo al cargar. */
+/* Entrada: las tarjetas se levantan una tras otra, sólo al cargar. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes h-subir {
     from { clip-path: inset(100% 0 0 0); }
@@ -304,12 +354,12 @@
     from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: none; }
   }
-  .h-puertas > li { animation: h-subir 780ms var(--g-ease-out) both; }
-  .h-puertas > li:nth-child(2) { animation-delay: 90ms; }
-  .h-puertas > li:nth-child(3) { animation-delay: 180ms; }
-  .h-portada__texto > * { animation: h-asomar 520ms var(--g-ease-out) both; }
+  .h-empresas > li { animation: h-subir 680ms var(--g-ease-out) both; }
+  .h-empresas > li:nth-child(2) { animation-delay: 80ms; }
+  .h-empresas > li:nth-child(3) { animation-delay: 160ms; }
+  .h-portada .g-display, .h-portada__baja { animation: h-asomar 460ms var(--g-ease-out) both; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .h-puertas, .h-puerta__foto img, .h-puerta__panel::before, .h-puerta__ir svg { transition: none !important; }
-  .h-puerta__foto img { transform: none !important; }
+  .h-empresas, .h-empresa__foto img, .h-empresa__panel::before { transition: none !important; }
+  .h-empresa__foto img { transform: none !important; }
 }
