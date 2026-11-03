@@ -1,4 +1,4 @@
-import { HQ, LEGAL_INFO } from '../../seo';
+import { LEGAL_INFO } from '../../seo';
 
 /** Los negocios del grupo. "Grupo JURMAQ" es una marca: no tiene razón social ni RUT propios. */
 export type Marca = 'hub' | 'arriendo' | 'barraca' | 'constructora';
@@ -8,6 +8,8 @@ export const CONTACTO_GRUPO = 'contacto@jurmaq.cl';
 export const URL_HUB = 'https://jurmaq.cl';
 
 const constructora = LEGAL_INFO.brands.constructora;
+/** Arriendo y constructora comparten sociedad, dirección y teléfono. */
+const DIRECCION_MAQUEHUA = 'Lote 3 del lote A, Hijuela 11, Maquehua, Curicó';
 const barraca = LEGAL_INFO.brands.barraca;
 
 /** Razón social, RUT y contacto de cada negocio. Nunca mezclar la barraca con los otros dos. */
@@ -28,9 +30,9 @@ export const NEGOCIOS: Record<
     url: 'https://rental.jurmaq.cl',
     razonSocial: LEGAL_INFO.nombreLegal,
     rut: LEGAL_INFO.rut,
-    direccion: constructora.direccion,
-    telefono: HQ.telefono,
-    telefonoDisplay: HQ.telefonoDisplay,
+    direccion: DIRECCION_MAQUEHUA,
+    telefono: constructora.telefono,
+    telefonoDisplay: constructora.telefonoDisplay,
   },
   barraca: {
     nombre: 'Barraca de fierros',
@@ -46,7 +48,7 @@ export const NEGOCIOS: Record<
     url: 'https://constructora.jurmaq.cl',
     razonSocial: LEGAL_INFO.nombreLegal,
     rut: LEGAL_INFO.rut,
-    direccion: constructora.direccion,
+    direccion: DIRECCION_MAQUEHUA,
     telefono: constructora.telefono,
     telefonoDisplay: constructora.telefonoDisplay,
   },

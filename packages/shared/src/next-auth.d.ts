@@ -10,7 +10,7 @@ declare module 'next-auth' {
      * - 'constructora' = solo admin constructora (default histórico)
      * - 'both' = ambos (dueño/sysadmin)
      */
-    scope?: 'barraca' | 'constructora' | 'both';
+    scope?: 'barraca' | 'constructora' | 'rental' | 'both';
   }
 
   interface Session {
@@ -20,7 +20,7 @@ declare module 'next-auth' {
       email?: string | null;
       image?: string | null;
       role?: string;
-      scope?: 'barraca' | 'constructora' | 'both';
+      scope?: 'barraca' | 'constructora' | 'rental' | 'both';
     };
   }
 }
@@ -28,6 +28,6 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     role?: string;
-    scope?: 'barraca' | 'constructora' | 'both';
+    scope?: 'barraca' | 'constructora' | 'rental' | 'both';
   }
 }

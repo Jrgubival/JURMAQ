@@ -70,7 +70,7 @@ export async function sendCotizacionEmail(
     <div class="jm-btn">${renderButton({ href: whatsappHref, label: "Escríbenos por WhatsApp", color: "whatsapp" })}</div>
 
     <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:${BRAND.textMuted};text-align:center;">
-      Más de 25 años atendiendo en la Región del Maule.
+      Desde 2000 atendiendo en la Región del Maule.
     </p>
   `;
 

@@ -58,7 +58,7 @@ interface RateLimitResult {
  */
 function getScopePrefix(): string {
   const scope = env.AUTH_SCOPE;
-  return scope === 'barraca' || scope === 'constructora' ? scope : 'app';
+  return scope === 'barraca' || scope === 'constructora' || scope === 'rental' ? scope : 'app';
 }
 
 export function rateLimit(

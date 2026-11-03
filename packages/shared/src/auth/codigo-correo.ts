@@ -10,7 +10,9 @@ import { generateOtpCode } from '../otp/codigo';
 
 /**
  * Login del panel de barraca.jurmaq.cl con código por correo (nov-2026).
- * Sin contraseña y sin Google. SÓLO se usa cuando AUTH_SCOPE === 'barraca';
+ * Sin contraseña y sin Google. SÓLO se usa cuando AUTH_SCOPE es 'barraca' o
+ * 'rental' (con LOGIN_RENTAL_PERMITIDOS y scope rental|both, y su propia
+ * etiqueta en los HMAC: un código de un sitio no sirve en el otro);
  * jurmaq.cl (constructora) sigue con sus providers de siempre.
  *
  * - Sólo pueden entrar los correos de LOGIN_BARRACA_PERMITIDOS que además
@@ -47,6 +49,23 @@ export function esScopeBarraca(): boolean {
   return env.AUTH_SCOPE?.trim().toLowerCase() === 'barraca';
 }
 
+export type ScopeCodigo = 'barraca' | 'rental';
+
+/** Apps que entran con código por correo. rental.jurmaq.cl usa el mismo método que la barraca. */
+export function scopeCodigoCorreo(): ScopeCodigo | null {
+  const s = env.AUTH_SCOPE?.trim().toLowerCase();
+  return s === 'barraca' || s === 'rental' ? s : null;
+}
+
+/** Sin LOGIN_RENTAL_PERMITIDOS nadie entra a rental (fail-closed). */
+function correosPermitidos(): readonly string[] {
+  if (scopeCodigoCorreo() !== 'rental') return LOGIN_BARRACA_PERMITIDOS;
+  return (env.LOGIN_RENTAL_PERMITIDOS ?? '')
+    .split(',')
+    .map((c) => c.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 /** trim + minúsculas + formato básico. null si no es un correo. */
 export function normalizarCorreo(valor: unknown): string | null {
   if (typeof valor !== 'string') return null;
@@ -59,7 +78,7 @@ export function normalizarCorreo(valor: unknown): string | null {
 function hmac(etiqueta: string, valor: string): string {
   return crypto
     .createHmac('sha256', env.AUTH_SECRET)
-    .update(`barraca-login:${etiqueta}:${valor}`)
+    .update(`${scopeCodigoCorreo() ?? 'barraca'}-login:${etiqueta}:${valor}`)
     .digest('hex');
 }
 
@@ -204,30 +223,31 @@ export type UsuarioBarraca = {
   name: string | null;
   email: string;
   role: string;
-  scope: 'barraca' | 'both';
+  scope: ScopeCodigo | 'both';
 };
 
 /** Fila de public.users por `email` exacto (no sso_email), scope barraca|both, en la allowlist. */
 async function buscarUsuario(email: string, { lanzarSiFalla = false } = {}): Promise<UsuarioBarraca | null> {
-  if (!LOGIN_BARRACA_PERMITIDOS.includes(email)) return null;
+  if (!correosPermitidos().includes(email)) return null;
+  const scope = scopeCodigoCorreo() ?? 'barraca';
   const { data, error } = await (await db())
     .from('users')
     .select('id, name, email, role, scope')
     .eq('email', email)
-    .in('scope', ['barraca', 'both'])
+    .in('scope', [scope, 'both'])
     .maybeSingle();
   // En el login, un error de la base es "no" (fail-closed). En la revisión de
   // una sesión ya abierta se distingue, para no echar a todos por un corte breve.
   if (error && lanzarSiFalla) throw error;
   if (error || !data) return null;
   const fila = data as { id: string | number; name: string | null; email: string; role: string; scope: string };
-  if (fila.email !== email || (fila.scope !== 'barraca' && fila.scope !== 'both')) return null;
+  if (fila.email !== email || (fila.scope !== scope && fila.scope !== 'both')) return null;
   return {
     id: String(fila.id),
     name: fila.name,
     email: fila.email,
     role: fila.role,
-    scope: fila.scope,
+    scope: fila.scope as ScopeCodigo | 'both',
   };
 }
 
@@ -255,7 +275,7 @@ export type SesionBarraca =
 export async function revisarSesionBarraca(id: unknown, email: unknown): Promise<SesionBarraca> {
   const correo = normalizarCorreo(email);
   if (!correo || typeof id !== 'string' || !id) return { estado: 'revocada' };
-  if (!LOGIN_BARRACA_PERMITIDOS.includes(correo)) return { estado: 'revocada' };
+  if (!correosPermitidos().includes(correo)) return { estado: 'revocada' };
   const clave = `${id}:${correo}`;
   const previo = cacheVigente.get(clave);
   if (previo && previo.hasta > Date.now()) {
@@ -317,8 +337,10 @@ export async function solicitarCodigo(emailCrudo: unknown, ip: string): Promise<
           return;
         }
 
-        const { sendLoginBarracaEmail } = await import('../mail/templates/login-barraca');
-        const r = await sendLoginBarracaEmail(email, codigo);
+        const r =
+          scopeCodigoCorreo() === 'rental'
+            ? await (await import('../mail/templates/login-rental')).sendLoginRentalEmail(email, codigo)
+            : await (await import('../mail/templates/login-barraca')).sendLoginBarracaEmail(email, codigo);
         console.info('[login-codigo] código enviado', { email: maskEmail(email), ok: r.success });
       } catch {
         console.error('[login-codigo] no se pudo generar/enviar el código', { email: maskEmail(email) });
