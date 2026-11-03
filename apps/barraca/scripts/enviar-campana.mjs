@@ -240,7 +240,8 @@ async function main() {
       if (eUpd) salir(`Se envió a ${enmascarar(d.email)} pero no se pudo marcar como enviado. Detenido: revisa la tabla antes de seguir.`);
       r.enviados++;
       cupo--;
-      console.log(`  enviado a ${enmascarar(d.email)}`);
+      // El id de Resend no es secreto: sirve para buscar el envío en el panel de Resend.
+      console.log(`  enviado a ${enmascarar(d.email)} · id Resend ${res.data?.id ?? '?'}`);
     } catch (e) {
       const { error: eErr } = await db.from('barraca_campana_envios')
         .update({ estado: 'error', error: sinCorreos(e instanceof Error ? e.message : e) })
