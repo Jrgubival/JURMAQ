@@ -111,9 +111,11 @@ button { font: inherit; color: inherit; }
 .hero-texto { display: grid; gap: 22px; }
 .hero h1 { max-width: 13em; }
 .bajada { font-size: clamp(1.15rem, 1.8vw, 1.45rem); line-height: 1.45; max-width: 44ch; color: #e4e9eb; }
-.hero-texto > * { animation: subir 640ms var(--ease-out) backwards; }
+/* Solo desplazamiento: el texto de portada nunca espera para verse. */
+.hero-texto > * { animation: asomar 640ms var(--ease-out) backwards; }
 .hero-texto > :nth-child(2) { animation-delay: 80ms; }
 .hero-texto > :nth-child(3) { animation-delay: 160ms; }
+@keyframes asomar { from { transform: translateY(18px); } }
 @keyframes subir { from { opacity: 0; transform: translateY(18px); } }
 
 /* Logos */
