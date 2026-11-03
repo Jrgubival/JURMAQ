@@ -9,12 +9,19 @@ export default function Pie() {
       <div className="contenedor">
         <div className="pie-columnas">
           <div>
-            <h2>{EMPRESA.nombre}</h2>
+            <p className="pie-marca">JURMAQ</p>
             <p>{EMPRESA.direccion}</p>
-            <p>
-              <a href={`tel:${EMPRESA.telefono}`}>{EMPRESA.telefonoVisible}</a> ·{" "}
-              <a href={`mailto:${EMPRESA.correo}`}>{EMPRESA.correo}</a>
-            </p>
+            <ul>
+              <li>
+                <a href={`tel:${EMPRESA.telefono}`}>{EMPRESA.telefonoVisible}</a>
+              </li>
+              <li>
+                <a href={`mailto:${EMPRESA.correo}`}>{EMPRESA.correo}</a>
+              </li>
+              <li>
+                <a href={EMPRESA.whatsapp}>WhatsApp</a>
+              </li>
+            </ul>
           </div>
           <div>
             <h2>Servicios</h2>
@@ -30,6 +37,16 @@ export default function Pie() {
             </ul>
           </div>
           <div>
+            <h2>Zonas</h2>
+            <ul>
+              {ZONAS.map((z) => (
+                <li key={z.slug}>
+                  <Link href={`/obras-civiles-en/${z.slug}`}>{z.nombre}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
             <h2>Grupo JURMAQ</h2>
             <ul>
               <li>
@@ -42,19 +59,11 @@ export default function Pie() {
                 <a href="https://jurmaq.cl/maquinarias">Arriendo de maquinaria</a>
               </li>
             </ul>
-            <h2 className="pie-segundo">Zonas</h2>
-            <ul>
-              {ZONAS.map((z) => (
-                <li key={z.slug}>
-                  <Link href={`/obras-civiles-en/${z.slug}`}>{z.nombre}</Link>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
         <p className="legal">
-          © {new Date().getFullYear()} {EMPRESA.razonSocial} · RUT {EMPRESA.rut} ·{" "}
-          <a href="https://jurmaq.cl/privacidad">Privacidad</a> · <a href="https://jurmaq.cl/terminos">Términos</a>
+          © {new Date().getFullYear()} {EMPRESA.razonSocial}. RUT {EMPRESA.rut}.{" "}
+          <a href="https://jurmaq.cl/privacidad">Privacidad</a> <a href="https://jurmaq.cl/terminos">Términos</a>
         </p>
       </div>
     </footer>

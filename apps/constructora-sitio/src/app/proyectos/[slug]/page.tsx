@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import CabezaPagina from "@/components/CabezaPagina";
 import Cierre from "@/components/Cierre";
-import Foto from "@/components/Foto";
+import GaleriaObra from "@/components/GaleriaObra";
 import JsonLd from "@/components/JsonLd";
-import Migas from "@/components/Migas";
 import { ORGANIZACION_ID, url } from "@/data/empresa";
-import medidas from "@/data/fotos.json";
-import { getObra, OBRAS, type FotoObra } from "@/data/obras";
+import { getObra, OBRAS } from "@/data/obras";
 import { getServicio } from "@/data/servicios";
 import { getZona } from "@/data/zonas";
 
@@ -26,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const portada = o.fotos[0] ? [{ url: `/obras/${o.fotos[0].nombre}-1280.webp`, alt: o.fotos[0].alt }] : undefined;
   return {
     title: o.tituloSeo,
-    description: `${o.resumen} ${o.mandante}, ${o.comuna}.`.slice(0, 160),
+    description: o.resumen.slice(0, 160),
     alternates: { canonical: url(ruta) },
     openGraph: {
       title: o.tituloSeo,
@@ -44,9 +43,8 @@ export default async function PaginaObra({ params }: Props) {
   const ruta = `/proyectos/${o.slug}`;
   const servicios = o.servicios.flatMap((s) => getServicio(s) ?? []);
   const zona = o.zona ? getZona(o.zona) : undefined;
-  // Tres fotos verticales van en una fila; si se mezclan, todas en 4:3.
-  const resto = o.fotos.slice(1);
-  const esVertical = (f: FotoObra) => medidas[f.nombre].h > medidas[f.nombre].w;
+  const indice = OBRAS.indexOf(o);
+  const siguiente = OBRAS[(indice + 1) % OBRAS.length];
   return (
     <>
       <JsonLd
@@ -65,18 +63,17 @@ export default async function PaginaObra({ params }: Props) {
           ...(o.fotos.length > 0 && { image: o.fotos.map((f) => url(`/obras/${f.nombre}-1280.webp`)) }),
         }}
       />
-      <div className="contenedor cabeza-pagina">
-        <Migas
-          items={[
-            { nombre: "Proyectos", ruta: "/proyectos" },
-            { nombre: o.titulo, ruta },
-          ]}
-        />
-        <h1>{o.titulo}</h1>
-        <p className="bajada">{o.resumen}</p>
-      </div>
+      <CabezaPagina
+        migas={[
+          { nombre: "Proyectos", ruta: "/proyectos" },
+          { nombre: o.titulo, ruta },
+        ]}
+        titulo={o.titulo}
+        bajada={o.resumen}
+        foto={o.fotos[0]}
+      />
       <section className="seccion">
-        <div className="contenedor dos-columnas">
+        <div className="contenedor ficha-grilla">
           <dl className="ficha">
             <div>
               <dt>Mandante</dt>
@@ -87,10 +84,6 @@ export default async function PaginaObra({ params }: Props) {
               <dd>
                 {zona ? <Link href={`/obras-civiles-en/${zona.slug}`}>{o.comuna}</Link> : o.comuna}, {o.region}
               </dd>
-            </div>
-            <div>
-              <dt>Contratos con el cliente</dt>
-              <dd>{o.montoCliente} aprox., acumulado</dd>
             </div>
             {o.periodo && (
               <div>
@@ -105,21 +98,21 @@ export default async function PaginaObra({ params }: Props) {
               </div>
             )}
             <div>
-              <dt>Alcance</dt>
-              <dd>
-                <ul>
-                  {o.alcance.map((a) => (
-                    <li key={a}>{a}</li>
-                  ))}
-                </ul>
-              </dd>
+              <dt>Contratos con el cliente</dt>
+              <dd>{o.montoCliente} aprox., acumulado</dd>
             </div>
           </dl>
           <div>
+            <h2 className="sub sub-chica">Alcance</h2>
+            <ul className="alcance">
+              {o.alcance.map((a) => (
+                <li key={a}>{a}</li>
+              ))}
+            </ul>
             <h2 className="sub sub-chica">Servicios</h2>
             <ul>
               {servicios.map((s) => (
-                <li key={s.slug} className="item-corto">
+                <li key={s.slug} className="item-enlace">
                   <Link className="enlace" href={`/servicios/${s.slug}`}>
                     {s.nombre}
                   </Link>
@@ -131,17 +124,18 @@ export default async function PaginaObra({ params }: Props) {
       </section>
       {o.fotos.length > 0 && (
         <section className="seccion">
-          <div className="contenedor galeria">
-            {o.fotos.map((f, i) => {
-              return (
-                <figure key={f.nombre} className={resto.every(esVertical) && i > 0 ? "vertical" : undefined}>
-                  <Foto foto={f} sizes={i === 0 ? "(max-width: 1212px) 100vw, 1180px" : "(max-width: 860px) 100vw, 590px"} prioridad={i === 0} />
-                </figure>
-              );
-            })}
+          <div className="contenedor">
+            <GaleriaObra fotos={o.fotos} titulo={o.titulo} />
           </div>
         </section>
       )}
+      <section className="seccion">
+        <div className="contenedor seccion-cabeza">
+          <Link className="enlace enlace-grande" href={`/proyectos/${siguiente.slug}`}>
+            Siguiente obra: {siguiente.titulo}
+          </Link>
+        </div>
+      </section>
       <Cierre />
     </>
   );

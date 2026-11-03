@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import CabezaPagina from "@/components/CabezaPagina";
 import Cierre from "@/components/Cierre";
-import FilaObra from "@/components/FilaObra";
 import JsonLd from "@/components/JsonLd";
-import Migas from "@/components/Migas";
+import Mosaico from "@/components/Mosaico";
 import { ORGANIZACION_ID, url } from "@/data/empresa";
 import { obrasDeServicio } from "@/data/obras";
 import { getServicio, SERVICIOS } from "@/data/servicios";
@@ -46,22 +46,23 @@ export default async function PaginaServicio({ params }: Props) {
           areaServed: { "@type": "AdministrativeArea", name: "Región del Maule" },
         }}
       />
-      <div className="contenedor cabeza-pagina">
-        <Migas
-          items={[
-            { nombre: "Servicios", ruta: "/servicios" },
-            { nombre: s.corto, ruta },
-          ]}
-        />
-        <h1>{s.nombre}</h1>
-        <p className="bajada">{s.intro}</p>
-      </div>
-      <section className="seccion">
-        <div className="contenedor">
-          <h2 className="sub">Qué incluye</h2>
-          <ul className="lista">
+      <CabezaPagina
+        migas={[
+          { nombre: "Servicios", ruta: "/servicios" },
+          { nombre: s.corto, ruta },
+        ]}
+        titulo={s.nombre}
+        bajada={s.intro}
+        foto={{ nombre: s.foto, alt: "" }}
+      />
+      <section className="servicios">
+        <div className="contenedor servicios-grilla">
+          <h2>Qué incluye</h2>
+          <ul>
             {s.incluye.map((i) => (
-              <li key={i}>{i}</li>
+              <li key={i}>
+                <span>{i}</span>
+              </li>
             ))}
           </ul>
         </div>
@@ -70,11 +71,7 @@ export default async function PaginaServicio({ params }: Props) {
         <section className="seccion">
           <div className="contenedor">
             <h2 className="sub">Obras de este servicio</h2>
-            <div className="filas">
-              {obras.map((o) => (
-                <FilaObra key={o.slug} obra={o} />
-              ))}
-            </div>
+            <Mosaico obras={obras} />
           </div>
         </section>
       )}

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import CabezaPagina from "@/components/CabezaPagina";
 import FormularioObra from "@/components/FormularioObra";
-import Migas from "@/components/Migas";
 import { EMPRESA, url } from "@/data/empresa";
 
 const TITULO = "Cotizar obra civil o industrial";
 const DESCRIPCION =
-  "Cuéntanos el alcance de tu obra en la Región del Maule y te contactamos para revisar antecedentes y coordinar visita.";
+  "Cuéntanos el alcance de tu obra civil o industrial en la Región del Maule y te contactamos para revisar antecedentes y coordinar una visita.";
 
 export const metadata: Metadata = {
   title: TITULO,
@@ -17,18 +17,38 @@ export const metadata: Metadata = {
 export default function CotizarObra() {
   return (
     <>
-      <div className="contenedor cabeza-pagina">
-        <Migas items={[{ nombre: "Cotizar obra", ruta: "/cotizar-obra" }]} />
-        <h1>Cotiza tu obra</h1>
-        <p className="bajada">
-          Cuéntanos qué necesitas ejecutar. También puedes llamar al{" "}
-          <a href={`tel:${EMPRESA.telefono}`}>{EMPRESA.telefonoVisible}</a> o escribir por{" "}
-          <a href={EMPRESA.whatsapp}>WhatsApp</a>.
-        </p>
-      </div>
+      <CabezaPagina
+        migas={[{ nombre: "Cotizar obra", ruta: "/cotizar-obra" }]}
+        titulo="Cotiza tu obra"
+        bajada="Cuéntanos qué necesitas ejecutar."
+      />
       <section className="seccion">
-        <div className="contenedor">
+        <div className="contenedor ficha-grilla">
           <FormularioObra />
+          <dl className="ficha">
+            <div>
+              <dt>Teléfono</dt>
+              <dd>
+                <a href={`tel:${EMPRESA.telefono}`}>{EMPRESA.telefonoVisible}</a>
+              </dd>
+            </div>
+            <div>
+              <dt>WhatsApp</dt>
+              <dd>
+                <a href={EMPRESA.whatsapp}>Escribir por WhatsApp</a>
+              </dd>
+            </div>
+            <div>
+              <dt>Correo</dt>
+              <dd>
+                <a href={`mailto:${EMPRESA.correo}`}>{EMPRESA.correo}</a>
+              </dd>
+            </div>
+            <div>
+              <dt>Dirección</dt>
+              <dd>{EMPRESA.direccion}</dd>
+            </div>
+          </dl>
         </div>
       </section>
     </>

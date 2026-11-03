@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import CabezaPagina from "@/components/CabezaPagina";
 import Cierre from "@/components/Cierre";
-import Migas from "@/components/Migas";
+import Foto from "@/components/Foto";
 import { url } from "@/data/empresa";
 import { SERVICIOS } from "@/data/servicios";
 
@@ -19,17 +20,20 @@ export const metadata: Metadata = {
 export default function Servicios() {
   return (
     <>
-      <div className="contenedor cabeza-pagina">
-        <Migas items={[{ nombre: "Servicios", ruta: "/servicios" }]} />
-        <h1>Servicios</h1>
-        <p className="bajada">Obras civiles, maestranza y montaje para plantas en operación.</p>
-      </div>
+      <CabezaPagina
+        migas={[{ nombre: "Servicios", ruta: "/servicios" }]}
+        titulo="Servicios"
+        bajada="Obras civiles, maestranza y montaje para plantas en operación."
+        foto={{ nombre: "batcheo-interior", alt: "Interior de una planta en obra con plataforma de tijera" }}
+      />
       <section className="seccion">
-        <div className="contenedor indice">
+        <div className="contenedor mosaico">
           {SERVICIOS.map((s) => (
-            <Link key={s.slug} href={`/servicios/${s.slug}`}>
-              <strong>{s.nombre}</strong>
-              <span>{s.intro}</span>
+            <Link key={s.slug} href={`/servicios/${s.slug}`} className="obra">
+              <Foto foto={{ nombre: s.foto, alt: "" }} sizes="(max-width: 860px) 100vw, 50vw" />
+              <span className="obra-texto">
+                <span className="obra-titulo">{s.nombre}</span>
+              </span>
             </Link>
           ))}
         </div>

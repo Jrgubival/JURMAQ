@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import CabezaPagina from "@/components/CabezaPagina";
 import Cierre from "@/components/Cierre";
+import Cifras from "@/components/Cifras";
 import LogosClientes from "@/components/LogosClientes";
-import Migas from "@/components/Migas";
 import { EMPRESA, url } from "@/data/empresa";
 
 const TITULO = "Empresa constructora de Curicó";
@@ -34,44 +35,41 @@ export const metadata: Metadata = {
 export default function Nosotros() {
   return (
     <>
-      <div className="contenedor cabeza-pagina">
-        <Migas items={[{ nombre: "Nosotros", ruta: "/nosotros" }]} />
-        <h1>Empresa constructora con base en Curicó</h1>
-        <p className="bajada">
-          {EMPRESA.nombre} ({EMPRESA.razonSocial}) desarrolla obras industriales, civiles y metalmecánicas para el
-          sector agroindustrial, alimenticio y productivo, con base en Curicó y cobertura en las regiones de O&apos;Higgins
-          y del Maule.
-        </p>
-      </div>
+      <CabezaPagina
+        migas={[{ nombre: "Nosotros", ruta: "/nosotros" }]}
+        titulo="Empresa constructora con base en Curicó"
+        bajada="Obras industriales, civiles y metalmecánicas para el sector agroindustrial, alimenticio y productivo, en O'Higgins y el Maule."
+        foto={{ nombre: "alero-lateral", alt: "Bodega industrial con equipos elevadores" }}
+      />
       <section className="seccion">
-        <div className="contenedor dos-columnas">
-          <div>
-            <h2 className="sub">Para mandantes y licitaciones</h2>
-            <p className="sub">
-              Trabajamos desde 2000 con equipos que incluyen prevencionista de riesgos, supervisores y administrador de
-              obra.
-            </p>
-            <dl className="ficha">
-              {EQUIPO.map(([rol, detalle]) => (
-                <div key={rol}>
-                  <dt>{rol}</dt>
-                  <dd>{detalle}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+        <div className="contenedor">
+          <h2 className="sub">Para mandantes y licitaciones</h2>
+          <dl className="roles">
+            {EQUIPO.map(([rol, detalle]) => (
+              <div key={rol}>
+                <dt>{rol}</dt>
+                <dd>{detalle}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+      <section className="banda-logos">
+        <div className="contenedor">
+          <LogosClientes />
+        </div>
+      </section>
+      <Cifras />
+      <section className="seccion">
+        <div className="contenedor ficha-grilla">
           <div>
             <h2 className="sub">Cómo trabajamos</h2>
-            <ol className="lista lista-numerada">
+            <ol className="proceso">
               {PROCESO.map((p) => (
                 <li key={p}>{p}</li>
               ))}
             </ol>
           </div>
-        </div>
-      </section>
-      <section className="seccion">
-        <div className="contenedor dos-columnas">
           <dl className="ficha">
             <div>
               <dt>Razón social</dt>
@@ -90,10 +88,6 @@ export default function Nosotros() {
               <dd>Jorge Ubilla Rivera, Ingeniero Mecánico</dd>
             </div>
           </dl>
-          <div>
-            <h2 className="sub">Clientes</h2>
-            <LogosClientes />
-          </div>
         </div>
       </section>
       <Cierre />

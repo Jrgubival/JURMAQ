@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { API_SOLICITUDES, EMPRESA } from "@/data/empresa";
 import { SERVICIOS } from "@/data/servicios";
 
+// El envío depende de que jurmaq.cl acepte este origen por CORS en /api/solicitudes.
 type Estado = "listo" | "enviando" | "enviado" | "error";
 
 export default function FormularioObra() {
@@ -48,7 +49,7 @@ export default function FormularioObra() {
           <input id="nombre" name="nombre" required autoComplete="name" maxLength={120} />
         </div>
         <div className="campo">
-          <label htmlFor="empresa">Empresa</label>
+          <label htmlFor="empresa">Empresa (opcional)</label>
           <input id="empresa" name="empresa" autoComplete="organization" maxLength={120} />
         </div>
         <div className="campo">
@@ -56,12 +57,12 @@ export default function FormularioObra() {
           <input id="telefono" name="telefono" type="tel" required autoComplete="tel" maxLength={30} />
         </div>
         <div className="campo">
-          <label htmlFor="correo">Correo</label>
+          <label htmlFor="correo">Correo (opcional)</label>
           <input id="correo" name="correo" type="email" autoComplete="email" maxLength={160} />
         </div>
       </div>
       <div className="campo">
-        <label htmlFor="servicio">Tipo de obra</label>
+        <label htmlFor="servicio">Tipo de obra (opcional)</label>
         <select id="servicio" name="servicio" defaultValue="">
           <option value="">Elegir</option>
           {SERVICIOS.map((s) => (
@@ -87,7 +88,7 @@ export default function FormularioObra() {
         </p>
       )}
       <div>
-        <button className="boton" type="submit" disabled={estado === "enviando"}>
+        <button className="boton boton-formulario" type="submit" disabled={estado === "enviando"}>
           {estado === "enviando" ? "Enviando…" : "Enviar solicitud"}
         </button>
       </div>

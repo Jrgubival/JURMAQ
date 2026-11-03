@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Oswald } from "next/font/google";
 import Cabecera from "@/components/Cabecera";
 import Pie from "@/components/Pie";
 import { EMPRESA, SITIO_URL } from "@/data/empresa";
+import "@jurmaq/shared/styles/grupo.css";
 import "./globals.css";
 
 const sans = Geist({ variable: "--font-sans", subsets: ["latin"], display: "swap" });
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-CL" className={`${sans.variable} ${mono.variable} ${titular.variable}`}>
+    <html lang="es-CL" data-marca="constructora" className={`${sans.variable} ${mono.variable} ${titular.variable}`}>
       <body>
         <a className="saltar" href="#contenido">
           Saltar al contenido

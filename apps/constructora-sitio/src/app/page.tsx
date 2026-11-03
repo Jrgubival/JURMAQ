@@ -1,23 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Cierre from "@/components/Cierre";
-import FilaObra from "@/components/FilaObra";
+import Cifras from "@/components/Cifras";
 import Foto from "@/components/Foto";
 import JsonLd from "@/components/JsonLd";
 import LogosClientes from "@/components/LogosClientes";
+import Mosaico from "@/components/Mosaico";
 import { EMPRESA, ORGANIZACION_ID, SITIO_URL, url } from "@/data/empresa";
-import { OBRAS, OBRAS_CON_FOTO } from "@/data/obras";
+import { OBRAS_CON_FOTO } from "@/data/obras";
 import { SERVICIOS } from "@/data/servicios";
-import { ZONAS } from "@/data/zonas";
+
+const TITULO = "Constructora industrial en Curicó y Maule | JURMAQ";
 
 export const metadata: Metadata = {
-  title: { absolute: "Constructora industrial en Curicó y Maule | JURMAQ" },
+  title: { absolute: TITULO },
   alternates: { canonical: url("/") },
-  openGraph: { title: "Constructora industrial en Curicó y Maule | JURMAQ", url: url("/") },
+  openGraph: { title: TITULO, url: url("/") },
 };
 
+const EQUIPO = ["Prevencionista de riesgos", "Supervisores de terreno", "Administrador de obra"];
+
 export default function Inicio() {
-  const principal = OBRAS_CON_FOTO[0];
   return (
     <>
       <JsonLd
@@ -53,103 +56,80 @@ export default function Inicio() {
           },
         }}
       />
-      <section className="portada">
-        <div className="contenedor">
-          <div className="portada-texto">
-            <h1>Constructora industrial en Curicó y la Región del Maule</h1>
-            <p className="bajada">
-              Desde 2000, obras civiles, maestranza y montaje dentro de plantas que siguen operando. Equipos con
-              prevencionista de riesgos, supervisores y administrador de obra.
-            </p>
-            <div className="acciones">
-              <Link href="/proyectos" className="boton">
-                Ver proyectos
-              </Link>
-              <Link href="/cotizar-obra" className="boton boton-linea">
-                Cotizar obra
-              </Link>
-            </div>
+
+      <section className="hero foto-fondo">
+        <Foto
+          foto={{ nombre: "silos-general", alt: "Armadura de fundación junto a tres silos en la planta de Teno" }}
+          sizes="100vw"
+          prioridad
+        />
+        <div className="contenedor hero-texto">
+          <h1>Constructora industrial en Curicó y el Maule</h1>
+          <p className="bajada">Obras civiles, maestranza y montaje dentro de plantas que siguen operando.</p>
+          <div className="acciones">
+            <Link href="/proyectos" className="boton">
+              Ver proyectos
+            </Link>
+            <Link href="/cotizar-obra" className="boton boton-claro">
+              Cotizar obra
+            </Link>
           </div>
-          <figure className="portada-foto">
-            <Foto foto={principal.fotos[0]} sizes="(max-width: 1212px) 100vw, 1180px" prioridad />
-            <figcaption className="rotulo">
-              <dl>
-                <div>
-                  <dt>Obra</dt>
-                  <dd>{principal.titulo}</dd>
-                </div>
-                <div>
-                  <dt>Mandante</dt>
-                  <dd>{principal.mandante}</dd>
-                </div>
-                <div>
-                  <dt>Comuna</dt>
-                  <dd>{principal.comuna}</dd>
-                </div>
-              </dl>
-              <Link href={`/proyectos/${principal.slug}`} className="enlace">
-                Ver ficha
-              </Link>
-            </figcaption>
-          </figure>
-          <dl className="tira">
-            <div>
-              <dt>Miguel Torres</dt>
-              <dd>Clientes desde 2000</dd>
-            </div>
-            <div>
-              <dt>Cementos Biobío</dt>
-              <dd>Clientes desde 2002</dd>
-            </div>
-            <div>
-              <dt>Nestlé Chile</dt>
-              <dd>Clientes desde 2017</dd>
-            </div>
-          </dl>
+        </div>
+      </section>
+
+      <section className="banda-logos">
+        <div className="contenedor">
           <LogosClientes />
         </div>
       </section>
+
+      <Cifras />
 
       <section className="seccion">
         <div className="contenedor">
           <div className="seccion-cabeza">
             <h2>Proyectos</h2>
             <Link href="/proyectos" className="enlace">
-              Ver las {OBRAS.length} fichas
+              Ver todos los proyectos
             </Link>
           </div>
-          <div className="filas">
-            {OBRAS_CON_FOTO.map((o) => (
-              <FilaObra key={o.slug} obra={o} />
-            ))}
-          </div>
+          <Mosaico obras={OBRAS_CON_FOTO} portada />
         </div>
       </section>
 
-      <section className="seccion">
-        <div className="contenedor">
-          <div className="seccion-cabeza">
-            <h2>Servicios</h2>
-          </div>
-          <div className="indice">
+      <section className="servicios">
+        <div className="contenedor servicios-grilla">
+          <h2>Servicios</h2>
+          <ul>
             {SERVICIOS.map((s) => (
-              <Link key={s.slug} href={`/servicios/${s.slug}`}>
-                <strong>{s.nombre}</strong>
-              </Link>
+              <li key={s.slug}>
+                <Link href={`/servicios/${s.slug}`}>{s.nombre}</Link>
+              </li>
             ))}
-          </div>
-          <p className="pie-foto nota-zonas">
-            Obras en{" "}
-            {ZONAS.map((z, i) => (
-              <span key={z.slug}>
-                {i > 0 && ", "}
-                <Link href={`/obras-civiles-en/${z.slug}`}>{z.nombre}</Link>
-              </span>
-            ))}{" "}
-            y otras comunas del Maule y O&apos;Higgins.
-          </p>
+          </ul>
         </div>
       </section>
+
+      <section className="equipo">
+        <div className="equipo-foto">
+          <Foto
+            foto={{ nombre: "revestimiento-brazo", alt: "Brazo articulado junto a la fachada de una ampliación" }}
+            sizes="(max-width: 860px) 100vw, 50vw"
+          />
+        </div>
+        <div className="equipo-texto">
+          <h2>Equipos completos en cada obra</h2>
+          <ul>
+            {EQUIPO.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+          <Link href="/nosotros" className="enlace">
+            Cómo trabajamos
+          </Link>
+        </div>
+      </section>
+
       <Cierre />
     </>
   );

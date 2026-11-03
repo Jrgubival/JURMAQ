@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import CabezaPagina from "@/components/CabezaPagina";
 import Cierre from "@/components/Cierre";
-import FilaObra from "@/components/FilaObra";
-import Migas from "@/components/Migas";
+import Mosaico from "@/components/Mosaico";
 import { url } from "@/data/empresa";
 import { obrasDeZona } from "@/data/obras";
 import { SERVICIOS } from "@/data/servicios";
@@ -34,38 +34,34 @@ export default async function PaginaZona({ params }: Props) {
   if (!z) notFound();
   const obras = obrasDeZona(z.slug);
   const servicios = SERVICIOS.filter((s) => obras.some((o) => o.servicios.includes(s.slug)));
+  const portada = obras.find((o) => o.fotos[0])?.fotos[0];
   return (
     <>
-      <div className="contenedor cabeza-pagina">
-        <Migas
-          items={[
-            { nombre: "Servicios", ruta: "/servicios" },
-            { nombre: `Obras en ${z.nombre}`, ruta: `/obras-civiles-en/${z.slug}` },
-          ]}
-        />
-        <h1>Obras civiles e industriales en {z.nombre}</h1>
-        <p className="bajada">{z.intro}</p>
-      </div>
+      <CabezaPagina
+        migas={[
+          { nombre: "Servicios", ruta: "/servicios" },
+          { nombre: `Obras en ${z.nombre}`, ruta: `/obras-civiles-en/${z.slug}` },
+        ]}
+        titulo={`Obras civiles e industriales en ${z.nombre}`}
+        bajada={z.intro}
+        foto={portada}
+      />
       <section className="seccion">
         <div className="contenedor">
           <h2 className="sub">Obras en {z.nombre}</h2>
-          <div className="filas">
-            {obras.map((o) => (
-              <FilaObra key={o.slug} obra={o} />
-            ))}
-          </div>
+          <Mosaico obras={obras} />
         </div>
       </section>
-      <section className="seccion">
-        <div className="contenedor">
-          <h2 className="sub">Servicios ejecutados en {z.nombre}</h2>
-          <div className="indice">
+      <section className="servicios">
+        <div className="contenedor servicios-grilla">
+          <h2>Servicios en {z.nombre}</h2>
+          <ul>
             {servicios.map((s) => (
-              <Link key={s.slug} href={`/servicios/${s.slug}`}>
-                <strong>{s.nombre}</strong>
-              </Link>
+              <li key={s.slug}>
+                <Link href={`/servicios/${s.slug}`}>{s.nombre}</Link>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
       <Cierre />

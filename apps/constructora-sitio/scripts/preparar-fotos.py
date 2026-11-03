@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Pasa las fotos de obra a WebP (640 y 1280 px) y anota sus medidas.
+"""Pasa las fotos de obra a WebP (640 y 1280 px) y anota medidas y miniatura.
+
+La miniatura `lqip` se pinta de fondo: nunca queda un cuadro vacío al cargar.
 
 Uso, desde apps/constructora-sitio:
   python3 scripts/preparar-fotos.py <carpeta-origen> <nombre-final>=<archivo> ...
 Si la foto original es más chica que 1280 px no se agranda.
 """
+import base64
+import io
 import json
 import sys
 from pathlib import Path
@@ -26,7 +30,15 @@ def main() -> None:
             copia = foto.copy()
             copia.thumbnail((ancho, ancho * 2))
             copia.save(SALIDA / f"{nombre}-{ancho}.webp", quality=74, method=6)
-        medidas[nombre] = {"w": min(foto.width, 1280), "h": round(foto.height * min(foto.width, 1280) / foto.width)}
+        mini = foto.copy()
+        mini.thumbnail((24, 24))
+        datos = io.BytesIO()
+        mini.save(datos, "WEBP", quality=30)
+        medidas[nombre] = {
+            "w": min(foto.width, 1280),
+            "h": round(foto.height * min(foto.width, 1280) / foto.width),
+            "lqip": "data:image/webp;base64," + base64.b64encode(datos.getvalue()).decode(),
+        }
     MANIFIESTO.write_text(json.dumps(medidas, indent=2, sort_keys=True) + "\n")
 
 

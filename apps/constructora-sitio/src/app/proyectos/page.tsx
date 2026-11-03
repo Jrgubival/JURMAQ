@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import CabezaPagina from "@/components/CabezaPagina";
 import Cierre from "@/components/Cierre";
-import FilaObra from "@/components/FilaObra";
-import Migas from "@/components/Migas";
+import Cifras from "@/components/Cifras";
+import Mosaico from "@/components/Mosaico";
 import { url } from "@/data/empresa";
-import { MONTOS_POR_CLIENTE, OBRAS_CON_FOTO, OBRAS_SIN_FOTO, OTRAS_OBRAS, OTROS_CLIENTES } from "@/data/obras";
+import { OBRAS_CON_FOTO, OBRAS_SIN_FOTO, OTRAS_OBRAS, OTROS_CLIENTES } from "@/data/obras";
 
 const TITULO = "Proyectos de obra civil e industrial";
 const DESCRIPCION =
@@ -19,56 +20,28 @@ export const metadata: Metadata = {
 export default function Proyectos() {
   return (
     <>
-      <div className="contenedor cabeza-pagina">
-        <Migas items={[{ nombre: "Proyectos", ruta: "/proyectos" }]} />
-        <h1>Proyectos</h1>
-        <p className="bajada">Obras ejecutadas por JURMAQ dentro de plantas en operación.</p>
-      </div>
+      <CabezaPagina
+        migas={[{ nombre: "Proyectos", ruta: "/proyectos" }]}
+        titulo="Proyectos"
+        bajada="Obras ejecutadas por JURMAQ dentro de plantas en operación."
+        foto={{ nombre: "silos-fundacion", alt: "Armadura circular de una fundación junto a tres silos" }}
+      />
       <section className="seccion">
-        <div className="contenedor filas">
-          {OBRAS_CON_FOTO.map((o) => (
-            <FilaObra key={o.slug} obra={o} />
-          ))}
+        <div className="contenedor">
+          <Mosaico obras={OBRAS_CON_FOTO} portada />
         </div>
       </section>
+      <Cifras />
       <section className="seccion">
         <div className="contenedor">
           <h2 className="sub">Otros clientes y obras</h2>
-          <div className="filas">
-            {OBRAS_SIN_FOTO.map((o) => (
-              <FilaObra key={o.slug} obra={o} />
-            ))}
-          </div>
-          <ul className="lista lista-separada">
+          <Mosaico obras={OBRAS_SIN_FOTO} />
+          <div className="texto otras">
             {OTRAS_OBRAS.map((t) => (
-              <li key={t}>{t}</li>
+              <p key={t}>{t}</p>
             ))}
-            <li>También han trabajado con nosotros: {OTROS_CLIENTES.join(", ")}.</li>
-          </ul>
-        </div>
-      </section>
-      <section className="seccion">
-        <div className="contenedor">
-          <h2 className="sub">Contratos por cliente</h2>
-          <table className="tabla">
-            <caption>Montos aproximados acumulados por cliente</caption>
-            <thead>
-              <tr>
-                <th scope="col">Cliente</th>
-                <th scope="col">Trabajos</th>
-                <th scope="col">Monto</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MONTOS_POR_CLIENTE.map((m) => (
-                <tr key={m.cliente}>
-                  <th scope="row">{m.cliente}</th>
-                  <td>{m.trabajos}</td>
-                  <td>{m.monto}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            <p>También han trabajado con nosotros: {OTROS_CLIENTES.join(", ")}.</p>
+          </div>
         </div>
       </section>
       <Cierre />

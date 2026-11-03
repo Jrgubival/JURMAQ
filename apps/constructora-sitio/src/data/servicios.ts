@@ -2,6 +2,8 @@
  * Servicios de obra. Las partidas vienen del brochure 2026 de la empresa: no se
  * agregan normas, plazos ni capacidades que no estén ahí.
  */
+import medidas from "./fotos.json";
+
 export interface Servicio {
   slug: string;
   nombre: string;
@@ -11,11 +13,14 @@ export interface Servicio {
   descripcion: string;
   intro: string;
   incluye: string[];
+  /** Foto de cabecera, en `public/obras`. */
+  foto: keyof typeof medidas;
 }
 
 export const SERVICIOS: Servicio[] = [
   {
     slug: "fundaciones-y-obra-civil-industrial",
+    foto: "silos-moldaje",
     nombre: "Fundaciones y obra civil industrial",
     corto: "Fundaciones y obra civil",
     tituloSeo: "Fundaciones industriales en el Maule",
@@ -32,6 +37,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "estructuras-metalicas-y-montaje-industrial",
+    foto: "batcheo-pasarela",
     nombre: "Estructuras metálicas y maestranza",
     corto: "Estructuras y maestranza",
     tituloSeo: "Estructuras metálicas y maestranza, Maule",
@@ -49,6 +55,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "montaje-e-izado-de-equipos",
+    foto: "batcheo-izado",
     nombre: "Montaje e izado de equipos",
     corto: "Montaje e izado",
     tituloSeo: "Montaje e izado de equipos industriales",
@@ -66,6 +73,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "bodegas-y-ampliaciones-industriales",
+    foto: "alero-bodega",
     nombre: "Bodegas y ampliaciones industriales",
     corto: "Bodegas y ampliaciones",
     tituloSeo: "Bodegas y ampliaciones industriales, Maule",
@@ -82,6 +90,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "pavimentos-industriales",
+    foto: "alero-lateral",
     nombre: "Pavimentos industriales",
     corto: "Pavimentos",
     tituloSeo: "Pavimentos industriales en el Maule",
@@ -93,6 +102,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "cubiertas-y-revestimientos-industriales",
+    foto: "revestimiento-brazo",
     nombre: "Cubiertas y revestimientos industriales",
     corto: "Cubiertas y revestimientos",
     tituloSeo: "Cubiertas y revestimientos industriales",
@@ -104,6 +114,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "mantencion-industrial-y-refuerzo-estructural",
+    foto: "batcheo-interior",
     nombre: "Mantención industrial",
     corto: "Mantención industrial",
     tituloSeo: "Mantención industrial en Curicó y Maule",
@@ -115,6 +126,7 @@ export const SERVICIOS: Servicio[] = [
   },
   {
     slug: "movimiento-de-tierras-y-preparacion-de-terreno",
+    foto: "silos-excavacion",
     nombre: "Movimiento de tierras y preparación de terreno",
     corto: "Movimiento de tierras",
     tituloSeo: "Movimiento de tierras en Curicó y Maule",

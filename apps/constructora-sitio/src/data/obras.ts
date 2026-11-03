@@ -103,7 +103,7 @@ export const OBRAS: Obra[] = [
     slug: "alero-bodega-materias-primas-teno",
     titulo: "Alero de bodega de materias primas",
     tituloSeo: "Alero de bodega de materias primas, Teno",
-    resumen: "Construcción del alero de la bodega de materias primas de la planta.",
+    resumen: "Construcción del alero de la bodega de materias primas en la planta de Teno, con trabajo en altura y la planta en operación.",
     alcance: ["Construcción de alero", "Trabajo en altura con plataforma y andamio"],
     servicios: ["bodegas-y-ampliaciones-industriales", "cubiertas-y-revestimientos-industriales"],
     fotos: [
@@ -118,7 +118,7 @@ export const OBRAS: Obra[] = [
     slug: "revestimiento-ampliacion-bodega-teno",
     titulo: "Revestimiento de ampliación de bodega",
     tituloSeo: "Revestimiento de ampliación de bodega, Teno",
-    resumen: "Revestimiento exterior de la ampliación de bodega, con la planta en operación.",
+    resumen: "Revestimiento exterior de la ampliación de bodega en planta Teno, con brazo articulado y la planta en operación.",
     alcance: ["Revestimiento de fachada", "Trabajo en altura con brazo articulado"],
     servicios: ["cubiertas-y-revestimientos-industriales", "bodegas-y-ampliaciones-industriales"],
     fotos: [
@@ -184,7 +184,7 @@ export const OBRAS: Obra[] = [
     region: "Región del Maule",
     periodo: null,
     m2: null,
-    resumen: "Contrato de mantención permanente de estructuras, pavimentos e infraestructura industrial.",
+    resumen: "Contrato de mantención permanente de estructuras, pavimentos e infraestructura industrial, incluida la cubierta de silos.",
     alcance: ["Mantención de estructuras", "Pavimentos", "Cubierta de silos"],
     servicios: [
       "mantencion-industrial-y-refuerzo-estructural",
