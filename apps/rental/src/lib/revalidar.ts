@@ -1,6 +1,7 @@
 import 'server-only';
 import { revalidatePath } from 'next/cache';
 import { fichaHref, type Maquina } from './maquinas';
+import { CRUCES_COMUNA_TIPO } from '@/data/comunas';
 import { CIUDADES_CON_PAGINA, TIPOS } from './landings';
 
 /**
@@ -13,8 +14,11 @@ export function revalidarMaquina(m: Pick<Maquina, 'id' | 'nombre' | 'tipo'>, nom
   const urls = new Set<string>(['/', '/maquinarias', '/arriendo-en/region-del-maule', '/cotizar-arriendo', '/sitemap.xml']);
   urls.add(fichaHref(m));
   if (nombreAnterior && nombreAnterior !== m.nombre) urls.add(fichaHref({ id: m.id, nombre: nombreAnterior }));
-  const tipo = TIPOS.find((t) => t.tipoDb === m.tipo);
-  if (tipo) urls.add(`/arriendo/${tipo.slug}`);
+  const tipos = TIPOS.filter((t) => t.tipoDb === m.tipo);
+  for (const t of tipos) urls.add(`/arriendo/${t.slug}`);
   for (const c of CIUDADES_CON_PAGINA) urls.add(`/arriendo-en/${c}`);
+  for (const x of CRUCES_COMUNA_TIPO) {
+    if (tipos.some((t) => t.slug === x.tipo)) urls.add(`/arriendo-en/${x.ciudad}/${x.tipo}`);
+  }
   for (const url of urls) revalidatePath(url);
 }

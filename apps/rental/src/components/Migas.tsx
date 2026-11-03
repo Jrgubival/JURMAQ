@@ -15,7 +15,7 @@ export default function Migas({ items }: { items: { nombre: string; href?: strin
     })),
   };
   return (
-    <nav aria-label="Migas" className="text-sm text-ink-muted">
+    <nav aria-label="Migas" className="text-sm">
       <ol className="flex flex-wrap gap-x-2">
         {lista.map((it, i) => (
           <li key={it.nombre} className="flex gap-2">

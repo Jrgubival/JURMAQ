@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 
 export default function Recursos() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="sobre-claro mx-auto max-w-3xl px-4 py-10 md:py-16">
       <Migas items={[{ nombre: 'Guías' }]} />
-      <h1 className="mt-4 text-4xl">Guías de arriendo</h1>
+      <h1 className="grande mt-4">Guías de arriendo</h1>
       <ul className="mt-6 divide-y divide-hairline border-y border-hairline">
         {RECURSOS.map((r) => (
           <li key={r.slug}>

@@ -1,52 +1,44 @@
 import Link from 'next/link';
+import { FranjaGrupo } from '@jurmaq/shared/ui/grupo';
 import { SITIO, PRIVACIDAD_URL, TERMINOS_URL } from '@/lib/sitio';
 
-export default function Pie({ tipos }: { tipos: { slug: string; nombre: string }[] }) {
+export default function Pie({ tipos, comunas }: { tipos: { slug: string; nombre: string }[]; comunas: { slug: string; nombre: string }[] }) {
   return (
-    <footer className="mt-16 border-t border-hairline bg-surface-alt pb-24 md:pb-0">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm text-ink-soft sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="bg-negro pb-24 text-white/70 md:pb-0">
+      <div className="mx-auto grid max-w-[1320px] gap-10 px-4 py-14 text-[0.9375rem] md:grid-cols-[1.3fr_1fr_1.5fr_1.2fr] md:px-8">
         <div>
-          <p className="font-titulo text-xl font-semibold text-ink">JURMAQ Rental</p>
-          <p className="mt-2">Arriendo de maquinaria en la Región del Maule desde {SITIO.anioInicio}.</p>
+          <p className="font-titulo text-4xl font-semibold uppercase leading-none text-white">JURMAQ <span className="text-acento">Rental</span></p>
+          <p className="mt-3 max-w-[26ch]">Arriendo de maquinaria en el Maule desde {SITIO.anioInicio}.</p>
         </div>
         <div>
-          <p className="font-semibold text-ink">Máquinas</p>
-          <ul className="mt-2 space-y-1">
-            {tipos.map((t) => (
-              <li key={t.slug}>
-                <Link href={`/arriendo/${t.slug}`} prefetch={false} className="hover:underline">
-                  {t.nombre}
-                </Link>
-              </li>
-            ))}
+          <p className="font-semibold text-white">Máquinas</p>
+          <ul className="mt-3 space-y-2">
+            {tipos.map((t) => <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="hover:text-white">{t.nombre}</Link></li>)}
           </ul>
         </div>
         <div>
-          <p className="font-semibold text-ink">Dónde</p>
-          <ul className="mt-2 space-y-1">
-            <li><Link href="/arriendo-en/curico" prefetch={false} className="hover:underline">Curicó</Link></li>
-            <li><Link href="/arriendo-en/molina" prefetch={false} className="hover:underline">Molina</Link></li>
-            <li><Link href="/arriendo-en/talca" prefetch={false} className="hover:underline">Talca</Link></li>
-            <li><Link href="/arriendo-en/region-del-maule" prefetch={false} className="hover:underline">Región del Maule</Link></li>
+          <p className="font-semibold text-white">Comunas</p>
+          <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+            {comunas.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="hover:text-white">{c.nombre}</Link></li>)}
           </ul>
         </div>
         <address className="not-italic">
-          <p className="font-semibold text-ink">Contacto</p>
-          <p className="mt-2"><a href={`tel:${SITIO.telefono}`} className="hover:underline">{SITIO.telefonoVisible}</a></p>
-          <p><a href={`mailto:${SITIO.correo}`} className="hover:underline">{SITIO.correo}</a></p>
+          <p className="font-semibold text-white">Contacto</p>
+          <p className="mt-3"><a href={`tel:${SITIO.telefono}`} className="hover:text-white">{SITIO.telefonoVisible}</a></p>
+          <p className="mt-2"><a href={`mailto:${SITIO.correo}`} className="hover:text-white">{SITIO.correo}</a></p>
           <p className="mt-2">{SITIO.direccion}</p>
         </address>
       </div>
-      <div className="border-t border-hairline">
-        <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-4 py-4 text-xs text-ink-muted">
-          <p>{SITIO.razonSocial} · RUT {SITIO.rut}</p>
-          <p className="flex gap-4">
-            <a href={TERMINOS_URL} className="hover:underline">Términos</a>
-            <a href={PRIVACIDAD_URL} className="hover:underline">Privacidad</a>
-            <a href="https://jurmaq.cl" className="hover:underline">Grupo JURMAQ</a>
+      <div className="border-t border-white/15">
+        <div className="mx-auto flex max-w-[1320px] flex-wrap justify-between gap-3 px-4 py-5 text-sm md:px-8">
+          <p>{SITIO.razonSocial}, RUT {SITIO.rut}</p>
+          <p className="flex gap-5">
+            <a href={TERMINOS_URL} className="hover:text-white">Términos</a>
+            <a href={PRIVACIDAD_URL} className="hover:text-white">Privacidad</a>
           </p>
         </div>
       </div>
+      <FranjaGrupo actual="arriendo" />
     </footer>
   );
 }

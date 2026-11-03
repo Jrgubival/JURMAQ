@@ -37,10 +37,10 @@ export default async function Recurso({ params }: Props) {
     publisher: { '@id': NEGOCIO_ID },
   };
   return (
-    <article className="mx-auto max-w-3xl px-4 py-8">
+    <article className="sobre-claro mx-auto max-w-3xl px-4 py-10 md:py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <Migas items={[{ nombre: 'Guías', href: '/recursos' }, { nombre: r.titulo.split('·')[0].trim().slice(0, 50) }]} />
-      <h1 className="mt-4 text-4xl">{r.h1}</h1>
+      <h1 className="grande mt-4">{r.h1}</h1>
       <p className="mt-4 text-lg text-ink-soft">{r.resumen}</p>
       <div className="prosa mt-4">
         {r.secciones.map((s) => (

@@ -1,186 +1,133 @@
 @import "tailwindcss";
+@import "@jurmaq/shared/styles/grupo.css";
 
-/* Línea del grupo: fondo hueso y tinta como la barraca. Sólo el acento es del
-   arriendo. Cambiar aquí el acento cambia todo el sitio. */
+/* Línea del grupo en styles/grupo.css. Aquí sólo lo propio del arriendo:
+   foto grande, tinta profunda y amarillo de maquinaria como relleno. */
 @theme {
-  --color-canvas: #fbfbfa;
-  --color-surface: #ffffff;
-  --color-surface-alt: #f4f3ef;
-  --color-ink: #111111;
-  --color-ink-soft: #2f3437;
-  --color-ink-muted: #6b6a66;
-  --color-hairline: #e6e5e1;
-  --color-acento: #f5b700;
-  --color-acento-hondo: #dba400;
+  --color-canvas: var(--g-fondo);
+  --color-surface: var(--g-superficie);
+  --color-surface-alt: var(--g-alterno);
+  --color-ink: var(--g-tinta);
+  --color-ink-soft: var(--g-tinta-media);
+  --color-ink-muted: var(--g-tinta-suave);
+  --color-hairline: var(--g-linea);
+  --color-acento: var(--g-arriendo);
+  --color-acento-hondo: #dca604;
+  --color-negro: #0e0e0d;
   --color-peligro: #9f2f2d;
   --color-exito: #346538;
-  --font-sans: var(--font-geist), system-ui, sans-serif;
-  --font-titulo: var(--font-oswald), var(--font-geist), system-ui, sans-serif;
+  --font-titulo: var(--font-titular), "Arial Narrow", sans-serif;
+  --font-cifra: var(--font-mono), ui-monospace, monospace;
   --ease-salida: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-cajon: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 5rem; }
 
 body {
-  background: var(--color-canvas);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
+  background: var(--g-fondo);
+  color: var(--g-tinta);
+  font-family: var(--g-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-h1,
-h2,
-h3 {
+h1, h2, h3 {
   font-family: var(--font-titulo);
   font-weight: 600;
-  letter-spacing: 0.002em;
-  line-height: 1.12;
+  line-height: 1.02;
+  text-transform: uppercase;
   text-wrap: balance;
+  letter-spacing: 0;
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
-}
+.grande { font-size: clamp(2.5rem, 6.4vw, 5.25rem); }
+.medio { font-size: clamp(2rem, 4.4vw, 3.5rem); }
 
-/* Todo lo que se presiona responde al dedo. */
-.presionable {
-  transition: transform 160ms var(--ease-salida), background-color 160ms ease, border-color 160ms ease;
-}
-.presionable:active {
-  transform: scale(0.97);
-}
+:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+.presionable { transition: transform 160ms var(--ease-salida); }
+.presionable:active { transform: scale(0.98); }
 
 .boton {
   display: inline-flex;
-  min-height: 48px;
+  min-height: 52px;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  border-radius: 10px;
-  padding: 0 1.25rem;
+  gap: 0.625rem;
+  border-radius: var(--g-radio);
+  padding: 0 1.5rem;
   font-weight: 600;
-  transition: transform 160ms var(--ease-salida), background-color 160ms ease, border-color 160ms ease;
+  white-space: nowrap;
+  transition: transform 160ms var(--ease-salida), background-color 180ms ease, color 180ms ease, border-color 180ms ease;
 }
-.boton:active {
-  transform: scale(0.97);
-}
-.boton:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-.boton-principal {
-  background: var(--color-acento);
-  color: var(--color-ink);
-}
-.boton-secundario {
-  border: 1px solid var(--color-ink);
-  background: transparent;
-  color: var(--color-ink);
-}
-.boton-suave {
-  border: 1px solid var(--color-hairline);
-  background: var(--color-surface);
-  color: var(--color-ink);
-}
+.boton svg { transition: transform 200ms var(--ease-salida); }
+.boton:active { transform: scale(0.97); }
+.boton:disabled { opacity: 0.55; cursor: not-allowed; }
+.boton-principal { background: var(--g-arriendo); color: #111; }
+.boton-secundario { border: 1px solid currentColor; }
+.boton-suave { border: 1px solid #cfcec9; background: #fff; color: #111; }
 
 @media (hover: hover) and (pointer: fine) {
-  .boton-principal:hover {
-    background: var(--color-acento-hondo);
-  }
-  .boton-secundario:hover {
-    background: var(--color-ink);
-    color: var(--color-surface);
-  }
-  .boton-suave:hover {
-    border-color: var(--color-ink);
-  }
-  .tarjeta-maquina:hover img {
-    transform: scale(1.02);
-  }
+  .boton-principal:hover { background: #ffc91a; }
+  .boton-secundario:hover { background: #fff; color: #111; border-color: #fff; }
+  .sobre-claro .boton-secundario:hover { background: #111; color: #fff; border-color: #111; }
+  .boton-suave:hover { border-color: #111; }
+  .boton:hover svg { transform: translateX(3px); }
+  .tile:hover img { transform: scale(1.035); }
+  .fila-trabajo:hover .flecha { transform: translateX(8px); }
+  .comuna:hover { background: #f2b705; color: #111; }
+  .comuna:hover span { color: #111; }
 }
 
-.tarjeta-maquina img {
-  transition: transform 240ms var(--ease-salida);
-}
+.tile img { transition: transform 700ms var(--ease-salida); }
+.flecha { transition: transform 240ms var(--ease-salida); }
+.comuna { transition: background-color 160ms ease, color 160ms ease; }
 
 .campo {
   width: 100%;
-  min-height: 48px;
-  border-radius: 10px;
-  border: 1px solid #c9c8c3;
+  min-height: 52px;
+  border-radius: var(--g-radio);
+  border: 1px solid #bcbbb6;
   background: #fff;
   padding: 0 0.875rem;
   font-size: 1rem;
-  color: var(--color-ink);
+  color: #111;
 }
-textarea.campo {
-  padding: 0.75rem 0.875rem;
-}
-.campo:focus {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 0;
-  border-color: var(--color-ink);
-}
+textarea.campo { padding: 0.75rem 0.875rem; }
+.campo:focus { outline: 2px solid #111; outline-offset: 0; border-color: #111; }
+.etiqueta { display: block; margin-bottom: 0.375rem; font-size: 0.9375rem; font-weight: 600; }
 
-.etiqueta {
-  display: block;
-  margin-bottom: 0.375rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
-}
-
-.prosa h2 {
-  margin: 2rem 0 0.75rem;
-  font-size: 1.5rem;
-}
-.prosa p,
-.prosa ul,
-.prosa ol {
-  margin-top: 0.75rem;
-  line-height: 1.65;
-  color: var(--color-ink-soft);
-}
-.prosa ul {
-  list-style: disc;
-  padding-left: 1.25rem;
-}
-.prosa ol {
-  list-style: decimal;
-  padding-left: 1.25rem;
-}
-.prosa a {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.prosa table {
-  margin-top: 1rem;
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9375rem;
-}
+.prosa h2 { margin: 2.5rem 0 0.75rem; font-size: 1.875rem; }
+.prosa p, .prosa ul, .prosa ol { margin-top: 0.75rem; line-height: 1.7; color: var(--g-tinta-media); }
+.prosa ul { list-style: disc; padding-left: 1.25rem; }
+.prosa ol { list-style: decimal; padding-left: 1.25rem; }
+.prosa a { text-decoration: underline; text-underline-offset: 3px; }
+.prosa table { margin-top: 1rem; width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
 
 /* Cajón del menú en celular. */
-.cajon {
-  transform: translateY(-100%);
-  transition: transform 300ms var(--ease-cajon);
-}
-.cajon[data-abierto="true"] {
-  transform: translateY(0);
+.cajon { transform: translateY(-100%); transition: transform 320ms var(--ease-cajon); }
+.cajon[data-abierto="true"] { transform: translateY(0); }
+
+/* Preguntas: la flecha gira, la respuesta no salta. */
+details > summary { list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+.mas { transition: transform 200ms var(--ease-salida); }
+details[open] .mas { transform: rotate(45deg); }
+
+/* Entrada del hero: un solo momento, al cargar. */
+@media (prefers-reduced-motion: no-preference) {
+  .entra { animation: entra 700ms var(--ease-salida) both; animation-delay: calc(var(--i, 0) * 70ms + 80ms); }
+  .foto-hero { animation: asienta 1400ms var(--ease-salida) both; }
+  @keyframes entra { from { opacity: 0; transform: translateY(22px); } }
+  @keyframes asienta { from { transform: scale(1.06); } }
+
+  /* Al bajar, cada bloque llega una vez. Sin JavaScript. */
+  @supports (animation-timeline: view()) {
+    .revela { animation: entra linear both; animation-timeline: view(); animation-range: entry 0% entry 42%; }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .presionable,
-  .boton,
-  .cajon,
-  .tarjeta-maquina img {
-    transition: none;
-  }
-  .presionable:active,
-  .boton:active {
-    transform: none;
-  }
+  .presionable, .boton, .cajon, .tile img, .flecha, .mas { transition: none; }
+  .presionable:active, .boton:active { transform: none; }
 }

@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import { AccionesContacto, BarraMovil } from '@/components/AccionesContacto';
-import Migas from '@/components/Migas';
+import { BarraMovil } from '@/components/AccionesContacto';
+import { Preguntas, UsosYCaracteristicas } from '@/components/ContenidoTipo';
+import PortadaLanding from '@/components/PortadaLanding';
 import TarjetaMaquina from '@/components/TarjetaMaquina';
 import { obtenerFlota } from '@/lib/flota';
 import { jsonLdServicio } from '@/lib/jsonld';
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const operador = t.tipoDb === 'camion' ? ' con conductor' : t.operadorIncluido ? ' con operador' : '';
   return {
     title: `Arriendo de ${t.nombrePlural}${operador} en el Maule · JURMAQ`,
-    description: `${t.descripcionCorta} ${modelos ? `${modelos}. ` : ''}Arriendo en Curicó, Molina, Talca y toda la Región del Maule.`,
+    description: `${t.descripcionCorta} ${modelos ? `${modelos}. ` : ''}Arriendo en toda la Región del Maule.`.slice(0, 158),
     alternates: { canonical: url },
     openGraph: { title: `Arriendo de ${t.nombrePlural}`, url, type: 'website', locale: 'es_CL', siteName: SITIO.nombre },
   };
@@ -44,46 +45,29 @@ export default async function ArriendoTipo({ params }: Props) {
   const texto = `Hola, quiero cotizar el arriendo de ${t.nombre.toLowerCase()}.`;
   const cotizar = flota[0] ? `/cotizar-arriendo?m=${flota[0].id}` : '/cotizar-arriendo';
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="sobre-claro">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdServicio(`Arriendo de ${t.nombrePlural}`, t.descripcionLarga, url, SITIO.region)) }} />
-      <Migas items={[{ nombre: 'Máquinas', href: '/maquinarias' }, { nombre: t.nombre }]} />
-      <h1 className="mt-4 text-4xl sm:text-5xl">Arriendo de {t.nombrePlural.toLowerCase()} en el Maule</h1>
-      <p className="mt-4 max-w-3xl text-lg text-ink-soft">{t.descripcionLarga}</p>
-      <div className="mt-5 hidden md:block"><AccionesContacto cotizar={cotizar} texto={texto} /></div>
+      <PortadaLanding migas={[{ nombre: 'Máquinas', href: '/maquinarias' }, { nombre: t.nombre }]} titulo={`Arriendo de ${t.nombrePlural.toLowerCase()} en el Maule`} bajada={t.descripcionCorta} foto={flota[0]} cotizar={cotizar} texto={texto} />
 
-      <section className="mt-10">
-        <h2 className="text-3xl">Máquinas disponibles</h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="mx-auto max-w-[1320px] px-1 py-14 md:px-8 md:py-20">
+        <h2 className="medio mb-6 px-3 md:px-0">En nuestra flota</h2>
+        <div className={`grid gap-1 ${flota.length > 1 ? 'md:grid-cols-2' : 'md:max-w-3xl'}`}>
           {flota.map((m) => <TarjetaMaquina key={m.id} maquina={m} />)}
         </div>
+        <p className="mt-6 max-w-[64ch] px-3 text-lg text-ink-soft md:px-0">{t.descripcionLarga}</p>
       </section>
 
-      <div className="mt-12 grid gap-10 md:grid-cols-2">
-        <section>
-          <h2 className="text-3xl">Para qué se usa</h2>
-          <ul className="mt-4 list-disc space-y-1 pl-5 text-ink-soft">{t.casosDeUso.map((c) => <li key={c}>{c}</li>)}</ul>
-        </section>
-        <section>
-          <h2 className="text-3xl">Características típicas</h2>
-          <ul className="mt-4 list-disc space-y-1 pl-5 text-ink-soft">{t.especificacionesClave.map((c) => <li key={c}>{c}</li>)}</ul>
-        </section>
-      </div>
+      <UsosYCaracteristicas tipo={t} />
+      <Preguntas preguntas={t.preguntasFrecuentes} />
 
-      <section className="mt-12 max-w-3xl">
-        <h2 className="text-3xl">Preguntas frecuentes</h2>
-        <dl className="mt-4 divide-y divide-hairline border-y border-hairline">
-          {t.preguntasFrecuentes.map((p) => (
-            <div key={p.q} className="py-4"><dt className="font-semibold">{p.q}</dt><dd className="mt-1 text-ink-soft">{p.a}</dd></div>
-          ))}
-        </dl>
-      </section>
-
-      <section className="mt-12">
-        <h2 className="text-3xl">Dónde la arrendamos</h2>
-        <ul className="mt-4 flex flex-wrap gap-2">
-          {CIUDADES_RENTAL.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="boton boton-suave">{c.nombre}</Link></li>)}
-          <li><Link href="/arriendo-en/region-del-maule" prefetch={false} className="boton boton-suave">Región del Maule</Link></li>
-        </ul>
+      <section className="bg-negro text-white">
+        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-8">
+          <h2 className="medio">En toda la región</h2>
+          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-lg">
+            {CIUDADES_RENTAL.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="underline-offset-4 hover:underline">{c.nombre}</Link></li>)}
+            <li><Link href="/arriendo-en/region-del-maule" prefetch={false} className="font-medium text-acento underline-offset-4 hover:underline">Región del Maule</Link></li>
+          </ul>
+        </div>
       </section>
       <BarraMovil cotizar={cotizar} texto={texto} />
     </div>

@@ -67,43 +67,46 @@ export default async function Ficha({ params }: Props) {
         : null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="sobre-claro">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdFicha(m, `${SITIO.url}${canonica}`)) }} />
-      <Migas items={[{ nombre: 'Máquinas', href: '/maquinarias' }, ...(tipo ? [{ nombre: tipo.nombre, href: `/arriendo/${tipo.slug}` }] : []), { nombre: m.nombre }]} />
-
-      <div className="mt-5 grid gap-8 md:grid-cols-2">
-        <div className="space-y-3">
-          <Foto maquina={m} prioridad className="aspect-[4/3] rounded-xl" />
+      <div className="mx-auto grid max-w-[1320px] gap-8 px-4 py-6 md:grid-cols-[1.45fr_1fr] md:gap-12 md:px-8 md:py-10">
+        <div>
+          <Migas items={[{ nombre: 'Máquinas', href: '/maquinarias' }, ...(tipo ? [{ nombre: tipo.nombre, href: `/arriendo/${tipo.slug}` }] : []), { nombre: m.nombre }]} />
+          <Foto maquina={m} prioridad className="mt-4 aspect-[4/3]" />
           {m.fotos.length > 1 ? (
-            <div className="grid grid-cols-3 gap-3">
-              {m.fotos.slice(1, 4).map((_, i) => <Foto key={i} maquina={m} indice={i + 1} className="aspect-[4/3] rounded-lg" />)}
+            <div className="mt-1 grid grid-cols-3 gap-1">
+              {m.fotos.slice(1, 4).map((_, i) => <Foto key={i} maquina={m} indice={i + 1} className="aspect-[4/3]" />)}
             </div>
           ) : null}
         </div>
-        <div>
-          <h1 className="text-4xl">{m.nombre} en arriendo</h1>
+        <div className="md:sticky md:top-24 md:self-start md:pt-10">
+          <h1 className="text-[clamp(2.5rem,4.6vw,4rem)]">{m.nombre}</h1>
           {m.estado !== 'disponible' ? <p className="mt-2 font-medium text-peligro">Consulta disponibilidad</p> : null}
-          {m.descripcion ? <p className="mt-3 text-ink-soft">{m.descripcion}</p> : null}
-          {operador ? <p className="mt-3 font-medium">{operador}</p> : null}
+          {operador ? <p className="mt-3 text-lg font-medium">{operador}</p> : null}
           <div className="mt-5"><TablaPrecios precios={m.precios} /></div>
           <div className="mt-5 hidden md:block"><AccionesContacto cotizar={cotizar} texto={texto} /></div>
         </div>
       </div>
 
       {tipo ? (
-        <section className="mt-12 max-w-3xl">
-          <h2 className="text-3xl">Para qué se usa</h2>
-          <ul className="mt-4 list-disc space-y-1 pl-5 text-ink-soft">
-            {tipo.casosDeUso.map((c) => <li key={c}>{c}</li>)}
-          </ul>
-          <p className="mt-4"><Link href={`/arriendo/${tipo.slug}`} prefetch={false} className="font-medium underline underline-offset-4">Arriendo de {tipo.nombrePlural.toLowerCase()} en el Maule</Link></p>
+        <section className="bg-surface-alt">
+          <div className="mx-auto grid max-w-[1320px] gap-8 px-4 py-14 md:grid-cols-2 md:px-8 md:py-20">
+            <div>
+              <h2 className="medio">Para qué se usa</h2>
+              {m.descripcion ? <p className="mt-4 max-w-[52ch] text-lg text-ink-soft">{m.descripcion}</p> : null}
+              <p className="mt-4"><Link href={`/arriendo/${tipo.slug}`} prefetch={false} className="font-medium underline underline-offset-4">Arriendo de {tipo.nombrePlural.toLowerCase()} en el Maule</Link></p>
+            </div>
+            <ul className="space-y-3 text-lg">
+              {tipo.casosDeUso.map((c) => <li key={c} className="border-t border-[#111]/20 pt-3">{c}</li>)}
+            </ul>
+          </div>
         </section>
       ) : null}
 
       {otras.length > 0 ? (
-        <section className="mt-12">
-          <h2 className="text-3xl">Otras máquinas</h2>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="mx-auto max-w-[1320px] px-1 py-14 md:px-8 md:py-20">
+          <h2 className="medio mb-6 px-3 md:px-0">Otras máquinas</h2>
+          <div className="grid gap-1 md:grid-cols-3">
             {otras.map((x) => <TarjetaMaquina key={x.id} maquina={x} />)}
           </div>
         </section>

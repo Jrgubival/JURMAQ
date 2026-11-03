@@ -16,9 +16,9 @@ export const metadata: Metadata = {
 export default async function CotizarArriendo() {
   const flota = (await obtenerFlota()).map(({ id, nombre, precios, minimoUnidades }) => ({ id, nombre, precios, minimoUnidades }));
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="sobre-claro mx-auto max-w-2xl px-4 py-10 md:py-16">
       <Migas items={[{ nombre: 'Cotizar' }]} />
-      <h1 className="mt-4 text-4xl">Cotizar arriendo</h1>
+      <h1 className="grande mt-4">Cotizar arriendo</h1>
       <Suspense>
         <Cotizador flota={flota} />
       </Suspense>

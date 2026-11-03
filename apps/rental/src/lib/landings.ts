@@ -8,31 +8,23 @@ import {
 } from '@jurmaq/shared/seo';
 
 const plataforma = TIPOS_MAQUINA.find((t) => t.slug === 'plataforma-elevadora');
-const alzahombre = TIPOS_MAQUINA.find((t) => t.slug === 'alzahombre');
-if (!plataforma || !alzahombre) throw new Error('Faltan tipos de máquina');
+if (!plataforma) throw new Error('Faltan tipos de máquina');
 
-/** Sólo tipos con máquina real en la flota. Las plataformas están como `alzahombre`. */
+/** Tipos con máquina real en la flota. Las plataformas están en la base como `alzahombre`. */
 export const TIPOS: TipoMaquinaSEO[] = [
   ...TIPOS_MAQUINA.filter((t) =>
-    ['retroexcavadora', 'miniexcavadora', 'minicargador', 'camion-tolva', 'brazo-articulado'].includes(t.slug),
+    ['retroexcavadora', 'miniexcavadora', 'minicargador', 'camion-tolva', 'brazo-articulado', 'alzahombre'].includes(t.slug),
   ),
-  {
-    ...plataforma,
-    slug: 'alzahombre',
-    tipoDb: 'alzahombre',
-    nombre: 'Alzahombre',
-    nombrePlural: 'Alzahombres y plataformas elevadoras',
-    operadorIncluido: alzahombre.operadorIncluido,
-  },
+  { ...plataforma, tipoDb: 'alzahombre' },
 ];
 
-export const CIUDADES_CON_PAGINA = ['curico', 'molina', 'talca'] as const;
+export const CIUDADES_RENTAL: CiudadSEO[] = CIUDADES;
 
-export const CIUDADES_RENTAL: CiudadSEO[] = CIUDADES.filter((c) =>
-  (CIUDADES_CON_PAGINA as readonly string[]).includes(c.slug),
-);
+export const CIUDADES_CON_PAGINA = CIUDADES.map((c) => c.slug);
 
-/** Comunas atendidas sin página propia. */
+/** Una tarjeta del catálogo por tipo: alzahombre y plataforma comparten flota. */
+export const TIPOS_MENU = TIPOS.filter((t) => t.slug !== 'plataforma-elevadora');
+
 export const COMUNAS_MAULE: string[] = CIUDADES.map((c) => c.nombre);
 
 export function distanciaDesdeBase(slug: string): { km: number; tiempo: string } | null {

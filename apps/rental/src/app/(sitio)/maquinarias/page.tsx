@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Migas from '@/components/Migas';
 import { BarraMovil } from '@/components/AccionesContacto';
-import TarjetaMaquina from '@/components/TarjetaMaquina';
+import Migas from '@/components/Migas';
+import { MosaicoFlota } from '@/components/TarjetaMaquina';
 import { obtenerFlota } from '@/lib/flota';
-import { TIPOS } from '@/lib/landings';
+import { TIPOS_MENU } from '@/lib/landings';
 import { SITIO } from '@/lib/sitio';
 
 export const revalidate = 2592000;
@@ -18,19 +18,21 @@ export const metadata: Metadata = {
 export default async function Catalogo() {
   const flota = await obtenerFlota();
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <Migas items={[{ nombre: 'Máquinas' }]} />
-      <h1 className="mt-4 text-4xl">Maquinaria en arriendo</h1>
-      <p className="mt-3 max-w-2xl text-ink-soft">Valores referenciales y netos. El traslado se cotiza aparte según la comuna de la obra.</p>
-      <ul className="mt-5 flex flex-wrap gap-2">
-        {TIPOS.map((t) => (
-          <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="boton boton-suave">{t.nombre}</Link></li>
-        ))}
-      </ul>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {flota.map((m) => <TarjetaMaquina key={m.id} maquina={m} />)}
+    <>
+      <div className="bg-negro text-white">
+        <div className="mx-auto max-w-[1320px] px-4 py-10 md:px-8 md:py-16">
+          <Migas items={[{ nombre: 'Máquinas' }]} />
+          <h1 className="grande mt-4">Maquinaria en arriendo</h1>
+          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+            {TIPOS_MENU.map((t) => <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="font-medium text-white/80 underline-offset-4 hover:text-white hover:underline">{t.nombrePlural}</Link></li>)}
+          </ul>
+        </div>
+      </div>
+      <div className="mx-auto max-w-[1320px] px-1 py-1 md:px-8 md:py-8">
+        <MosaicoFlota flota={flota} />
+        <p className="mt-4 px-3 pb-10 text-sm text-ink-muted md:px-0">Valores referenciales y netos. El traslado se cotiza aparte.</p>
       </div>
       <BarraMovil cotizar="/cotizar-arriendo" texto="Hola, quiero cotizar el arriendo de una máquina." />
-    </div>
+    </>
   );
 }

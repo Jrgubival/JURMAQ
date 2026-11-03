@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 
 export default function Contacto() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="sobre-claro mx-auto max-w-3xl px-4 py-10 md:py-16">
       <Migas items={[{ nombre: 'Contacto' }]} />
-      <h1 className="mt-4 text-4xl">Contacto</h1>
+      <h1 className="grande mt-4">Contacto</h1>
       <address className="mt-6 space-y-3 not-italic text-lg">
         <p><a href={`tel:${SITIO.telefono}`} className="underline underline-offset-4">{SITIO.telefonoVisible}</a></p>
         <p><a href={`mailto:${SITIO.correo}`} className="underline underline-offset-4">{SITIO.correo}</a></p>
