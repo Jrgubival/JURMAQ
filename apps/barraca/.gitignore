@@ -1,1 +1,6 @@
 .vercel
+
+# Cloudflare (OpenNext)
+.open-next/
+.wrangler/
+.dev.vars

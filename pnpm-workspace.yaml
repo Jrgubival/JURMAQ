@@ -4,8 +4,10 @@ packages:
 
 # Disallow native postinstall scripts (none of our packages need them)
 allowBuilds:
+  esbuild: true
   sharp: false
   unrs-resolver: false
+  workerd: true
 
 # Versiones fijas para todo el monorepo (parches de seguridad nov-2026).
 overrides:

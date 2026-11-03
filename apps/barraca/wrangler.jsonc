@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Tienda barraca.jurmaq.cl en Cloudflare Workers (OpenNext). Los secretos van
+  // con `wrangler secret put`, nunca en este archivo ni en .env del build.
+  "name": "jurmaq-barraca",
+  "main": "custom-worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "jurmaq-barraca" }],
+  // Caché de ISR: páginas en R2, revalidatePath en D1, regeneración en un DO.
+  "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "jurmaq-barraca-cache" }],
+  "d1_databases": [
+    { "binding": "NEXT_TAG_CACHE_D1", "database_name": "jurmaq-barraca-tags", "database_id": "1822b759-5a4f-4fbb-bc29-74b631e7d80a" }
+  ],
+  "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
+  "vars": { "AUTH_SCOPE": "barraca" },
+  "observability": { "enabled": true },
+  // Antes en vercel.json.
+  "triggers": { "crons": ["0 9 * * *"] }
+}
