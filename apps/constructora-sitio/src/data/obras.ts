@@ -5,9 +5,9 @@
  * brochure 2026, carta de presentación, contrato y acta de riles). Lo que no
  * tiene respaldo queda `null` y se anota en `pendiente`; nunca se completa a mano.
  *
- * - Sin montos: publicarlos es decisión de Jorge.
- * - Clientes en texto, sin logos: Jorge autorizó nombrarlos y usar las fotos de
- *   obra; los logos esperan su permiso (03-11-2026).
+ * - Montos: solo el acumulado por cliente que traen sus documentos. Jorge pidió
+ *   publicarlos. No se publica un total: sus documentos no cuadran entre sí.
+ * - Jorge autorizó nombrar clientes, sus logos y las fotos de obra (03-11-2026).
  * - Los slugs ya indexados no se cambian.
  */
 import medidas from "./fotos.json";
@@ -25,6 +25,8 @@ export interface Obra {
   /** Título SEO, máximo 45 caracteres antes de la marca. */
   tituloSeo: string;
   mandante: string;
+  /** Monto aproximado acumulado con el cliente, no el de esta obra. */
+  montoCliente: string;
   comuna: string;
   region: string;
   /** Texto de periodo con respaldo, por ejemplo "Desde 2017". */
@@ -43,6 +45,7 @@ export interface Obra {
 
 const NESTLE_TENO = {
   mandante: "Nestlé Chile S.A.",
+  montoCliente: "UF 76.000+",
   comuna: "Teno",
   region: "Región del Maule",
   periodo: null,
@@ -130,6 +133,7 @@ export const OBRAS: Obra[] = [
     titulo: "Bodega de cubas y mantención",
     tituloSeo: "Bodega de cubas Viña Miguel Torres, Curicó",
     mandante: "Vinícola Miguel Torres",
+    montoCliente: "UF 21.000+",
     comuna: "Curicó",
     region: "Región del Maule",
     periodo: "Desde 2000",
@@ -151,13 +155,14 @@ export const OBRAS: Obra[] = [
     ],
     zona: "curico",
     fotos: [],
-    pendiente: ["Fotos", "Años de cada obra", "m² de bodega"],
+    pendiente: ["Años de cada obra", "m² de bodega"],
   },
   {
     slug: "cementos-biobio-mantencion",
     titulo: "Obras civiles en planta cementera",
     tituloSeo: "Obras civiles Cementos Biobío, Teno",
     mandante: "Cementos Biobío Centro S.A.",
+    montoCliente: "UF 5.500+",
     comuna: "Teno",
     region: "Región del Maule",
     periodo: "Desde 2002",
@@ -167,13 +172,14 @@ export const OBRAS: Obra[] = [
     servicios: ["fundaciones-y-obra-civil-industrial", "pavimentos-industriales"],
     zona: "teno",
     fotos: [],
-    pendiente: ["Fotos", "Años de cada obra"],
+    pendiente: ["Años de cada obra"],
   },
   {
     slug: "iansagro-mantencion-industrial",
     titulo: "Mantención de infraestructura industrial",
     tituloSeo: "Mantención industrial Iansagro",
     mandante: "Iansagro S.A.",
+    montoCliente: "UF 6.000+",
     comuna: "Curicó",
     region: "Región del Maule",
     periodo: null,
@@ -187,13 +193,14 @@ export const OBRAS: Obra[] = [
     ],
     zona: "curico",
     fotos: [],
-    pendiente: ["Fotos", "Comuna: Curicó o Linares", "Desde qué año"],
+    pendiente: ["Desde qué año"],
   },
   {
     slug: "surfrut-romeral-obras",
     titulo: "Obras civiles y montajes agroindustriales",
     tituloSeo: "Obras y montajes Surfrut Romeral",
     mandante: "Surfrut",
+    montoCliente: "UF 5.000+",
     comuna: "Romeral",
     region: "Región del Maule",
     periodo: null,
@@ -209,7 +216,7 @@ export const OBRAS: Obra[] = [
     servicios: ["estructuras-metalicas-y-montaje-industrial", "cubiertas-y-revestimientos-industriales"],
     zona: "romeral",
     fotos: [],
-    pendiente: ["Fotos", "Años de cada obra"],
+    pendiente: ["Años de cada obra"],
   },
 ];
 
@@ -227,6 +234,15 @@ export function obrasDeServicio(slug: string): Obra[] {
 export function obrasDeZona(slug: string): Obra[] {
   return OBRAS.filter((o) => o.zona === slug);
 }
+
+/** Montos aproximados por cliente, tal como salen en sus documentos. */
+export const MONTOS_POR_CLIENTE = [
+  { cliente: "Nestlé Chile S.A.", trabajos: "Fundaciones, batcheo y molienda, montajes, bodegas, pavimentos y movimiento de tierras", monto: "UF 76.000+" },
+  { cliente: "Vinícola Miguel Torres", trabajos: "Bodega de cubas, traslado de cubas, portería y mantención", monto: "UF 21.000+" },
+  { cliente: "Iansagro S.A.", trabajos: "Mantención de estructuras, pavimentos y cubierta de silos", monto: "UF 6.000+" },
+  { cliente: "Cementos Biobío Centro S.A.", trabajos: "Sala eléctrica, muro de contención, cierres y pavimentos", monto: "UF 5.500+" },
+  { cliente: "Surfrut", trabajos: "Ductos, cámaras, piscinas de fruta, cubierta y montajes", monto: "UF 5.000+" },
+];
 
 /** Otros clientes que nombra la presentación, sin ficha propia. */
 export const OTROS_CLIENTES = [

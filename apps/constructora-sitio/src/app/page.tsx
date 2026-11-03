@@ -58,8 +58,8 @@ export default function Inicio() {
           <div className="portada-texto">
             <h1>Constructora industrial en Curicó y la Región del Maule</h1>
             <p className="bajada">
-              Obras civiles, maestranza y montaje dentro de plantas agroindustriales y de alimentos que siguen
-              operando.
+              Desde 2000, obras civiles, maestranza y montaje dentro de plantas que siguen operando. Equipos con
+              prevencionista de riesgos, supervisores y administrador de obra.
             </p>
             <div className="acciones">
               <Link href="/proyectos" className="boton">

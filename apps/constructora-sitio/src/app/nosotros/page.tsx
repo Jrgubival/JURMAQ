@@ -46,7 +46,11 @@ export default function Nosotros() {
       <section className="seccion" style={{ paddingTop: 0 }}>
         <div className="contenedor dos-columnas">
           <div>
-            <h2 style={{ marginBottom: 14 }}>Para mandantes y licitaciones</h2>
+            <h2 style={{ marginBottom: 6 }}>Para mandantes y licitaciones</h2>
+            <p style={{ marginBottom: 14 }}>
+              Trabajamos desde 2000 con equipos que incluyen prevencionista de riesgos, supervisores y administrador de
+              obra.
+            </p>
             <dl className="ficha">
               {EQUIPO.map(([rol, detalle]) => (
                 <div key={rol}>

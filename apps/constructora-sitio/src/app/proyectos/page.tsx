@@ -3,7 +3,7 @@ import Cierre from "@/components/Cierre";
 import FilaObra from "@/components/FilaObra";
 import Migas from "@/components/Migas";
 import { url } from "@/data/empresa";
-import { OBRAS_CON_FOTO, OBRAS_SIN_FOTO, OTRAS_OBRAS, OTROS_CLIENTES } from "@/data/obras";
+import { MONTOS_POR_CLIENTE, OBRAS_CON_FOTO, OBRAS_SIN_FOTO, OTRAS_OBRAS, OTROS_CLIENTES } from "@/data/obras";
 
 const TITULO = "Proyectos de obra civil e industrial";
 const DESCRIPCION =
@@ -45,6 +45,30 @@ export default function Proyectos() {
             ))}
             <li>También han trabajado con nosotros: {OTROS_CLIENTES.join(", ")}.</li>
           </ul>
+        </div>
+      </section>
+      <section className="seccion">
+        <div className="contenedor">
+          <h2 style={{ marginBottom: 14 }}>Contratos por cliente</h2>
+          <table className="tabla">
+            <caption>Montos aproximados acumulados por cliente</caption>
+            <thead>
+              <tr>
+                <th scope="col">Cliente</th>
+                <th scope="col">Trabajos</th>
+                <th scope="col">Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {MONTOS_POR_CLIENTE.map((m) => (
+                <tr key={m.cliente}>
+                  <th scope="row">{m.cliente}</th>
+                  <td>{m.trabajos}</td>
+                  <td>{m.monto}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
       <Cierre />

@@ -85,6 +85,10 @@ export default async function PaginaObra({ params }: Props) {
                 {zona ? <Link href={`/obras-civiles-en/${zona.slug}`}>{o.comuna}</Link> : o.comuna}, {o.region}
               </dd>
             </div>
+            <div>
+              <dt>Contratos con el cliente</dt>
+              <dd>{o.montoCliente} aprox., acumulado</dd>
+            </div>
             {o.periodo && (
               <div>
                 <dt>Periodo</dt>

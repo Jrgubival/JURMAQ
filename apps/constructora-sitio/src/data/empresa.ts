@@ -11,8 +11,9 @@ export const EMPRESA = {
   nombre: marca.nombre,
   razonSocial: LEGAL_INFO.nombreLegal,
   rut: LEGAL_INFO.rut,
-  direccion: marca.direccion,
-  streetAddress: marca.streetAddress,
+  // Dirección de las cotizaciones de la empresa, en forma legible.
+  direccion: "Lote 3 del lote A, Hijuela 11, Maquehua, Curicó",
+  streetAddress: "Lote 3 del lote A, Hijuela 11, Maquehua",
   comuna: marca.addressLocality,
   region: marca.addressRegion,
   pais: marca.addressCountry,
