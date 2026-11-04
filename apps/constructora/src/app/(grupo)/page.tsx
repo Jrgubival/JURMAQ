@@ -1,17 +1,18 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import MovimientoPortada from './MovimientoPortada';
 import { CONTACTO_GRUPO, NEGOCIOS, type Negocio } from '@jurmaq/shared/ui/grupo';
 
-const TITULO = 'Grupo JURMAQ · Arriendo de maquinaria, barraca y constructora en el Maule';
+const TITULO = 'Grupo JURMAQ: arriendo, barraca y constructora en el Maule';
 const DESCRIPCION =
-  'Arriendo de maquinaria, barraca de fierros y constructora en la Región del Maule, desde 2000. Elige el negocio que necesitas.';
+  'Arriendo de maquinaria, barraca de fierros y constructora en la Región del Maule, desde 2000. Entra al negocio que necesitas o llama directo.';
 
 export const metadata: Metadata = {
   title: TITULO,
   description: DESCRIPCION,
   alternates: { canonical: 'https://jurmaq.cl' },
-  openGraph: { title: TITULO, description: DESCRIPCION, url: 'https://jurmaq.cl', siteName: 'Grupo JURMAQ', locale: 'es_CL', type: 'website' },
+  openGraph: { title: TITULO, description: DESCRIPCION, url: 'https://jurmaq.cl', siteName: 'Grupo JURMAQ', locale: 'es_CL', type: 'website', images: [{ url: '/og-image-1200x630.jpg', width: 1200, height: 630 }] },
 };
 
 const EMPRESAS: {
@@ -61,18 +62,18 @@ export default function InicioGrupo() {
     <>
       <section className="h-portada" data-tema="marino">
         <div className="h-portada__fondo">
-          <Image src="/images/grupo/silos-general.webp" alt="" fill sizes="100vw" priority />
+          <Image src="/images/grupo/silos-general.webp" alt="" fill sizes="100vw" loading="eager" />
         </div>
         <div className="h-portada__ancho">
           <h1 className="g-display">Maquinaria, fierro y obra en el Maule</h1>
           <p className="h-portada__baja">Tres negocios JURMAQ, desde 2000.</p>
 
           <ul className="h-empresas" id="empresas">
-            {EMPRESAS.map((e) => (
+            {EMPRESAS.map((e, i) => (
               <li key={e.negocio} data-marca={e.negocio}>
                 <a className="h-empresa" href={NEGOCIOS[e.negocio].url}>
                   <div className="h-empresa__foto">
-                    <Image src={e.foto} alt={e.alt} width={800} height={600} sizes="(min-width: 768px) 34vw, 100vw" priority />
+                    <Image src={e.foto} alt={e.alt} width={800} height={600} sizes="(min-width: 768px) 34vw, 100vw" priority={i === 0} loading={i === 0 ? undefined : 'eager'} />
                   </div>
                   <div className="h-empresa__panel">
                     <span className="h-empresa__marca">JURMAQ</span>
@@ -90,8 +91,10 @@ export default function InicioGrupo() {
         </div>
       </section>
 
+      <MovimientoPortada />
+
       <section className="h-grupo">
-        <div>
+        <div className="h-grupo__texto">
           <h2 className="g-display">En el Maule desde 2000</h2>
           <p>
             Vendemos fierro en Molina, arrendamos maquinaria y construimos obras civiles e

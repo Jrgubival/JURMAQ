@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: TITULO,
   description: DESCRIPCION,
   alternates: { canonical: 'https://jurmaq.cl/contacto' },
-  openGraph: { title: TITULO, description: DESCRIPCION, url: 'https://jurmaq.cl/contacto', siteName: 'Grupo JURMAQ', locale: 'es_CL', type: 'website' },
+  openGraph: { title: TITULO, description: DESCRIPCION, url: 'https://jurmaq.cl/contacto', siteName: 'Grupo JURMAQ', locale: 'es_CL', type: 'website', images: [{ url: '/og-image-1200x630.jpg', width: 1200, height: 630 }] },
 };
 
 export default function Contacto() {

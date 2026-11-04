@@ -1,0 +1,72 @@
+'use client';
+
+import { useEffect } from 'react';
+
+/**
+ * Movimiento al hacer scroll en la portada. La entrada de las tarjetas es CSS
+ * (no depende de que cargue este archivo); GSAP se pide después, así que no
+ * pesa en la primera carga, y sólo toca elementos fuera de la primera vista.
+ * Con prefers-reduced-motion no se carga.
+ */
+export default function MovimientoPortada() {
+  useEffect(() => {
+    if (!window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
+
+    let cancelado = false;
+    let limpiar: (() => void) | undefined;
+
+    Promise.all([import('gsap'), import('gsap/ScrollTrigger')]).then(
+      ([{ gsap }, { ScrollTrigger }]) => {
+        if (cancelado) return;
+        gsap.registerPlugin(ScrollTrigger);
+
+        const ctx = gsap.context(() => {
+          // Paralaje mínimo de la foto de fondo: la obra queda atrás.
+          gsap.to('.h-portada__fondo img', {
+            yPercent: 8,
+            ease: 'none',
+            scrollTrigger: { trigger: '.h-portada', start: 'top top', end: 'bottom top', scrub: 0.6 },
+          });
+
+          // La foto del local se descubre de abajo hacia arriba.
+          gsap.from('.h-grupo__foto', {
+            clipPath: 'inset(100% 0 0 0)',
+            duration: 0.9,
+            ease: 'expo.out',
+            clearProps: 'clipPath',
+            scrollTrigger: { trigger: '.h-grupo', start: 'top 72%', once: true },
+          });
+
+          gsap.from('.h-grupo__texto > *', {
+            y: 22,
+            autoAlpha: 0,
+            duration: 0.6,
+            ease: 'power3.out',
+            stagger: 0.07,
+            clearProps: 'all',
+            scrollTrigger: { trigger: '.h-grupo', start: 'top 72%', once: true },
+          });
+
+          gsap.from('.h-llamar__botones > li', {
+            y: 18,
+            autoAlpha: 0,
+            duration: 0.5,
+            ease: 'power3.out',
+            stagger: 0.06,
+            clearProps: 'all',
+            scrollTrigger: { trigger: '.h-llamar__botones', start: 'top 88%', once: true },
+          });
+        });
+
+        limpiar = () => ctx.revert();
+      },
+    );
+
+    return () => {
+      cancelado = true;
+      limpiar?.();
+    };
+  }, []);
+
+  return null;
+}
