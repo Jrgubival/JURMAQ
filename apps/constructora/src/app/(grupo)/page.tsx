@@ -55,25 +55,16 @@ const LAMINAS: Lamina[] = [
   {
     marca: 'constructora',
     negocio: 'JURMAQ Constructora',
-    frase: 'Obras dentro de plantas en operación, como las fundaciones de silos de Nestlé en Teno.',
-    ir: 'Ver obras',
-    href: NEGOCIOS.constructora.url,
     foto: '/images/grupo/hero-constructora',
   },
   {
     marca: 'barraca',
     negocio: 'JURMAQ Barraca',
-    frase: 'Fierro, perfiles y techumbre en Molina, con despacho propio a 13 zonas del Maule.',
-    ir: 'Ir a la tienda',
-    href: NEGOCIOS.barraca.url,
     foto: '/images/grupo/hero-barraca',
   },
   {
     marca: 'arriendo',
     negocio: 'JURMAQ Arriendo',
-    frase: 'Retroexcavadoras, minicargadores y camión tolva desde Maquehua, Curicó.',
-    ir: 'Ver maquinaria',
-    href: NEGOCIOS.arriendo.url,
     foto: '/images/grupo/hero-arriendo',
   },
 ];

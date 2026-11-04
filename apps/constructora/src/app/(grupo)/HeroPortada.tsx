@@ -5,9 +5,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export type Lamina = {
   marca: 'barraca' | 'arriendo' | 'constructora';
   negocio: string;
-  frase: string;
-  ir: string;
-  href: string;
   /** Base sin ancho: se sirven -960, -1600 y -2400.webp. */
   foto: string;
 };
@@ -15,11 +12,10 @@ export type Lamina = {
 const INTERVALO = 6000;
 
 /**
- * Portada con carrusel de fondo, como el de barraca.jurmaq.cl: una foto real por
+ * Portada con carrusel de fondo (sólo fotos; el título queda fijo), como el de barraca.jurmaq.cl: una foto real por
  * negocio, crossfade cada 6 s, pausa con el mouse o el foco, puntos y flechas,
  * swipe en celular. Con prefers-reduced-motion no avanza solo.
- * El título y las tarjetas no se mueven: sólo cambian la foto y la frase, que
- * comparten la misma celda para que el alto no salte.
+ * El título y las tarjetas no se mueven: sólo cambia la foto.
  */
 export default function HeroPortada({
   laminas,
@@ -91,29 +87,7 @@ export default function HeroPortada({
       <div className="h-portada__ancho">
         {encabezado}
 
-        <div className="h-carrusel">
-          <div className="h-carrusel__frases" aria-live={pausado || reducido ? 'polite' : 'off'}>
-            {laminas.map((l, i) => (
-              <div
-                key={l.marca}
-                className="h-lamina"
-                data-marca={l.marca}
-                data-activa={i === actual}
-                role="group"
-                aria-roledescription="lámina"
-                aria-label={`${i + 1} de ${total}: ${l.negocio}`}
-                aria-hidden={i !== actual}
-                inert={i !== actual}
-              >
-                <p className="h-lamina__negocio">{l.negocio}</p>
-                <p className="h-lamina__frase">{l.frase}</p>
-                <a className="g-boton h-lamina__ir" href={l.href}>
-                  {l.ir}<span className="h-flecha" aria-hidden="true">→</span>
-                </a>
-              </div>
-            ))}
-          </div>
-
+        <div className="h-carrusel" role="group" aria-label="Fotos de la portada">
           <div className="h-carrusel__controles">
             <button type="button" className="h-carrusel__flecha" onClick={() => ir(actual - 1)} aria-label="Lámina anterior">
               <span aria-hidden="true">←</span>
