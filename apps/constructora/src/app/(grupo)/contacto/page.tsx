@@ -26,14 +26,15 @@ export default function Contacto() {
       </section>
 
       <div className="h-contacto">
-        <section>
+        <section className="h-contacto__form h-tarjeta">
           <h2>Déjanos tu mensaje</h2>
           <FormularioContacto />
         </section>
-        <section aria-label="Teléfonos">
+        <section className="h-contacto__lado" aria-labelledby="telefonos">
+          <h2 id="telefonos">Llama directo</h2>
           <ul className="h-telefonos">
             {(Object.keys(NEGOCIOS) as Negocio[]).map((clave) => (
-              <li key={clave}>
+              <li key={clave} className="h-tarjeta" data-marca={clave}>
                 <p>{NEGOCIOS[clave].nombre}</p>
                 <a href={`tel:${NEGOCIOS[clave].telefono}`}>{NEGOCIOS[clave].telefonoDisplay}</a>
               </li>

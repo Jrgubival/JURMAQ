@@ -1,7 +1,21 @@
 /* Hub jurmaq.cl. Lo común vive en @jurmaq/shared/styles/grupo.css.
-   Base azul marino, fotos reales de obra y bordes rectos. El único gesto fuerte
-   es el color de cada negocio subiendo por su panel. */
+   Base azul marino, fotos reales de obra. Tarjetas tranquilas: al pasar el
+   mouse nada cambia de tamaño ni de lugar; sólo sombra, borde, un zoom de 1,03
+   en la foto y la flecha que avanza 4 px.
+
+   Ritmo de 8 px: todos los espacios son múltiplos de 0,5rem.
+   Escala de letra: display xl / l / m (shared), 1.25 / 1.125 / 1 / 0.875rem. */
 .h-raiz {
+  --h-claro: #fbfbfa;
+  --h-marino: #081428;
+  --h-radio: 12px; /* rounded-xl, el mismo de la barraca */
+  --h-sombra: 0 1px 2px rgb(8 20 40 / 0.06), 0 8px 24px -8px rgb(8 20 40 / 0.12);
+  --h-sombra-alta: 0 2px 4px rgb(8 20 40 / 0.08), 0 20px 40px -12px rgb(8 20 40 / 0.24);
+  --h-borde: rgb(8 20 40 / 0.08);
+  --h-borde-alto: rgb(8 20 40 / 0.18);
+  --h-t: 200ms;
+  --h-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --h-seccion: clamp(4rem, 8vw, 6rem);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -12,135 +26,184 @@
 .h-raiz ::selection { background: var(--g-arriendo); color: #111; }
 .h-main { flex: 1; }
 
+/* Superficie clara reutilizable (tarjetas, formulario). Fija sus propias tintas
+   para que se lea igual dentro de una sección marina. */
+.h-tarjeta {
+  --g-tinta: #081428;
+  --g-tinta-media: #3d4757;
+  --g-tinta-suave: #5b6577;
+  --g-linea: #e5e7eb;
+  --acento-texto: #081428;
+  background: #ffffff;
+  border: 1px solid var(--h-borde);
+  border-radius: var(--h-radio);
+  box-shadow: var(--h-sombra);
+  color: var(--g-tinta);
+}
+
 /* --- Portada ------------------------------------------------------- */
+/* El marino termina a media altura de las tarjetas: las fotos cruzan el borde
+   y el texto queda sobre el fondo claro. */
 .h-portada {
+  --h-solape: clamp(10rem, 18vw, 14rem);
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  background: var(--h-claro);
 }
-/* Foto real de obra teñida de marino: textura, no protagonista. */
-.h-portada__fondo { position: absolute; inset: 0; z-index: -1; background: #081428; }
-.h-portada__fondo { overflow: hidden; }
+.h-portada__fondo {
+  position: absolute;
+  inset: 0 0 var(--h-solape) 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--h-marino);
+}
 .h-portada__fondo img {
   width: 100%;
   height: 112%;
   object-fit: cover;
   object-position: 50% 20%;
-  opacity: 0.2;
+  opacity: 0.18;
   mix-blend-mode: luminosity;
 }
 .h-portada__ancho {
   max-width: var(--g-ancho);
   margin: 0 auto;
-  padding: clamp(1.5rem, 4vw, 3.5rem) var(--g-margen) clamp(2rem, 5vw, 4rem);
+  padding: clamp(3rem, 6vw, 5rem) var(--g-margen) 0;
 }
-.h-portada .g-display { font-size: var(--g-display-xl); max-width: 22ch; }
+.h-portada .g-display { font-size: var(--g-display-xl); max-width: 18ch; }
 .h-portada__baja {
-  margin: 0.75rem 0 clamp(1.75rem, 3.5vw, 3rem);
+  max-width: 40ch;
+  margin: 1rem 0 0;
   color: var(--g-tinta-media);
-  font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+  font-size: clamp(1.125rem, 1.6vw, 1.25rem);
+  line-height: 1.5;
 }
 
 .h-empresas {
   display: grid;
-  gap: 1rem;
-  margin: 0;
+  gap: 1.5rem;
+  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
   padding: 0;
   list-style: none;
   scroll-margin-top: 1rem;
 }
+.h-empresas > li { display: flex; min-width: 0; }
+
 .h-empresa {
-  position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  color: var(--g-tinta);
+  width: 100%;
+  overflow: hidden;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
+  transition:
+    box-shadow var(--h-t) var(--h-ease),
+    border-color var(--h-t) var(--h-ease);
 }
 .h-empresa__foto {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 2;
   overflow: hidden;
   background: #0f2038;
 }
 .h-empresa__foto img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 700ms var(--g-ease-out);
+  transition: transform var(--h-t) var(--h-ease);
 }
 .h-empresa__panel {
   position: relative;
+  display: flex;
   flex: 1;
-  padding: 1.25rem 1.5rem 1.375rem;
-  background: var(--g-superficie);
-  transition: color 160ms ease;
+  flex-direction: column;
+  padding: 1.5rem 1.5rem 1.5rem;
+  border-top: 4px solid var(--acento);
 }
-/* El color del negocio sube por el panel al pasar. */
-.h-empresa__panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--acento);
-  transform: scaleY(0);
-  transform-origin: bottom;
-  transition: transform 220ms var(--g-ease-out);
-}
-.h-empresa__panel > * { position: relative; }
 .h-empresa__nombre { margin: 0; font-size: inherit; font-weight: inherit; }
-.h-empresa__nombre .g-marca { font-size: clamp(1.875rem, 2.5vw, 2.25rem); color: inherit; transition: color 160ms ease; }
-.h-empresa__nombre .g-marca__negocio { transition: color 160ms ease; }
-.h-empresa__detalle { margin: 0.5rem 0 0; color: inherit; line-height: 1.45; }
+.h-empresa__nombre .g-marca { font-size: 1.75rem; line-height: 1.15; color: var(--g-tinta); }
+.h-empresa__nombre .g-marca__negocio { color: var(--h-nombre, var(--g-tinta)); }
+[data-marca="barraca"] > .h-empresa { --h-nombre: #c90319; }
+[data-marca="arriendo"] > .h-empresa { --h-nombre: #b85208; }
+[data-marca="constructora"] > .h-empresa { --h-nombre: #7a5a00; }
+.h-empresa__detalle {
+  margin: 0.5rem 0 0;
+  color: var(--g-tinta-media);
+  font-size: 1rem;
+  line-height: 1.5;
+}
 .h-empresa__pie {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 0.875rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
 }
 .h-empresa__ir {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  color: var(--g-tinta);
+  font-size: 1rem;
   font-weight: 600;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
 }
-.h-empresa__nota { font-size: 0.8125rem; opacity: 0.8; }
-.h-empresa:active .h-empresa__foto img { transform: scale(1.02); }
-.h-empresa:focus-visible { outline: 3px solid #f4f3f0; outline-offset: 2px; }
+.h-flecha {
+  display: inline-block;
+  transition: transform var(--h-t) var(--h-ease);
+}
+.h-empresa__nota { color: var(--g-tinta-suave); font-size: 0.875rem; }
+.h-empresa:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px var(--h-marino), var(--h-sombra-alta);
+}
 
 /* --- Sección Nosotros de la portada --------------------------------- */
 .h-grupo {
   display: grid;
-  gap: 1.5rem;
+  gap: 2rem;
   align-items: center;
   max-width: var(--g-ancho);
   margin: 0 auto;
-  padding: clamp(3rem, 7vw, 5.5rem) var(--g-margen);
+  padding: var(--h-seccion) var(--g-margen);
 }
 .h-grupo h2 { margin: 0; font-size: var(--g-display-l); }
-.h-grupo p { max-width: 42ch; margin: 1rem 0 1.25rem; color: var(--g-tinta-media); font-size: 1.125rem; line-height: 1.55; }
-.h-grupo__foto { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--g-alterno); }
-.h-grupo__foto img { width: 100%; height: 100%; object-fit: cover; }
+.h-grupo p { max-width: 42ch; margin: 1rem 0 1.5rem; color: var(--g-tinta-media); font-size: 1.125rem; line-height: 1.5; }
+.h-grupo__foto {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: var(--h-radio);
+  background: var(--g-alterno);
+}
+.h-grupo__foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Enlace de texto con flecha (Conoce JURMAQ, sitios en Nosotros). */
+.h-mas { display: inline-flex; align-items: baseline; gap: 0.5rem; }
+@media (hover: hover) and (pointer: fine) {
+  .h-mas:hover .h-flecha { transform: translateX(4px); }
+}
 
 /* --- Contacto de la portada ----------------------------------------- */
 .h-llamar__ancho {
   max-width: var(--g-ancho);
   margin: 0 auto;
-  padding: clamp(3rem, 7vw, 5rem) var(--g-margen);
+  padding: var(--h-seccion) var(--g-margen);
 }
 .h-llamar h2 { margin: 0; font-size: var(--g-display-l); }
-.h-llamar p { margin: 0.75rem 0 1.75rem; color: var(--g-tinta-media); font-size: 1.125rem; }
-.h-llamar__botones { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+.h-llamar p { margin: 1rem 0 2rem; color: var(--g-tinta-media); font-size: 1.125rem; line-height: 1.5; }
+.h-llamar__botones { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
 .h-llamar__boton {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
   min-height: 56px;
-  padding: 0.875rem 1.25rem;
+  padding: 1rem 1.5rem;
   border: 1.5px solid var(--acento-texto);
-  border-radius: 12px;
+  border-radius: var(--h-radio);
   color: var(--acento-texto);
   font-family: var(--g-titular);
   font-size: 1.125rem;
@@ -148,44 +211,52 @@
   letter-spacing: -0.015em;
   text-decoration: none;
   transition:
-    transform var(--g-presion) var(--g-ease-out),
-    background-color var(--g-hover) ease,
-    color var(--g-hover) ease;
+    background-color var(--h-t) var(--h-ease),
+    color var(--h-t) var(--h-ease);
 }
 .h-llamar__boton span:last-child { font-size: 1rem; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: 0; }
-.h-llamar__boton:active { transform: scale(0.98); }
 .h-llamar__boton:focus-visible { outline: 2px solid #f4f3f0; outline-offset: 2px; }
 
 /* --- Banda de páginas interiores ------------------------------------ */
 .h-banda__texto {
   max-width: var(--g-ancho);
   margin: 0 auto;
-  padding: clamp(1rem, 3vw, 2rem) var(--g-margen) clamp(2rem, 5vw, 3.5rem);
+  padding: clamp(3rem, 6vw, 5rem) var(--g-margen) clamp(3rem, 6vw, 4.5rem);
 }
 .h-banda .g-display { font-size: var(--g-display-l); }
 .h-banda p {
   max-width: 52ch;
-  margin: 0.875rem 0 0;
+  margin: 1rem 0 0;
   color: var(--g-tinta-media);
-  font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+  font-size: clamp(1.125rem, 1.6vw, 1.25rem);
   line-height: 1.5;
 }
 
 /* --- Nosotros ------------------------------------------------------- */
 .h-fichas {
   display: grid;
-  gap: clamp(2.5rem, 6vw, 4.5rem);
+  gap: clamp(3rem, 6vw, 5rem);
   max-width: var(--g-ancho);
   margin: 0 auto;
-  padding: clamp(2.5rem, 6vw, 4.5rem) var(--g-margen);
+  padding: var(--h-seccion) var(--g-margen);
 }
-.h-ficha { display: grid; gap: 1.25rem; align-items: center; }
-.h-ficha__foto { position: relative; aspect-ratio: 3 / 2; overflow: hidden; background: var(--g-alterno); }
+.h-ficha { display: grid; gap: 1.5rem; align-items: center; }
+.h-ficha__foto {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: var(--h-radio);
+  background: var(--g-alterno);
+}
 .h-ficha__foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.h-ficha__nota {
-  margin: 0.375rem 0 0;
-  color: var(--g-tinta-suave);
-  font-size: 0.8125rem;
+.h-ficha__nota { margin: 0.5rem 0 0; color: var(--g-tinta-suave); font-size: 0.875rem; }
+.h-ficha__regla {
+  display: block;
+  width: 2rem;
+  height: 4px;
+  margin-bottom: 1rem;
+  border-radius: 2px;
+  background: var(--acento);
 }
 .h-ficha h2 {
   margin: 0;
@@ -195,34 +266,37 @@
   line-height: 1.1;
   letter-spacing: -0.025em;
 }
-.h-ficha h2 span {
-  display: inline-block;
-  padding: 0.125em 0.375em;
-  background: var(--acento);
-  color: var(--sobre-acento);
-}
-.h-ficha p { margin: 0.75rem 0 1rem; max-width: 52ch; color: var(--g-tinta-media); line-height: 1.55; }
+.h-ficha p { margin: 1rem 0 1.5rem; max-width: 46ch; color: var(--g-tinta-media); font-size: 1.125rem; line-height: 1.5; }
 
 /* --- Contacto ------------------------------------------------------- */
 .h-contacto {
   display: grid;
-  gap: clamp(2rem, 5vw, 4rem);
+  gap: 2rem;
+  align-items: start;
   max-width: var(--g-ancho);
   margin: 0 auto;
-  padding: clamp(2.5rem, 6vw, 4.5rem) var(--g-margen);
+  padding: var(--h-seccion) var(--g-margen);
 }
+.h-contacto__form { padding: clamp(1.5rem, 4vw, 2.5rem); }
 .h-contacto h2 {
-  margin: 0 0 1rem;
+  margin: 0 0 1.5rem;
   font-family: var(--g-titular);
   font-size: var(--g-display-m);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.025em;
 }
+.h-contacto__lado h2 { font-size: 1.25rem; margin-bottom: 1rem; letter-spacing: -0.015em; }
 .h-telefonos { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
-.h-telefonos li { padding-top: 0.875rem; border-top: 1px solid var(--g-linea); }
-.h-telefonos p { margin: 0; color: var(--g-tinta-suave); font-size: 0.9375rem; }
+.h-telefonos li {
+  padding: 1rem 1.5rem;
+  border-left: 4px solid var(--acento);
+  border-radius: var(--h-radio);
+}
+.h-telefonos p { margin: 0; color: var(--g-tinta-suave); font-size: 0.875rem; }
 .h-telefonos a {
+  display: inline-block;
+  margin-top: 0.25rem;
   font-family: var(--g-titular);
   font-size: 1.5rem;
   font-weight: 700;
@@ -231,66 +305,49 @@
   color: var(--g-tinta);
   text-decoration: none;
 }
-.h-form { display: grid; gap: 1rem; }
-.h-form__dos { display: grid; gap: 1rem; }
-.h-check { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.9375rem; color: var(--g-tinta-media); }
+.h-form { display: grid; gap: 1.5rem; }
+.h-form__dos { display: grid; gap: 1.5rem; }
+.h-check { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.875rem; color: var(--g-tinta-media); }
 .h-check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--g-tinta); }
-.h-estado { margin: 0; font-size: 0.9375rem; }
+.h-estado { margin: 0; font-size: 0.875rem; }
 .h-estado--error { color: #9f2f2d; }
 .h-estado--ok { color: #346538; }
 
 @media (min-width: 640px) {
   .h-form__dos { grid-template-columns: 1fr 1fr; }
 }
-@media (min-width: 900px) {
-  .h-ficha { grid-template-columns: 5fr 6fr; gap: clamp(2rem, 5vw, 4rem); }
-  .h-contacto { grid-template-columns: 7fr 4fr; }
-}
-
 @media (min-width: 768px) {
-  .h-empresas { grid-template-columns: repeat(3, 1fr); transition: grid-template-columns 480ms var(--g-ease-out); }
-  .h-empresa__panel { padding: 1rem clamp(1rem, 1.6vw, 1.5rem) 1.25rem; }
+  .h-empresas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .h-llamar__botones { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .h-empresa__panel { padding: 1.5rem 1rem; }
+  .h-empresa__nombre .g-marca { font-size: 1.5rem; }
 }
 @media (min-width: 900px) {
   .h-grupo { grid-template-columns: 5fr 7fr; gap: clamp(2rem, 5vw, 4.5rem); }
-  /* Alto igual: los tres nombres quedan alineados. */
-  .h-empresa__detalle { min-height: calc(2 * 1.45em); }
-}
-@media (min-width: 768px) and (max-width: 1100px) {
-  .h-empresa__detalle { min-height: calc(3 * 1.45em); }
+  .h-ficha { grid-template-columns: 6fr 5fr; gap: clamp(2rem, 5vw, 4rem); }
+  .h-contacto { grid-template-columns: 7fr 4fr; gap: clamp(2rem, 5vw, 4rem); }
 }
 
-@media (min-width: 900px) and (hover: hover) and (pointer: fine) {
-  .h-empresas:has(> li:nth-child(1) > .h-empresa:is(:hover, :focus-visible)) { grid-template-columns: 1.22fr 1fr 1fr; }
-  .h-empresas:has(> li:nth-child(2) > .h-empresa:is(:hover, :focus-visible)) { grid-template-columns: 1fr 1.22fr 1fr; }
-  .h-empresas:has(> li:nth-child(3) > .h-empresa:is(:hover, :focus-visible)) { grid-template-columns: 1fr 1fr 1.22fr; }
-  .h-empresas > li { min-width: 0; }
-}
+/* Hover: sólo sombra, borde, foto 1,03 y flecha 4 px. Nada mueve el layout. */
 @media (hover: hover) and (pointer: fine) {
-  .h-empresa__foto img { transform: scale(1.04); }
-  .h-empresa:is(:hover, :focus-visible) .h-empresa__foto img { transform: scale(1); }
-  .h-empresa:is(:hover, :focus-visible) .h-empresa__panel { color: var(--sobre-acento); transition-delay: 60ms; }
-  .h-empresa:is(:hover, :focus-visible) .g-marca__negocio { color: var(--sobre-acento); transition-delay: 60ms; }
-  .h-empresa:is(:hover, :focus-visible) .h-empresa__panel::before {
-    transform: scaleY(1);
-    transition-duration: var(--g-revelar);
-  }
+  .h-empresa:hover { border-color: var(--h-borde-alto); box-shadow: var(--h-sombra-alta); }
+  .h-empresa:is(:hover, :focus-visible) .h-empresa__foto img { transform: scale(1.03); }
+  .h-empresa:is(:hover, :focus-visible) .h-flecha { transform: translateX(4px); }
   .h-llamar__boton:hover { background: var(--acento-texto); color: #081428; }
 }
 
-/* Entrada mínima: todo se ve desde el primer cuadro, aunque la animación no
-   corra. Sólo un ajuste de posición de 0,3 s; nunca parte oculto. */
+/* Entrada mínima: todo se ve desde el primer cuadro; sólo un ajuste de posición. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes h-asentar {
-    from { transform: translateY(10px); }
+    from { transform: translateY(8px); }
     to { transform: none; }
   }
-  .h-empresas > li { animation: h-asentar 300ms var(--g-ease-out) backwards; }
+  .h-empresas > li { animation: h-asentar 300ms var(--h-ease) backwards; }
   .h-empresas > li:nth-child(2) { animation-delay: 40ms; }
   .h-empresas > li:nth-child(3) { animation-delay: 80ms; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .h-empresas, .h-empresa__foto img, .h-empresa__panel::before { transition: none !important; }
-  .h-empresa__foto img { transform: none !important; }
+  .h-empresa__foto img, .h-flecha { transition: none !important; transform: none !important; }
 }

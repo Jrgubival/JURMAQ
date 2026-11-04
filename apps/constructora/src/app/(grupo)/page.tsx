@@ -71,15 +71,15 @@ export default function InicioGrupo() {
           <ul className="h-empresas" id="empresas">
             {EMPRESAS.map((e) => (
               <li key={e.negocio} data-marca={e.negocio}>
-                <a className="h-empresa" href={NEGOCIOS[e.negocio].url}>
+                <a className="h-empresa h-tarjeta" href={NEGOCIOS[e.negocio].url}>
                   <div className="h-empresa__foto">
-                    <Image src={e.foto} alt={e.alt} width={800} height={600} sizes="(min-width: 768px) 34vw, 100vw" loading="eager" />
+                    <Image src={e.foto} alt={e.alt} width={800} height={600} sizes="(min-width: 1200px) 384px, (min-width: 768px) 32vw, 100vw" loading="eager" />
                   </div>
                   <div className="h-empresa__panel">
                     <h2 className="h-empresa__nombre"><MarcaGrupo negocio={e.nombre} soloTexto /></h2>
                     <p className="h-empresa__detalle">{e.texto}</p>
                     <div className="h-empresa__pie">
-                      <span className="h-empresa__ir">{e.ir}</span>
+                      <span className="h-empresa__ir">{e.ir}<span className="h-flecha" aria-hidden="true">→</span></span>
                       {e.nota && <span className="h-empresa__nota">{e.nota}</span>}
                     </div>
                   </div>
@@ -99,7 +99,7 @@ export default function InicioGrupo() {
             Vendemos fierro en Molina, arrendamos maquinaria y construimos obras civiles e
             industriales en toda la región.
           </p>
-          <Link className="g-enlace" href="/nosotros">Conoce JURMAQ</Link>
+          <Link className="g-enlace h-mas" href="/nosotros">Conoce JURMAQ<span className="h-flecha" aria-hidden="true">→</span></Link>
         </div>
         <div className="h-grupo__foto">
           <Image src="/images/grupo/barraca-frontal.webp" alt="Frente del local JURMAQ en Av. Poniente 2157, Molina" width={1100} height={825} sizes="(min-width: 900px) 55vw, 100vw" />

@@ -63,9 +63,10 @@ export default function Nosotros() {
                 {f.nota && <p className="h-ficha__nota">{f.nota}</p>}
               </div>
               <div>
-                <h2><span>{f.titulo}</span></h2>
+                <span className="h-ficha__regla" aria-hidden="true" />
+                <h2>{f.titulo}</h2>
                 <p>{f.texto}</p>
-                <a className="g-enlace" href={n.url}>{n.url.replace('https://', '')}</a>
+                <a className="g-enlace h-mas" href={n.url}>{n.url.replace('https://', '')}<span className="h-flecha" aria-hidden="true">→</span></a>
               </div>
             </section>
           );
