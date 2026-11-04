@@ -6,8 +6,8 @@
   --tinta: var(--g-tinta);
   --tenue: #5f6265;
   --linea: #dfe0dd;
-  --noche: #0b1e33;
-  --noche-2: #142c47;
+  --noche: #081428; /* Igual al header de barraca.jurmaq.cl. */
+  --noche-2: #122238;
   --oro: #e8b017;
   --oro-hover: #f3c33a;
   --oro-texto: #7a5a00; /* El dorado da 1,9:1 sobre blanco: como texto va este. */
@@ -50,7 +50,7 @@ button { font: inherit; color: inherit; }
 
 /* Cabecera */
 .cabecera { position: sticky; top: 0; z-index: 20; background: var(--noche); color: #fff; }
-.cabecera-fila { display: flex; align-items: center; gap: 12px 36px; min-height: 76px; }
+.cabecera-fila { display: flex; align-items: center; gap: 12px 36px; min-height: 81px; }
 /* Misma marca que barraca.jurmaq.cl: JURMAQ 30/800, negocio 20/600 (24 y 18 en celular y pie). */
 .marca, .pie-marca { display: flex; align-items: baseline; gap: 4px; text-decoration: none; white-space: nowrap; }
 .marca { margin-right: auto; }
@@ -79,7 +79,7 @@ button { font: inherit; color: inherit; }
 .boton:disabled { opacity: 0.6; cursor: default; }
 .boton-chico { min-height: 44px; padding: 0 14px; font-size: 0.97rem; }
 .boton-borde { background: transparent; color: #fff; }
-.boton-claro { background: rgb(11 30 51 / 0.4); color: #fff; border-color: rgb(255 255 255 / 0.7); }
+.boton-claro { background: rgb(8 20 40 / 0.4); color: #fff; border-color: rgb(255 255 255 / 0.7); }
 .boton-linea { background: transparent; color: var(--noche); border-color: var(--noche); }
 .acciones { display: flex; flex-wrap: wrap; gap: 12px; }
 .flecha { flex: none; transition: transform var(--g-hover) var(--ease-out); }
@@ -107,7 +107,7 @@ button { font: inherit; color: inherit; }
 .foto-fondo > img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; }
 .foto-fondo::before {
   content: ""; position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(0deg, rgb(11 30 51 / 0.92) 0%, rgb(11 30 51 / 0.62) 30%, rgb(11 30 51 / 0.08) 66%);
+  background: linear-gradient(0deg, rgb(8 20 40 / 0.92) 0%, rgb(8 20 40 / 0.62) 30%, rgb(8 20 40 / 0.08) 66%);
 }
 
 /* Portada */
@@ -182,7 +182,7 @@ button { font: inherit; color: inherit; }
 }
 .obra:active { opacity: 0.9; }
 .obra img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; transition: transform 700ms var(--ease-out); }
-.obra::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgb(11 30 51 / 0.9) 0%, rgb(11 30 51 / 0.1) 60%); }
+.obra::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgb(8 20 40 / 0.9) 0%, rgb(8 20 40 / 0.1) 60%); }
 .obra-texto { display: grid; gap: 4px; padding: clamp(18px, 2.2vw, 28px); }
 .obra-cliente { font-size: 0.93rem; color: #dfe5ea; }
 .obra-titulo { font-weight: 800; font-size: clamp(1.25rem, 2vw, 1.7rem); line-height: 1.15; letter-spacing: -0.02em; }
@@ -263,17 +263,21 @@ button { font: inherit; color: inherit; }
 .mensaje-error { color: #a02c1e; }
 .mensaje-ok { padding: 16px 20px; background: var(--gris-panel); color: var(--noche); font-weight: 600; }
 
-/* Pie */
-.pie { background: var(--noche); color: var(--claro-2); padding-block: 64px 32px; font-size: 0.97rem; }
+/* Pie claro, con los colores medidos en barraca.jurmaq.cl. */
+.pie { background: #f4f5f7; border-top: 1px solid #e5e7eb; color: #4a5565; padding-block: 56px 28px; font-size: 14px; line-height: 1.6; }
 .pie-columnas { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; }
-.pie-marca { color: #fff; margin-bottom: 8px; }
+.pie-marca { color: var(--noche); margin-bottom: 8px; }
 .pie-marca strong { font-size: 24px; font-weight: 800; letter-spacing: -0.6px; line-height: 32px; }
-.pie-marca span { color: var(--oro); font-size: 18px; font-weight: 600; line-height: 28px; }
-.pie h2 { font-family: var(--sans); font-size: 0.97rem; font-weight: 600; color: #fff; text-transform: none; margin-bottom: 8px; line-height: 1.6; }
-.pie li a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; }
+.pie-marca span { color: var(--oro-texto); font-size: 18px; font-weight: 600; line-height: 28px; }
+.pie h2 { font-size: 14px; font-weight: 700; letter-spacing: 0; color: var(--noche); margin-bottom: 8px; line-height: 1.6; }
+.pie li a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; color: #4a5565; transition: color 150ms ease; }
 .pie a { text-decoration: none; }
-.legal { margin-top: 36px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / 0.12); font-size: 0.86rem; }
+.pie a[href^="tel:"] { color: var(--noche); font-weight: 600; }
+.legal { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb; color: #6a7282; font-size: 12px; }
 .legal a { display: inline-block; min-height: 44px; line-height: 44px; margin-left: 12px; }
+@media (hover: hover) and (pointer: fine) {
+  .pie a:hover { color: var(--noche); }
+}
 
 @media (max-width: 1000px) {
   .nav { display: none; }
