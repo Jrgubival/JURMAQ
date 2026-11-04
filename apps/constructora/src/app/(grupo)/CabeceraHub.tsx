@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { CabeceraGrupo } from '@jurmaq/shared/ui/grupo';
 
 const ENLACES = [
   { href: '/#empresas', texto: 'Empresas' },
@@ -9,15 +10,7 @@ const ENLACES = [
   { href: '/contacto', texto: 'Contacto' },
 ];
 
-export default function NavGrupo() {
+export default function CabeceraHub() {
   const ruta = usePathname();
-  return (
-    <nav aria-label="Principal">
-      {ENLACES.map((e) => (
-        <Link key={e.href} href={e.href} aria-current={ruta === e.href ? 'page' : undefined}>
-          {e.texto}
-        </Link>
-      ))}
-    </nav>
-  );
+  return <CabeceraGrupo enlaces={ENLACES} actual={ruta} Enlace={Link} />;
 }

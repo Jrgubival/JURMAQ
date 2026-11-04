@@ -12,25 +12,6 @@
 .h-raiz ::selection { background: var(--g-arriendo); color: #111; }
 .h-main { flex: 1; }
 
-.h-cabecera__fila {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  max-width: var(--g-ancho);
-  margin: 0 auto;
-  padding: 1rem var(--g-margen);
-}
-.h-cabecera { box-shadow: 0 1px 0 var(--g-fondo); position: relative; } /* tapa la costura con la banda */
-.h-cabecera nav { display: flex; gap: 1.75rem; font-size: 1rem; font-weight: 500; }
-.h-cabecera nav a[aria-current='page'] { color: var(--g-tinta); text-decoration: underline; text-underline-offset: 6px; }
-.h-cabecera nav a {
-  padding: 0.625rem 0;
-  color: var(--g-tinta-media);
-  text-decoration: none;
-  transition: color var(--g-hover) ease;
-}
-
 /* --- Portada ------------------------------------------------------- */
 .h-portada {
   position: relative;
@@ -159,6 +140,7 @@
   min-height: 56px;
   padding: 0.875rem 1.25rem;
   border: 1.5px solid var(--acento-texto);
+  border-radius: 12px;
   color: var(--acento-texto);
   font-family: var(--g-titular);
   font-size: 1.125rem;
@@ -173,30 +155,6 @@
 .h-llamar__boton span:last-child { font-size: 1rem; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: 0; }
 .h-llamar__boton:active { transform: scale(0.98); }
 .h-llamar__boton:focus-visible { outline: 2px solid #f4f3f0; outline-offset: 2px; }
-
-/* --- Pie del hub ---------------------------------------------------- */
-.h-pie { font-size: 0.9375rem; line-height: 1.6; border-top: 1px solid var(--g-linea); }
-.h-pie__ancho {
-  max-width: var(--g-ancho);
-  margin: 0 auto;
-  padding: clamp(2.5rem, 5vw, 3.5rem) var(--g-margen) 2rem;
-}
-.h-pie__columnas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem 1.5rem; }
-.h-pie__marca { grid-column: 1 / -1; }
-.h-pie h2 { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 600; }
-.h-pie ul { margin: 0; padding: 0; list-style: none; }
-.h-pie li a { display: inline-block; padding: 0.25rem 0; color: var(--g-tinta-media); text-decoration: none; transition: color var(--g-hover) ease; }
-.h-pie a:focus-visible { outline: 2px solid var(--g-tinta); outline-offset: 2px; }
-.h-pie ul.h-pie__legal {
-  display: grid;
-  gap: 0.25rem;
-  margin: 2rem 0 0;
-  padding: 1.25rem 0 0;
-  border-top: 1px solid var(--g-linea);
-  color: var(--g-tinta-suave);
-  font-size: 0.875rem;
-  list-style: none;
-}
 
 /* --- Banda de páginas interiores ------------------------------------ */
 .h-banda__texto {
@@ -302,8 +260,6 @@
   .h-empresas { grid-template-columns: repeat(3, 1fr); transition: grid-template-columns 480ms var(--g-ease-out); }
   .h-empresa__panel { padding: 1rem clamp(1rem, 1.6vw, 1.5rem) 1.25rem; }
   .h-llamar__botones { grid-template-columns: repeat(3, 1fr); }
-  .h-pie__columnas { grid-template-columns: 2fr 1fr 1fr 1.4fr; }
-  .h-pie__marca { grid-column: auto; }
 }
 @media (min-width: 900px) {
   .h-grupo { grid-template-columns: 5fr 7fr; gap: clamp(2rem, 5vw, 4.5rem); }
@@ -329,7 +285,6 @@
     transform: scaleY(1);
     transition-duration: var(--g-revelar);
   }
-  .h-cabecera nav a:hover, .h-pie li a:hover { color: var(--g-tinta); }
   .h-llamar__boton:hover { background: var(--acento-texto); color: #081428; }
 }
 

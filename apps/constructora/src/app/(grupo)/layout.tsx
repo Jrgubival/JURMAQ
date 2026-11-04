@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import '@jurmaq/shared/styles/grupo.css';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import { CONTACTO_GRUPO, MarcaGrupo, NEGOCIOS, type Negocio } from '@jurmaq/shared/ui/grupo';
+import { CONTACTO_GRUPO, NEGOCIOS, PieGrupo, type Negocio } from '@jurmaq/shared/ui/grupo';
 import { grafoGrupo } from '@/lib/grupo-jsonld';
-import NavGrupo from './NavGrupo';
+import CabeceraHub from './CabeceraHub';
 import './hub.css';
 
 const ORDEN: Negocio[] = ['barraca', 'arriendo', 'constructora'];
@@ -25,50 +25,20 @@ export default function GrupoLayout({ children }: { children: React.ReactNode })
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(grafoGrupo()) }}
       />
-      <header className="h-cabecera" data-tema="marino">
-        <div className="h-cabecera__fila">
-          <MarcaGrupo />
-          <NavGrupo />
-        </div>
-      </header>
+      <CabeceraHub />
       <main className="h-main">{children}</main>
-      <footer className="h-pie" data-tema="marino">
-        <div className="h-pie__ancho">
-          <div className="h-pie__columnas">
-            <div className="h-pie__marca"><MarcaGrupo /></div>
-            <nav aria-label="Empresas">
-              <h2>Empresas</h2>
-              <ul>
-                {ORDEN.map((n) => (
-                  <li key={n}><a href={NEGOCIOS[n].url}>{NOMBRES[n]}</a></li>
-                ))}
-              </ul>
-            </nav>
-            <nav aria-label="El grupo">
-              <h2>El grupo</h2>
-              <ul>
-                <li><Link href="/nosotros">Nosotros</Link></li>
-                <li><Link href="/contacto">Contacto</Link></li>
-              </ul>
-            </nav>
-            <nav aria-label="Accesos">
-              <h2>Accesos</h2>
-              <ul>
-                <li><a href={`mailto:${CONTACTO_GRUPO}`}>{CONTACTO_GRUPO}</a></li>
-                <li><Link href="/privacidad">Privacidad</Link></li>
-                <li><Link href="/terminos">Términos</Link></li>
-              </ul>
-            </nav>
-          </div>
-          <ul className="h-pie__legal">
-            {ORDEN.map((n) => (
-              <li key={n}>
-                {NOMBRES[n]}: {NEGOCIOS[n].razonSocial}, RUT {NEGOCIOS[n].rut}, {NEGOCIOS[n].direccion}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </footer>
+      <PieGrupo
+        texto="Arriendo de maquinaria, barraca de fierros y constructora en la Región del Maule, desde 2000."
+        correo={CONTACTO_GRUPO}
+        columnas={[
+          { titulo: 'Empresas', enlaces: ORDEN.map((n) => ({ href: NEGOCIOS[n].url, texto: NOMBRES[n] })) },
+          { titulo: 'El grupo', enlaces: [{ href: '/nosotros', texto: 'Nosotros' }, { href: '/contacto', texto: 'Contacto' }] },
+          { titulo: 'Teléfonos', enlaces: ORDEN.map((n) => ({ href: `tel:${NEGOCIOS[n].telefono}`, texto: `${NOMBRES[n]}: ${NEGOCIOS[n].telefonoDisplay}` })) },
+        ]}
+        legal={ORDEN.map((n) => `${NOMBRES[n]}: ${NEGOCIOS[n].razonSocial}, RUT ${NEGOCIOS[n].rut}, ${NEGOCIOS[n].direccion}`)}
+        enlacesLegales={[{ href: '/terminos', texto: 'Términos y condiciones' }, { href: '/privacidad', texto: 'Política de privacidad' }]}
+        Enlace={Link}
+      />
     </div>
   );
 }
