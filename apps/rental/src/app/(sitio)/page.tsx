@@ -118,13 +118,8 @@ export default async function Inicio() {
 
       <section aria-labelledby="cobertura" className="bg-negro text-white">
         <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-16">
-          <div className="md:flex md:items-end md:justify-between md:gap-8">
-            <div>
-              <h2 id="cobertura" className="grande">Equipos para tu faena en el Maule</h2>
-              <p className="mt-4 text-lg text-white/80">Traslado según la comuna de la obra.</p>
-            </div>
-            <Link href="/arriendo-en/region-del-maule" prefetch={false} className="boton boton-principal mt-6 md:mt-0">Ver cobertura <ArrowRight size={18} weight="bold" aria-hidden /></Link>
-          </div>
+          <h2 id="cobertura" className="grande">Equipos para tu faena en el Maule</h2>
+          <p className="mt-4 text-lg text-white/80">Traslado según la comuna de la obra.</p>
           <ul data-revela className="mt-8 flex flex-wrap gap-2">
             {COMUNAS.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="chip comuna presionable border-white/25 text-white/90">{c.nombre}</Link></li>)}
           </ul>
