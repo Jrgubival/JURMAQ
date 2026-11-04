@@ -43,7 +43,7 @@ export function FlotaComuna({ flota, titulo }: { flota: Maquina[]; titulo: strin
     <section className="mx-auto max-w-[1320px] px-4 py-14 md:px-8 md:py-20">
       <h2 className="medio">{titulo}</h2>
       <div className="mt-8 grid gap-6 md:grid-cols-[1.3fr_1fr]">
-        <Link href={fichaHref(primera)} prefetch={false} className="tile tarjeta presionable block overflow-hidden border border-hairline bg-surface">
+        <Link href={fichaHref(primera)} prefetch={false} className="tile tarjeta presionable block overflow-hidden">
           <Foto maquina={primera} fondo="bg-[var(--fondo-foto)]" className="aspect-[4/3]" />
           <h3 className="px-6 pt-6 text-3xl">{primera.nombre}</h3>
           <div className="flex flex-wrap gap-x-4 px-6 pb-6 pt-2 text-ink-soft"><PrecioCorto precios={primera.precios} /></div>
@@ -51,7 +51,7 @@ export function FlotaComuna({ flota, titulo }: { flota: Maquina[]; titulo: strin
         <ul className="grid content-start gap-3">
           {resto.map((m) => (
             <li key={m.id}>
-              <Link href={fichaHref(m)} prefetch={false} className="tile tarjeta presionable grid grid-cols-[136px_1fr] items-center gap-4 overflow-hidden border border-hairline bg-surface pr-4">
+              <Link href={fichaHref(m)} prefetch={false} className="tile tarjeta presionable grid grid-cols-[136px_1fr] items-center gap-4 overflow-hidden pr-4">
                 <Foto maquina={m} fondo="bg-[var(--fondo-foto)]" className="aspect-[4/3] [&>span]:text-[0.625rem]" />
                 <span><span className="mb-1 block font-titulo text-xl leading-tight">{m.nombre}</span><PrecioCorto precios={m.precios} /></span>
               </Link>

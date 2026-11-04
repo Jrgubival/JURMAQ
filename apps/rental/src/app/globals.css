@@ -92,7 +92,7 @@ h1, h2, h3 { text-wrap: balance; }
   .boton:hover svg { transform: translateX(3px); }
   .tile:hover img { transform: scale(1.03); }
   .fila-trabajo:hover .flecha { transform: translateX(4px); }
-  .tarjeta:hover { border-color: #c9ced6; box-shadow: var(--sombra-alta); }
+  .tarjeta:hover { border-color: rgba(8, 20, 40, 0.1); box-shadow: var(--sombra-alta); }
   .tarjeta:hover .tarjeta-cta { background: var(--marino); border-color: var(--marino); color: #fff; }
   .comuna:hover { background: var(--g-arriendo); color: var(--marino); }
   .comuna:hover span { color: var(--marino); }
@@ -101,12 +101,13 @@ h1, h2, h3 { text-wrap: balance; }
 /* Tarjetas: misma elevación que la barraca. El hover sólo cambia sombra,
    borde y el zoom de la foto: nada se mueve de lugar. */
 :root {
-  --sombra-baja: 0 1px 2px rgba(8, 20, 40, 0.06), 0 4px 12px -6px rgba(8, 20, 40, 0.12);
-  --sombra-alta: 0 2px 4px rgba(8, 20, 40, 0.06), 0 16px 32px -16px rgba(8, 20, 40, 0.28);
+  --sombra-baja: 0 1px 2px rgba(8, 20, 40, 0.04), 0 4px 8px -4px rgba(8, 20, 40, 0.06), 0 16px 32px -20px rgba(8, 20, 40, 0.16);
+  --sombra-alta: 0 2px 4px rgba(8, 20, 40, 0.05), 0 12px 24px -10px rgba(8, 20, 40, 0.12), 0 32px 56px -28px rgba(8, 20, 40, 0.28);
+  --borde-suave: rgba(8, 20, 40, 0.06);
   --fondo-foto: #eef0f3;
 }
 .tile img { transition: transform 200ms var(--ease-salida); }
-.tarjeta { border-radius: 12px; box-shadow: var(--sombra-baja); transition: border-color 200ms ease, box-shadow 200ms ease; }
+.tarjeta { border: 1px solid var(--borde-suave); border-radius: 20px; background: #fff; box-shadow: var(--sombra-baja); transition: border-color 200ms ease, box-shadow 200ms ease; }
 .tarjeta-cta { transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease; }
 .redondo { border-radius: 12px; overflow: hidden; }
 .flecha { transition: transform 240ms var(--ease-salida); }

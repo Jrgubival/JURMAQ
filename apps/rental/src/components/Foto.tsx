@@ -38,7 +38,7 @@ export default function Foto({
       ) : (
         <div className="flex h-full items-center justify-center text-sm text-ink-muted">Foto pendiente</div>
       )}
-      {src && maquina.fotoReferencial ? <span className="absolute right-2 top-2 bg-negro/75 px-2 py-1 text-xs text-white">Imagen referencial</span> : null}
+      {src && maquina.fotoReferencial ? <span className="absolute right-3 top-3 rounded-full bg-negro/70 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">Imagen referencial</span> : null}
     </div>
   );
 }

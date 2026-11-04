@@ -23,7 +23,7 @@ export default function PortadaLanding({ migas, titulo, bajada, foto, cotizar, t
       ) : null}
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-negro/95 via-negro/70 to-negro/35 md:bg-gradient-to-r md:from-negro/90 md:via-negro/60 md:to-negro/10" />
       {foto?.fotoReferencial ? <span className="absolute bottom-3 right-3 bg-negro/75 px-2 py-1 text-xs">Imagen referencial</span> : null}
-      <div className="mx-auto max-w-[1320px] px-4 pb-12 pt-6 md:px-8 md:pb-20">
+      <div className="mx-auto max-w-[1320px] px-4 pb-12 pt-10 md:px-8 md:pb-20 md:pt-14">
         <Migas items={migas} />
         <h1 className="entra mt-16 max-w-[18ch] text-[clamp(1.875rem,9vw,2.25rem)] md:text-[clamp(2.5rem,4.4vw,3.5rem)] leading-[1.08] md:mt-24">{titulo}</h1>
         <p className="entra mt-5 max-w-[52ch] text-lg text-white/85" style={{ '--i': 1 } as React.CSSProperties}>{bajada}</p>

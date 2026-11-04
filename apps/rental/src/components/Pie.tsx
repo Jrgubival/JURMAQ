@@ -23,7 +23,7 @@ export default function Pie({ tipos }: { tipos: { slug: string; nombre: string }
         correo={SITIO.correo}
         direccion={SITIO.direccion}
         columnas={[
-          { titulo: 'Maquinarias', enlaces: tipos.map((t) => ({ href: `/arriendo/${t.slug}`, texto: t.nombre })) },
+          { titulo: 'Maquinarias', enlaces: [...tipos.map((t) => ({ href: `/arriendo/${t.slug}`, texto: t.nombre })), { href: '/recursos', texto: 'Guías de arriendo' }] },
           { titulo: 'Comunas', enlaces: COMUNAS.slice(0, 6).map(comuna) },
           { titulo: 'Más comunas', enlaces: COMUNAS.slice(6).map(comuna) },
         ]}

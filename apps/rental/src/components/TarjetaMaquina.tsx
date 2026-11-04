@@ -4,11 +4,14 @@ import { formatCLP } from '@jurmaq/shared/format';
 import { UNIDAD_LABEL, fichaHref, type Maquina } from '@/lib/maquinas';
 import Foto from './Foto';
 
-/** Primera oración de la descripción: la tarjeta lleva una sola línea de uso. */
-function lineaDeUso(texto: string) {
+/** Primera oración, en dos líneas como máximo: si es larga se corta en una palabra completa. */
+function lineaDeUso(texto: string, max = 88) {
   const t = texto.trim();
   const fin = t.search(/[.!?](\s|$)/);
-  return fin > 0 ? t.slice(0, fin + 1) : t;
+  const frase = fin > 0 ? t.slice(0, fin + 1) : t;
+  if (frase.length <= max) return frase;
+  const corte = frase.slice(0, max).replace(/[\s,;:]+\S*$/, '');
+  return `${corte}…`;
 }
 
 function Desde({ maquina }: { maquina: Maquina }) {
@@ -29,14 +32,14 @@ function Desde({ maquina }: { maquina: Maquina }) {
 export default function TarjetaMaquina({ maquina, prioridad = false }: { maquina: Maquina; prioridad?: boolean }) {
   const uso = maquina.descripcion ? lineaDeUso(maquina.descripcion) : '';
   return (
-    <Link href={fichaHref(maquina)} prefetch={false} className="tile tarjeta presionable fila-trabajo group flex h-full flex-col overflow-hidden border border-hairline bg-surface">
+    <Link href={fichaHref(maquina)} prefetch={false} className="tile tarjeta presionable fila-trabajo group flex h-full flex-col overflow-hidden">
       <Foto maquina={maquina} className="aspect-[4/3]" fondo="bg-[var(--fondo-foto)]" prioridad={prioridad} />
-      <div className="flex flex-1 flex-col p-6">
+      <div className="flex flex-1 flex-col p-6 md:p-8">
         <h3 className="text-2xl">{maquina.nombre}</h3>
-        {uso ? <p className="mt-2 line-clamp-1 text-[0.9375rem] text-ink-soft" title={uso}>{uso}</p> : null}
+        {uso ? <p className="mt-2 line-clamp-2 text-[0.9375rem] leading-normal text-ink-soft">{uso}</p> : null}
         <div className="mt-auto pt-6">
           <Desde maquina={maquina} />
-          <span className="tarjeta-cta mt-6 flex min-h-12 items-center justify-center gap-2 rounded-[12px] border border-[#c9ced6] font-semibold text-negro">
+          <span className="tarjeta-cta mt-6 flex min-h-12 items-center justify-center gap-2 rounded-[14px] border border-transparent bg-[#f4f5f7] font-semibold text-negro">
             Ver equipo y cotizar <ArrowRight size={18} weight="bold" className="flecha" aria-hidden />
           </span>
         </div>
