@@ -24,6 +24,7 @@
 .h-cabecera { box-shadow: 0 1px 0 var(--g-fondo); position: relative; } /* tapa la costura con la banda */
 .h-cabecera .g-marca { font-size: 1.625rem; }
 .h-cabecera nav { display: flex; gap: 1.75rem; font-size: 1rem; font-weight: 500; }
+.h-cabecera nav a[aria-current='page'] { color: var(--g-tinta); text-decoration: underline; text-underline-offset: 6px; }
 .h-cabecera nav a {
   padding: 0.625rem 0;
   color: var(--g-tinta-media);
@@ -350,20 +351,16 @@
   .h-llamar__boton:hover { background: var(--acento-texto); color: #081428; }
 }
 
-/* Entrada: las tarjetas se levantan una tras otra, sólo al cargar. */
+/* Entrada mínima: todo se ve desde el primer cuadro, aunque la animación no
+   corra. Sólo un ajuste de posición de 0,3 s; nunca parte oculto. */
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes h-subir {
-    from { clip-path: inset(100% 0 0 0); }
-    to { clip-path: inset(0); }
+  @keyframes h-asentar {
+    from { transform: translateY(10px); }
+    to { transform: none; }
   }
-  @keyframes h-asomar {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: none; }
-  }
-  .h-empresas > li { animation: h-subir 680ms var(--g-ease-out) both; }
-  .h-empresas > li:nth-child(2) { animation-delay: 80ms; }
-  .h-empresas > li:nth-child(3) { animation-delay: 160ms; }
-  .h-portada .g-display, .h-portada__baja { animation: h-asomar 460ms var(--g-ease-out) both; }
+  .h-empresas > li { animation: h-asentar 300ms var(--g-ease-out) backwards; }
+  .h-empresas > li:nth-child(2) { animation-delay: 40ms; }
+  .h-empresas > li:nth-child(3) { animation-delay: 80ms; }
 }
 @media (prefers-reduced-motion: reduce) {
   .h-empresas, .h-empresa__foto img, .h-empresa__panel::before { transition: none !important; }

@@ -3,6 +3,7 @@ import '@jurmaq/shared/styles/grupo.css';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { CONTACTO_GRUPO, MarcaGrupo, NEGOCIOS, type Negocio } from '@jurmaq/shared/ui/grupo';
 import { grafoGrupo } from '@/lib/grupo-jsonld';
+import NavGrupo from './NavGrupo';
 import './hub.css';
 
 const ORDEN: Negocio[] = ['barraca', 'arriendo', 'constructora'];
@@ -27,11 +28,7 @@ export default function GrupoLayout({ children }: { children: React.ReactNode })
       <header className="h-cabecera" data-tema="marino">
         <div className="h-cabecera__fila">
           <MarcaGrupo />
-          <nav aria-label="Principal">
-            <Link href="/#empresas">Empresas</Link>
-            <Link href="/nosotros">Nosotros</Link>
-            <Link href="/contacto">Contacto</Link>
-          </nav>
+          <NavGrupo />
         </div>
       </header>
       <main className="h-main">{children}</main>

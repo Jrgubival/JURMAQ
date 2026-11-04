@@ -28,19 +28,18 @@ export default function MovimientoPortada() {
             scrollTrigger: { trigger: '.h-portada', start: 'top top', end: 'bottom top', scrub: 0.6 },
           });
 
-          // La foto del local se descubre de abajo hacia arriba.
+          // Nada parte oculto: si esto no corre, todo sigue a la vista.
           gsap.from('.h-grupo__foto', {
-            clipPath: 'inset(100% 0 0 0)',
-            duration: 0.9,
+            clipPath: 'inset(10% 0 0 0)',
+            duration: 0.6,
             ease: 'expo.out',
             clearProps: 'clipPath',
             scrollTrigger: { trigger: '.h-grupo', start: 'top 72%', once: true },
           });
 
           gsap.from('.h-grupo__texto > *', {
-            y: 22,
-            autoAlpha: 0,
-            duration: 0.6,
+            y: 14,
+            duration: 0.45,
             ease: 'power3.out',
             stagger: 0.07,
             clearProps: 'all',
@@ -48,9 +47,8 @@ export default function MovimientoPortada() {
           });
 
           gsap.from('.h-llamar__botones > li', {
-            y: 18,
-            autoAlpha: 0,
-            duration: 0.5,
+            y: 12,
+            duration: 0.4,
             ease: 'power3.out',
             stagger: 0.06,
             clearProps: 'all',
