@@ -1,12 +1,14 @@
 import type { ComponentProps } from 'react';
 import Link from 'next/link';
-import { PieGrupo, URL_HUB, NEGOCIOS } from '@jurmaq/shared/ui/grupo';
+import { PieGrupo } from '@jurmaq/shared/ui/grupo';
 import { COMUNAS } from '@/data/comunas';
 import { PRIVACIDAD_URL, SITIO, TERMINOS_URL } from '@/lib/sitio';
 
 function Enlace(props: ComponentProps<typeof Link>) {
   return <Link prefetch={false} {...props} />;
 }
+
+const comuna = (c: { slug: string; nombre: string }) => ({ href: `/arriendo-en/${c.slug}`, texto: c.nombre });
 
 export default function Pie({ tipos }: { tipos: { slug: string; nombre: string }[] }) {
   return (
@@ -21,15 +23,8 @@ export default function Pie({ tipos }: { tipos: { slug: string; nombre: string }
         direccion={SITIO.direccion}
         columnas={[
           { titulo: 'Maquinarias', enlaces: tipos.map((t) => ({ href: `/arriendo/${t.slug}`, texto: t.nombre })) },
-          { titulo: 'Comunas', enlaces: COMUNAS.map((c) => ({ href: `/arriendo-en/${c.slug}`, texto: c.nombre })) },
-          {
-            titulo: 'Grupo JURMAQ',
-            enlaces: [
-              { href: URL_HUB, texto: 'Inicio del grupo' },
-              { href: NEGOCIOS.barraca.url, texto: NEGOCIOS.barraca.nombre },
-              { href: NEGOCIOS.constructora.url, texto: NEGOCIOS.constructora.nombre },
-            ],
-          },
+          { titulo: 'Comunas', enlaces: COMUNAS.slice(0, 6).map(comuna) },
+          { titulo: 'Más comunas', enlaces: COMUNAS.slice(6).map(comuna) },
         ]}
         legal={[`${SITIO.razonSocial}, RUT ${SITIO.rut}`]}
         enlacesLegales={[
