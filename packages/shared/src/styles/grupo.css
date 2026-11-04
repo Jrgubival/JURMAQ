@@ -8,8 +8,8 @@
    prefijo `g-`/`--g-`, así no pisa nada de globals.css.
 
    Uso: poner data-marca="arriendo|barraca|constructora|hub" en <html> o en
-   un contenedor. Fuentes: cada app declara Geist, Geist Mono y Oswald con
-   next/font en --font-sans, --font-mono y --font-titular (o --font-heading).
+   un contenedor. Fuentes: cada app declara Geist y Geist Mono con next/font
+   en --font-sans y --font-mono.
    ==================================================================== */
 
 :root {
@@ -22,17 +22,18 @@
   --g-linea: #eaeaea;
 
   --g-sans: var(--font-sans), system-ui, sans-serif;
-  --g-titular: var(--font-titular, var(--font-heading)), "Arial Narrow", sans-serif;
+  /* Toda la línea usa la letra de la barraca: Geist, también en titulares. */
+  --g-titular: var(--g-sans);
   --g-mono: var(--font-mono), ui-monospace, monospace;
 
   --g-radio: 4px;
   --g-ancho: 1200px;
   --g-margen: clamp(16px, 4vw, 40px);
 
-  /* Escala de display: Oswald grande es la voz del grupo. */
-  --g-display-xl: clamp(3rem, 7vw, 6rem);
-  --g-display-l: clamp(2.5rem, 5vw, 4.5rem);
-  --g-display-m: clamp(1.75rem, 3vw, 2.5rem);
+  /* Escala de titulares, como los de la barraca: peso 800 y tracking ajustado. */
+  --g-display-xl: clamp(2.5rem, 5vw, 4.25rem);
+  --g-display-l: clamp(2rem, 3.8vw, 3.25rem);
+  --g-display-m: clamp(1.625rem, 2.4vw, 2.125rem);
 
   --g-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --g-ease-mover: cubic-bezier(0.77, 0, 0.175, 1);
@@ -130,9 +131,9 @@
 /* --- Marca ---------------------------------------------------------- */
 .g-marca {
   font-family: var(--g-titular);
-  font-weight: 600;
+  font-weight: 800;
   font-size: 1.375rem;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.03em;
   line-height: 1;
   color: var(--g-tinta);
   text-decoration: none;
@@ -142,10 +143,9 @@
 .g-display {
   margin: 0;
   font-family: var(--g-titular);
-  font-weight: 600;
-  line-height: 1.02;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
@@ -181,7 +181,8 @@
 }
 
 /* --- Enlace --------------------------------------------------------- */
-.g-enlace {
+/* Clase repetida a propósito: globals.css quita el subrayado con a:not(...):not(...). */
+a.g-enlace.g-enlace.g-enlace {
   color: var(--acento-texto);
   font-weight: 600;
   text-decoration: underline;
