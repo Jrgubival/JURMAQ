@@ -29,7 +29,7 @@ const EMPRESAS: {
     nombre: 'Barraca',
     texto: 'Fierro, perfiles, planchas y materiales. Local en Molina y tienda en línea.',
     ir: 'Ir a la tienda',
-    foto: '/images/grupo/barraca-fierros.jpg',
+    foto: '/images/grupo/barraca-fierros.webp',
     alt: 'Estantes con perfiles y tubos de fierro en la barraca',
   },
   {
@@ -62,18 +62,18 @@ export default function InicioGrupo() {
     <>
       <section className="h-portada" data-tema="marino">
         <div className="h-portada__fondo">
-          <Image src="/images/grupo/silos-general.webp" alt="" fill sizes="100vw" loading="eager" />
+          <Image src="/images/grupo/silos-general.webp" alt="" fill sizes="100vw" priority />
         </div>
         <div className="h-portada__ancho">
           <h1 className="g-display">Maquinaria, fierro y obra en el Maule</h1>
           <p className="h-portada__baja">Tres negocios JURMAQ, desde 2000.</p>
 
           <ul className="h-empresas" id="empresas">
-            {EMPRESAS.map((e, i) => (
+            {EMPRESAS.map((e) => (
               <li key={e.negocio} data-marca={e.negocio}>
                 <a className="h-empresa" href={NEGOCIOS[e.negocio].url}>
                   <div className="h-empresa__foto">
-                    <Image src={e.foto} alt={e.alt} width={800} height={600} sizes="(min-width: 768px) 34vw, 100vw" priority={i === 0} loading={i === 0 ? undefined : 'eager'} />
+                    <Image src={e.foto} alt={e.alt} width={800} height={600} sizes="(min-width: 768px) 34vw, 100vw" loading="eager" />
                   </div>
                   <div className="h-empresa__panel">
                     <span className="h-empresa__marca">JURMAQ</span>
@@ -103,7 +103,7 @@ export default function InicioGrupo() {
           <Link className="g-enlace" href="/nosotros">Conoce JURMAQ</Link>
         </div>
         <div className="h-grupo__foto">
-          <Image src="/images/grupo/barraca-frontal.jpg" alt="Frente del local JURMAQ en Av. Poniente 2157, Molina" width={1100} height={825} sizes="(min-width: 900px) 55vw, 100vw" />
+          <Image src="/images/grupo/barraca-frontal.webp" alt="Frente del local JURMAQ en Av. Poniente 2157, Molina" width={1100} height={825} sizes="(min-width: 900px) 55vw, 100vw" />
         </div>
       </section>
 

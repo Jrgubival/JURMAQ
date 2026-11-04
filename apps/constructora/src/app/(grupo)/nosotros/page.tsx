@@ -26,7 +26,7 @@ const FICHAS: { negocio: Negocio; titulo: string; texto: string; foto: string; a
     negocio: 'barraca',
     titulo: 'Barraca',
     texto: 'Fierros, perfiles, planchas y materiales de construcción, en local y tienda en línea.',
-    foto: '/images/grupo/barraca-frontal.jpg',
+    foto: '/images/grupo/barraca-frontal.webp',
     alt: 'Frente del local de la barraca en Av. Poniente 2157, Molina',
   },
   {
