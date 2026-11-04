@@ -57,10 +57,10 @@ export default async function Inicio() {
 
       <section className="relative isolate overflow-hidden bg-negro text-white">
         {heroe?.fotos[0] ? (
-          <div className="relative aspect-[3/2] overflow-hidden md:absolute md:inset-y-0 md:right-0 md:-z-10 md:aspect-auto md:w-[62%] md:[mask-image:linear-gradient(to_right,transparent,black_40%)]">
+          <div className="relative aspect-[3/2] overflow-hidden [mask-image:linear-gradient(to_bottom,black_72%,transparent)] md:absolute md:inset-y-0 md:right-0 md:-z-10 md:aspect-auto md:w-[62%] md:[mask-image:linear-gradient(to_right,transparent,black_40%)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={heroe.fotos[0]} alt={heroe.nombre} {...variantes(heroe.fotos[0], '(min-width: 768px) 62vw, 100vw')} width={1600} height={1066} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
-            {heroe.fotoReferencial ? <span className="absolute bottom-2 right-2 bg-negro/80 px-2 py-1 text-xs">Imagen referencial</span> : null}
+            {heroe.fotoReferencial ? <span className="absolute right-3 top-3 rounded-full bg-negro/70 px-2.5 py-1 text-xs font-medium backdrop-blur-sm md:bottom-3 md:top-auto">Imagen referencial</span> : null}
           </div>
         ) : null}
         <div className="mx-auto max-w-[1320px] px-4 py-9 md:flex md:min-h-[560px] md:flex-col md:justify-center md:px-8 md:py-16">
