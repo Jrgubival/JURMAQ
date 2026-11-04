@@ -30,10 +30,10 @@ export default function MovimientoPortada() {
 
           // Nada parte oculto: si esto no corre, todo sigue a la vista.
           gsap.from('.h-grupo__foto', {
-            clipPath: 'inset(10% 0 0 0)',
-            duration: 0.6,
-            ease: 'expo.out',
-            clearProps: 'clipPath',
+            y: 14,
+            duration: 0.5,
+            ease: 'power3.out',
+            clearProps: 'all',
             scrollTrigger: { trigger: '.h-grupo', start: 'top 72%', once: true },
           });
 
