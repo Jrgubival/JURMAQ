@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import MovimientoPortada from './MovimientoPortada';
-import { CONTACTO_GRUPO, NEGOCIOS, type Negocio } from '@jurmaq/shared/ui/grupo';
+import { CONTACTO_GRUPO, MarcaGrupo, NEGOCIOS, type Negocio } from '@jurmaq/shared/ui/grupo';
 
 const TITULO = 'Grupo JURMAQ: arriendo, barraca y constructora en el Maule';
 const DESCRIPCION =
@@ -76,8 +76,7 @@ export default function InicioGrupo() {
                     <Image src={e.foto} alt={e.alt} width={800} height={600} sizes="(min-width: 768px) 34vw, 100vw" loading="eager" />
                   </div>
                   <div className="h-empresa__panel">
-                    <span className="h-empresa__marca">JURMAQ</span>
-                    <h2 className="h-empresa__nombre">{e.nombre}</h2>
+                    <h2 className="h-empresa__nombre"><MarcaGrupo negocio={e.nombre} soloTexto /></h2>
                     <p className="h-empresa__detalle">{e.texto}</p>
                     <div className="h-empresa__pie">
                       <span className="h-empresa__ir">{e.ir}</span>

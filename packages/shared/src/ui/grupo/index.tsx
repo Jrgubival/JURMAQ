@@ -10,10 +10,22 @@ export type { Marca, Negocio };
  * Son de servidor: no necesitan JavaScript en el navegador.
  */
 
-export function MarcaGrupo({ href = '/' }: { href?: string }) {
+/**
+ * Logo de texto del grupo, igual al de barraca.jurmaq.cl: JURMAQ grande en
+ * blanco y, al lado, el negocio más chico en su color. Con `href` es enlace; sin
+ * él es texto (por ejemplo, dentro de una tarjeta que ya es un enlace).
+ */
+export function MarcaGrupo({ href = '/', negocio, soloTexto = false }: { href?: string; negocio?: string; soloTexto?: boolean }) {
+  const contenido = (
+    <>
+      <span className="g-marca__grupo">JURMAQ</span>
+      {negocio && <span className="g-marca__negocio">{negocio}</span>}
+    </>
+  );
+  if (soloTexto) return <span className="g-marca">{contenido}</span>;
   return (
     <a className="g-marca" href={href}>
-      JURMAQ
+      {contenido}
     </a>
   );
 }
