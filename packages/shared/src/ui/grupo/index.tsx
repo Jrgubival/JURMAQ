@@ -87,10 +87,17 @@ export function CabeceraGrupo({
 
 /**
  * Pie común, claro como el de barraca.jurmaq.cl: marca con texto y contacto, tres
- * columnas y barra legal. Cada sitio pasa sus datos; `legal` lleva la razón social y
+ * columnas, franja "Grupo JURMAQ" y barra legal. Cada sitio pasa sus datos; `legal` lleva la razón social y
  * el RUT que correspondan a ese sitio, sin mezclar sociedades.
  */
+const ORDEN_FRANJA: { negocio: Negocio; texto: string }[] = [
+  { negocio: 'arriendo', texto: 'Arriendo' },
+  { negocio: 'constructora', texto: 'Constructora' },
+  { negocio: 'barraca', texto: 'Barraca' },
+];
+
 export function PieGrupo({
+  sitio,
   negocio,
   texto,
   telefono,
@@ -104,6 +111,8 @@ export function PieGrupo({
   inicio = '/',
   Enlace = 'a',
 }: {
+  /** Sitio donde está el pie: ese negocio sale en la franja sin enlace. El hub no lo pasa. */
+  sitio?: Negocio;
   negocio?: string;
   texto: string;
   telefono?: string;
@@ -146,10 +155,25 @@ export function PieGrupo({
         </div>
       </div>
       <div className="g-piec__barra">
-        <div className="g-piec__legal">
-          <div>{legal.map((l) => <p key={l}>{l}</p>)}</div>
-          <div className="g-piec__legales">
-            {enlacesLegales.map((e) => <Enlace key={e.href} href={e.href}>{e.texto}</Enlace>)}
+        <div className="g-piec__bajo">
+          <nav className="g-piec__franja" aria-label="Unidades de negocio JURMAQ">
+            <span>Grupo JURMAQ:</span>
+            {ORDEN_FRANJA.map((f, i) => (
+              <span key={f.negocio} className="g-piec__unidad">
+                {i > 0 && <span className="g-piec__punto" aria-hidden="true">·</span>}
+                {f.negocio === sitio ? (
+                  <span className="g-piec__actual" aria-current="page">{f.texto}</span>
+                ) : (
+                  <a href={NEGOCIOS[f.negocio].url}>{f.texto}</a>
+                )}
+              </span>
+            ))}
+          </nav>
+          <div className="g-piec__legal">
+            <div>{legal.map((l) => <p key={l}>{l}</p>)}</div>
+            <div className="g-piec__legales">
+              {enlacesLegales.map((e) => <Enlace key={e.href} href={e.href}>{e.texto}</Enlace>)}
+            </div>
           </div>
         </div>
       </div>

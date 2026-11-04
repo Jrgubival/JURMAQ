@@ -31,7 +31,6 @@ export default function GrupoLayout({ children }: { children: React.ReactNode })
         texto="Arriendo de maquinaria, barraca de fierros y constructora en la Región del Maule, desde 2000."
         correo={CONTACTO_GRUPO}
         columnas={[
-          { titulo: 'Empresas', enlaces: ORDEN.map((n) => ({ href: NEGOCIOS[n].url, texto: NOMBRES[n] })) },
           { titulo: 'El grupo', enlaces: [{ href: '/nosotros', texto: 'Nosotros' }, { href: '/contacto', texto: 'Contacto' }] },
           { titulo: 'Teléfonos', enlaces: ORDEN.map((n) => ({ href: `tel:${NEGOCIOS[n].telefono}`, texto: `${NOMBRES[n]}: ${NEGOCIOS[n].telefonoDisplay}` })) },
         ]}
