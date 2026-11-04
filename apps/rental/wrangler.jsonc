@@ -17,6 +17,8 @@
   "routes": [{ "pattern": "rental.jurmaq.cl", "custom_domain": true }],
   // workers.dev queda para pruebas: lleva X-Robots-Tag noindex (next.config.ts).
   "workers_dev": true,
-  "vars": { "AUTH_SCOPE": "rental", "DESPLIEGUE": "cloudflare" },
+  // NODE_ENV aquí, no sólo en runtime: el middleware se carga antes de que OpenNext
+  // llene process.env, y sin esto buscaría la cookie dev-rental.session-token.
+  "vars": { "AUTH_SCOPE": "rental", "DESPLIEGUE": "cloudflare", "NODE_ENV": "production" },
   "observability": { "enabled": true }
 }
