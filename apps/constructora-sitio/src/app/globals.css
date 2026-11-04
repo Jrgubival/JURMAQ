@@ -58,6 +58,15 @@ button { font: inherit; color: inherit; }
 /* La cabecera y el pie vienen de @jurmaq/shared/ui/grupo. */
 .cabecera { display: contents; }
 
+/* WhatsApp flotante, igual al de la barraca: 44 px, abajo a la izquierda. */
+.wa-flotante {
+  position: fixed; left: 16px; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 40;
+  display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
+  background: #fff; color: #25d366; border: 1px solid #e5e7eb; border-radius: 9999px;
+  box-shadow: 0 4px 14px -6px rgb(8 20 40 / 0.35); transition: border-color 150ms ease;
+}
+@media (hover: hover) and (pointer: fine) { .wa-flotante:hover { border-color: #d1d5db; } }
+
 /* Botones */
 .boton {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 24px;

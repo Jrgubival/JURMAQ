@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import Cabecera from "@/components/Cabecera";
 import Movimiento from "@/components/Movimiento";
 import Pie from "@/components/Pie";
+import WhatsAppFlotante from "@/components/WhatsAppFlotante";
 import { EMPRESA, SITIO_URL } from "@/data/empresa";
 import "@jurmaq/shared/styles/grupo.css";
 import "./globals.css";
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Cabecera />
         <main id="contenido">{children}</main>
         <Pie />
+        <WhatsAppFlotante />
         <Movimiento />
         {/* Solo prefetch: el sitio es estático y ayuda a la página siguiente. */}
         <script
