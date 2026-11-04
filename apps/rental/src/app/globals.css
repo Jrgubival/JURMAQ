@@ -151,6 +151,11 @@ textarea.campo { padding: 0.75rem 0.875rem; }
 .panel .campo { font-size: 1.25rem; min-height: 60px; }
 .panel .boton { font-size: 1.25rem; min-height: 60px; padding: 0 1rem; white-space: normal; }
 
+/* Igual que la barraca (styles/globals.css del paquete compartido). */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+
 /* En celular, si está la barra fija de Cotizar y WhatsApp, el botón flotante
    no se muestra: nunca dos WhatsApp a la vista ni uno tapando la barra. */
 @media (max-width: 767px) {
