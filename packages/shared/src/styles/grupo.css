@@ -181,7 +181,7 @@
 }
 
 /* --- Enlace --------------------------------------------------------- */
-.g-enlace {
+a.g-enlace {
   color: var(--acento-texto);
   font-weight: 600;
   text-decoration: underline;
