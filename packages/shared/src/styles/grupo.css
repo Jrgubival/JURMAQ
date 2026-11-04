@@ -113,7 +113,7 @@
 [data-tema="oscuro"] [data-marca="barraca"],
 [data-tema="oscuro"][data-marca="barraca"],
 [data-tema="marino"] [data-marca="barraca"],
-[data-tema="marino"][data-marca="barraca"] { --acento-texto: #ff6470; }
+[data-tema="marino"][data-marca="barraca"] { --acento-texto: #ec6e7e; }
 [data-tema="oscuro"] [data-marca="arriendo"],
 [data-tema="oscuro"][data-marca="arriendo"],
 [data-tema="marino"] [data-marca="arriendo"],
@@ -130,13 +130,26 @@
 
 /* --- Marca ---------------------------------------------------------- */
 .g-marca {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.25rem;
   font-family: var(--g-titular);
-  font-weight: 800;
-  font-size: 1.375rem;
-  letter-spacing: -0.03em;
-  line-height: 1;
+  font-size: 1.5rem;
+  line-height: 1.25;
   color: var(--g-tinta);
   text-decoration: none;
+}
+.g-marca__grupo { font-weight: 800; letter-spacing: -0.025em; }
+/* Proporción del logo de la barraca: 18/24 en celular y 20/30 en escritorio. */
+.g-marca__negocio {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--acento-texto);
+}
+@media (min-width: 1024px) {
+  .g-marca { font-size: 1.875rem; }
+  .g-marca__negocio { font-size: 0.667em; }
 }
 
 /* Titular grande del grupo. */
