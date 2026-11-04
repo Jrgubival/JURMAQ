@@ -70,9 +70,9 @@
     "w": 1280
   },
   "silos-moldaje": {
-    "h": 780,
+    "h": 960,
     "lqip": "data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAADQBACdASoYABIAPxF2s1IsJySisBgIAYAiCWcAy6QPqbw8uH1kyPR2xAUUsE9sAAD+Il+p42EAXW/bHtdTVojX3AbE153OmW+ffuKnR24DsEbJbn41tVHbECvFFEJIAKWMgut7pZY70oHUm+xN4OklXBJWAAx3yVLAwAAA",
-    "w": 1040
+    "w": 1280
   },
   "silos-pedestal": {
     "h": 1280,
