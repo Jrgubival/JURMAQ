@@ -22,7 +22,6 @@ const EMPRESAS: {
   ir: string;
   foto: string;
   alt: string;
-  nota?: string;
 }[] = [
   {
     negocio: 'barraca',
@@ -38,8 +37,7 @@ const EMPRESAS: {
     texto: 'Retroexcavadoras, minicargadores, camión tolva, brazo articulado y plataformas.',
     ir: 'Ver maquinaria',
     foto: '/images/grupo/arriendo-excavacion.webp',
-    alt: 'Retroexcavadora excavando en una faena',
-    nota: 'Imagen referencial',
+    alt: 'Retroexcavadora excavando en una obra de JURMAQ en Teno',
   },
   {
     negocio: 'constructora',
@@ -80,7 +78,6 @@ export default function InicioGrupo() {
                     <p className="h-empresa__detalle">{e.texto}</p>
                     <div className="h-empresa__pie">
                       <span className="h-empresa__ir">{e.ir}<span className="h-flecha" aria-hidden="true">→</span></span>
-                      {e.nota && <span className="h-empresa__nota">{e.nota}</span>}
                     </div>
                   </div>
                 </a>

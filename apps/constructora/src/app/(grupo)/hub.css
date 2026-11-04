@@ -136,9 +136,13 @@
 .h-empresa__nombre { margin: 0; font-size: inherit; font-weight: inherit; }
 .h-empresa__nombre .g-marca { font-size: 1.75rem; line-height: 1.15; color: var(--g-tinta); }
 .h-empresa__nombre .g-marca__negocio { color: var(--h-nombre, var(--g-tinta)); }
-[data-marca="barraca"] > .h-empresa { --h-nombre: #c90319; }
-[data-marca="arriendo"] > .h-empresa { --h-nombre: #b85208; }
-[data-marca="constructora"] > .h-empresa { --h-nombre: #7a5a00; }
+.h-negocio .h-empresa__nombre .g-marca { font-size: 2rem; }
+[data-marca="barraca"] > .h-empresa,
+.h-negocio[data-marca="barraca"] { --h-nombre: #c90319; }
+[data-marca="arriendo"] > .h-empresa,
+.h-negocio[data-marca="arriendo"] { --h-nombre: #b85208; }
+[data-marca="constructora"] > .h-empresa,
+.h-negocio[data-marca="constructora"] { --h-nombre: #7a5a00; }
 .h-empresa__detalle {
   margin: 0.5rem 0 0;
   color: var(--g-tinta-media);
@@ -165,7 +169,6 @@
   display: inline-block;
   transition: transform var(--h-t) var(--h-ease);
 }
-.h-empresa__nota { color: var(--g-tinta-suave); font-size: 0.875rem; }
 .h-empresa:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px var(--h-marino), var(--h-sombra-alta);
@@ -243,41 +246,167 @@
   line-height: 1.5;
 }
 
-/* --- Nosotros ------------------------------------------------------- */
-.h-fichas {
-  display: grid;
-  gap: clamp(3rem, 6vw, 5rem);
-  max-width: var(--g-ancho);
-  margin: 0 auto;
-  padding: var(--h-seccion) var(--g-margen);
-}
-.h-ficha { display: grid; gap: 1.5rem; align-items: center; }
-.h-ficha__foto {
-  position: relative;
-  aspect-ratio: 3 / 2;
-  overflow: hidden;
-  border-radius: var(--h-radio);
-  background: var(--g-alterno);
-}
-.h-ficha__foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.h-ficha__nota { margin: 0.5rem 0 0; color: var(--g-tinta-suave); font-size: 0.875rem; }
-.h-ficha__regla {
-  display: block;
-  width: 2rem;
-  height: 4px;
-  margin-bottom: 1rem;
-  border-radius: 2px;
-  background: var(--acento);
-}
-.h-ficha h2 {
-  margin: 0;
+/* --- Títulos de sección (Nosotros, Empresas) ------------------------- */
+.h-titulo {
+  margin: 0 0 2rem;
   font-family: var(--g-titular);
   font-size: var(--g-display-m);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.025em;
 }
-.h-ficha p { margin: 1rem 0 1.5rem; max-width: 46ch; color: var(--g-tinta-media); font-size: 1.125rem; line-height: 1.5; }
+.h-subtitulo {
+  margin: 0 0 0.5rem;
+  font-family: var(--g-titular);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+/* --- Nosotros: historia --------------------------------------------- */
+.h-historia {
+  display: grid;
+  gap: 3rem;
+  align-items: start;
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: var(--h-seccion) var(--g-margen) 0;
+}
+.h-historia__foto {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--h-radio-tarjeta);
+  background: var(--g-alterno);
+}
+.h-historia__foto img { object-fit: cover; }
+/* Línea de tiempo: un riel vertical y un punto del color de cada negocio. */
+.h-linea { display: grid; gap: 2rem; margin: 0; padding: 0; list-style: none; }
+.h-linea li {
+  position: relative;
+  padding-left: 2rem;
+}
+.h-linea li::before {
+  content: '';
+  position: absolute;
+  top: 0.375rem;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--acento, var(--h-marino));
+  box-shadow: 0 0 0 4px var(--g-fondo);
+}
+.h-linea li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 1.5rem;
+  bottom: -2rem;
+  left: 5px;
+  width: 2px;
+  background: var(--g-linea);
+}
+.h-linea__cuando { margin: 0; color: var(--g-tinta-suave); font-size: 0.875rem; font-weight: 600; }
+.h-linea h3 {
+  margin: 0.25rem 0 0;
+  font-family: var(--g-titular);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+.h-linea li > p:last-child { max-width: 46ch; margin: 0.5rem 0 0; color: var(--g-tinta-media); line-height: 1.5; }
+
+/* --- Nosotros: datos ------------------------------------------------ */
+.h-datos-seccion {
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: var(--h-seccion) var(--g-margen) 0;
+}
+.h-datos { display: grid; gap: 1.5rem; margin: 0; padding: 0; list-style: none; }
+.h-dato { padding: 2rem; }
+.h-dato__valor {
+  margin: 0;
+  font-family: var(--g-titular);
+  font-size: clamp(2rem, 3.2vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+.h-dato__texto { margin: 0.5rem 0 0; color: var(--g-tinta-media); line-height: 1.5; }
+.h-dato__etiqueta { margin: 0; color: var(--g-tinta-suave); font-size: 0.875rem; font-weight: 600; }
+.h-dato__clientes {
+  margin: 0.5rem 0 0;
+  font-family: var(--g-titular);
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+/* --- Nosotros: dónde y a quién -------------------------------------- */
+.h-donde {
+  display: grid;
+  gap: 2rem;
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: var(--h-seccion) var(--g-margen);
+}
+.h-donde p { max-width: 46ch; margin: 0; color: var(--g-tinta-media); font-size: 1.125rem; line-height: 1.5; }
+.h-donde .h-mas { font-size: 1.125rem; }
+
+/* --- Empresas ------------------------------------------------------- */
+.h-negocios {
+  display: grid;
+  gap: 2rem;
+  max-width: var(--g-ancho);
+  margin: 0 auto;
+  padding: var(--h-seccion) var(--g-margen);
+}
+.h-negocio { display: grid; overflow: hidden; }
+.h-negocio__foto { position: relative; aspect-ratio: 3 / 2; background: #0f2038; }
+.h-negocio__foto img { object-fit: cover; }
+.h-negocio__texto {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem clamp(1.5rem, 3vw, 2.5rem);
+  border-top: 4px solid var(--acento);
+}
+.h-negocio .g-marca { font-size: 2rem; line-height: 1.15; color: var(--g-tinta); }
+.h-negocio__bajada { max-width: 46ch; margin: 0.5rem 0 0; color: var(--g-tinta); font-size: 1.125rem; line-height: 1.5; }
+.h-negocio__datos {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0;
+  padding: 1.5rem 0 0;
+  border-top: 1px solid var(--g-linea);
+  list-style: none;
+}
+.h-negocio__datos li {
+  position: relative;
+  padding-left: 1.5rem;
+  color: var(--g-tinta-media);
+  line-height: 1.5;
+}
+.h-negocio__datos li::before {
+  content: '';
+  position: absolute;
+  top: 0.6em;
+  left: 0;
+  width: 8px;
+  height: 2px;
+  background: var(--g-tinta-suave);
+}
+.h-negocio__acciones { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: auto; padding-top: 2rem; }
+.h-negocio__acciones .g-boton { min-height: 48px; padding: 0 1.5rem; border-radius: var(--h-radio-boton); font-size: 1rem; }
+.h-negocio__acciones .g-boton--linea { font-variant-numeric: tabular-nums; }
+@media (hover: hover) and (pointer: fine) {
+  .h-negocio__acciones .g-boton:hover .h-flecha { transform: translateX(4px); }
+  .h-negocio__acciones .g-boton:not(.g-boton--linea):hover { background: var(--acento-hover); border-color: var(--acento-hover); }
+  .h-negocio__acciones .g-boton--linea:hover { background: rgb(8 20 40 / 0.04); }
+}
 
 /* --- Contacto ------------------------------------------------------- */
 .h-contacto {
@@ -337,7 +466,14 @@
 }
 @media (min-width: 900px) {
   .h-grupo { grid-template-columns: 5fr 7fr; gap: clamp(2rem, 5vw, 4.5rem); }
-  .h-ficha { grid-template-columns: 6fr 5fr; gap: clamp(2rem, 5vw, 4rem); }
+  .h-historia { grid-template-columns: 7fr 5fr; gap: clamp(3rem, 6vw, 5rem); }
+  .h-datos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .h-dato--ancho { grid-column: 1 / -1; }
+  .h-donde { grid-template-columns: 1fr 1fr; column-gap: clamp(2rem, 5vw, 4rem); }
+  .h-donde__cta { grid-column: 1 / -1; }
+  .h-negocio { grid-template-columns: 5fr 6fr; }
+  .h-negocio__foto { aspect-ratio: auto; min-height: 100%; }
+  .h-negocio__texto { border-top: 0; border-left: 4px solid var(--acento); padding: 2.5rem; }
   .h-contacto { grid-template-columns: 7fr 4fr; gap: clamp(2rem, 5vw, 4rem); }
 }
 

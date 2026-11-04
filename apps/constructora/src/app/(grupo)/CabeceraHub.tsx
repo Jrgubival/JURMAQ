@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { CabeceraGrupo } from '@jurmaq/shared/ui/grupo';
 
 const ENLACES = [
-  { href: '/#empresas', texto: 'Empresas' },
+  { href: '/empresas', texto: 'Empresas' },
   { href: '/nosotros', texto: 'Nosotros' },
   { href: '/contacto', texto: 'Contacto' },
 ];
