@@ -1,6 +1,7 @@
 import Cabecera from '@/components/Cabecera';
 import Movimiento from '@/components/Movimiento';
 import Pie from '@/components/Pie';
+import WhatsappFlotante from '@/components/WhatsappFlotante';
 import { TIPOS_MENU } from '@/lib/landings';
 
 export default function SitioLayout({ children }: { children: React.ReactNode }) {
@@ -9,6 +10,7 @@ export default function SitioLayout({ children }: { children: React.ReactNode })
       <Cabecera />
       <Movimiento />
       <main>{children}</main>
+      <WhatsappFlotante />
       <Pie tipos={TIPOS_MENU.map(({ slug, nombre }) => ({ slug, nombre }))} />
     </>
   );
