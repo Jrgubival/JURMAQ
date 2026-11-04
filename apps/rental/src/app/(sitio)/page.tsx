@@ -57,10 +57,9 @@ export default async function Inicio() {
 
       <section className="relative isolate overflow-hidden bg-negro text-white">
         {heroe?.fotos[0] ? (
-          <div className="relative aspect-[3/2] overflow-hidden md:absolute md:inset-y-0 md:right-0 md:-z-10 md:aspect-auto md:w-[62%]">
+          <div className="relative aspect-[3/2] overflow-hidden md:absolute md:inset-y-0 md:right-0 md:-z-10 md:aspect-auto md:w-[62%] md:[mask-image:linear-gradient(to_right,transparent,black_40%)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={heroe.fotos[0]} alt={heroe.nombre} {...variantes(heroe.fotos[0], '(min-width: 768px) 62vw, 100vw')} width={1600} height={1066} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
-            <div aria-hidden className="absolute inset-0 hidden bg-gradient-to-r from-negro via-negro/30 to-transparent md:block" />
             {heroe.fotoReferencial ? <span className="absolute bottom-2 right-2 bg-negro/80 px-2 py-1 text-xs">Imagen referencial</span> : null}
           </div>
         ) : null}
