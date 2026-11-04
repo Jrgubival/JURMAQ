@@ -104,7 +104,7 @@
   --sobre-acento: #081428;
   --acento-texto: var(--g-tinta);
   --acento-logo: var(--g-arriendo);
-  --acento-pie: #b4510a; /* oscurecido: 4,7:1 sobre el pie claro */
+  --acento-pie: #b85208; /* oscurecido: 4,5:1 sobre el pie claro */
 }
 [data-marca="constructora"] {
   --acento: var(--g-constructora);
@@ -112,7 +112,7 @@
   --sobre-acento: #081428;
   --acento-texto: var(--g-tinta);
   --acento-logo: var(--g-constructora);
-  --acento-pie: #8f6a00; /* oscurecido: 4,6:1 sobre el pie claro */
+  --acento-pie: #7a5a00; /* oscurecido: 5,9:1 sobre el pie claro */
 }
 
 /* Sobre oscuro el acento debe aclararse para leerse como texto. */
