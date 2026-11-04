@@ -47,6 +47,12 @@ const CATEGORY_ICON_DEFAULT = "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4
 
 
 
+const VERTICALES = [
+  { key: 'arriendo', label: 'Arriendo', url: 'https://jurmaq.cl/maquinarias' },
+  { key: 'constructora', label: 'Constructora', url: 'https://constructora.jurmaq.cl' },
+  { key: 'barraca', label: 'Barraca', url: '/' },
+] as const;
+
 function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
@@ -480,6 +486,19 @@ function Footer() {
       {/* Barra legal + grupo JURMAQ en una línea discreta */}
       <div className="border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24 space-y-3 text-xs text-gray-500">
+          <nav aria-label="Unidades de negocio JURMAQ" className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+            <span>Grupo JURMAQ:</span>
+            {VERTICALES.map((v, i) => (
+              <span key={v.key} className="inline-flex items-center gap-2">
+                {i > 0 && <span className="text-navy-700" aria-hidden="true">·</span>}
+                {v.key === 'barraca' ? (
+                  <span className="text-gray-600" aria-current="page">{v.label}</span>
+                ) : (
+                  <a href={v.url} className="hover:text-navy-950 transition-colors duration-150">{v.label}</a>
+                )}
+              </span>
+            ))}
+          </nav>
           {precioWebHasta() && (
             <p className="mb-3 text-center sm:text-left">
               Precio web: precio de la tienda online, válido hasta el {precioWebHasta()}. Precio normal: el de nuestro local en Molina.{" "}
