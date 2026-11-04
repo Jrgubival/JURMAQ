@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Foto from "@/components/Foto";
+import Foto, { anchoMaximo } from "@/components/Foto";
 import Migas, { type Miga } from "@/components/Migas";
 import type { FotoObra } from "@/data/obras";
 
@@ -18,7 +18,7 @@ export default function CabezaPagina({
   children?: ReactNode;
 }) {
   return (
-    <section className={foto ? "cabeza foto-fondo" : "cabeza"}>
+    <section className={foto ? `cabeza foto-fondo${anchoMaximo(foto.nombre) < 1600 ? " foto-baja" : ""}` : "cabeza"}>
       {foto && <Foto foto={foto} sizes="100vw" prioridad />}
       <div className="contenedor cabeza-texto">
         <Migas items={migas} />

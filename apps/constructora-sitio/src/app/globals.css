@@ -233,6 +233,9 @@ button { font: inherit; color: inherit; }
 /* Páginas internas */
 .cabeza { background: var(--noche); color: #fff; padding-block: clamp(40px, 6vw, 72px); }
 .cabeza.foto-fondo { min-height: 56svh; display: flex; align-items: flex-end; }
+/* Foto de menos de 1600 px: cabeza más baja y velo más fuerte, para que no se note el grano. */
+.cabeza.foto-fondo.foto-baja { min-height: 40svh; }
+.foto-baja::before { background: linear-gradient(0deg, rgb(8 20 40 / 0.94) 0%, rgb(8 20 40 / 0.78) 45%, rgb(8 20 40 / 0.5) 100%); }
 .cabeza-texto { display: grid; gap: 16px; }
 .migas { font-size: 0.92rem; color: #cfd8dd; }
 .migas ol { display: flex; flex-wrap: wrap; gap: 6px; }
