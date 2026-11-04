@@ -8,11 +8,22 @@
 .h-raiz {
   --h-claro: #fbfbfa;
   --h-marino: #081428;
-  --h-radio: 12px; /* rounded-xl, el mismo de la barraca */
-  --h-sombra: 0 1px 2px rgb(8 20 40 / 0.06), 0 8px 24px -8px rgb(8 20 40 / 0.12);
-  --h-sombra-alta: 0 2px 4px rgb(8 20 40 / 0.08), 0 20px 40px -12px rgb(8 20 40 / 0.24);
-  --h-borde: rgb(8 20 40 / 0.08);
-  --h-borde-alto: rgb(8 20 40 / 0.18);
+  --h-radio: 20px; /* fotos sueltas */
+  --h-radio-tarjeta: 24px; /* tarjetas: curva amplia, la foto se recorta igual */
+  --h-radio-boton: 14px;
+  /* Sombra difusa en capas, teñida de marino. */
+  --h-sombra:
+    0 1px 1px rgb(8 20 40 / 0.03),
+    0 2px 4px rgb(8 20 40 / 0.04),
+    0 8px 16px -4px rgb(8 20 40 / 0.06),
+    0 24px 48px -12px rgb(8 20 40 / 0.10);
+  --h-sombra-alta:
+    0 1px 1px rgb(8 20 40 / 0.04),
+    0 4px 8px rgb(8 20 40 / 0.05),
+    0 16px 32px -8px rgb(8 20 40 / 0.10),
+    0 40px 72px -16px rgb(8 20 40 / 0.18);
+  --h-borde: rgb(8 20 40 / 0.05);
+  --h-borde-alto: rgb(8 20 40 / 0.10);
   --h-t: 200ms;
   --h-ease: cubic-bezier(0.23, 1, 0.32, 1);
   --h-seccion: clamp(4rem, 8vw, 6rem);
@@ -36,7 +47,7 @@
   --acento-texto: #081428;
   background: #ffffff;
   border: 1px solid var(--h-borde);
-  border-radius: var(--h-radio);
+  border-radius: var(--h-radio-tarjeta);
   box-shadow: var(--h-sombra);
   color: var(--g-tinta);
 }
@@ -203,7 +214,7 @@
   min-height: 56px;
   padding: 1rem 1.5rem;
   border: 1.5px solid var(--acento-texto);
-  border-radius: var(--h-radio);
+  border-radius: var(--h-radio-boton);
   color: var(--acento-texto);
   font-family: var(--g-titular);
   font-size: 1.125rem;
@@ -291,7 +302,7 @@
 .h-telefonos li {
   padding: 1rem 1.5rem;
   border-left: 4px solid var(--acento);
-  border-radius: var(--h-radio);
+  border-radius: var(--h-radio-boton);
 }
 .h-telefonos p { margin: 0; color: var(--g-tinta-suave); font-size: 0.875rem; }
 .h-telefonos a {
