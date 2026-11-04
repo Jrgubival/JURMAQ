@@ -1,15 +1,20 @@
 import type { Maquina } from '@/lib/maquinas';
 
-const CON_VARIANTE = /^\/images\/maquinarias\/(retroexcavadora-hmk-102b|minicargador-bobcat-s650|camion-tolva-vw-constellation|plataforma-fullen-psc140|plataforma-genie-gs1930)\.(jpg|png)$/;
-const ANCHO: Record<string, number> = { 'retroexcavadora-hmk-102b': 1600, 'minicargador-bobcat-s650': 1290, 'camion-tolva-vw-constellation': 1280, 'plataforma-fullen-psc140': 900, 'plataforma-genie-gs1930': 720 };
+const CON_VARIANTE = /^\/images\/maquinarias\/(retroexcavadora-hmk-102b|minicargador-bobcat-s650|minicargador-bobcat-s570|camion-tolva-vw-constellation|plataforma-fullen-psc140|plataforma-genie-gs1930|brazo-articulado-jlg-e450aj|miniexcavadora-xcmg-xe35u)\.(jpg|png)$/;
+const ANCHO: Record<string, number> = {
+  'retroexcavadora-hmk-102b': 1600, 'minicargador-bobcat-s650': 1600, 'minicargador-bobcat-s570': 1200,
+  'camion-tolva-vw-constellation': 1600, 'plataforma-fullen-psc140': 1600, 'plataforma-genie-gs1930': 1440,
+  'brazo-articulado-jlg-e450aj': 1110, 'miniexcavadora-xcmg-xe35u': 1228,
+};
 
-/** El celular baja la versión de 800 px cuando existe. */
+/** El celular baja la versión de 800 px. La foto grande siempre se sirve en JPG
+ *  (la de Genie queda guardada como .png en la base, por eso se cambia aquí). */
 export function variantes(src: string, sizes: string): { srcSet?: string; sizes?: string } {
   const m = src.match(CON_VARIANTE);
   if (!m) return {};
   const chica = src.replace(/\.(jpg|png)$/, '-800.jpg');
-  const ancho = ANCHO[m[1]];
-  return { srcSet: ancho <= 800 ? `${chica} ${ancho}w` : `${chica} 800w, ${src} ${ancho}w`, sizes };
+  const grande = src.replace(/\.png$/, '.jpg');
+  return { srcSet: `${chica} 800w, ${grande} ${ANCHO[m[1]]}w`, sizes };
 }
 
 /** Foto de máquina. "Imagen referencial" va sobre la foto cuando no es de nuestra flota. */
