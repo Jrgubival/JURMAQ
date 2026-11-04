@@ -181,7 +181,8 @@
 }
 
 /* --- Enlace --------------------------------------------------------- */
-a.g-enlace {
+/* Clase repetida a propósito: globals.css quita el subrayado con a:not(...):not(...). */
+a.g-enlace.g-enlace.g-enlace {
   color: var(--acento-texto);
   font-weight: 600;
   text-decoration: underline;
