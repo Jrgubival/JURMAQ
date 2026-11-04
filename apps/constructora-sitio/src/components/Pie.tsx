@@ -10,7 +10,7 @@ export default function Pie() {
         <div className="pie-columnas">
           <div>
             <p className="pie-marca">
-              JURMAQ <span>Constructora</span>
+              <strong>JURMAQ</strong> <span>Constructora</span>
             </p>
             <p>Obras civiles e industriales en Curicó y la Región del Maule.</p>
             <p>{EMPRESA.direccion}</p>
