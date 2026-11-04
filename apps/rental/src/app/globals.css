@@ -146,10 +146,18 @@ textarea.campo { padding: 0.75rem 0.875rem; }
   font-weight: 500;
 }
 
-/* El panel lo usa gente mayor: todo un punto más grande. */
-.panel .etiqueta { font-size: 1.125rem; }
-.panel .campo { font-size: 1.25rem; min-height: 60px; }
-.panel .boton { font-size: 1.25rem; min-height: 60px; padding: 0 1rem; white-space: normal; }
+/* Panel compacto: texto de 14 px, títulos de 20 a 24 px y más datos por pantalla. */
+.panel { --g-radio: 12px; font-size: 0.875rem; line-height: 1.45; }
+.panel h1, .panel .text-3xl { font-size: 1.5rem; }
+.panel h2, .panel .text-2xl { font-size: 1.25rem; }
+.panel .text-lg { font-size: 0.875rem; }
+.panel .etiqueta { margin-bottom: 0.25rem; font-size: 0.8125rem; }
+.panel .campo { min-height: 40px; border-radius: 10px; padding: 0 0.75rem; font-size: 0.875rem; }
+.panel textarea.campo { padding: 0.5rem 0.75rem; }
+.panel .boton { min-height: 40px; border-radius: 10px; padding: 0 1rem; font-size: 0.875rem; white-space: normal; }
+.panel .tarjeta, .panel .tarjeta:hover { border-radius: 14px; border-color: var(--borde-suave); box-shadow: var(--sombra-baja); }
+/* iOS agranda la página al enfocar un campo de menos de 16 px. */
+@media (max-width: 767px) { .panel .campo { font-size: 1rem; } }
 
 /* Igual que la barraca (styles/globals.css del paquete compartido). */
 @supports (padding: env(safe-area-inset-bottom)) {

@@ -25,7 +25,7 @@ export default function Descartar({ id }: { id: number }) {
 
   return (
     <>
-      <button type="button" className="min-h-12 px-2 underline underline-offset-4" disabled={ocupado} onClick={descartar}>Descartar</button>
+      <button type="button" className="min-h-10 px-2 text-ink-muted underline underline-offset-4" disabled={ocupado} onClick={descartar}>Descartar</button>
       {error ? <span role="alert" className="text-peligro">No se pudo descartar.</span> : null}
     </>
   );

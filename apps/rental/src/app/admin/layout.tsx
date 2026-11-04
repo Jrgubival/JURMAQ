@@ -11,15 +11,15 @@ export const metadata: Metadata = { title: 'Panel · JURMAQ Arriendo', robots: {
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   await exigirSesion();
   return (
-    <div className="panel min-h-dvh pb-28 text-[1.25rem] leading-relaxed md:pb-8">
+    <div className="panel min-h-dvh pb-20 md:pb-8">
       <header className="border-b border-hairline bg-surface">
-        <div className="mx-auto flex h-20 max-w-4xl items-center justify-between px-4">
-          <Link href="/admin" prefetch={false} className="font-titulo text-xl">JURMAQ Arriendo</Link>
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+          <Link href="/admin" prefetch={false} className="font-titulo text-base">JURMAQ Arriendo</Link>
           <PestanasArriba />
-          <a href="/api/login/salir" className="inline-flex min-h-12 items-center px-3 text-lg underline underline-offset-4">Salir</a>
+          <a href="/api/login/salir" className="inline-flex min-h-10 items-center px-2 text-ink-muted underline underline-offset-4">Salir</a>
         </div>
       </header>
-      <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-5xl px-4 py-4 md:py-6">{children}</main>
       <PestanasAbajo />
     </div>
   );

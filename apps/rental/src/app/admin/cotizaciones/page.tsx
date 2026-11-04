@@ -33,24 +33,26 @@ export default async function Cotizaciones({ searchParams }: { searchParams: Pro
         <h1 className="text-3xl">Cotizaciones</h1>
         <Link href="/admin/cotizaciones/nueva" prefetch={false} className="boton boton-principal">Nueva</Link>
       </div>
-      <form className="mt-4 grid gap-3 sm:grid-cols-2">
-        <input name="q" aria-label="Buscar" className="campo sm:col-span-2" placeholder="Buscar cliente o número" defaultValue={texto} />
-        <select name="estado" aria-label="Estado" className="campo" defaultValue={estado}>
+      <form className="mt-3 grid grid-cols-2 items-end gap-2 md:grid-cols-[1fr_150px_140px_140px_auto]">
+        <input name="q" aria-label="Buscar" className="campo col-span-2 md:col-span-1" placeholder="Buscar cliente o número" defaultValue={texto} />
+        <select name="estado" aria-label="Estado" className="campo col-span-2 md:col-span-1" defaultValue={estado}>
           <option value="">Todos los estados</option>
           {ESTADOS_COTIZACION.map((e) => <option key={e} value={e}>{e[0].toUpperCase() + e.slice(1)}</option>)}
         </select>
-        <button className="boton boton-suave">Buscar</button>
-        <label className="text-lg">Desde<input name="desde" type="date" className="campo mt-1" defaultValue={FECHA.test(desde) ? desde : ''} /></label>
-        <label className="text-lg">Hasta<input name="hasta" type="date" className="campo mt-1" defaultValue={FECHA.test(hasta) ? hasta : ''} /></label>
+        <label className="text-[0.8125rem] text-ink-muted">Desde<input name="desde" type="date" className="campo mt-1" defaultValue={FECHA.test(desde) ? desde : ''} /></label>
+        <label className="text-[0.8125rem] text-ink-muted">Hasta<input name="hasta" type="date" className="campo mt-1" defaultValue={FECHA.test(hasta) ? hasta : ''} /></label>
+        <button className="boton boton-suave col-span-2 md:col-span-1">Buscar</button>
       </form>
-      {error ? <ErrorCarga /> : (data ?? []).length === 0 ? <p className="mt-6 text-ink-muted">No hay cotizaciones.</p> : (
-        <ul className="mt-4 space-y-2">
+      {error ? <ErrorCarga /> : (data ?? []).length === 0 ? <p className="mt-4 text-ink-muted">No hay cotizaciones.</p> : (
+        <ul className="tarjeta mt-3 divide-y divide-hairline overflow-hidden">
           {(data ?? []).map((c) => (
             <li key={c.id}>
-              <Link href={`/admin/cotizaciones/${c.id}`} prefetch={false} className="presionable block rounded-[var(--g-radio)] border border-hairline bg-surface p-4">
-                <span className="flex justify-between gap-3"><span className="font-semibold">N.º {c.numero}</span><span>{formatCLP(Number(c.total))}</span></span>
-                <span className="block">{c.cliente_nombre}</span>
-                <span className="block text-lg capitalize text-ink-muted">{c.estado}, {new Date(`${c.fecha_emision}T12:00`).toLocaleDateString('es-CL')}</span>
+              <Link href={`/admin/cotizaciones/${c.id}`} prefetch={false} className="presionable flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-surface-alt">
+                <span className="min-w-0">
+                  <span className="block truncate"><span className="font-semibold">N.º {c.numero}</span> · {c.cliente_nombre}</span>
+                  <span className="block text-[0.8125rem] capitalize text-ink-muted">{c.estado}, {new Date(`${c.fecha_emision}T12:00`).toLocaleDateString('es-CL')}</span>
+                </span>
+                <span className="whitespace-nowrap font-medium tabular-nums">{formatCLP(Number(c.total))}</span>
               </Link>
             </li>
           ))}
