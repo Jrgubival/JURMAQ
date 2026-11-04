@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { NEGOCIOS, PieGrupo } from "@jurmaq/shared/ui/grupo";
+import { PieGrupo } from "@jurmaq/shared/ui/grupo";
 import { EMPRESA } from "@/data/empresa";
+import { OBRAS_CON_FOTO } from "@/data/obras";
 import { SERVICIOS } from "@/data/servicios";
 import { ZONAS } from "@/data/zonas";
 
@@ -20,11 +21,10 @@ const COLUMNAS = [
     ],
   },
   {
-    titulo: "Grupo JURMAQ",
+    titulo: "Obras",
     enlaces: [
-      { href: "https://jurmaq.cl", texto: "jurmaq.cl" },
-      { href: NEGOCIOS.barraca.url, texto: "Barraca de Fierros" },
-      { href: "https://jurmaq.cl/maquinarias", texto: "Arriendo de maquinaria" },
+      ...OBRAS_CON_FOTO.map((o) => ({ href: `/proyectos/${o.slug}`, texto: o.titulo })),
+      { href: "/proyectos", texto: "Ver todas" },
     ],
   },
 ];
