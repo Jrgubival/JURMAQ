@@ -59,7 +59,6 @@
   --h-solape: clamp(10rem, 18vw, 14rem);
   position: relative;
   isolation: isolate;
-  overflow: hidden;
   background: var(--h-claro);
 }
 .h-portada__fondo {
@@ -90,7 +89,8 @@
 .h-portada__ancho {
   max-width: var(--g-ancho);
   margin: 0 auto;
-  padding: clamp(3rem, 6vw, 5rem) var(--g-margen) 0;
+  /* Abajo: espacio para la sombra de las tarjetas, también en hover. */
+  padding: clamp(4.5rem, 9vw, 7.5rem) var(--g-margen) 4rem;
 }
 .h-portada .g-display { font-size: var(--g-display-xl); max-width: 18ch; }
 .h-portada__baja {
@@ -103,7 +103,7 @@
 
 .h-empresas {
   display: grid;
-  gap: 1.5rem;
+  gap: 2.5rem;
   margin: 1rem 0 0;
   padding: 0;
   list-style: none;
@@ -417,7 +417,7 @@
 /* --- Empresas ------------------------------------------------------- */
 .h-negocios {
   display: grid;
-  gap: 2rem;
+  gap: 2.5rem;
   max-width: var(--g-ancho);
   margin: 0 auto;
   padding: var(--h-seccion) var(--g-margen);
@@ -514,7 +514,7 @@
   .h-form__dos { grid-template-columns: 1fr 1fr; }
 }
 @media (min-width: 768px) {
-  .h-empresas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .h-empresas { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
   .h-llamar__botones { grid-template-columns: repeat(3, 1fr); }
 }
 @media (min-width: 768px) and (max-width: 1023px) {
