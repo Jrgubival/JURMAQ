@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ARRIENDO_HOST, destinoArriendo } from './lib/redireccion-arriendo';
 
 /**
  * NextAuth sólo se carga al entrar a /admin: el middleware corre en cada página
@@ -114,6 +115,14 @@ export default async function middleware(request: NextRequest) {
   // /constructora/* directo, o el sitio sería imposible de desarrollar y de
   // revisar antes de publicar.
   const isProdHub = host === 'jurmaq.cl' || host === 'www.jurmaq.cl';
+
+  // El arriendo se mudó a rental.jurmaq.cl: 301 uno a uno (ver el mapa).
+  if (isProdHub) {
+    const destino = destinoArriendo(pathname);
+    if (destino) {
+      return NextResponse.redirect(`https://${ARRIENDO_HOST}${destino}${request.nextUrl.search}`, { status: 301 });
+    }
+  }
 
   // Los case studies de obra civil se mudaron al subdominio. 301 desde el hub
   // para traspasar el posicionamiento que ya tenía jurmaq.cl/proyectos y evitar
