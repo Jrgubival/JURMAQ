@@ -15,6 +15,7 @@ export default function Pie({ tipos }: { tipos: { slug: string; nombre: string }
     // Espacio para la barra fija de Cotizar y WhatsApp en celular.
     <div className="bg-[#f4f5f7] pb-20 md:pb-0">
       <PieGrupo
+        sitio="arriendo"
         negocio="Arriendo"
         texto={`Arriendo de maquinaria en la Región del Maule desde ${SITIO.anioInicio}.`}
         telefono={SITIO.telefono}
