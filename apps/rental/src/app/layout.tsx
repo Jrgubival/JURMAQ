@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { Geist, Geist_Mono, Oswald } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import { SITIO } from '@/lib/sitio';
 import './globals.css';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap', preload: false });
-const oswald = Oswald({ subsets: ['latin'], variable: '--font-titular', display: 'swap', weight: ['500', '600'] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITIO.url),
@@ -27,7 +26,7 @@ export const viewport: Viewport = { themeColor: '#0b1f3a', width: 'device-width'
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const ga = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
   return (
-    <html lang="es-CL" data-marca="arriendo" className={`${geist.variable} ${geistMono.variable} ${oswald.variable}`}>
+    <html lang="es-CL" data-marca="arriendo" className={`${geist.variable} ${geistMono.variable}`}>
       <body>
         {children}
         {ga ? (

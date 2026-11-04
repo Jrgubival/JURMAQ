@@ -32,7 +32,7 @@ export default function Menu() {
         <ul>
           {ENLACES.map((e) => (
             <li key={e.href}>
-              <Link href={e.href} prefetch={false} className="presionable block py-3 font-titulo text-4xl font-semibold uppercase" onClick={() => setAbierto(false)}>
+              <Link href={e.href} prefetch={false} className="presionable block py-3 font-titulo text-3xl" onClick={() => setAbierto(false)}>
                 {e.texto}
               </Link>
             </li>

@@ -8,6 +8,7 @@
 :root {
   --g-arriendo: #f07a0e;
   --marino: #0b1f3a;
+  --font-titular: var(--font-sans);
   --g-tinta: #0b1f3a;
   --g-tinta-media: #2b3a50;
   --g-tinta-suave: #5a6778;
@@ -33,7 +34,6 @@
   --color-negro: #0b1f3a;
   --color-peligro: #9f2f2d;
   --color-exito: #346538;
-  --font-titulo: var(--font-titular), "Arial Narrow", sans-serif;
   --font-cifra: var(--font-mono), ui-monospace, monospace;
   --ease-salida: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-cajon: cubic-bezier(0.32, 0.72, 0, 1);
@@ -48,17 +48,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 {
-  font-family: var(--font-titulo);
-  font-weight: 600;
-  line-height: 1.1;
-  text-wrap: balance;
-  letter-spacing: 0;
+/* Misma letra que la barraca: Geist 800 con tracking ajustado. */
+h1, h2, h3, .font-titulo {
+  font-family: var(--g-sans);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
 }
-h1 { text-transform: uppercase; line-height: 1.06; }
+h1, h2, h3 { text-wrap: balance; }
 
-.grande { font-size: clamp(2.25rem, 5vw, 4rem); }
-.medio { font-size: clamp(1.875rem, 3.4vw, 2.75rem); }
+.grande { font-size: clamp(2rem, 4vw, 3rem); }
+.medio { font-size: clamp(1.625rem, 2.8vw, 2.25rem); }
 
 :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 

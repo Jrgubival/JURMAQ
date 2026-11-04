@@ -209,7 +209,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
         <div className="hidden bg-negro p-5 text-white md:block">
           <p className="font-medium">{maquina ? maquina.nombre : 'Valor referencial'}</p>
           {neto > 0 ? (
-            <p className="mt-1 font-titulo text-5xl font-semibold tabular-nums">{formatCLP(neto)}</p>
+            <p className="mt-1 font-titulo text-5xl tabular-nums">{formatCLP(neto)}</p>
           ) : (
             <p className="mt-1 font-semibold">Te lo enviamos en la cotización</p>
           )}

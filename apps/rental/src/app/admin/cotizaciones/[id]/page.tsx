@@ -31,7 +31,7 @@ export default async function VerCotizacion({ params }: { params: Promise<{ id: 
         {c.descuento_neto > 0 ? <div>Descuento: -{formatCLP(c.descuento_neto)}</div> : null}
         <div>Neto: {formatCLP(t.neto)}</div>
         <div>IVA 19%: {formatCLP(t.iva)}</div>
-        <div className="font-titulo text-2xl font-semibold">Total: {formatCLP(t.total)}</div>
+        <div className="font-titulo text-2xl">Total: {formatCLP(t.total)}</div>
       </dl>
 
       <AccionesCotizacion id={c.id} numero={c.numero} estado={c.estado} cliente={c.cliente_nombre} correo={c.contacto_email} telefono={c.cliente_telefono} pdf={datosPdf(c, equipo, SITIO.correo)} />

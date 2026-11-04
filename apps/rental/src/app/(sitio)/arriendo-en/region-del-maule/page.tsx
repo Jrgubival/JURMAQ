@@ -33,7 +33,7 @@ export default async function RegionMaule() {
           {COMUNAS.map((c) => (
             <li key={c.slug} className="bg-negro">
               <Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="comuna presionable block h-full p-5">
-                <span className="flex items-baseline justify-between gap-3 font-titulo text-3xl font-semibold uppercase">{c.nombre}<span className="font-cifra text-sm font-normal normal-case text-white/60">{distanciaDesdeBase(c.slug)?.km} km</span></span>
+                <span className="flex items-baseline justify-between gap-3 font-titulo text-3xl">{c.nombre}<span className="font-cifra text-sm font-normal normal-case text-white/60">{distanciaDesdeBase(c.slug)?.km} km</span></span>
                 <span className="mt-2 block text-[0.9375rem] text-white/70">{c.trabajos[0]}</span>
               </Link>
             </li>

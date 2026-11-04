@@ -28,7 +28,7 @@ export function TrabajosComuna({ comuna, km, tiempo = null, vecinas = [] }: { co
           ) : null}
         </div>
         <ul>
-          {comuna.trabajos.map((t) => <li key={t} className="border-t border-negro/25 py-4 font-titulo text-[clamp(1.375rem,2.4vw,1.75rem)] font-semibold leading-tight">{t}</li>)}
+          {comuna.trabajos.map((t) => <li key={t} className="border-t border-negro/25 py-4 font-titulo text-[clamp(1.375rem,2.4vw,1.75rem)] leading-tight">{t}</li>)}
         </ul>
       </div>
     </section>
@@ -53,7 +53,7 @@ export function FlotaComuna({ flota, titulo }: { flota: Maquina[]; titulo: strin
             <li key={m.id}>
               <Link href={fichaHref(m)} prefetch={false} className="tile presionable grid grid-cols-[136px_1fr] items-center gap-4">
                 <Foto maquina={m} className="aspect-[4/3] [&>span]:text-[0.625rem]" />
-                <span><span className="block font-titulo text-xl font-semibold leading-tight">{m.nombre}</span><PrecioCorto precios={m.precios} /></span>
+                <span><span className="block font-titulo text-xl leading-tight">{m.nombre}</span><PrecioCorto precios={m.precios} /></span>
               </Link>
             </li>
           ))}

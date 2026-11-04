@@ -25,7 +25,7 @@ export default function ComoFunciona() {
       <ol className="grid gap-px bg-negro/15 md:grid-cols-4">
         {PASOS.map((p, i) => (
           <li key={p.t} className="bg-canvas p-5 md:min-h-72">
-            <span className="font-titulo text-6xl font-semibold">{i + 1}</span>
+            <span className="font-titulo text-6xl">{i + 1}</span>
             <h2 className="mt-6 text-2xl">{p.t}</h2>
             <p className="mt-2 text-ink-soft">{p.d}</p>
           </li>

@@ -65,7 +65,7 @@ export default async function Inicio() {
           </div>
         ) : null}
         <div className="mx-auto max-w-[1320px] px-4 py-9 md:flex md:min-h-[560px] md:flex-col md:justify-center md:px-8 md:py-16">
-          <h1 className="entra max-w-[12ch] text-[clamp(2.75rem,6.6vw,5.25rem)]">Arriendo de maquinaria en el Maule</h1>
+          <h1 className="entra max-w-[14ch] text-[clamp(2.5rem,5vw,4rem)]">Arriendo de maquinaria en el Maule</h1>
           <p className="entra mt-4 max-w-[36ch] text-lg text-white/85" style={{ '--i': 1 } as React.CSSProperties}>Retroexcavadora, miniexcavadora, minicargador, camión tolva y equipos de altura. Desde {SITIO.anioInicio}.</p>
           <div className="entra mt-6 hidden flex-wrap gap-3 md:flex" style={{ '--i': 2 } as React.CSSProperties}>
             <a href="#equipos" className="boton boton-principal">Ver equipos <ArrowRight size={18} weight="bold" aria-hidden /></a>
@@ -110,7 +110,7 @@ export default async function Inicio() {
         <ol className="mt-7 grid gap-6 md:grid-cols-3 md:gap-0 md:divide-x md:divide-hairline">
           {PASOS.map((p, i) => (
             <li key={p.t} data-revela className="flex gap-4 md:px-8 md:first:pl-0 md:last:pr-0">
-              <span className="font-titulo text-5xl font-semibold leading-none text-acento-texto">{i + 1}</span>
+              <span className="font-titulo text-4xl leading-none text-acento-texto">{i + 1}</span>
               <div><h3 className="text-2xl">{p.t}</h3><p className="mt-1 text-ink-soft">{p.d}</p></div>
             </li>
           ))}

@@ -297,7 +297,7 @@ export default function FormCotizacion({ catalogo, inicial, id }: { catalogo: Op
       <div className="sticky bottom-3 z-10 rounded-[var(--g-radio)] border border-hairline bg-surface p-3 md:bottom-4">
         <div className="mb-2 flex items-baseline justify-between">
           <span className="text-lg text-ink-muted">Neto {formatCLP(totales.neto)} · IVA {formatCLP(totales.iva)}</span>
-          <span className="font-titulo text-2xl font-semibold">{formatCLP(totales.total)}</span>
+          <span className="font-titulo text-2xl">{formatCLP(totales.total)}</span>
         </div>
         <button type="submit" className="boton boton-principal w-full" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar'}</button>
       </div>

@@ -81,7 +81,7 @@ export default async function Ficha({ params }: Props) {
           ) : null}
         </div>
         <div className="md:sticky md:top-24 md:self-start md:pt-10">
-          <h1 className="text-[clamp(2.5rem,4.6vw,4rem)]">{m.nombre}</h1>
+          <h1 className="text-[clamp(2rem,3.4vw,2.75rem)]">{m.nombre}</h1>
           {m.estado !== 'disponible' ? <p className="mt-2 font-medium text-peligro">Consulta disponibilidad</p> : null}
           {operador ? <p className="mt-3 text-lg font-medium">{operador}</p> : null}
           <div className="mt-5"><TablaPrecios precios={m.precios} /></div>

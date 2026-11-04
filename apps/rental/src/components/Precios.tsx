@@ -3,9 +3,9 @@ import { UNIDAD_LABEL, type PrecioPeriodo } from '@/lib/maquinas';
 
 export function PrecioCorto({ precios }: { precios: PrecioPeriodo[] }) {
   const p = precios[0];
-  if (!p) return <p className="font-titulo text-xl font-semibold">Cotizar</p>;
+  if (!p) return <p className="font-titulo text-xl">Cotizar</p>;
   return (
-    <p className="font-titulo text-xl font-semibold tabular-nums">
+    <p className="font-titulo text-xl tabular-nums">
       {formatCLP(p.valor)} <span className="font-sans text-sm font-normal">+ IVA / {UNIDAD_LABEL[p.unidad].uno}</span>
     </p>
   );
@@ -18,7 +18,7 @@ export function TablaPrecios({ precios }: { precios: PrecioPeriodo[] }) {
     <div>
       <div className="bg-negro p-5 text-white">
         <p className="font-medium">Por {UNIDAD_LABEL[principal.unidad].uno}</p>
-        <p className="mt-1 font-titulo text-[clamp(2.75rem,6vw,4rem)] font-semibold leading-none tabular-nums">{formatCLP(principal.valor)}</p>
+        <p className="mt-1 font-titulo text-[clamp(2.75rem,6vw,4rem)] leading-none tabular-nums">{formatCLP(principal.valor)}</p>
         <p className="mt-2 text-[0.9375rem]">+ IVA{principal.incluye ? `. ${principal.incluye}` : ''}</p>
       </div>
       {resto.length > 0 ? (
@@ -26,7 +26,7 @@ export function TablaPrecios({ precios }: { precios: PrecioPeriodo[] }) {
           {resto.map((p) => (
             <li key={p.unidad} className="bg-surface-alt p-4">
               <p className="font-medium">Por {UNIDAD_LABEL[p.unidad].uno}</p>
-              <p className="font-titulo text-3xl font-semibold tabular-nums">{formatCLP(p.valor)}</p>
+              <p className="font-titulo text-3xl tabular-nums">{formatCLP(p.valor)}</p>
               <p className="text-sm text-ink-muted">+ IVA{p.incluye ? `. ${p.incluye}` : ''}</p>
             </li>
           ))}
