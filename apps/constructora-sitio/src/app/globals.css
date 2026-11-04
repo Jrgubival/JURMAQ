@@ -19,10 +19,11 @@
   --sans: var(--g-sans);
   --font-titular: var(--font-sans);
   /* Tarjetas como en barraca.jurmaq.cl: radio 12, borde gris 200, sombra suave. */
-  --radio-tarjeta: 12px;
-  --borde-tarjeta: #e4e6ea;
-  --sombra-1: 0 1px 2px rgb(8 20 40 / 0.05), 0 1px 3px rgb(8 20 40 / 0.04);
-  --sombra-2: 0 2px 4px rgb(8 20 40 / 0.04), 0 12px 24px -6px rgb(8 20 40 / 0.14);
+  --radio-tarjeta: 22px;
+  --radio-boton: 12px;
+  --borde-tarjeta: rgb(8 20 40 / 0.06);
+  --sombra-1: 0 1px 2px rgb(8 20 40 / 0.04), 0 4px 8px -2px rgb(8 20 40 / 0.05), 0 16px 32px -8px rgb(8 20 40 / 0.08);
+  --sombra-2: 0 1px 2px rgb(8 20 40 / 0.05), 0 8px 16px -4px rgb(8 20 40 / 0.08), 0 24px 48px -12px rgb(8 20 40 / 0.18);
   --pie-claro: #f4f5f7;
 }
 
@@ -60,7 +61,7 @@ button { font: inherit; color: inherit; }
 /* Botones */
 .boton {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 24px;
-  background: var(--oro); color: var(--noche); border: 1px solid var(--oro); border-radius: var(--g-radio);
+  background: var(--oro); color: var(--noche); border: 1px solid var(--oro); border-radius: var(--radio-boton);
   font-family: var(--sans); font-size: 1rem; font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer;
   transition: transform var(--g-presion) var(--ease-out), background-color var(--g-hover) ease, border-color var(--g-hover) ease, color var(--g-hover) ease;
 }
@@ -83,7 +84,7 @@ button { font: inherit; color: inherit; }
   .boton-linea:hover { background: var(--noche); color: #fff; border-color: var(--noche); }
   .enlace:hover .flecha, .especialidades a:hover .flecha, .boton:hover .flecha { transform: translateX(4px); }
   .especialidades a:hover strong { color: var(--oro-texto); }
-  .tarjeta:hover { border-color: #c9ced6; box-shadow: var(--sombra-2); }
+  .tarjeta:hover { border-color: rgb(8 20 40 / 0.12); box-shadow: var(--sombra-2); }
   .tarjeta:hover .tarjeta-foto img { transform: scale(1.03); }
   .tarjeta:hover .tarjeta-cta .flecha { transform: translateX(4px); }
   .servicios a:hover { color: var(--oro); }
@@ -186,7 +187,7 @@ button { font: inherit; color: inherit; }
 .tarjeta-plano::after { content: ""; position: absolute; left: 0; bottom: 0; width: 64px; height: 4px; background: var(--oro); }
 .tarjeta-plano img {
   width: auto; height: auto; max-width: min(60%, 200px); max-height: 56%; object-fit: contain;
-  padding: 16px 24px; background: #fff; border-radius: 8px; box-shadow: var(--sombra-1); box-sizing: content-box;
+  padding: 16px 24px; background: #fff; border-radius: 14px; box-shadow: var(--sombra-1); box-sizing: content-box;
 }
 .tarjeta-cuerpo { display: flex; flex-direction: column; gap: 8px; flex: 1; padding: 24px; }
 .tarjeta-meta { font-size: 0.875rem; line-height: 1.5; color: var(--tenue); }
@@ -249,7 +250,7 @@ button { font: inherit; color: inherit; }
 .visor-pista img { width: 100%; height: 100%; min-height: 0; object-fit: contain; background-size: 0 !important; }
 .visor-pista figcaption { color: var(--claro-2); font-size: 0.95rem; text-align: center; }
 .visor-controles { position: fixed; left: 50%; bottom: 18px; translate: -50% 0; display: flex; gap: 10px; }
-.visor button:not(.galeria-foto) { min-height: 44px; padding: 0 18px; background: rgb(255 255 255 / 0.1); border: 1px solid rgb(255 255 255 / 0.3); border-radius: var(--g-radio); cursor: pointer; }
+.visor button:not(.galeria-foto) { min-height: 44px; padding: 0 16px; background: rgb(255 255 255 / 0.1); border: 1px solid rgb(255 255 255 / 0.3); border-radius: var(--radio-boton); cursor: pointer; }
 .visor-cerrar { position: fixed; top: 14px; right: 14px; }
 
 /* Nosotros */
@@ -277,6 +278,13 @@ button { font: inherit; color: inherit; }
 
 @media (max-width: 1024px) {
   .tarjeta { grid-column: span 6; }
+}
+/* Tableta: si queda una tarjeta sola, ocupa la fila entera en horizontal y la grilla cierra. */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tarjeta:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; }
+  .tarjeta:last-child:nth-child(odd) .tarjeta-foto { flex: none; width: calc(50% - 12px); }
+  .tarjeta:last-child:nth-child(odd) .tarjeta-cuerpo { justify-content: center; padding: 32px; }
+  .tarjeta:last-child:nth-child(odd) .tarjeta-cta { margin-top: 8px; }
 }
 @media (max-width: 640px) {
   .tarjetas { gap: 16px; }

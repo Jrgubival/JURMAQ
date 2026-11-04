@@ -17,11 +17,11 @@ export interface ItemTarjeta {
 }
 
 /**
- * Filas completas, sin celdas sueltas: 4 = 2+2, 5 = 2+3, 7 = 3+4.
+ * Filas completas, sin celdas sueltas: 4 = una fila, 5 = 2+3, 7 = 3+4.
  * La fila más corta va primero y sus tarjetas, más anchas, hacen de foco.
  */
 function filas(n: number): number[] {
-  if (n <= 3) return [n];
+  if (n <= 4) return [n];
   const k = Math.ceil(n / 3);
   const base = Math.floor(n / k);
   const extra = n % k;
