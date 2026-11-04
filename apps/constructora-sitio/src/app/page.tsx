@@ -148,7 +148,7 @@ export default function Inicio() {
               Ver todas las obras <Flecha />
             </Link>
           </div>
-          <Mosaico obras={OBRAS_CON_FOTO} portada />
+          <Mosaico obras={OBRAS_CON_FOTO} />
         </div>
       </section>
 
@@ -165,7 +165,7 @@ export default function Inicio() {
               <li>Barraca de Fierros JURMAQ en Molina para materiales</li>
             </ul>
           </div>
-          <div>
+          <div className="panel">
             <h2 className="sub">Evaluación de proyectos</h2>
             <p>Partimos con una reunión técnica y preparamos la propuesta con ingeniería.</p>
             <ul className="lista">

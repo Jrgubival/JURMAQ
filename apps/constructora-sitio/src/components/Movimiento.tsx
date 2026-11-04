@@ -23,18 +23,18 @@ export default function Movimiento() {
 
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         // Las fotos se descubren de abajo hacia arriba: es lo único que se mueve mucho.
-        ScrollTrigger.batch(".obra, .galeria-foto", {
+        ScrollTrigger.batch(".tarjeta, .galeria-foto", {
           start: "top 88%",
           once: true,
           onEnter: (fotos) =>
             gsap.fromTo(
               fotos,
-              { clipPath: "inset(14% 0 0 0)", y: 28 },
-              { clipPath: "inset(0% 0 0 0)", y: 0, duration: 0.9, ease: "power3.out", stagger: 0.08, clearProps: "clipPath,transform" },
+              { clipPath: "inset(6% 0 0 0 round 12px)", y: 16 },
+              { clipPath: "inset(0% 0 0 0 round 12px)", y: 0, duration: 0.6, ease: "power3.out", stagger: 0.08, clearProps: "clipPath,transform" },
             ),
         });
 
-        ScrollTrigger.batch(".especialidades li, .lista li, .roles > div, .montos li", {
+        ScrollTrigger.batch(".especialidades li, .lista li, .roles > div", {
           start: "top 92%",
           once: true,
           onEnter: (filas) =>

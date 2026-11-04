@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import CabezaPagina from "@/components/CabezaPagina";
 import Cierre from "@/components/Cierre";
-import Foto from "@/components/Foto";
+import Tarjetas from "@/components/Tarjetas";
 import { url } from "@/data/empresa";
 import { SERVICIOS } from "@/data/servicios";
 
@@ -27,15 +26,16 @@ export default function Servicios() {
         foto={{ nombre: "batcheo-interior", alt: "Interior de una planta en obra con plataforma de tijera" }}
       />
       <section className="seccion">
-        <div className="contenedor mosaico">
-          {SERVICIOS.map((s) => (
-            <Link key={s.slug} href={`/servicios/${s.slug}`} className="obra">
-              <Foto foto={{ nombre: s.foto, alt: "" }} sizes="(max-width: 860px) 100vw, 50vw" />
-              <span className="obra-texto">
-                <span className="obra-titulo">{s.nombre}</span>
-              </span>
-            </Link>
-          ))}
+        <div className="contenedor">
+          <Tarjetas
+            items={SERVICIOS.map((s) => ({
+              href: `/servicios/${s.slug}`,
+              titulo: s.nombre,
+              texto: s.resumen,
+              cta: "Ver especialidad",
+              foto: { nombre: s.foto, alt: "" },
+            }))}
+          />
         </div>
       </section>
       <Cierre />

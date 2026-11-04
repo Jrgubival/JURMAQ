@@ -28,7 +28,7 @@ export default function Proyectos() {
       />
       <section className="seccion">
         <div className="contenedor">
-          <Mosaico obras={OBRAS_CON_FOTO} portada />
+          <Mosaico obras={OBRAS_CON_FOTO} />
         </div>
       </section>
       <Cifras />
