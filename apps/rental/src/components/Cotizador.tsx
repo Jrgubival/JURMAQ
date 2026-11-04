@@ -123,7 +123,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
 
   if (numero) {
     return (
-      <div ref={confirmacion} tabIndex={-1} className="mt-8 max-w-2xl bg-surface-alt p-6 text-ink outline-none" role="status">
+      <div ref={confirmacion} tabIndex={-1} className="mt-8 max-w-2xl rounded-[12px] border border-hairline bg-surface p-6 text-ink shadow-[var(--sombra-baja)] outline-none" role="status">
         <h2 className="text-3xl">Recibimos tu solicitud</h2>
         <p className="mt-2">Tu número es <strong>{numero}</strong>. Te contactamos con la cotización.</p>
       </div>
@@ -134,7 +134,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
 
   return (
     <form onSubmit={enviar} noValidate className="mt-8 grid gap-8 md:grid-cols-[1.25fr_1fr] md:gap-14">
-      <div className="space-y-5">
+      <div className="space-y-6">
       <div>
         <label className="etiqueta" htmlFor="maquina">Máquina</label>
         <select id="maquina" className="campo" {...aria('maquina')} value={maquinaId} onChange={(e) => { elegir(e.target.value ? Number(e.target.value) : ''); setErrores((x) => ({ ...x, maquina: '' })); }}>
@@ -144,7 +144,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
         {aviso('maquina')}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="etiqueta" htmlFor="cantidad">Cuánto tiempo</label>
           <input id="cantidad" className="campo" type="number" inputMode="decimal" min={minimo} max="999" step="0.5" {...aria('cantidad')} value={cantidad} onBlur={(e) => alSalir('cantidad', e.target.value)} onChange={(e) => setCantidad(e.target.value)} />
@@ -160,7 +160,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
       {n > 0 && n < minimo ? <p className="font-medium">Mínimo {minimo} horas: calculamos {minimo}.</p> : null}
       {neto > 0 ? <p aria-live="polite" className="font-semibold md:hidden">Referencia: {formatCLP(neto)} + IVA, sin traslado</p> : null}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="etiqueta" htmlFor="lugar">Comuna o dirección de la obra</label>
           <input id="lugar" className="campo" maxLength={200} autoComplete="street-address" value={lugar} onChange={(e) => setLugar(e.target.value)} {...aria('lugar')} onBlur={(e) => alSalir('lugar', e.target.value)} />
@@ -173,7 +173,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="etiqueta" htmlFor="nombre">Tu nombre</label>
           <input id="nombre" className="campo" maxLength={120} autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} {...aria('nombre')} onBlur={(e) => alSalir('nombre', e.target.value)} />
@@ -204,21 +204,22 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
 
       </div>
 
-      <div className="md:sticky md:top-24 md:self-start">
-        {maquina ? <Foto maquina={maquina} className="mb-px hidden aspect-[16/10] md:block" /> : null}
-        <div className="hidden bg-negro p-5 text-white md:block">
-          <p className="font-medium">{maquina ? maquina.nombre : 'Valor referencial'}</p>
+      <div className="md:sticky md:top-24 md:self-start"><div className="overflow-hidden rounded-[12px] md:shadow-[var(--sombra-baja)]">
+        {maquina ? <Foto maquina={maquina} fondo="bg-[var(--fondo-foto)]" className="hidden aspect-[4/3] md:block" /> : null}
+        <div className="hidden bg-negro p-6 text-white md:block">
+          <p className="text-[0.9375rem] text-white/75">{maquina ? maquina.nombre : 'Valor referencial'}</p>
           {neto > 0 ? (
-            <p className="mt-1 font-titulo text-5xl tabular-nums">{formatCLP(neto)}</p>
+            <p className="mt-2 font-titulo text-[clamp(2.25rem,3.6vw,3rem)] leading-none tabular-nums">{formatCLP(neto)}</p>
           ) : (
             <p className="mt-1 font-semibold">Te lo enviamos en la cotización</p>
           )}
-          <p className="mt-2 text-[0.9375rem]">{neto > 0 ? '+ IVA. Valor referencial. ' : ''}El traslado se cotiza aparte.</p>
+          <p className="mt-2 text-[0.9375rem] text-white/75">{neto > 0 ? '+ IVA. Valor referencial. ' : ''}El traslado se cotiza aparte.</p>
+        </div>
         </div>
 
         {error ? <p role="alert" className="mt-4 font-medium text-peligro">{error}</p> : null}
 
-        <div className="sobre-claro mt-4 grid gap-3">
+        <div className="sobre-claro mt-4 grid gap-4">
           <button type="submit" className="boton boton-principal w-full" disabled={enviando}>{enviando ? 'Enviando…' : 'Enviar solicitud'}</button>
           <a href={enlaceWhatsapp(wa)} rel="noopener" className="boton boton-secundario w-full">Prefiero WhatsApp</a>
         </div>

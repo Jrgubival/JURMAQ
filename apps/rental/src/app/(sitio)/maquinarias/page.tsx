@@ -23,15 +23,15 @@ export default async function Catalogo() {
         <div className="mx-auto max-w-[1320px] px-4 py-10 md:px-8 md:py-16">
           <Migas items={[{ nombre: 'Máquinas' }]} />
           <h1 className="grande mt-4">Maquinaria en arriendo</h1>
-          <ul className="mt-6 flex flex-wrap gap-2">
-            {TIPOS_MENU.map((t) => <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="chip">{t.nombrePlural}</Link></li>)}
+          <ul className="mt-8 flex flex-wrap gap-2">
+            {TIPOS_MENU.map((t) => <li key={t.slug}><Link href={`/arriendo/${t.slug}`} prefetch={false} className="chip presionable border-white/25 text-white/90 hover:border-white hover:text-white">{t.nombrePlural}</Link></li>)}
           </ul>
         </div>
       </div>
-      <div className="mx-auto max-w-[1320px] py-1 md:px-8 md:py-8">
+      <div className="mx-auto max-w-[1320px] py-8 md:px-8 md:py-16">
         <h2 className="sr-only">Equipos disponibles</h2>
         <MosaicoFlota flota={flota} />
-        <p className="mt-4 px-4 pb-10 text-sm text-ink-muted md:px-0">Valores referenciales y netos. El traslado se cotiza aparte.</p>
+        <p className="mt-8 px-4 pb-8 text-sm text-ink-muted md:px-0">Valores referenciales y netos. El traslado se cotiza aparte.</p>
       </div>
       <BarraMovil cotizar="/cotizar-arriendo" texto="Hola, quiero cotizar el arriendo de una máquina." />
     </>

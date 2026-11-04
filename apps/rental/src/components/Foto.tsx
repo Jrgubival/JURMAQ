@@ -19,21 +19,24 @@ export default function Foto({
   prioridad = false,
   className = 'aspect-[4/3]',
   ajuste = 'object-cover',
+  fondo = 'bg-negro',
 }: {
   maquina: Pick<Maquina, 'nombre' | 'fotos' | 'fotoReferencial'>;
   indice?: number;
   prioridad?: boolean;
   className?: string;
   ajuste?: string;
+  /** Fondo mientras carga o si la foto no llena el cuadro. */
+  fondo?: string;
 }) {
   const src = maquina.fotos[indice];
   return (
-    <div className={`relative overflow-hidden bg-negro ${className}`}>
+    <div className={`relative overflow-hidden ${fondo} ${className}`}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={maquina.nombre} {...variantes(src, '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw')} className={`h-full w-full ${ajuste}`} loading={prioridad ? 'eager' : 'lazy'} fetchPriority={prioridad ? 'high' : 'auto'} decoding="async" width={1200} height={900} />
       ) : (
-        <div className="flex h-full items-center justify-center text-sm text-white/60">Foto pendiente</div>
+        <div className="flex h-full items-center justify-center text-sm text-ink-muted">Foto pendiente</div>
       )}
       {src && maquina.fotoReferencial ? <span className="absolute right-2 top-2 bg-negro/75 px-2 py-1 text-xs text-white">Imagen referencial</span> : null}
     </div>

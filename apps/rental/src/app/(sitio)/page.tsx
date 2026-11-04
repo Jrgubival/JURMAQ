@@ -75,18 +75,18 @@ export default async function Inicio() {
 
       <section id="equipos" aria-labelledby="flota" className="mx-auto max-w-[1320px] scroll-mt-20 px-4 py-12 md:px-8 md:py-16">
         <h2 id="flota" className="grande">Maquinarias para arrendar</h2>
-        <div className="mt-5">
-          <p className="font-semibold">¿Qué trabajo tienes?</p>
+        <div className="mt-6">
+          <p className="text-[0.9375rem] font-medium text-ink-soft">¿Qué trabajo tienes?</p>
           <ul className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
             {TRABAJOS.map((t) => (
-              <li key={t.tipo} className="shrink-0"><Link href={`/arriendo/${t.tipo}`} prefetch={false} className="chip presionable bg-surface text-negro">{t.trabajo}</Link></li>
+              <li key={t.tipo} className="shrink-0"><Link href={`/arriendo/${t.tipo}`} prefetch={false} className="chip presionable border-hairline bg-surface text-[0.9375rem] text-ink-soft hover:border-negro hover:text-negro">{t.trabajo}</Link></li>
             ))}
           </ul>
         </div>
-        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {seis.map((m) => <TarjetaMaquina key={m.id} maquina={m} />)}
         </div>
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
           <p className="text-[0.9375rem] text-ink-soft">Valores netos + IVA. Consulta disponibilidad, mínimo y traslado.</p>
           <Link href="/maquinarias" prefetch={false} className="inline-flex min-h-11 items-center font-semibold text-acento-texto underline underline-offset-4">Ver toda la flota</Link>
         </div>
@@ -94,19 +94,19 @@ export default async function Inicio() {
 
       <section aria-labelledby="zona" className="bg-surface-alt">
         <div className="mx-auto grid max-w-[1320px] items-center gap-8 px-4 py-12 md:grid-cols-2 md:gap-12 md:px-8 md:py-16">
-          {camion ? <Foto maquina={camion} className="aspect-[3/2] rounded-[var(--g-radio)]" /> : null}
+          {camion ? <Foto maquina={camion} className="aspect-[3/2] rounded-[12px]" /> : null}
           <div>
             <h2 id="zona" className="grande">Arriendo de maquinaria en Molina y Curicó</h2>
             <p className="mt-4 max-w-[52ch] text-lg text-ink-soft">Arrendamos para obras civiles, faenas agrícolas e industriales desde nuestra base en Maquehua, Curicó.</p>
-            <p className="mt-3 max-w-[52ch] text-lg text-ink-soft">Cuéntanos dónde es el trabajo y te cotizamos el equipo y el traslado.</p>
-            <p className="mt-5"><Link href="/arriendo-en/molina" prefetch={false} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Molina</Link> <span className="px-1 text-ink-muted">y</span> <Link href="/arriendo-en/curico" prefetch={false} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Curicó</Link></p>
+            <p className="mt-4 max-w-[52ch] text-lg text-ink-soft">Cuéntanos dónde es el trabajo y te cotizamos el equipo y el traslado.</p>
+            <p className="mt-6"><Link href="/arriendo-en/molina" prefetch={false} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Molina</Link> <span className="px-1 text-ink-muted">y</span> <Link href="/arriendo-en/curico" prefetch={false} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Curicó</Link></p>
           </div>
         </div>
       </section>
 
       <section aria-labelledby="pasos" className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-16">
         <h2 id="pasos" className="grande">Cómo arrendar</h2>
-        <ol className="mt-7 grid gap-6 md:grid-cols-3 md:gap-0 md:divide-x md:divide-hairline">
+        <ol className="mt-8 grid gap-8 md:grid-cols-3 md:gap-0 md:divide-x md:divide-hairline">
           {PASOS.map((p, i) => (
             <li key={p.t} data-revela className="flex gap-4 md:px-8 md:first:pl-0 md:last:pr-0">
               <span className="font-titulo text-4xl leading-none text-acento-texto">{i + 1}</span>
@@ -121,12 +121,12 @@ export default async function Inicio() {
           <div className="md:flex md:items-end md:justify-between md:gap-8">
             <div>
               <h2 id="cobertura" className="grande">Equipos para tu faena en el Maule</h2>
-              <p className="mt-3 text-lg text-white/80">Traslado según la comuna de la obra.</p>
+              <p className="mt-4 text-lg text-white/80">Traslado según la comuna de la obra.</p>
             </div>
-            <Link href="/arriendo-en/region-del-maule" prefetch={false} className="boton boton-principal mt-5 md:mt-0">Ver cobertura <ArrowRight size={18} weight="bold" aria-hidden /></Link>
+            <Link href="/arriendo-en/region-del-maule" prefetch={false} className="boton boton-principal mt-6 md:mt-0">Ver cobertura <ArrowRight size={18} weight="bold" aria-hidden /></Link>
           </div>
-          <ul data-revela className="mt-7 flex flex-wrap gap-2">
-            {COMUNAS.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="chip comuna presionable">{c.nombre}</Link></li>)}
+          <ul data-revela className="mt-8 flex flex-wrap gap-2">
+            {COMUNAS.map((c) => <li key={c.slug}><Link href={`/arriendo-en/${c.slug}`} prefetch={false} className="chip comuna presionable border-white/25 text-white/90">{c.nombre}</Link></li>)}
           </ul>
         </div>
       </section>
@@ -146,7 +146,7 @@ export default async function Inicio() {
       </section>
 
       <section className="bg-surface-alt">
-        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-5 px-4 py-10 md:px-8">
+        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-6 px-4 py-12 md:px-8 md:py-16">
           <div>
             <h2 className="medio">Cotiza por WhatsApp</h2>
             <p className="mt-1 text-lg text-ink-soft">Indícanos el equipo, la comuna y las fechas.</p>

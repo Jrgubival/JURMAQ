@@ -55,12 +55,12 @@ export default async function ArriendoTipo({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdServicio(`Arriendo de ${t.nombrePlural}`, t.descripcionLarga, url, SITIO.region)) }} />
       <PortadaLanding migas={[{ nombre: 'Máquinas', href: '/maquinarias' }, { nombre: t.nombre }]} titulo={`Arriendo de ${t.nombrePlural.toLowerCase()} en el Maule`} bajada={t.descripcionCorta} foto={flota[0]} angosta={!['retroexcavadora', 'minicargador', 'camion-tolva'].includes(t.slug)} cotizar={cotizar} texto={texto} />
 
-      <section className="mx-auto max-w-[1320px] py-14 md:px-8 md:py-20">
-        <h2 className="medio mb-6 px-4 md:px-0">En nuestra flota</h2>
-        <div className={`grid gap-4 px-4 md:px-0 ${flota.length > 1 ? 'md:grid-cols-2' : 'md:max-w-xl'}`}>
+      <section className="mx-auto max-w-[1320px] py-12 md:px-8 md:py-20">
+        <h2 className="medio mb-8 px-4 md:px-0">En nuestra flota</h2>
+        <div className={`grid gap-6 px-4 md:px-0 ${flota.length > 1 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'md:max-w-md'}`}>
           {flota.map((m) => <TarjetaMaquina key={m.id} maquina={m} />)}
         </div>
-        <p className="mt-6 max-w-[64ch] px-4 text-lg text-ink-soft md:px-0">{t.descripcionLarga}</p>
+        <p className="mt-8 max-w-[64ch] px-4 text-lg text-ink-soft md:px-0">{t.descripcionLarga}</p>
       </section>
 
       <UsosYCaracteristicas tipo={t} />

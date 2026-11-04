@@ -73,41 +73,41 @@ export default async function Ficha({ params }: Props) {
       <div className="mx-auto grid max-w-[1320px] gap-8 px-4 py-6 md:grid-cols-[1.45fr_1fr] md:gap-12 md:px-8 md:py-10">
         <div>
           <Migas items={[{ nombre: 'Máquinas', href: '/maquinarias' }, ...(tipo ? [{ nombre: tipo.nombre, href: `/arriendo/${tipo.slug}` }] : []), { nombre: m.nombre }]} />
-          <Foto maquina={m} prioridad className="mt-4 aspect-[4/3]" />
+          <Foto maquina={m} prioridad fondo="bg-[var(--fondo-foto)]" className="redondo mt-4 aspect-[4/3]" />
           {m.fotos.length > 1 ? (
-            <div className="mt-1 grid grid-cols-3 gap-1">
-              {m.fotos.slice(1, 4).map((_, i) => <Foto key={i} maquina={m} indice={i + 1} className="aspect-[4/3]" />)}
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {m.fotos.slice(1, 4).map((_, i) => <Foto key={i} maquina={m} indice={i + 1} fondo="bg-[var(--fondo-foto)]" className="aspect-[4/3] rounded-[8px] [&>span]:text-[0.625rem]" />)}
             </div>
           ) : null}
         </div>
         <div className="md:sticky md:top-24 md:self-start md:pt-10">
           <h1 className="text-[clamp(2rem,3.4vw,2.75rem)]">{m.nombre}</h1>
           {m.estado !== 'disponible' ? <p className="mt-2 font-medium text-peligro">Consulta disponibilidad</p> : null}
-          {operador ? <p className="mt-3 text-lg font-medium">{operador}</p> : null}
-          <div className="mt-5"><TablaPrecios precios={m.precios} /></div>
-          <div className="mt-5 hidden md:block"><AccionesContacto cotizar={cotizar} texto={texto} /></div>
+          {operador ? <p className="mt-4 text-lg text-ink-soft">{operador}</p> : null}
+          <div className="mt-6"><TablaPrecios precios={m.precios} /></div>
+          <div className="mt-6 hidden md:block"><AccionesContacto cotizar={cotizar} texto={texto} /></div>
         </div>
       </div>
 
       {tipo ? (
         <section className="bg-surface-alt">
-          <div className="mx-auto grid max-w-[1320px] gap-8 px-4 py-14 md:grid-cols-2 md:px-8 md:py-20">
+          <div className="mx-auto grid max-w-[1320px] gap-8 px-4 py-12 md:grid-cols-2 md:px-8 md:py-20">
             <div>
               <h2 className="medio">Para qué se usa</h2>
               {m.descripcion ? <p className="mt-4 max-w-[52ch] text-lg text-ink-soft">{m.descripcion}</p> : null}
               <p className="mt-4"><Link href={`/arriendo/${tipo.slug}`} prefetch={false} className="font-medium underline underline-offset-4">Arriendo de {tipo.nombrePlural.toLowerCase()} en el Maule</Link></p>
             </div>
-            <ul className="space-y-3 text-lg">
-              {tipo.casosDeUso.map((c) => <li key={c} className="border-t border-negro/20 pt-3">{c}</li>)}
+            <ul className="space-y-4 text-lg">
+              {tipo.casosDeUso.map((c) => <li key={c} className="border-t border-negro/15 pt-4">{c}</li>)}
             </ul>
           </div>
         </section>
       ) : null}
 
       {otras.length > 0 ? (
-        <section className="mx-auto max-w-[1320px] py-14 md:px-8 md:py-20">
-          <h2 className="medio mb-6 px-4 md:px-0">Otras máquinas</h2>
-          <div className="grid gap-4 px-4 md:grid-cols-3 md:px-0">
+        <section className="mx-auto max-w-[1320px] py-12 md:px-8 md:py-20">
+          <h2 className="medio mb-8 px-4 md:px-0">Otras máquinas</h2>
+          <div className="grid gap-6 px-4 sm:grid-cols-2 lg:grid-cols-3 md:px-0">
             {otras.map((x) => <TarjetaMaquina key={x.id} maquina={x} />)}
           </div>
         </section>
