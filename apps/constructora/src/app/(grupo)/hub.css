@@ -53,7 +53,7 @@
   margin: 0 auto;
   padding: clamp(1.5rem, 4vw, 3.5rem) var(--g-margen) clamp(2rem, 5vw, 4rem);
 }
-.h-portada .g-display { font-size: clamp(2.75rem, 5.6vw, 5.25rem); }
+.h-portada .g-display { font-size: var(--g-display-xl); max-width: 22ch; }
 .h-portada__baja {
   margin: 0.75rem 0 clamp(1.75rem, 3.5vw, 3rem);
   color: var(--g-tinta-media);
@@ -110,19 +110,19 @@
 .h-empresa__marca {
   display: block;
   font-family: var(--g-titular);
-  font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   line-height: 1.1;
 }
 .h-empresa__nombre {
   margin: 0;
   color: var(--acento-texto);
   font-family: var(--g-titular);
-  font-size: clamp(2.5rem, 3.6vw, 3.25rem);
-  font-weight: 600;
-  line-height: 1.05;
-  text-transform: uppercase;
+  font-size: clamp(2.25rem, 3vw, 2.625rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   transition: color 160ms ease;
 }
 .h-empresa__detalle { margin: 0.5rem 0 0; color: inherit; line-height: 1.45; }
@@ -176,15 +176,16 @@
   border: 1.5px solid var(--acento-texto);
   color: var(--acento-texto);
   font-family: var(--g-titular);
-  font-size: 1.375rem;
-  font-weight: 500;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   text-decoration: none;
   transition:
     transform var(--g-presion) var(--g-ease-out),
     background-color var(--g-hover) ease,
     color var(--g-hover) ease;
 }
-.h-llamar__boton span:last-child { font-size: 1.125rem; font-weight: 400; }
+.h-llamar__boton span:last-child { font-size: 1rem; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: 0; }
 .h-llamar__boton:active { transform: scale(0.98); }
 .h-llamar__boton:focus-visible { outline: 2px solid #f4f3f0; outline-offset: 2px; }
 
@@ -248,9 +249,9 @@
   margin: 0;
   font-family: var(--g-titular);
   font-size: var(--g-display-m);
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1.1;
-  text-transform: uppercase;
+  letter-spacing: -0.025em;
 }
 .h-ficha h2 span {
   display: inline-block;
@@ -281,16 +282,19 @@
   margin: 0 0 1rem;
   font-family: var(--g-titular);
   font-size: var(--g-display-m);
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
 }
 .h-telefonos { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
 .h-telefonos li { padding-top: 0.875rem; border-top: 1px solid var(--g-linea); }
 .h-telefonos p { margin: 0; color: var(--g-tinta-suave); font-size: 0.9375rem; }
 .h-telefonos a {
   font-family: var(--g-titular);
-  font-size: 1.75rem;
-  font-weight: 500;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--g-tinta);
   text-decoration: none;
 }
@@ -312,7 +316,7 @@
 
 @media (min-width: 768px) {
   .h-empresas { grid-template-columns: repeat(3, 1fr); transition: grid-template-columns 480ms var(--g-ease-out); }
-  .h-empresa__nombre { font-size: clamp(1.625rem, 3.2vw, 2.875rem); }
+  .h-empresa__nombre { font-size: clamp(1.5rem, 2.9vw, 2.625rem); }
   .h-empresa__panel { padding: 1rem clamp(1rem, 1.6vw, 1.5rem) 1.25rem; }
   .h-llamar__botones { grid-template-columns: repeat(3, 1fr); }
   .h-pie__columnas { grid-template-columns: 2fr 1fr 1fr 1.4fr; }
