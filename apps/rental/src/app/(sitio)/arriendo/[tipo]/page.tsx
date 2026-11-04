@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: titulo.length <= 60 ? titulo : `Arriendo de ${t.nombrePlural} en el Maule · JURMAQ`,
     description: cortar(`${t.descripcionCorta} ${modelos ? `${modelos}. ` : ''}Arriendo en toda la Región del Maule.`),
     alternates: { canonical: url },
-    openGraph: { title: `Arriendo de ${t.nombrePlural}`, url, type: 'website', locale: 'es_CL', siteName: SITIO.nombre },
+    openGraph: { title: `Arriendo de ${t.nombrePlural}`, url, type: 'website', locale: 'es_CL', siteName: SITIO.nombre, images: ['/og.jpg'] },
   };
 }
 

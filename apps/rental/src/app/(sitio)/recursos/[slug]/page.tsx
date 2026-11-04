@@ -40,7 +40,7 @@ export default async function Recurso({ params }: Props) {
     author: proveedor,
     publisher: proveedor,
     mainEntityOfPage: url,
-    image: `${SITIO.url}/opengraph-image.jpg`,
+    image: `${SITIO.url}/og.jpg`,
   };
   return (
     <article className="sobre-claro mx-auto max-w-3xl px-4 py-10 md:py-16">

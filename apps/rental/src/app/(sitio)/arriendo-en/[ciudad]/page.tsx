@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `Arriendo de Maquinaria en ${c.nombre} · JURMAQ`,
     description: cortar(`Arriendo de maquinaria en ${c.nombre}. ${c.intro}`),
     alternates: { canonical: url },
-    openGraph: { title: `Arriendo de Maquinaria en ${c.nombre}`, url, type: 'website', locale: 'es_CL', siteName: SITIO.nombre },
+    openGraph: { title: `Arriendo de Maquinaria en ${c.nombre}`, url, type: 'website', locale: 'es_CL', siteName: SITIO.nombre, images: ['/og.jpg'] },
   };
 }
 
