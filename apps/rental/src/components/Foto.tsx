@@ -4,7 +4,7 @@ const CON_VARIANTE = /^\/images\/maquinarias\/(retroexcavadora-hmk-102b|minicarg
 const ANCHO: Record<string, number> = {
   'retroexcavadora-hmk-102b': 1600, 'minicargador-bobcat-s650': 1600, 'minicargador-bobcat-s570': 1200,
   'camion-tolva-vw-constellation': 1600, 'plataforma-fullen-psc140': 1600, 'plataforma-genie-gs1930': 1440,
-  'brazo-articulado-jlg-e450aj': 1110, 'miniexcavadora-xcmg-xe35u': 1228,
+  'brazo-articulado-jlg-e450aj': 1110, 'miniexcavadora-xcmg-xe35u': 1449,
 };
 
 /** El celular baja la versión de 800 px. La foto grande siempre se sirve en JPG
