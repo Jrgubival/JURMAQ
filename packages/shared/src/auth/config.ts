@@ -53,12 +53,12 @@ export const authConfig: NextAuthConfig = {
   },
   session: {
     strategy: 'jwt',
-    // Audit Better-Auth: expiración explícita. Default NextAuth = 30 dias,
-    // demasiado largo para sesiones admin con permisos destructivos. 7 dias
-    // es estandar GDPR-friendly (tradeoff seguridad ↔ UX). updateAge:
-    // refresca el token cada 24h para que JWT fresco refleje role updates
-    // sin esperar 7 dias.
-    maxAge: 60 * 60 * 24 * 7, // 7 dias
+    // Decisión de Jorge (nov-2026): la sesión dura 90 días, porque cerrarla cada
+    // semana molestaba en el uso diario. Reemplaza los 7 días de la auditoría
+    // Better-Auth. updateAge: el token se renueva cada 24 h, así que quien usa
+    // el panel no llega a vencer, y el JWT fresco refleja cambios de rol.
+    // La cookie y el JWT no tienen límite propio: heredan este valor.
+    maxAge: 60 * 60 * 24 * 90, // 90 dias
     updateAge: 60 * 60 * 24, // refresh cada 24h
   },
   cookies: {
