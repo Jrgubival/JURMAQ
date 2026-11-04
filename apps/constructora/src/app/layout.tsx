@@ -34,12 +34,14 @@ const geist = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-mono",
+  preload: false,
   subsets: ["latin"],
   display: "swap",
 });
 
 const newsreader = Newsreader({
   variable: "--font-serif",
+  preload: false,
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700"],
@@ -48,6 +50,7 @@ const newsreader = Newsreader({
 
 const bebasNeue = Bebas_Neue({
   variable: "--font-display",
+  preload: false,
   subsets: ["latin"],
   display: "swap",
   weight: ["400"], // Bebas Neue only ships in a single weight
@@ -59,6 +62,7 @@ const bebasNeue = Bebas_Neue({
 // con el acento "JURMAQ" en Bebas Neue. (Decisión del owner.)
 const oswald = Oswald({
   variable: "--font-heading",
+  preload: false,
   subsets: ["latin"],
   display: "swap",
   weight: ["500", "600", "700"],
