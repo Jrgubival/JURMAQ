@@ -8,8 +8,8 @@
    prefijo `g-`/`--g-`, así no pisa nada de globals.css.
 
    Uso: poner data-marca="arriendo|barraca|constructora|hub" en <html> o en
-   un contenedor. Fuentes: cada app declara Geist, Geist Mono y Oswald con
-   next/font en --font-sans, --font-mono y --font-titular (o --font-heading).
+   un contenedor. Fuentes: cada app declara Geist y Geist Mono con next/font
+   en --font-sans y --font-mono.
    ==================================================================== */
 
 :root {
@@ -22,17 +22,18 @@
   --g-linea: #eaeaea;
 
   --g-sans: var(--font-sans), system-ui, sans-serif;
-  --g-titular: var(--font-titular, var(--font-heading)), "Arial Narrow", sans-serif;
+  /* Toda la línea usa la letra de la barraca: Geist, también en titulares. */
+  --g-titular: var(--g-sans);
   --g-mono: var(--font-mono), ui-monospace, monospace;
 
   --g-radio: 4px;
   --g-ancho: 1200px;
   --g-margen: clamp(16px, 4vw, 40px);
 
-  /* Escala de display: Oswald grande es la voz del grupo. */
-  --g-display-xl: clamp(3rem, 7vw, 6rem);
-  --g-display-l: clamp(2.5rem, 5vw, 4.5rem);
-  --g-display-m: clamp(1.75rem, 3vw, 2.5rem);
+  /* Escala de titulares, como los de la barraca: peso 800 y tracking ajustado. */
+  --g-display-xl: clamp(2.5rem, 5vw, 4.25rem);
+  --g-display-l: clamp(2rem, 3.8vw, 3.25rem);
+  --g-display-m: clamp(1.625rem, 2.4vw, 2.125rem);
 
   --g-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --g-ease-mover: cubic-bezier(0.77, 0, 0.175, 1);
@@ -42,8 +43,8 @@
 
   /* Acentos de cada negocio, para usarlos fuera de su propio sitio. */
   --g-barraca: #c90319;
-  --g-arriendo: #f2b705;
-  --g-constructora: #2c5a7a;
+  --g-arriendo: #f07a0e;
+  --g-constructora: #e8b017;
 
   --acento: var(--g-tinta);
   --acento-hover: #2f3437;
@@ -69,34 +70,64 @@
   color: var(--g-tinta);
 }
 
+/* Azul marino del grupo: el mismo #081428 de las franjas de la barraca. */
+[data-tema="marino"] {
+  --g-fondo: #081428;
+  --g-superficie: #0f2038;
+  --g-alterno: #0f2038;
+  --g-tinta: #f4f3f0;
+  --g-tinta-media: #d5d9e0;
+  --g-tinta-suave: #a3adbc;
+  --g-linea: #243650;
+  --acento: #f4f3f0;
+  --acento-hover: #ffffff;
+  --sobre-acento: #081428;
+  --acento-texto: #f4f3f0;
+  background-color: var(--g-fondo);
+  color: var(--g-tinta);
+}
+
 [data-marca="barraca"] {
   --acento: var(--g-barraca);
   --acento-hover: #a80418;
   --sobre-acento: #ffffff;
   --acento-texto: var(--g-barraca);
+  --acento-logo: #ec6e7e;
+  --acento-pie: #de3f55;
 }
-/* Amarillo sobre fondo claro da 1,8:1: sólo como relleno, con texto negro.
-   Por eso su --acento-texto es la tinta y no el amarillo. */
+/* Naranja y dorado sobre fondo claro dan 2,7:1 y 1,9:1: ahí van sólo como
+   relleno, con texto marino (6,6:1 y 9,3:1). El blanco encima tampoco alcanza.
+   Por eso su --acento-texto es la tinta y no el color. */
 [data-marca="arriendo"] {
   --acento: var(--g-arriendo);
-  --acento-hover: #dca604;
-  --sobre-acento: #111111;
+  --acento-hover: #d96c08;
+  --sobre-acento: #081428;
   --acento-texto: var(--g-tinta);
+  --acento-logo: var(--g-arriendo);
+  --acento-pie: #b4510a; /* oscurecido: 4,7:1 sobre el pie claro */
 }
 [data-marca="constructora"] {
   --acento: var(--g-constructora);
-  --acento-hover: #1f4359;
-  --sobre-acento: #ffffff;
-  --acento-texto: var(--g-constructora);
+  --acento-hover: #d49f12;
+  --sobre-acento: #081428;
+  --acento-texto: var(--g-tinta);
+  --acento-logo: var(--g-constructora);
+  --acento-pie: #8f6a00; /* oscurecido: 4,6:1 sobre el pie claro */
 }
 
 /* Sobre oscuro el acento debe aclararse para leerse como texto. */
 [data-tema="oscuro"] [data-marca="barraca"],
-[data-tema="oscuro"][data-marca="barraca"] { --acento-texto: #ff8a94; }
+[data-tema="oscuro"][data-marca="barraca"],
+[data-tema="marino"] [data-marca="barraca"],
+[data-tema="marino"][data-marca="barraca"] { --acento-texto: #ec6e7e; }
 [data-tema="oscuro"] [data-marca="arriendo"],
-[data-tema="oscuro"][data-marca="arriendo"] { --acento-texto: var(--g-arriendo); }
+[data-tema="oscuro"][data-marca="arriendo"],
+[data-tema="marino"] [data-marca="arriendo"],
+[data-tema="marino"][data-marca="arriendo"] { --acento-texto: var(--g-arriendo); }
 [data-tema="oscuro"] [data-marca="constructora"],
-[data-tema="oscuro"][data-marca="constructora"] { --acento-texto: #9cc6e0; }
+[data-tema="oscuro"][data-marca="constructora"],
+[data-tema="marino"] [data-marca="constructora"],
+[data-tema="marino"][data-marca="constructora"] { --acento-texto: var(--g-constructora); }
 
 /* Plancha laminada: el mismo rayado de los fondos de la barraca. */
 .g-textura-acero {
@@ -105,23 +136,35 @@
 
 /* --- Marca ---------------------------------------------------------- */
 .g-marca {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.25rem;
   font-family: var(--g-titular);
-  font-weight: 600;
-  font-size: 1.375rem;
-  letter-spacing: 0.02em;
-  line-height: 1;
+  font-size: 1.5rem;
+  line-height: 1.25;
   color: var(--g-tinta);
   text-decoration: none;
+}
+.g-marca__grupo { font-weight: 800; letter-spacing: -0.025em; }
+/* Proporción del logo de la barraca: 18/24 en celular y 20/30 en escritorio. */
+.g-marca__negocio {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--acento-texto);
+}
+@media (min-width: 1024px) {
+  .g-marca { font-size: 1.875rem; }
+  .g-marca__negocio { font-size: 0.667em; }
 }
 
 /* Titular grande del grupo. */
 .g-display {
   margin: 0;
   font-family: var(--g-titular);
-  font-weight: 600;
-  line-height: 1.02;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
@@ -132,9 +175,9 @@
   justify-content: center;
   gap: 0.5rem;
   min-height: 44px;
-  padding: 0.625rem 1.25rem;
+  padding: 0 1.25rem;
   border: 1px solid var(--acento);
-  border-radius: var(--g-radio);
+  border-radius: 12px; /* "Ver productos" de la barraca */
   background: var(--acento);
   color: var(--sobre-acento);
   font-family: var(--g-sans);
@@ -157,7 +200,8 @@
 }
 
 /* --- Enlace --------------------------------------------------------- */
-.g-enlace {
+/* Clase repetida a propósito: globals.css quita el subrayado con a:not(...):not(...). */
+a.g-enlace.g-enlace.g-enlace {
   color: var(--acento-texto);
   font-weight: 600;
   text-decoration: underline;
@@ -180,7 +224,7 @@
   min-height: 44px;
   padding: 0.625rem 0.75rem;
   border: 1px solid #c9c8c4;
-  border-radius: var(--g-radio);
+  border-radius: 8px;
   background: var(--g-superficie);
   color: var(--g-tinta);
   font-family: var(--g-sans);
@@ -196,7 +240,6 @@
   outline: 2px solid var(--g-tinta);
   outline-offset: 2px;
 }
-.g-boton--grande { min-height: 52px; padding: 0.75rem 1.75rem; font-size: 1.0625rem; }
 
 /* --- Franja del grupo: línea delgada para pasar de un sitio a otro ---- */
 .g-franja {
@@ -222,6 +265,131 @@
   transition: color var(--g-hover) ease;
 }
 .g-franja a[aria-current="page"] { color: #ffffff; font-weight: 600; }
+
+/* --- Cabecera: copia de la de barraca.jurmaq.cl (BarracaShell), sin tocarla ---- */
+.g-cab {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-top: env(safe-area-inset-top);
+  background: #081428;
+  border-bottom: 1px solid #0c1d3a;
+  font-family: var(--g-sans);
+}
+.g-cab__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 80rem;
+  height: 4rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+.g-cab .g-marca__grupo { color: #ffffff; }
+.g-cab .g-marca__negocio { color: var(--acento-logo, #ffffff); }
+.g-cab__nav { display: none; align-items: center; gap: 0.25rem; }
+.g-cab__enlace {
+  padding: 0.5rem 0.875rem;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  text-decoration: none;
+  transition: background-color var(--g-hover) ease;
+}
+.g-cab__enlace[aria-current="page"] { background: rgb(255 255 255 / 0.1); }
+.g-cab__enlace:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+.g-cab__menu > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  list-style: none;
+}
+.g-cab__menu > summary::-webkit-details-marker { display: none; }
+.g-cab__menu > summary svg { width: 24px; height: 24px; }
+.g-cab__panel {
+  position: absolute;
+  inset: 100% 0 auto;
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+.g-cab__panel a {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: #364153;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+@media (min-width: 640px) { .g-cab__fila { padding: 0 1.5rem; } }
+@media (min-width: 1024px) {
+  .g-cab__fila { height: 5rem; padding: 0 2rem; }
+  .g-cab__nav { display: flex; }
+  .g-cab__menu { display: none; }
+}
+
+/* --- Pie: copia del de barraca.jurmaq.cl ---------------------------------- */
+.g-piec {
+  background: #f4f5f7;
+  border-top: 1px solid #e5e7eb;
+  color: #4a5565;
+  font-family: var(--g-sans);
+}
+.g-piec__ancho { max-width: 80rem; margin: 0 auto; padding: 3rem 1rem 2.5rem; }
+.g-piec__grilla { display: grid; grid-template-columns: 1fr; gap: 2.5rem; }
+.g-piec .g-marca { margin-bottom: 0.75rem; font-size: 1.5rem; }
+.g-piec .g-marca__grupo { color: #081428; }
+.g-piec .g-marca__negocio { font-size: 0.75em; color: var(--acento-pie, #081428); }
+.g-piec__texto { max-width: 20rem; margin: 0; font-size: 0.875rem; line-height: 1.625; }
+.g-piec__contacto { display: grid; gap: 0.5rem; margin-top: 1.25rem; font-size: 0.875rem; }
+.g-piec__contacto p { margin: 0; }
+.g-piec__fuerte { color: #081428; font-weight: 600; font-variant-numeric: tabular-nums; text-decoration: none; }
+.g-piec__chico { color: #6a7282; font-size: 0.75rem; line-height: 1.625; }
+.g-piec h3 { margin: 0 0 0.75rem; color: #081428; font-size: 0.875rem; font-weight: 700; line-height: 1.6; }
+.g-piec ul { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.g-piec__enlace { color: #4a5565; font-size: 0.875rem; text-decoration: none; transition: color 150ms ease; }
+.g-piec__barra { border-top: 1px solid #e5e7eb; }
+.g-piec__legal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  color: #6a7282;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+.g-piec__legal p { margin: 0; text-align: center; }
+.g-piec__legales { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25rem 0.75rem; }
+.g-piec__legales a { color: inherit; text-decoration: none; transition: color 150ms ease; }
+.g-piec a:focus-visible { outline: 2px solid #081428; outline-offset: 2px; }
+@media (min-width: 640px) {
+  .g-piec__ancho { padding: 3rem 1.5rem 2.5rem; }
+  .g-piec__grilla { grid-template-columns: repeat(2, 1fr); }
+  .g-piec__legal { flex-direction: row; padding: 1.5rem; }
+  .g-piec__legal p { text-align: left; }
+}
+@media (min-width: 1024px) {
+  .g-piec__ancho { padding: 3rem 2rem 2.5rem; }
+  .g-piec__grilla { grid-template-columns: 1.2fr 1fr 1.3fr 1.3fr; }
+  .g-piec__legal { padding: 1.5rem 2rem; }
+}
 
 /* --- Pie legal ------------------------------------------------------ */
 .g-pie {
@@ -264,6 +432,9 @@
   .g-boton--linea:hover:not(:disabled) { background: var(--g-tinta); border-color: var(--g-tinta); color: #ffffff; }
   .g-enlace:hover { text-decoration-thickness: 2px; }
   .g-franja a:hover { color: #ffffff; }
+  .g-cab__enlace:hover { background: rgb(255 255 255 / 0.1); }
+  .g-cab__panel a:hover { background: #f3f4f6; color: #081428; }
+  .g-piec__enlace:hover, .g-piec__legales a:hover, .g-piec__fuerte:hover { color: #081428; }
 }
 
 @media (prefers-reduced-motion: reduce) {
