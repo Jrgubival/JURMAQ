@@ -3,7 +3,7 @@ import CabezaPagina from "@/components/CabezaPagina";
 import Cierre from "@/components/Cierre";
 import Cifras from "@/components/Cifras";
 import LogosClientes from "@/components/LogosClientes";
-import { EMPRESA, url } from "@/data/empresa";
+import { url } from "@/data/empresa";
 
 const TITULO = "Empresa constructora de Curicó";
 const DESCRIPCION =
@@ -61,7 +61,7 @@ export default function Nosotros() {
       </section>
       <Cifras />
       <section className="seccion">
-        <div className="contenedor ficha-grilla">
+        <div className="contenedor">
           <div>
             <h2 className="sub">Cómo trabajamos</h2>
             <ol className="proceso">
@@ -70,24 +70,6 @@ export default function Nosotros() {
               ))}
             </ol>
           </div>
-          <dl className="ficha">
-            <div>
-              <dt>Razón social</dt>
-              <dd>{EMPRESA.razonSocial}</dd>
-            </div>
-            <div>
-              <dt>RUT</dt>
-              <dd>{EMPRESA.rut}</dd>
-            </div>
-            <div>
-              <dt>Dirección</dt>
-              <dd>{EMPRESA.direccion}</dd>
-            </div>
-            <div>
-              <dt>Gerente</dt>
-              <dd>Jorge Ubilla Rivera, Ingeniero Mecánico</dd>
-            </div>
-          </dl>
         </div>
       </section>
       <Cierre />
