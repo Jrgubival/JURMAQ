@@ -92,6 +92,8 @@
   --acento-hover: #a80418;
   --sobre-acento: #ffffff;
   --acento-texto: var(--g-barraca);
+  --acento-logo: #ec6e7e;
+  --acento-pie: #de3f55;
 }
 /* Naranja y dorado sobre fondo claro dan 2,7:1 y 1,9:1: ahí van sólo como
    relleno, con texto marino (6,6:1 y 9,3:1). El blanco encima tampoco alcanza.
@@ -101,12 +103,16 @@
   --acento-hover: #d96c08;
   --sobre-acento: #081428;
   --acento-texto: var(--g-tinta);
+  --acento-logo: var(--g-arriendo);
+  --acento-pie: #b4510a; /* oscurecido: 4,7:1 sobre el pie claro */
 }
 [data-marca="constructora"] {
   --acento: var(--g-constructora);
   --acento-hover: #d49f12;
   --sobre-acento: #081428;
   --acento-texto: var(--g-tinta);
+  --acento-logo: var(--g-constructora);
+  --acento-pie: #8f6a00; /* oscurecido: 4,6:1 sobre el pie claro */
 }
 
 /* Sobre oscuro el acento debe aclararse para leerse como texto. */
@@ -169,9 +175,9 @@
   justify-content: center;
   gap: 0.5rem;
   min-height: 44px;
-  padding: 0.625rem 1.25rem;
+  padding: 0 1.25rem;
   border: 1px solid var(--acento);
-  border-radius: var(--g-radio);
+  border-radius: 12px; /* "Ver productos" de la barraca */
   background: var(--acento);
   color: var(--sobre-acento);
   font-family: var(--g-sans);
@@ -218,7 +224,7 @@ a.g-enlace.g-enlace.g-enlace {
   min-height: 44px;
   padding: 0.625rem 0.75rem;
   border: 1px solid #c9c8c4;
-  border-radius: var(--g-radio);
+  border-radius: 8px;
   background: var(--g-superficie);
   color: var(--g-tinta);
   font-family: var(--g-sans);
@@ -234,7 +240,6 @@ a.g-enlace.g-enlace.g-enlace {
   outline: 2px solid var(--g-tinta);
   outline-offset: 2px;
 }
-.g-boton--grande { min-height: 52px; padding: 0.75rem 1.75rem; font-size: 1.0625rem; }
 
 /* --- Franja del grupo: línea delgada para pasar de un sitio a otro ---- */
 .g-franja {
@@ -260,6 +265,131 @@ a.g-enlace.g-enlace.g-enlace {
   transition: color var(--g-hover) ease;
 }
 .g-franja a[aria-current="page"] { color: #ffffff; font-weight: 600; }
+
+/* --- Cabecera: copia de la de barraca.jurmaq.cl (BarracaShell), sin tocarla ---- */
+.g-cab {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-top: env(safe-area-inset-top);
+  background: #081428;
+  border-bottom: 1px solid #0c1d3a;
+  font-family: var(--g-sans);
+}
+.g-cab__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 80rem;
+  height: 4rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+.g-cab .g-marca__grupo { color: #ffffff; }
+.g-cab .g-marca__negocio { color: var(--acento-logo, #ffffff); }
+.g-cab__nav { display: none; align-items: center; gap: 0.25rem; }
+.g-cab__enlace {
+  padding: 0.5rem 0.875rem;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  text-decoration: none;
+  transition: background-color var(--g-hover) ease;
+}
+.g-cab__enlace[aria-current="page"] { background: rgb(255 255 255 / 0.1); }
+.g-cab__enlace:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+.g-cab__menu > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  list-style: none;
+}
+.g-cab__menu > summary::-webkit-details-marker { display: none; }
+.g-cab__menu > summary svg { width: 24px; height: 24px; }
+.g-cab__panel {
+  position: absolute;
+  inset: 100% 0 auto;
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+.g-cab__panel a {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: #364153;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+@media (min-width: 640px) { .g-cab__fila { padding: 0 1.5rem; } }
+@media (min-width: 1024px) {
+  .g-cab__fila { height: 5rem; padding: 0 2rem; }
+  .g-cab__nav { display: flex; }
+  .g-cab__menu { display: none; }
+}
+
+/* --- Pie: copia del de barraca.jurmaq.cl ---------------------------------- */
+.g-piec {
+  background: #f4f5f7;
+  border-top: 1px solid #e5e7eb;
+  color: #4a5565;
+  font-family: var(--g-sans);
+}
+.g-piec__ancho { max-width: 80rem; margin: 0 auto; padding: 3rem 1rem 2.5rem; }
+.g-piec__grilla { display: grid; grid-template-columns: 1fr; gap: 2.5rem; }
+.g-piec .g-marca { margin-bottom: 0.75rem; font-size: 1.5rem; }
+.g-piec .g-marca__grupo { color: #081428; }
+.g-piec .g-marca__negocio { font-size: 0.75em; color: var(--acento-pie, #081428); }
+.g-piec__texto { max-width: 20rem; margin: 0; font-size: 0.875rem; line-height: 1.625; }
+.g-piec__contacto { display: grid; gap: 0.5rem; margin-top: 1.25rem; font-size: 0.875rem; }
+.g-piec__contacto p { margin: 0; }
+.g-piec__fuerte { color: #081428; font-weight: 600; font-variant-numeric: tabular-nums; text-decoration: none; }
+.g-piec__chico { color: #6a7282; font-size: 0.75rem; line-height: 1.625; }
+.g-piec h3 { margin: 0 0 0.75rem; color: #081428; font-size: 0.875rem; font-weight: 700; line-height: 1.6; }
+.g-piec ul { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.g-piec__enlace { color: #4a5565; font-size: 0.875rem; text-decoration: none; transition: color 150ms ease; }
+.g-piec__barra { border-top: 1px solid #e5e7eb; }
+.g-piec__legal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  color: #6a7282;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+.g-piec__legal p { margin: 0; text-align: center; }
+.g-piec__legales { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25rem 0.75rem; }
+.g-piec__legales a { color: inherit; text-decoration: none; transition: color 150ms ease; }
+.g-piec a:focus-visible { outline: 2px solid #081428; outline-offset: 2px; }
+@media (min-width: 640px) {
+  .g-piec__ancho { padding: 3rem 1.5rem 2.5rem; }
+  .g-piec__grilla { grid-template-columns: repeat(2, 1fr); }
+  .g-piec__legal { flex-direction: row; padding: 1.5rem; }
+  .g-piec__legal p { text-align: left; }
+}
+@media (min-width: 1024px) {
+  .g-piec__ancho { padding: 3rem 2rem 2.5rem; }
+  .g-piec__grilla { grid-template-columns: 1.2fr 1fr 1.3fr 1.3fr; }
+  .g-piec__legal { padding: 1.5rem 2rem; }
+}
 
 /* --- Pie legal ------------------------------------------------------ */
 .g-pie {
@@ -302,6 +432,9 @@ a.g-enlace.g-enlace.g-enlace {
   .g-boton--linea:hover:not(:disabled) { background: var(--g-tinta); border-color: var(--g-tinta); color: #ffffff; }
   .g-enlace:hover { text-decoration-thickness: 2px; }
   .g-franja a:hover { color: #ffffff; }
+  .g-cab__enlace:hover { background: rgb(255 255 255 / 0.1); }
+  .g-cab__panel a:hover { background: #f3f4f6; color: #081428; }
+  .g-piec__enlace:hover, .g-piec__legales a:hover, .g-piec__fuerte:hover { color: #081428; }
 }
 
 @media (prefers-reduced-motion: reduce) {
