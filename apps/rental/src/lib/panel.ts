@@ -33,6 +33,34 @@ export async function exigirPermiso(modulo: Module, accion: Action) {
   return sesion;
 }
 
+export interface SolicitudWeb {
+  id: number;
+  cliente_nombre: string;
+  cliente_telefono: string | null;
+  ubicacion_servicio: string | null;
+  fecha_servicio: string | null;
+  created_at: string;
+  maquinarias: unknown;
+}
+
+/** Solicitudes de la web que aún no tienen cotización, de la más nueva a la más antigua. */
+export async function solicitudesPendientes(): Promise<{ pendientes: SolicitudWeb[]; error: boolean }> {
+  const { data, error } = await supabaseAdmin
+    .from('cotizaciones_arriendo')
+    .select('id, numero, cliente_nombre, cliente_telefono, ubicacion_servicio, fecha_servicio, created_at, maquinarias(nombre)')
+    .eq('origen', 'web')
+    .eq('estado', 'enviada')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) return { pendientes: [], error: true };
+  const ids = (data ?? []).map((s) => s.id);
+  const { data: convertidas } = ids.length
+    ? await supabaseAdmin.from('cotizaciones_arriendo').select('solicitud_id').in('solicitud_id', ids)
+    : { data: [] as { solicitud_id: number | null }[] };
+  const hechas = new Set((convertidas ?? []).map((c) => c.solicitud_id));
+  return { pendientes: ((data ?? []) as SolicitudWeb[]).filter((s) => !hechas.has(s.id)), error: false };
+}
+
 export interface LineaGuardada {
   tipo: TipoLinea;
   maquinaria_id: number | null;

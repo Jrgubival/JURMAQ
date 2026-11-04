@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ESTADOS_COTIZACION } from '@/lib/opciones';
 import type { CotizacionPdf } from '@/lib/pdf-cotizacion';
@@ -19,6 +20,8 @@ export default function AccionesCotizacion({
   pdf: CotizacionPdf;
 }) {
   const router = useRouter();
+  // Con contrato la cotización ya no se edita (ver la API).
+  const editable = (ESTADOS_COTIZACION as readonly string[]).includes(estado);
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState('');
   const nombreArchivo = `Cotizacion ${numero} ${cliente}`.replace(/[^\p{L}\p{N} .-]/gu, '').slice(0, 80) + '.pdf';
@@ -61,9 +64,10 @@ export default function AccionesCotizacion({
   }
 
   return (
-    <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="mt-3 flex flex-wrap items-center gap-2">
       <button type="button" className="boton boton-principal flex-1 sm:flex-none" disabled={ocupado} onClick={() => correr(async () => descargar(await archivo()))}>Descargar PDF</button>
-      <label className="flex items-center gap-2 text-[0.8125rem] text-ink-muted">
+      {editable ? <Link href={`/admin/cotizaciones/${id}/editar`} prefetch={false} className="boton boton-suave">Editar</Link> : null}
+      <label className="ml-auto flex items-center gap-2 text-[0.8125rem] text-ink-muted">
         Estado
         <select aria-label="Estado de la cotización" className="campo !min-h-9 !w-auto" value={estado} disabled={ocupado} onChange={(e) => correr(async () => { await marcar(e.target.value); })}>
           {ESTADOS_COTIZACION.map((x) => <option key={x} value={x}>{x[0].toUpperCase() + x.slice(1)}</option>)}
