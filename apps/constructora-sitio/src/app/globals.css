@@ -58,14 +58,21 @@ button { font: inherit; color: inherit; }
 /* La cabecera y el pie vienen de @jurmaq/shared/ui/grupo. */
 .cabecera { display: contents; }
 
-/* WhatsApp flotante, igual al de la barraca: 44 px, abajo a la izquierda. */
+/* WhatsApp flotante: copia exacta del de barraca.jurmaq.cl (fixed bottom-6 left-4 z-40 w-11 h-11
+   bg-white text-[#25D366] border-gray-200 rounded-full shadow-[0_4px_14px_-6px_rgba(8,20,40,0.35)]
+   hover:border-gray-300 transition-colors safe-bottom). */
 .wa-flotante {
-  position: fixed; left: 16px; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 40;
-  display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;
-  background: #fff; color: #25d366; border: 1px solid #e5e7eb; border-radius: 9999px;
-  box-shadow: 0 4px 14px -6px rgb(8 20 40 / 0.35); transition: border-color 150ms ease;
+  position: fixed; bottom: 24px; left: 16px; z-index: 40;
+  display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 44px; height: 44px;
+  padding-bottom: env(safe-area-inset-bottom);
+  background-color: #fff; color: #25d366; border: 1px solid #e5e7eb; border-radius: 9999px;
+  box-shadow: 0 4px 14px -6px rgba(8, 20, 40, 0.35);
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms;
 }
-@media (hover: hover) and (pointer: fine) { .wa-flotante:hover { border-color: #d1d5db; } }
+.wa-flotante .wa-icono { display: block; width: 20px; height: 20px; }
+.wa-flotante:hover { border-color: #d1d5db; }
+.wa-flotante:focus-visible { box-shadow: 0 4px 14px -6px rgba(8, 20, 40, 0.35); }
 
 /* Botones */
 .boton {
