@@ -34,7 +34,7 @@ export default function GrupoLayout({ children }: { children: React.ReactNode })
           { titulo: 'El grupo', enlaces: [{ href: '/nosotros', texto: 'Nosotros' }, { href: '/contacto', texto: 'Contacto' }] },
           { titulo: 'Teléfonos', enlaces: ORDEN.map((n) => ({ href: `tel:${NEGOCIOS[n].telefono}`, texto: `${NOMBRES[n]}: ${NEGOCIOS[n].telefonoDisplay}` })) },
         ]}
-        legal={ORDEN.map((n) => `${NOMBRES[n]}: ${NEGOCIOS[n].razonSocial}, RUT ${NEGOCIOS[n].rut}, ${NEGOCIOS[n].direccion}`)}
+        legal={[`© ${new Date().getFullYear()} Grupo JURMAQ`]}
         enlacesLegales={[{ href: '/terminos', texto: 'Términos y condiciones' }, { href: '/privacidad', texto: 'Política de privacidad' }]}
         Enlace={Link}
       />
