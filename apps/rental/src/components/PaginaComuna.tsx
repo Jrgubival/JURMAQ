@@ -13,14 +13,19 @@ export function ordenarParaComuna(flota: Maquina[], comuna: ComunaRental): Maqui
   return [...flota].sort((a, b) => peso(a) - peso(b));
 }
 
-export function TrabajosComuna({ comuna, km }: { comuna: ComunaRental; km: number | null }) {
+export function TrabajosComuna({ comuna, km, tiempo = null, vecinas = [] }: { comuna: ComunaRental; km: number | null; tiempo?: string | null; vecinas?: ComunaRental[] }) {
   return (
     <section className="bg-surface-alt">
       <div className="mx-auto grid max-w-[1320px] gap-8 px-4 py-14 md:grid-cols-2 md:px-8 md:py-20">
         <div>
           <h2 className="medio">Trabajos típicos en {comuna.nombre}</h2>
-          {km ? <p className="mt-4 text-lg">Unos {km} km desde nuestra base en Maquehua. El traslado se cotiza aparte.</p> : null}
+          {km ? <p className="mt-4 text-lg">Unos {km} km desde nuestra base en Maquehua{tiempo ? `, cerca de ${tiempo} en camión` : ''}. El traslado se cotiza aparte.</p> : null}
           {comuna.nota ? <p className="mt-4 text-lg font-medium">{comuna.nota}</p> : null}
+          {vecinas.length > 0 ? (
+            <p className="mt-4 text-lg">También arrendamos en {vecinas.map((v, i) => (
+              <span key={v.slug}>{i > 0 ? ', ' : ''}<Link href={`/arriendo-en/${v.slug}`} prefetch={false} className="underline underline-offset-4">{v.nombre}</Link></span>
+            ))}.</p>
+          ) : null}
         </div>
         <ul>
           {comuna.trabajos.map((t) => <li key={t} className="border-t border-negro/25 py-4 font-titulo text-[clamp(1.375rem,2.4vw,1.75rem)] font-semibold leading-tight">{t}</li>)}

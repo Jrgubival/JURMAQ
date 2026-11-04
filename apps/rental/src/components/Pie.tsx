@@ -24,8 +24,8 @@ export default function Pie({ tipos, comunas }: { tipos: { slug: string; nombre:
         </div>
         <address className="not-italic">
           <p className="font-semibold text-white">Contacto</p>
-          <p className="mt-3"><a href={`tel:${SITIO.telefono}`} className="hover:text-white">{SITIO.telefonoVisible}</a></p>
-          <p className="mt-2"><a href={`mailto:${SITIO.correo}`} className="hover:text-white">{SITIO.correo}</a></p>
+          <p className="mt-1"><a href={`tel:${SITIO.telefono}`} className="inline-flex min-h-11 items-center hover:text-white">{SITIO.telefonoVisible}</a></p>
+          <p><a href={`mailto:${SITIO.correo}`} className="inline-flex min-h-11 items-center hover:text-white">{SITIO.correo}</a></p>
           <p className="mt-2">{SITIO.direccion}</p>
         </address>
       </div>

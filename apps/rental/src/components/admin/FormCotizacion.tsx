@@ -166,7 +166,7 @@ export default function FormCotizacion({ catalogo, inicial, id }: { catalogo: Op
           retiro_fecha: retiro,
           destino_nombre: destino,
           ubicacion_servicio: lugar,
-          validez_dias: Number(validez),
+          validez_dias: Number(validez) >= 1 ? Math.round(Number(validez)) : VALIDEZ_DIAS,
           descuento_neto: Number(descuento) || 0,
           notas_cliente: notas,
           ...(inicial?.solicitud_id ? { solicitud_id: inicial.solicitud_id } : {}),
@@ -202,7 +202,7 @@ export default function FormCotizacion({ catalogo, inicial, id }: { catalogo: Op
           <label className="etiqueta" htmlFor="nombre">Cliente</label>
           <input id="nombre" className="campo" required maxLength={160} value={nombre} onChange={(e) => setNombre(e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <Campo id="telefono" texto="Teléfono" tipo="tel" valor={telefono} cambiar={setTelefono} />
           <Campo id="correo" texto="Correo" tipo="email" valor={correo} cambiar={setCorreo} />
         </div>

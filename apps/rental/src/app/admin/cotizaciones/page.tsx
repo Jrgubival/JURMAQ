@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ErrorCarga from '@/components/admin/ErrorCarga';
 import { formatCLP } from '@jurmaq/shared/format';
 import { escapeOrFilter } from '@jurmaq/shared/sanitize';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
@@ -24,7 +25,7 @@ export default async function Cotizaciones({ searchParams }: { searchParams: Pro
   if ((ESTADOS_COTIZACION as readonly string[]).includes(estado)) consulta = consulta.eq('estado', estado);
   if (FECHA.test(desde)) consulta = consulta.gte('fecha_emision', desde);
   if (FECHA.test(hasta)) consulta = consulta.lte('fecha_emision', hasta);
-  const { data } = await consulta;
+  const { data, error } = await consulta;
 
   return (
     <>
@@ -42,7 +43,7 @@ export default async function Cotizaciones({ searchParams }: { searchParams: Pro
         <label className="text-lg">Desde<input name="desde" type="date" className="campo mt-1" defaultValue={FECHA.test(desde) ? desde : ''} /></label>
         <label className="text-lg">Hasta<input name="hasta" type="date" className="campo mt-1" defaultValue={FECHA.test(hasta) ? hasta : ''} /></label>
       </form>
-      {(data ?? []).length === 0 ? <p className="mt-6 text-ink-muted">No hay cotizaciones.</p> : (
+      {error ? <ErrorCarga /> : (data ?? []).length === 0 ? <p className="mt-6 text-ink-muted">No hay cotizaciones.</p> : (
         <ul className="mt-4 space-y-2">
           {(data ?? []).map((c) => (
             <li key={c.id}>

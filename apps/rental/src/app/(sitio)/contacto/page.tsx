@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import CabezaPagina from '@/components/CabezaPagina';
+import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
+import { jsonLdNegocio } from '@/lib/jsonld';
 import { SITIO, enlaceWhatsapp } from '@/lib/sitio';
 
 export const metadata: Metadata = {
@@ -11,6 +13,7 @@ export const metadata: Metadata = {
 export default function Contacto() {
   return (
     <div className="sobre-claro">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdNegocio([])) }} />
       <CabezaPagina migas={[{ nombre: 'Contacto' }]} titulo="Hablemos de tu obra" />
       <div className="mx-auto max-w-[1320px] px-4 py-12 md:px-8 md:py-20">
       <a href={enlaceWhatsapp('Hola, quiero cotizar el arriendo de una máquina.')} rel="noopener" className="boton boton-principal w-full md:w-auto">Escribir por WhatsApp</a>

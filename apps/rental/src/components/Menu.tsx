@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { ENLACES } from '@/lib/enlaces';
+import { SITIO } from '@/lib/sitio';
 
 export default function Menu() {
   const [abierto, setAbierto] = useState(false);
@@ -38,6 +39,7 @@ export default function Menu() {
           ))}
         </ul>
         <Link href="/cotizar-arriendo" prefetch={false} className="boton boton-principal mt-6 w-full" onClick={() => setAbierto(false)}>Cotizar</Link>
+        <a href={`tel:${SITIO.telefono}`} className="boton boton-secundario mt-2 w-full">Llamar {SITIO.telefonoVisible}</a>
       </nav>
     </div>
   );

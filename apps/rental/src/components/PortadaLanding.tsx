@@ -1,5 +1,6 @@
 import type { Maquina } from '@/lib/maquinas';
 import { AccionesContacto } from './AccionesContacto';
+import { variantes } from './Foto';
 import Migas from './Migas';
 
 /** Portada de landing: foto de la flota a lo ancho y titular grande. */
@@ -18,7 +19,7 @@ export default function PortadaLanding({ migas, titulo, bajada, foto, cotizar, t
     <section className="relative isolate overflow-hidden bg-negro text-white">
       {foto?.fotos[0] ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={foto.fotos[0]} alt={foto.nombre} width={1600} height={900} fetchPriority="high" className={`foto-hero absolute inset-0 -z-20 h-full w-full object-cover ${angosta ? 'md:left-auto md:right-0 md:w-1/2' : ''}`} />
+        <img src={foto.fotos[0]} alt={foto.nombre} {...variantes(foto.fotos[0], '100vw')} width={1600} height={900} fetchPriority="high" className={`foto-hero absolute inset-0 -z-20 h-full w-full object-cover ${angosta ? 'md:left-auto md:right-0 md:w-1/2' : ''}`} />
       ) : null}
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-negro/95 via-negro/70 to-negro/35 md:bg-gradient-to-r md:from-negro/90 md:via-negro/60 md:to-negro/10" />
       {foto?.fotoReferencial ? <span className="absolute bottom-3 right-3 bg-negro/75 px-2 py-1 text-xs">Imagen referencial</span> : null}

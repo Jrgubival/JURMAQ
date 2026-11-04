@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Plus, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { BarraMovil } from '@/components/AccionesContacto';
-import Foto from '@/components/Foto';
+import Foto, { variantes } from '@/components/Foto';
 import TarjetaMaquina from '@/components/TarjetaMaquina';
 import { COMUNAS } from '@/data/comunas';
 import { obtenerFlota } from '@/lib/flota';
@@ -15,7 +15,7 @@ export const revalidate = 2592000;
 
 export const metadata: Metadata = {
   title: 'Arriendo de Maquinaria en Curicó, Molina y Talca · JURMAQ',
-  description: 'Arriendo de retroexcavadora, miniexcavadora, minicargador, camión tolva, brazo articulado y alzahombre en toda la Región del Maule. Valores a la vista. Desde 2000.',
+  description: 'Arriendo de retroexcavadora, miniexcavadora, minicargador, camión tolva y equipos de altura en la Región del Maule. Desde 2000.',
   alternates: { canonical: SITIO.url },
 };
 
@@ -59,7 +59,7 @@ export default async function Inicio() {
         {heroe?.fotos[0] ? (
           <div className="relative aspect-[3/2] md:absolute md:inset-y-0 md:right-0 md:-z-10 md:aspect-auto md:w-[62%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={heroe.fotos[0]} alt={heroe.nombre} width={1600} height={1066} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
+            <img src={heroe.fotos[0]} alt={heroe.nombre} {...variantes(heroe.fotos[0], '(min-width: 768px) 62vw, 100vw')} width={1600} height={1066} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
             <div aria-hidden className="absolute inset-0 hidden bg-gradient-to-r from-negro via-negro/30 to-transparent md:block" />
             {heroe.fotoReferencial ? <span className="absolute bottom-2 right-2 bg-negro/80 px-2 py-1 text-xs">Imagen referencial</span> : null}
           </div>
@@ -85,11 +85,11 @@ export default async function Inicio() {
           </ul>
         </div>
         <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {seis.map((m, i) => <TarjetaMaquina key={m.id} maquina={m} prioridad={i < 2} />)}
+          {seis.map((m) => <TarjetaMaquina key={m.id} maquina={m} />)}
         </div>
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <p className="text-[0.9375rem] text-ink-soft">Valores netos + IVA. Consulta disponibilidad, mínimo y traslado.</p>
-          <Link href="/maquinarias" prefetch={false} className="font-semibold text-acento-texto underline underline-offset-4">Ver toda la flota</Link>
+          <Link href="/maquinarias" prefetch={false} className="inline-flex min-h-11 items-center font-semibold text-acento-texto underline underline-offset-4">Ver toda la flota</Link>
         </div>
       </section>
 
@@ -100,7 +100,7 @@ export default async function Inicio() {
             <h2 id="zona" className="grande">Arriendo de maquinaria en Molina y Curicó</h2>
             <p className="mt-4 max-w-[52ch] text-lg text-ink-soft">Arrendamos para obras civiles, faenas agrícolas e industriales desde nuestra base en Maquehua, Curicó.</p>
             <p className="mt-3 max-w-[52ch] text-lg text-ink-soft">Cuéntanos dónde es el trabajo y te cotizamos el equipo y el traslado.</p>
-            <p className="mt-5"><Link href="/arriendo-en/molina" prefetch={false} className="font-semibold underline underline-offset-4">Molina</Link> <span className="px-1 text-ink-muted">y</span> <Link href="/arriendo-en/curico" prefetch={false} className="font-semibold underline underline-offset-4">Curicó</Link></p>
+            <p className="mt-5"><Link href="/arriendo-en/molina" prefetch={false} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Molina</Link> <span className="px-1 text-ink-muted">y</span> <Link href="/arriendo-en/curico" prefetch={false} className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Curicó</Link></p>
           </div>
         </div>
       </section>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { formatCLP } from '@jurmaq/shared/format';
 import { calcularTotales } from '@/lib/cotizacion';
@@ -25,6 +25,16 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
   const [numero, setNumero] = useState('');
+  const [errores, setErrores] = useState<Record<string, string>>({});
+  const confirmacion = useRef<HTMLDivElement>(null);
+  const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Santiago' });
+
+  // La confirmación reemplaza un formulario largo: sin esto queda fuera de la vista.
+  useEffect(() => {
+    if (!numero) return;
+    confirmacion.current?.scrollIntoView({ block: 'center' });
+    confirmacion.current?.focus();
+  }, [numero]);
 
   const maquina = useMemo(() => flota.find((m) => m.id === maquinaId) ?? null, [flota, maquinaId]);
   const unidades: Unidad[] = maquina?.precios.length ? maquina.precios.map((p) => p.unidad) : ['dia', 'semana', 'mes'];
@@ -52,9 +62,45 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
     ? calcularTotales([{ tipo: 'maquina', cantidad: aplicada, precio_unitario: precio.valor }], 0).neto
     : 0;
 
+  const minimo = unidad === 'hora' ? (maquina?.minimoUnidades ?? 1) : 1;
+
+  function revisar(campo: string, valor: string): string {
+    if (campo === 'maquina') return valor ? '' : 'Elige una máquina.';
+    if (campo === 'cantidad') return Number(valor) > 0 ? '' : 'Indica cuánto tiempo.';
+    if (campo === 'lugar') return valor.trim().length >= 2 ? '' : 'Indica la comuna o dirección.';
+    if (campo === 'fecha') {
+      if (!valor) return 'Elige la fecha de inicio.';
+      return valor < hoy ? 'Esa fecha ya pasó.' : '';
+    }
+    if (campo === 'nombre') return valor.trim().length >= 2 ? '' : 'Escribe tu nombre.';
+    if (campo === 'telefono') return /^[0-9+ ()-]{8,30}$/.test(valor.trim()) ? '' : 'Escribe un teléfono, por ejemplo +56 9 1234 5678.';
+    if (campo === 'correo') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor.trim()) ? '' : 'Escribe un correo válido.';
+    return '';
+  }
+
+  function alSalir(campo: string, valor: string) {
+    setErrores((x) => ({ ...x, [campo]: revisar(campo, valor) }));
+  }
+
+  function aviso(campo: string) {
+    return errores[campo] ? <p id={`${campo}-error`} className="mt-1 text-[0.9375rem] font-medium text-peligro">{errores[campo]}</p> : null;
+  }
+
+  function aria(campo: string) {
+    return errores[campo] ? { 'aria-invalid': true, 'aria-describedby': `${campo}-error` } : {};
+  }
+
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    const valores: Record<string, string> = { maquina: String(maquinaId), cantidad, lugar, fecha, nombre, telefono, correo };
+    const nuevos = Object.fromEntries(Object.entries(valores).map(([c, v]) => [c, revisar(c, v)]));
+    setErrores(nuevos);
+    const primero = Object.keys(valores).find((c) => nuevos[c]);
+    if (primero) {
+      document.getElementById(primero)?.focus();
+      return;
+    }
     setEnviando(true);
     try {
       const r = await fetch('/api/cotizar-arriendo', {
@@ -77,7 +123,7 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
 
   if (numero) {
     return (
-      <div className="mt-8 max-w-2xl bg-surface-alt p-6 text-ink" role="status">
+      <div ref={confirmacion} tabIndex={-1} className="mt-8 max-w-2xl bg-surface-alt p-6 text-ink outline-none" role="status">
         <h2 className="text-3xl">Recibimos tu solicitud</h2>
         <p className="mt-2">Tu número es <strong>{numero}</strong>. Te contactamos con la cotización.</p>
       </div>
@@ -87,20 +133,22 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
   const wa = maquina ? `Hola, quiero cotizar el arriendo de ${maquina.nombre}${lugar ? ` en ${lugar}` : ''}.` : 'Hola, quiero cotizar el arriendo de una máquina.';
 
   return (
-    <form onSubmit={enviar} className="mt-8 grid gap-8 md:grid-cols-[1.25fr_1fr] md:gap-14">
+    <form onSubmit={enviar} noValidate className="mt-8 grid gap-8 md:grid-cols-[1.25fr_1fr] md:gap-14">
       <div className="space-y-5">
       <div>
         <label className="etiqueta" htmlFor="maquina">Máquina</label>
-        <select id="maquina" className="campo" required value={maquinaId} onChange={(e) => elegir(e.target.value ? Number(e.target.value) : '')}>
+        <select id="maquina" className="campo" {...aria('maquina')} value={maquinaId} onChange={(e) => { elegir(e.target.value ? Number(e.target.value) : ''); setErrores((x) => ({ ...x, maquina: '' })); }}>
           <option value="">Elige una máquina</option>
           {flota.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
         </select>
+        {aviso('maquina')}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="etiqueta" htmlFor="cantidad">Cuánto tiempo</label>
-          <input id="cantidad" className="campo" type="number" inputMode="decimal" min="0.5" max="999" step="0.5" required value={cantidad} onChange={(e) => setCantidad(e.target.value)} />
+          <input id="cantidad" className="campo" type="number" inputMode="decimal" min={minimo} max="999" step="0.5" {...aria('cantidad')} value={cantidad} onBlur={(e) => alSalir('cantidad', e.target.value)} onChange={(e) => setCantidad(e.target.value)} />
+          {aviso('cantidad')}
         </div>
         <div>
           <label className="etiqueta" htmlFor="unidad">Por</label>
@@ -109,33 +157,39 @@ export default function Cotizador({ flota }: { flota: Opcion[] }) {
           </select>
         </div>
       </div>
+      {n > 0 && n < minimo ? <p className="font-medium">Mínimo {minimo} horas: calculamos {minimo}.</p> : null}
       {neto > 0 ? <p aria-live="polite" className="font-semibold md:hidden">Referencia: {formatCLP(neto)} + IVA, sin traslado</p> : null}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="etiqueta" htmlFor="lugar">Comuna o dirección de la obra</label>
-          <input id="lugar" className="campo" required maxLength={200} autoComplete="street-address" value={lugar} onChange={(e) => setLugar(e.target.value)} />
+          <input id="lugar" className="campo" maxLength={200} autoComplete="street-address" value={lugar} onChange={(e) => setLugar(e.target.value)} {...aria('lugar')} onBlur={(e) => alSalir('lugar', e.target.value)} />
+          {aviso('lugar')}
         </div>
         <div>
           <label className="etiqueta" htmlFor="fecha">Fecha de inicio</label>
-          <input id="fecha" className="campo" type="date" required value={fecha} onChange={(e) => setFecha(e.target.value)} />
+          <input id="fecha" className="campo" type="date" min={hoy} value={fecha} onChange={(e) => setFecha(e.target.value)} {...aria('fecha')} onBlur={(e) => alSalir('fecha', e.target.value)} />
+          {aviso('fecha')}
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="etiqueta" htmlFor="nombre">Tu nombre</label>
-          <input id="nombre" className="campo" required maxLength={120} autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+          <input id="nombre" className="campo" maxLength={120} autoComplete="name" value={nombre} onChange={(e) => setNombre(e.target.value)} {...aria('nombre')} onBlur={(e) => alSalir('nombre', e.target.value)} />
+          {aviso('nombre')}
         </div>
         <div>
           <label className="etiqueta" htmlFor="telefono">Teléfono</label>
-          <input id="telefono" className="campo" type="tel" required maxLength={30} autoComplete="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+          <input id="telefono" className="campo" type="tel" maxLength={30} autoComplete="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} {...aria('telefono')} onBlur={(e) => alSalir('telefono', e.target.value)} />
+          {aviso('telefono')}
         </div>
       </div>
 
       <div>
         <label className="etiqueta" htmlFor="correo">Correo</label>
-        <input id="correo" className="campo" type="email" required maxLength={254} autoComplete="email" value={correo} onChange={(e) => setCorreo(e.target.value)} />
+        <input id="correo" className="campo" type="email" maxLength={254} autoComplete="email" value={correo} onChange={(e) => setCorreo(e.target.value)} {...aria('correo')} onBlur={(e) => alSalir('correo', e.target.value)} />
+          {aviso('correo')}
       </div>
 
       <div>

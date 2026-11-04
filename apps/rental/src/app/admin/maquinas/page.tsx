@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ErrorCarga from '@/components/admin/ErrorCarga';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { formatCLP } from '@jurmaq/shared/format';
 import { leerMaquina, textoPrecio } from '@/lib/maquinas';
@@ -7,7 +8,7 @@ import { exigirPermiso } from '@/lib/panel';
 
 export default async function Maquinas() {
   await exigirPermiso('maquinarias', 'read');
-  const { data } = await supabaseAdmin.from('maquinarias').select('*').order('id');
+  const { data, error } = await supabaseAdmin.from('maquinarias').select('*').order('id');
   const lista = (data ?? []).map((f) => leerMaquina(f as Record<string, unknown>));
   return (
     <>
@@ -15,6 +16,7 @@ export default async function Maquinas() {
         <h1 className="text-3xl">Máquinas</h1>
         <Link href="/admin/maquinas/nueva" prefetch={false} className="boton boton-principal">Agregar</Link>
       </div>
+      {error ? <ErrorCarga /> : null}
       <ul className="mt-4 space-y-2">
         {lista.map((m) => (
           <li key={m.id}>

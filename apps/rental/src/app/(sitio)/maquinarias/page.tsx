@@ -11,7 +11,7 @@ export const revalidate = 2592000;
 
 export const metadata: Metadata = {
   title: 'Maquinaria en arriendo: flota y valores · JURMAQ',
-  description: 'Flota de JURMAQ en la Región del Maule: valores referenciales por hora, día, semana o mes, y quién opera cada máquina.',
+  description: 'Flota de JURMAQ en la Región del Maule: valores referenciales por hora, día, semana o mes.',
   alternates: { canonical: `${SITIO.url}/maquinarias` },
 };
 
@@ -29,6 +29,7 @@ export default async function Catalogo() {
         </div>
       </div>
       <div className="mx-auto max-w-[1320px] py-1 md:px-8 md:py-8">
+        <h2 className="sr-only">Equipos disponibles</h2>
         <MosaicoFlota flota={flota} />
         <p className="mt-4 px-4 pb-10 text-sm text-ink-muted md:px-0">Valores referenciales y netos. El traslado se cotiza aparte.</p>
       </div>

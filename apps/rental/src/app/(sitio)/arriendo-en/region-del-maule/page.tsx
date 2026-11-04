@@ -27,7 +27,7 @@ export default async function RegionMaule() {
   return (
     <div className="sobre-claro">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdServicio('Arriendo de maquinaria en la Región del Maule', descripcion, url, SITIO.region)) }} />
-      <PortadaLanding migas={[{ nombre: 'Región del Maule' }]} titulo="Toda la Región del Maule" bajada="Arrendamos desde nuestra base en Maquehua, Curicó. El traslado se cotiza aparte según la comuna de la obra." foto={flota.find((m) => m.tipo === 'camion') ?? flota[0]} cotizar="/cotizar-arriendo" texto={texto} />
+      <PortadaLanding migas={[{ nombre: 'Región del Maule' }]} titulo="Arriendo de maquinaria en la Región del Maule" bajada="Arrendamos desde nuestra base en Maquehua, Curicó. El traslado se cotiza aparte según la comuna de la obra." foto={flota.find((m) => m.tipo === 'camion') ?? flota[0]} cotizar="/cotizar-arriendo" texto={texto} />
       <section className="bg-negro pb-14 text-white">
         <ul className="mx-auto grid max-w-[1320px] grid-cols-1 gap-px bg-white/15 sm:grid-cols-2 md:grid-cols-3">
           {COMUNAS.map((c) => (

@@ -11,6 +11,7 @@ import { obtenerFlota } from '@/lib/flota';
 import { jsonLdServicio } from '@/lib/jsonld';
 import { distanciaDesdeBase, tipoPorSlug } from '@/lib/landings';
 import { SITIO } from '@/lib/sitio';
+import { cortar } from '@/lib/texto';
 
 export const revalidate = 2592000;
 export const dynamicParams = false;
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const url = `${SITIO.url}/arriendo-en/${ciudad}/${tipo}`;
   return {
     title: `Arriendo de ${r.t.nombre} en ${r.c.nombre} · JURMAQ`,
-    description: `${r.t.nombrePlural} en arriendo para ${r.c.nombre}. ${r.t.descripcionCorta}`.slice(0, 158),
+    description: cortar(`${r.t.nombrePlural} en arriendo para ${r.c.nombre}. ${r.t.descripcionCorta} ${r.c.trabajos[0]} y más trabajos en la comuna.`),
     alternates: { canonical: url },
   };
 }
@@ -55,7 +56,7 @@ export default async function ArriendoCruce({ params }: Props) {
       <PortadaLanding migas={[{ nombre: c.nombre, href: `/arriendo-en/${c.slug}` }, { nombre: t.nombre }]} titulo={`Arriendo de ${t.nombre.toLowerCase()} en ${c.nombre}`} bajada={`${t.descripcionCorta} ${c.intro}`} foto={flota[0]} angosta={!['retroexcavadora', 'minicargador', 'camion-tolva'].includes(t.slug)} cotizar={cotizar} texto={texto} />
       <FlotaComuna flota={flota} titulo="En nuestra flota" />
       <TrabajosComuna comuna={c} km={distanciaDesdeBase(c.slug)?.km ?? null} />
-      <Preguntas preguntas={t.preguntasFrecuentes} />
+      <Preguntas preguntas={t.preguntasFrecuentes.map((p) => ({ q: p.q.replace('en Curicó', `en ${c.nombre}`), a: p.a }))} />
       <p className="mx-auto max-w-[900px] px-4 pb-14"><Link href={`/arriendo/${t.slug}`} prefetch={false} className="font-medium underline underline-offset-4">Arriendo de {t.nombrePlural.toLowerCase()} en toda la región</Link></p>
       <BarraMovil cotizar={cotizar} texto={texto} />
     </div>

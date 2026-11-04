@@ -14,6 +14,7 @@ import { jsonLdFicha } from '@/lib/jsonld';
 import { TIPOS } from '@/lib/landings';
 import { fichaHref, idDesdeSlug, textoPrecio } from '@/lib/maquinas';
 import { SITIO } from '@/lib/sitio';
+import { cortar } from '@/lib/texto';
 
 // dynamicParams queda activo sólo aquí: una máquina nueva del panel existe sin build.
 export const revalidate = 2592000;
@@ -37,8 +38,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const url = `${SITIO.url}${fichaHref(m)}`;
   const precio = m.precios[0] ? `: ${textoPrecio(m.precios[0], formatCLP)}` : '';
   return {
-    title: `${m.nombre} en arriendo${precio} · JURMAQ`,
-    description: `Arriendo de ${m.nombre} en Curicó, Molina, Talca y toda la Región del Maule. Valor referencial, condiciones y cotización.`,
+    title: `${m.nombre} en arriendo · JURMAQ`,
+    description: cortar(`Arriendo de ${m.nombre} en la Región del Maule${precio}. Curicó, Molina, Talca y más comunas.`),
     alternates: { canonical: url },
     openGraph: { title: `${m.nombre} en arriendo`, url, type: 'website', locale: 'es_CL', siteName: SITIO.nombre, images: m.fotos[0] ? [m.fotos[0]] : undefined },
   };

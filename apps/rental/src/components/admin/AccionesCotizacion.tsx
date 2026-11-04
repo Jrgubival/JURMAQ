@@ -77,13 +77,12 @@ export default function AccionesCotizacion({
       const destino = digitos.length === 9 ? `56${digitos}` : digitos;
       window.open(`https://wa.me/${destino}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
     }
-    if (estado === 'borrador') await marcar('enviada');
   });
 
   const porCorreo = () => correr(async () => {
     descargar(await archivo());
-    window.location.href = `mailto:${correo ?? ''}?subject=${encodeURIComponent(`Cotización N.º ${numero} · JURMAQ`)}&body=${encodeURIComponent(`${mensaje}\n\nVa adjunta en este correo.`)}`;
-    if (estado === 'borrador') await marcar('enviada');
+    setAviso('El PDF quedó en Descargas. Adjúntalo al correo antes de enviar.');
+    window.location.href = `mailto:${correo ?? ''}?subject=${encodeURIComponent(`Cotización N.º ${numero} · JURMAQ`)}&body=${encodeURIComponent(mensaje)}`;
   });
 
   const duplicar = () => correr(async () => {
@@ -95,11 +94,12 @@ export default function AccionesCotizacion({
 
   return (
     <div className="mt-6 space-y-3">
-      <button type="button" className="boton boton-principal w-full" disabled={ocupado} onClick={compartir}>Enviar por WhatsApp</button>
-      <div className="grid grid-cols-2 gap-3">
+      <button type="button" className="boton boton-principal w-full" disabled={ocupado} onClick={compartir}>Compartir por WhatsApp</button>
+      <div className="grid gap-3 sm:grid-cols-2">
         <button type="button" className="boton boton-suave" disabled={ocupado} onClick={porCorreo}>Enviar por correo</button>
         <button type="button" className="boton boton-suave" disabled={ocupado} onClick={() => correr(async () => descargar(await archivo()))}>Descargar PDF</button>
       </div>
+      {estado === 'borrador' ? <button type="button" className="boton boton-secundario w-full" disabled={ocupado} onClick={() => correr(async () => { await marcar('enviada'); setAviso('Marcada como enviada'); })}>Ya la envié</button> : null}
       <button type="button" className="boton boton-suave w-full" disabled={ocupado} onClick={duplicar}>Duplicar</button>
       <div>
         <label className="etiqueta" htmlFor="estado">Estado</label>

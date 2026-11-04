@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ESTADOS_MAQUINA, TIPOS_PANEL } from '@/lib/opciones';
 import { UNIDADES, UNIDAD_LABEL, type Maquina, type PrecioPeriodo, type Unidad } from '@/lib/maquinas';
@@ -37,6 +37,17 @@ export default function FormMaquina({ maquina }: { maquina?: Maquina }) {
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
   const [guardado, setGuardado] = useState(false);
+
+  // Avisa si se cierra con cambios sin guardar.
+  const estadoActual = JSON.stringify({ nombre, tipo, descripcion, estado, publicada, referencial, fotos, precios });
+  const guardadoRef = useRef(estadoActual);
+  const sucio = estadoActual !== guardadoRef.current;
+  useEffect(() => {
+    if (!sucio) return;
+    const avisar = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', avisar);
+    return () => window.removeEventListener('beforeunload', avisar);
+  }, [sucio]);
 
   const libres = UNIDADES.filter((u) => !precios.some((p) => p.unidad === u));
 
@@ -94,9 +105,11 @@ export default function FormMaquina({ maquina }: { maquina?: Maquina }) {
         return;
       }
       if (!maquina && d.id) {
+        guardadoRef.current = estadoActual;
         router.push(`/admin/maquinas/${d.id}`);
         return;
       }
+      guardadoRef.current = estadoActual;
       setGuardado(true);
       router.refresh();
     } catch {
@@ -147,7 +160,7 @@ export default function FormMaquina({ maquina }: { maquina?: Maquina }) {
               </div>
               <label className="etiqueta mt-3" htmlFor={`in-${i}`}>Qué incluye</label>
               <input id={`in-${i}`} className="campo" maxLength={160} placeholder="Ej: mínimo 6 horas" value={p.incluye} onChange={(e) => cambiarPrecio(i, { incluye: e.target.value })} />
-              <button type="button" className="mt-2 text-lg underline underline-offset-4" onClick={() => { if (window.confirm('¿Quitar este valor?')) setPrecios((l) => l.filter((_, j) => j !== i)); }}>Quitar</button>
+              <button type="button" className="mt-1 min-h-12 px-2 text-lg underline underline-offset-4" onClick={() => { if (window.confirm('¿Quitar este valor?')) setPrecios((l) => l.filter((_, j) => j !== i)); }}>Quitar</button>
             </li>
           ))}
         </ul>
@@ -165,8 +178,8 @@ export default function FormMaquina({ maquina }: { maquina?: Maquina }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={f} alt={`Foto ${i + 1}`} className="aspect-[4/3] w-full rounded object-cover" />
               <div className="mt-2 flex justify-between text-lg">
-                {i > 0 ? <button type="button" className="underline underline-offset-4" onClick={() => setFotos((l) => [f, ...l.filter((x) => x !== f)])}>Principal</button> : <span>Principal</span>}
-                <button type="button" className="underline underline-offset-4" onClick={() => { if (window.confirm('¿Quitar esta foto?')) setFotos((l) => l.filter((x) => x !== f)); }}>Quitar</button>
+                {i > 0 ? <button type="button" className="min-h-12 px-2 underline underline-offset-4" onClick={() => setFotos((l) => [f, ...l.filter((x) => x !== f)])}>Principal</button> : <span>Principal</span>}
+                <button type="button" className="min-h-12 px-2 underline underline-offset-4" onClick={() => { if (window.confirm('¿Quitar esta foto?')) setFotos((l) => l.filter((x) => x !== f)); }}>Quitar</button>
               </div>
             </li>
           ))}
@@ -188,7 +201,9 @@ export default function FormMaquina({ maquina }: { maquina?: Maquina }) {
 
       {error ? <p role="alert" className="font-medium text-peligro">{error}</p> : null}
       {guardado ? <p role="status" className="font-medium text-exito">{publicada ? 'Guardado y publicado.' : 'Guardado. No se muestra en el sitio.'}</p> : null}
-      <button type="submit" className="boton boton-principal w-full" disabled={guardando || subiendo}>{guardando ? 'Guardando…' : 'Guardar'}</button>
+      <div className="sticky bottom-3 z-10 bg-canvas pt-2">
+        <button type="submit" className="boton boton-principal w-full" disabled={guardando || subiendo}>{guardando ? 'Guardando…' : 'Guardar'}</button>
+      </div>
     </form>
   );
 }

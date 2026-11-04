@@ -230,7 +230,7 @@ export const RECURSOS: RecursoSEO[] = [
     slug: 'arriendo-miniexcavadora-xcmg-xe35u',
     titulo: 'Arriendo Miniexcavadora XCMG XE35U en Curicó y Maule',
     descripcionMeta:
-      'Arriendo de miniexcavadora XCMG XE35U (3,5 ton) en Curicó, Molina, Talca y el Maule. Excava 3,1 m. Operador incluido en la tarifa. Cotiza por WhatsApp.',
+      'Arriendo de miniexcavadora XCMG XE35U (3,5 ton) en Curicó, Molina, Talca y el Maule. Excava 3,1 m. Con operador. Cotiza por WhatsApp.',
     h1: 'Arriendo de Miniexcavadora XCMG XE35U en la Región del Maule',
     resumen:
       'La miniexcavadora XCMG XE35U es un equipo de 3,5 toneladas que excava hasta ~3,1 m de profundidad y entra por pasajes angostos donde una retroexcavadora no cabe. JURMAQ la arrienda con operador incluido en la tarifa en Curicó, Molina, Teno, Talca, Linares y toda la Región del Maule.',

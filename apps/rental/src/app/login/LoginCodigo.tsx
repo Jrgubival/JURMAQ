@@ -98,7 +98,7 @@ export default function LoginCodigo({ callbackUrl }: { callbackUrl: string }) {
   }
 
   return (
-    <div className="bg-negro min-h-[100dvh] flex flex-col items-center justify-center px-4 py-10 sm:py-16">
+    <div className="panel bg-negro min-h-[100dvh] flex flex-col items-center justify-center px-4 py-10 sm:py-16">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <p className="text-3xl font-extrabold text-white tracking-tight">
@@ -111,11 +111,11 @@ export default function LoginCodigo({ callbackUrl }: { callbackUrl: string }) {
           {paso === 'correo' ? (
             <form onSubmit={enviarCorreo} noValidate className="space-y-5">
               <div>
-                <h1 className="text-lg font-bold text-ink">Entrar al panel</h1>
-                <p className="text-sm text-ink-muted mt-1">Te mandamos un código a tu correo. Sin contraseña.</p>
+                <h1 className="text-2xl font-bold text-ink">Entrar al panel</h1>
+                <p className="text-lg text-ink-muted mt-1">Te mandamos un código a tu correo. Sin contraseña.</p>
               </div>
               <div>
-                <label htmlFor="login-correo" className="block text-sm font-medium text-ink mb-1.5">
+                <label htmlFor="login-correo" className="block text-lg font-medium text-ink mb-1.5">
                   Correo
                 </label>
                 <input
@@ -153,14 +153,14 @@ export default function LoginCodigo({ callbackUrl }: { callbackUrl: string }) {
               className="space-y-5"
             >
               <div>
-                <h1 className="text-lg font-bold text-ink">Revisa tu correo</h1>
-                <p className="text-sm text-ink-muted mt-1" aria-live="polite">
+                <h1 className="text-2xl font-bold text-ink">Revisa tu correo</h1>
+                <p className="text-lg text-ink-muted mt-1" aria-live="polite">
                   {aviso} Sirve por 10 minutos.
                 </p>
-                <p className="text-sm text-ink font-medium mt-1 break-all">{email.trim().toLowerCase()}</p>
+                <p className="text-lg text-ink font-medium mt-1 break-all">{email.trim().toLowerCase()}</p>
               </div>
               <div>
-                <label htmlFor="login-codigo" className="block text-sm font-medium text-ink mb-1.5">
+                <label htmlFor="login-codigo" className="block text-lg font-medium text-ink mb-1.5">
                   Código de 6 números
                 </label>
                 <input

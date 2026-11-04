@@ -7,7 +7,12 @@ import Foto from './Foto';
 function Desde({ maquina }: { maquina: Maquina }) {
   const p = maquina.precios[0];
   if (!p) return <p className="font-semibold">Valor a cotizar</p>;
-  return <p>Desde <span className="font-semibold">{formatCLP(p.valor)}</span> / {UNIDAD_LABEL[p.unidad].uno}</p>;
+  return (
+    <>
+      <p>Desde <span className="font-semibold">{formatCLP(p.valor)}</span> + IVA / {UNIDAD_LABEL[p.unidad].uno}</p>
+      {p.incluye ? <p className="text-[0.9375rem] text-ink-muted">{p.incluye}</p> : null}
+    </>
+  );
 }
 
 export default function TarjetaMaquina({ maquina, prioridad = false }: { maquina: Maquina; prioridad?: boolean }) {

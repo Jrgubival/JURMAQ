@@ -27,7 +27,7 @@ export function PestanasArriba() {
 /** Se oculta al llenar un formulario: ahí manda el botón Guardar. */
 export function PestanasAbajo() {
   const ruta = usePathname();
-  if (/\/(nueva|editar)$/.test(ruta)) return null;
+  if (/\/(nueva|editar)$/.test(ruta) || /\/maquinas\/[^/]+$/.test(ruta)) return null;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-3 border-t border-hairline bg-surface pb-[env(safe-area-inset-bottom)] md:hidden" aria-label="Panel">
       {PESTANAS.map((p) => (
