@@ -1,6 +1,6 @@
 import type { Maquina } from '@/lib/maquinas';
 import { AccionesContacto } from './AccionesContacto';
-import { variantes } from './Foto';
+import { heroAncho, variantesHero } from './Foto';
 import Migas from './Migas';
 
 /** Portada de landing: foto de la flota a lo ancho y titular grande. */
@@ -15,13 +15,15 @@ export default function PortadaLanding({ migas, titulo, bajada, foto, cotizar, t
   /** Foto de poca resolución: en escritorio ocupa sólo media portada. */
   angosta?: boolean;
 }) {
+  // Una foto sin versión de 2400 px nunca se estira a todo el ancho: va dividida.
+  const dividida = angosta || !heroAncho(foto?.fotos[0]);
   return (
     <section className="relative isolate overflow-hidden bg-negro text-white">
       {foto?.fotos[0] ? (
         // La foto angosta se funde con el marino: sin borde duro entre panel y foto.
-        <div className={`absolute inset-0 -z-20 overflow-hidden ${angosta ? 'md:left-auto md:w-[60%] md:[mask-image:linear-gradient(to_right,transparent,black_38%)]' : ''}`}>
+        <div className={`absolute inset-0 -z-20 overflow-hidden ${dividida ? 'md:left-auto md:w-[60%] md:[mask-image:linear-gradient(to_right,transparent,black_38%)]' : ''}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={foto.fotos[0]} alt={foto.nombre} {...variantes(foto.fotos[0], angosta ? '(min-width: 768px) 60vw, 100vw' : '100vw')} width={1600} height={900} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
+          <img src={foto.fotos[0]} alt={foto.nombre} {...variantesHero(foto.fotos[0], dividida ? '(min-width: 768px) 60vw, 100vw' : '100vw')} width={1600} height={900} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
         </div>
       ) : null}
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-negro/95 via-negro/70 to-negro/35 md:bg-gradient-to-r md:from-negro md:via-negro/70 md:to-negro/10" />

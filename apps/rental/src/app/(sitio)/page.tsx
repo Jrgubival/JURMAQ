@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Plus, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { BarraMovil } from '@/components/AccionesContacto';
-import Foto, { variantes } from '@/components/Foto';
+import Foto, { variantesHero } from '@/components/Foto';
 import TarjetaMaquina from '@/components/TarjetaMaquina';
 import { COMUNAS } from '@/data/comunas';
 import { obtenerFlota } from '@/lib/flota';
@@ -59,7 +59,7 @@ export default async function Inicio() {
         {heroe?.fotos[0] ? (
           <div className="relative aspect-[3/2] overflow-hidden [mask-image:linear-gradient(to_bottom,black_72%,transparent)] md:absolute md:inset-y-0 md:right-0 md:-z-10 md:aspect-auto md:w-[62%] md:[mask-image:linear-gradient(to_right,transparent,black_40%)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={heroe.fotos[0]} alt={heroe.nombre} {...variantes(heroe.fotos[0], '(min-width: 768px) 62vw, 100vw')} width={1600} height={1066} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
+            <img src={heroe.fotos[0]} alt={heroe.nombre} {...variantesHero(heroe.fotos[0], '(min-width: 768px) 62vw, 100vw')} width={1600} height={1066} fetchPriority="high" className="foto-hero h-full w-full object-cover" />
             {heroe.fotoReferencial ? <span className="absolute right-3 top-3 rounded-full bg-negro/70 px-2.5 py-1 text-xs font-medium backdrop-blur-sm md:bottom-3 md:top-auto">Imagen referencial</span> : null}
           </div>
         ) : null}

@@ -17,6 +17,31 @@ export function variantes(src: string, sizes: string): { srcSet?: string; sizes?
   return { srcSet: `${chica} 800w, ${grande} ${ANCHO[m[1]]}w`, sizes };
 }
 
+/** Versiones WebP para portadas, sacadas de los masters (nunca agrandadas). */
+const HERO: Record<string, number[]> = {
+  'retroexcavadora-hmk-102b': [960, 1600, 2400], 'camion-tolva-vw-constellation': [960, 1600, 2400],
+  'minicargador-bobcat-s650': [960, 1600, 2400], 'minicargador-bobcat-s570': [960, 1600],
+  'plataforma-fullen-psc140': [960, 1600], 'plataforma-genie-gs1930': [960],
+  'brazo-articulado-jlg-e450aj': [960], 'miniexcavadora-xcmg-xe35u': [960],
+};
+const nombreDe = (src: string) => src.match(CON_VARIANTE)?.[1];
+
+/** Sólo las fotos con versión de 2400 px pueden ir a todo el ancho. */
+export function heroAncho(src?: string): boolean {
+  const n = src ? nombreDe(src) : undefined;
+  return !!n && (HERO[n] ?? []).includes(2400);
+}
+
+/** srcset de portada: WebP del master y, si es más grande, el JPG principal. */
+export function variantesHero(src: string, sizes: string): { srcSet?: string; sizes?: string } {
+  const n = nombreDe(src);
+  if (!n || !HERO[n]) return variantes(src, sizes);
+  const partes = HERO[n].map((w) => `/images/maquinarias/hero/${n}-${w}.webp ${w}w`);
+  const max = HERO[n][HERO[n].length - 1];
+  if (ANCHO[n] > max) partes.push(`${src.replace(/\.png$/, '.jpg')} ${ANCHO[n]}w`);
+  return { srcSet: partes.join(', '), sizes };
+}
+
 /** Foto de máquina. "Imagen referencial" va sobre la foto cuando no es de nuestra flota. */
 export default function Foto({
   maquina,
