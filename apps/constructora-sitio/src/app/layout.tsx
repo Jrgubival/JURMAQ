@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Oswald } from "next/font/google";
+import { Geist } from "next/font/google";
 import Cabecera from "@/components/Cabecera";
 import Movimiento from "@/components/Movimiento";
 import Pie from "@/components/Pie";
@@ -8,8 +8,6 @@ import "@jurmaq/shared/styles/grupo.css";
 import "./globals.css";
 
 const sans = Geist({ variable: "--font-sans", subsets: ["latin"], display: "swap" });
-const mono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"], display: "swap" });
-const titular = Oswald({ variable: "--font-titular", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITIO_URL),
@@ -28,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-CL" data-marca="constructora" className={`${sans.variable} ${mono.variable} ${titular.variable}`}>
+    <html lang="es-CL" data-marca="constructora" className={sans.variable}>
       <body>
         <a className="saltar" href="#contenido">
           Saltar al contenido

@@ -1,5 +1,6 @@
 /* Línea del grupo en grupo.css. Aquí va la constructora: marino, dorado como
-   acento y fotos reales de obra. Oswald queda para las cifras grandes. */
+   acento y fotos reales de obra. Letra igual a barraca.jurmaq.cl: Geist en todo,
+   títulos en 800 con -0.025em. */
 :root {
   --fondo: var(--g-fondo);
   --tinta: var(--g-tinta);
@@ -16,7 +17,7 @@
   --ancho: 1320px;
   --ease-out: var(--g-ease-out);
   --sans: var(--g-sans);
-  --titular: var(--g-titular);
+  --font-titular: var(--font-sans);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -33,7 +34,7 @@ body {
 img { display: block; max-width: 100%; height: auto; }
 a { color: inherit; text-underline-offset: 4px; }
 ::selection { background: var(--oro); color: var(--noche); }
-h1, h2, h3 { font-family: var(--sans); font-weight: 700; line-height: 1.08; letter-spacing: -0.025em; margin: 0; text-wrap: balance; color: inherit; }
+h1, h2, h3 { font-family: var(--sans); font-weight: 800; line-height: 1.08; letter-spacing: -0.025em; margin: 0; text-wrap: balance; color: inherit; }
 h1 { font-size: clamp(2.5rem, 5.6vw, 4.6rem); }
 h2 { font-size: clamp(1.9rem, 3.4vw, 2.8rem); }
 p { margin: 0; text-wrap: pretty; }
@@ -50,8 +51,8 @@ button { font: inherit; color: inherit; }
 /* Cabecera */
 .cabecera { position: sticky; top: 0; z-index: 20; background: var(--noche); color: #fff; }
 .cabecera-fila { display: flex; align-items: center; gap: 12px 36px; min-height: 76px; }
-.marca { text-decoration: none; margin-right: auto; font-size: 1.45rem; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
-.marca strong { font-weight: 700; }
+.marca { text-decoration: none; margin-right: auto; font-size: 1.45rem; font-weight: 800; letter-spacing: -0.025em; white-space: nowrap; }
+.marca strong { font-weight: 800; }
 .marca span { color: var(--oro); }
 .nav { display: flex; gap: 32px; font-size: 1rem; }
 .nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; border-bottom: 2px solid transparent; transition: color 150ms ease, border-color 150ms ease; }
@@ -86,7 +87,7 @@ button { font: inherit; color: inherit; }
   text-decoration-color: var(--oro); text-decoration-thickness: 2px; text-underline-offset: 6px; transition: color 150ms ease;
 }
 .enlace .flecha { color: var(--oro-texto); }
-.enlace-grande { font-size: clamp(1.3rem, 2.4vw, 1.75rem); font-weight: 700; letter-spacing: -0.02em; }
+.enlace-grande { font-size: clamp(1.3rem, 2.4vw, 1.75rem); font-weight: 800; letter-spacing: -0.02em; }
 @media (hover: hover) and (pointer: fine) {
   .nav a:hover { color: var(--oro); }
   .boton:hover { background: var(--oro-hover); border-color: var(--oro-hover); }
@@ -125,10 +126,10 @@ button { font: inherit; color: inherit; }
 .cifras { background: var(--noche); color: var(--claro); padding-block: clamp(72px, 10vw, 140px); }
 .cifras-grilla { display: grid; grid-template-columns: 5fr 6fr; gap: clamp(40px, 7vw, 110px); align-items: end; }
 .cifras h2 span { display: block; font-size: 0.17em; font-weight: 500; letter-spacing: 0; color: var(--oro); margin-bottom: 0.3em; }
-.cifras-ano { font-family: var(--titular); font-weight: 600; font-size: clamp(6rem, 15vw, 12rem); line-height: 0.92; letter-spacing: 0; }
+.cifras-ano { font-weight: 800; font-size: clamp(5.5rem, 13vw, 10.5rem); line-height: 0.95; letter-spacing: -0.04em; }
 .cifras-grilla p { color: var(--claro-2); max-width: 38ch; margin-top: 22px; }
 .montos li { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: baseline; padding-block: 12px; }
-.montos strong { font-family: var(--titular); font-weight: 600; font-size: clamp(1.9rem, 3.2vw, 2.7rem); line-height: 1.1; min-width: 6.4em; font-variant-numeric: tabular-nums; }
+.montos strong { font-weight: 800; letter-spacing: -0.03em; font-size: clamp(1.9rem, 3.2vw, 2.7rem); line-height: 1.1; min-width: 6.4em; font-variant-numeric: tabular-nums; }
 .montos li:first-child strong { font-size: clamp(3rem, 6.6vw, 5.5rem); color: var(--oro); min-width: 0; }
 .montos li:first-child { grid-template-columns: 1fr; gap: 2px; padding-top: 0; }
 .montos span { color: var(--claro-2); }
@@ -151,7 +152,7 @@ button { font: inherit; color: inherit; }
   display: grid; grid-template-columns: 48px minmax(0, 5fr) minmax(0, 6fr) 24px; gap: 4px 16px; align-items: center;
   min-height: 64px; padding-block: 12px; border-bottom: 1px solid var(--linea); text-decoration: none;
 }
-.especialidades strong { font-size: 1.12rem; font-weight: 700; letter-spacing: -0.01em; transition: color 150ms ease; }
+.especialidades strong { font-size: 1.12rem; font-weight: 800; letter-spacing: -0.02em; transition: color 150ms ease; }
 .numero { color: var(--oro-texto); font-weight: 700; font-variant-numeric: tabular-nums; }
 .detalle { color: var(--tenue); font-size: 0.97rem; }
 .especialidades .flecha { color: var(--oro-texto); }
@@ -182,7 +183,7 @@ button { font: inherit; color: inherit; }
 .obra::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(0deg, rgb(11 30 51 / 0.9) 0%, rgb(11 30 51 / 0.1) 60%); }
 .obra-texto { display: grid; gap: 4px; padding: clamp(18px, 2.2vw, 28px); }
 .obra-cliente { font-size: 0.93rem; color: #dfe5ea; }
-.obra-titulo { font-weight: 700; font-size: clamp(1.25rem, 2vw, 1.7rem); line-height: 1.15; letter-spacing: -0.02em; }
+.obra-titulo { font-weight: 800; font-size: clamp(1.25rem, 2vw, 1.7rem); line-height: 1.15; letter-spacing: -0.02em; }
 .obra-sin-foto { background: var(--noche); aspect-ratio: 16 / 6; }
 .obra-sin-foto::before { display: none; }
 
@@ -239,7 +240,7 @@ button { font: inherit; color: inherit; }
 
 /* Nosotros */
 .roles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 36px clamp(32px, 6vw, 96px); }
-.roles dt { font-weight: 700; font-size: clamp(1.2rem, 1.9vw, 1.5rem); letter-spacing: -0.015em; line-height: 1.2; }
+.roles dt { font-weight: 800; font-size: clamp(1.2rem, 1.9vw, 1.5rem); letter-spacing: -0.015em; line-height: 1.2; }
 .roles dd { margin-top: 8px; color: var(--tenue); max-width: 44ch; }
 .proceso { list-style: decimal inside; }
 .proceso li { font-weight: 600; font-size: clamp(1.05rem, 1.5vw, 1.2rem); padding-block: 9px; border-bottom: 1px solid var(--linea); }
@@ -263,7 +264,7 @@ button { font: inherit; color: inherit; }
 /* Pie */
 .pie { background: var(--noche); color: var(--claro-2); padding-block: 64px 32px; font-size: 0.97rem; }
 .pie-columnas { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; }
-.pie-marca { font-weight: 700; font-size: 1.6rem; color: #fff; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 8px; }
+.pie-marca { font-weight: 800; font-size: 1.6rem; color: #fff; letter-spacing: -0.025em; line-height: 1.2; margin-bottom: 8px; }
 .pie-marca span { color: var(--oro); }
 .pie h2 { font-family: var(--sans); font-size: 0.97rem; font-weight: 600; color: #fff; text-transform: none; margin-bottom: 8px; line-height: 1.6; }
 .pie li a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; }
