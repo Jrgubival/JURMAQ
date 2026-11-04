@@ -14,7 +14,8 @@
   ],
   "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
-  // Sin Custom Domain todavía: rental.jurmaq.cl se agrega con el OK de Jorge.
+  "routes": [{ "pattern": "rental.jurmaq.cl", "custom_domain": true }],
+  // workers.dev queda para pruebas: lleva X-Robots-Tag noindex (next.config.ts).
   "workers_dev": true,
   "vars": { "AUTH_SCOPE": "rental", "DESPLIEGUE": "cloudflare" },
   "observability": { "enabled": true }
