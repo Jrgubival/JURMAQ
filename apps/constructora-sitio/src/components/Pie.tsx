@@ -34,6 +34,7 @@ export default function Pie() {
     <div id="contacto">
       <PieGrupo
         negocio="Constructora"
+        sitio="constructora"
         texto="Obras civiles e industriales en Curicó y la Región del Maule."
         telefono={EMPRESA.telefono}
         telefonoDisplay={EMPRESA.telefonoVisible}
