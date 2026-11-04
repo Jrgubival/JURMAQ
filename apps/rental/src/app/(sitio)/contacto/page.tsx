@@ -22,7 +22,6 @@ export default function Contacto() {
         <p className="mt-3 text-lg"><a href={`mailto:${SITIO.correo}`} className="underline underline-offset-4">{SITIO.correo}</a></p>
         <p className="mt-3 text-lg">{SITIO.direccion}</p>
       </address>
-      <p className="mt-8 text-sm text-ink-muted">{SITIO.razonSocial}, RUT {SITIO.rut}</p>
       </div>
     </div>
   );
