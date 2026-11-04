@@ -1,21 +1,23 @@
+'use client';
+
+import type { ComponentProps } from 'react';
 import Link from 'next/link';
-import EnlacesNav from './EnlacesNav';
-import Menu from './Menu';
+import { usePathname } from 'next/navigation';
+import { CabeceraGrupo } from '@jurmaq/shared/ui/grupo';
+import { ENLACES } from '@/lib/enlaces';
+import { SITIO } from '@/lib/sitio';
+
+function Enlace(props: ComponentProps<typeof Link>) {
+  return <Link prefetch={false} {...props} />;
+}
 
 export default function Cabecera() {
+  const ruta = usePathname();
+  // `key` remonta la cabecera al navegar: así el menú de celular se cierra solo.
   return (
-    <header className="sticky top-0 z-30 bg-negro text-white">
-      <div className="mx-auto flex h-[68px] max-w-[1320px] items-center justify-between gap-4 px-4 md:px-8">
-        <Link href="/" prefetch={false} className="relative z-30 flex shrink-0 items-baseline">
-          <span className="text-2xl font-extrabold tracking-tight text-white lg:text-3xl">JURMAQ</span>
-          <span className="ml-1 text-lg font-semibold text-acento lg:text-xl">Arriendo</span>
-        </Link>
-        <nav aria-label="Principal" className="hidden items-center gap-7 md:flex">
-          <EnlacesNav />
-          <Link href="/cotizar-arriendo" prefetch={false} className="boton boton-principal !min-h-11">Cotizar</Link>
-        </nav>
-        <Menu />
-      </div>
-    </header>
+    <CabeceraGrupo key={ruta} negocio="Arriendo" enlaces={ENLACES} actual={ruta} Enlace={Enlace}>
+      <a href={`tel:${SITIO.telefono}`} className="solo-menu">Llamar {SITIO.telefonoVisible}</a>
+      <Enlace href="/cotizar-arriendo" className="g-boton">Cotizar</Enlace>
+    </CabeceraGrupo>
   );
 }
