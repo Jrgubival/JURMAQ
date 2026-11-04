@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = { themeColor: '#0b1f3a', width: 'device-width', initialScale: 1 };
+export const viewport: Viewport = { themeColor: '#081428', width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const ga = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();

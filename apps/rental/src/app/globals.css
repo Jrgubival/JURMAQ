@@ -7,9 +7,9 @@
    lleva texto marino (5,9:1). Sobre fondo claro, el texto usa --color-acento-texto. */
 :root {
   --g-arriendo: #f07a0e;
-  --marino: #0b1f3a;
+  --marino: #081428;
   --font-titular: var(--font-sans);
-  --g-tinta: #0b1f3a;
+  --g-tinta: #081428;
   --g-tinta-media: #2b3a50;
   --g-tinta-suave: #5a6778;
 }
@@ -31,7 +31,7 @@
   --color-acento: var(--g-arriendo);
   --color-acento-hondo: #ff8c2a;
   --color-acento-texto: #b85208;
-  --color-negro: #0b1f3a;
+  --color-negro: #081428;
   --color-peligro: #9f2f2d;
   --color-exito: #346538;
   --font-cifra: var(--font-mono), ui-monospace, monospace;
