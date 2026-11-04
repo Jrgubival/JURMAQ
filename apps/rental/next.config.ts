@@ -46,7 +46,15 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/(admin|login)(.*)",
-        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          // El panel depende de la sesión: nunca se guarda en ninguna caché.
+          { key: "Cache-Control", value: "private, no-store, max-age=0" },
+        ],
+      },
+      {
+        source: "/api/admin/:path*",
+        headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }],
       },
     ];
   },

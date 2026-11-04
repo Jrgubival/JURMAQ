@@ -281,12 +281,20 @@ export async function revisarSesionBarraca(id: unknown, email: unknown): Promise
   if (previo && previo.hasta > Date.now()) {
     return previo.usuario ? { estado: 'vigente', usuario: previo.usuario } : { estado: 'revocada' };
   }
-  let usuario: UsuarioBarraca | null;
-  try {
-    const u = await buscarUsuario(correo, { lanzarSiFalla: true });
-    usuario = u && u.id === id && ROLES_PANEL.has(u.role) ? u : null;
-  } catch {
-    return { estado: 'sin_verificar' };
+  let usuario: UsuarioBarraca | null = null;
+  // Un fallo breve de la base no debe costarle la sesión a nadie: se reintenta.
+  for (let intento = 1; ; intento++) {
+    try {
+      const u = await buscarUsuario(correo, { lanzarSiFalla: true });
+      usuario = u && u.id === id && ROLES_PANEL.has(u.role) ? u : null;
+      break;
+    } catch (e) {
+      if (intento >= 3) {
+        console.error('[sesion-sin-verificar]', { intentos: intento, error: e instanceof Error ? e.message : String((e as { message?: unknown })?.message ?? e) });
+        return { estado: 'sin_verificar' };
+      }
+      await new Promise((listo) => setTimeout(listo, 150 * intento));
+    }
   }
   cacheVigente.set(clave, { usuario, hasta: Date.now() + CACHE_VIGENTE_MS });
   return usuario ? { estado: 'vigente', usuario } : { estado: 'revocada' };

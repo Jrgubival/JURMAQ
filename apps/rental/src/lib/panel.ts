@@ -6,17 +6,30 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import type { CotizacionPdf } from './pdf-cotizacion';
 import type { TipoLinea, UnidadLinea } from './cotizacion';
 
-/** Para páginas del panel. Las rutas de API usan requirePermission en cada handler. */
+/**
+ * Para páginas del panel. Las rutas de API usan requirePermission en cada handler.
+ * Sólo una sesión que de verdad no existe (o fue revocada) va a salir: esa ruta
+ * borra la cookie, así que nunca debe usarse para un error pasajero.
+ */
 export async function exigirSesion() {
   const sesion = await auth();
-  if (!sesion?.user) redirect('/api/login/salir');
+  if (!sesion?.user) {
+    console.warn('[panel-sin-sesion]');
+    redirect('/api/login/salir');
+  }
   return sesion;
 }
 
 /** Las páginas leen con service_role: el permiso se revisa aquí, igual que en la API. */
 export async function exigirPermiso(modulo: Module, accion: Action) {
   const sesion = await exigirSesion();
-  if (!can((sesion.user as { role?: string }).role, modulo, accion)) redirect('/api/login/salir');
+  const rol = (sesion.user as { role?: string }).role;
+  if (!can(rol, modulo, accion)) {
+    // Sin rol = la base no respondió al revisar la sesión (revisarSesionBarraca).
+    // La sesión sigue viva: va a app/admin/error.tsx, que ofrece reintentar.
+    console.error('[panel-sin-permiso]', { rol: rol ?? 'sin_verificar', modulo, accion });
+    throw new Error('No se pudo comprobar el permiso.');
+  }
   return sesion;
 }
 

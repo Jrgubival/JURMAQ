@@ -3,6 +3,9 @@ import Link from 'next/link';
 import { PestanasAbajo, PestanasArriba } from '@/components/admin/PestanasPanel';
 import { exigirSesion } from '@/lib/panel';
 
+// Depende de la sesión de cada request: nunca se prerenderiza ni se cachea.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = { title: 'Panel · JURMAQ Arriendo', robots: { index: false, follow: false } };
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
