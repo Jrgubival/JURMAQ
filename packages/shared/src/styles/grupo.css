@@ -362,11 +362,8 @@ a.g-enlace.g-enlace.g-enlace {
 .g-piec ul { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
 .g-piec__enlace { color: #4a5565; font-size: 0.875rem; text-decoration: none; transition: color 150ms ease; }
 .g-piec__barra { border-top: 1px solid #e5e7eb; }
-.g-piec__legal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
+.g-piec__bajo {
+  display: grid;
   gap: 0.75rem;
   max-width: 80rem;
   margin: 0 auto;
@@ -375,6 +372,19 @@ a.g-enlace.g-enlace.g-enlace {
   font-size: 0.75rem;
   line-height: 1.6;
 }
+/* Franja "Grupo JURMAQ", la que tenía el pie de la barraca. */
+.g-piec__franja { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.25rem 0.5rem; }
+.g-piec__unidad { display: inline-flex; align-items: center; gap: 0.5rem; }
+.g-piec__punto { color: #1a3d72; }
+.g-piec__actual { color: #4a5565; }
+.g-piec__franja a { color: inherit; text-decoration: none; transition: color 150ms ease; }
+.g-piec__legal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
 .g-piec__legal p { margin: 0; text-align: center; }
 .g-piec__legales { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25rem 0.75rem; }
 .g-piec__legales a { color: inherit; text-decoration: none; transition: color 150ms ease; }
@@ -382,13 +392,15 @@ a.g-enlace.g-enlace.g-enlace {
 @media (min-width: 640px) {
   .g-piec__ancho { padding: 3rem 1.5rem 2.5rem; }
   .g-piec__grilla { grid-template-columns: repeat(2, 1fr); }
-  .g-piec__legal { flex-direction: row; padding: 1.5rem; }
+  .g-piec__bajo { padding: 1.5rem; }
+  .g-piec__franja { justify-content: flex-start; }
+  .g-piec__legal { flex-direction: row; }
   .g-piec__legal p { text-align: left; }
 }
 @media (min-width: 1024px) {
   .g-piec__ancho { padding: 3rem 2rem 2.5rem; }
   .g-piec__grilla { grid-template-columns: 1.2fr 1fr 1.3fr 1.3fr; }
-  .g-piec__legal { padding: 1.5rem 2rem; }
+  .g-piec__bajo { padding: 1.5rem 2rem; }
 }
 
 /* --- Pie legal ------------------------------------------------------ */
@@ -434,7 +446,7 @@ a.g-enlace.g-enlace.g-enlace {
   .g-franja a:hover { color: #ffffff; }
   .g-cab__enlace:hover { background: rgb(255 255 255 / 0.1); }
   .g-cab__panel a:hover { background: #f3f4f6; color: #081428; }
-  .g-piec__enlace:hover, .g-piec__legales a:hover, .g-piec__fuerte:hover { color: #081428; }
+  .g-piec__enlace:hover, .g-piec__legales a:hover, .g-piec__franja a:hover, .g-piec__fuerte:hover { color: #081428; }
 }
 
 @media (prefers-reduced-motion: reduce) {
