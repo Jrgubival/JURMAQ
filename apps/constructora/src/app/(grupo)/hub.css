@@ -201,16 +201,7 @@
   background: var(--acento);
   color: var(--sobre-acento);
 }
-.h-ficha p { margin: 0.75rem 0 0; max-width: 52ch; color: var(--g-tinta-media); line-height: 1.55; }
-.h-datos {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.25rem 1rem;
-  margin: 1rem 0;
-  font-size: 0.9375rem;
-}
-.h-datos dt { color: var(--g-tinta-suave); }
-.h-datos dd { margin: 0; }
+.h-ficha p { margin: 0.75rem 0 1rem; max-width: 52ch; color: var(--g-tinta-media); line-height: 1.55; }
 
 /* --- Contacto ------------------------------------------------------- */
 .h-contacto {

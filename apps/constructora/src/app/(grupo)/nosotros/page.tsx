@@ -46,7 +46,7 @@ export default function Nosotros() {
           <h1 className="g-display">Quiénes somos</h1>
           <p>
             JURMAQ trabaja en la Región del Maule desde 2000. Hoy son tres negocios, cada uno con
-            su sitio y sus datos legales.
+            su propio sitio.
           </p>
         </div>
       </section>
@@ -65,14 +65,6 @@ export default function Nosotros() {
               <div>
                 <h2><span>{f.titulo}</span></h2>
                 <p>{f.texto}</p>
-                <dl className="h-datos">
-                  <dt>Razón social</dt>
-                  <dd>{n.razonSocial}</dd>
-                  <dt>RUT</dt>
-                  <dd>{n.rut}</dd>
-                  <dt>Dirección</dt>
-                  <dd>{n.direccion}</dd>
-                </dl>
                 <a className="g-enlace" href={n.url}>{n.url.replace('https://', '')}</a>
               </div>
             </section>
