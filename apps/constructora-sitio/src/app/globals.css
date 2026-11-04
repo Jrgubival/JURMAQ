@@ -8,7 +8,7 @@
   --linea: #dfe0dd;
   --noche: #081428; /* Igual al header de barraca.jurmaq.cl. */
   --noche-2: #122238;
-  --oro: #e8b017;
+  --oro: var(--g-constructora);
   --oro-hover: #f3c33a;
   --oro-texto: #7a5a00; /* El dorado da 1,9:1 sobre blanco: como texto va este. */
   --gris-panel: #eceef0;
@@ -48,25 +48,8 @@ button { font: inherit; color: inherit; }
 .saltar:focus { top: 10px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* Cabecera */
-.cabecera { position: sticky; top: 0; z-index: 20; background: var(--noche); color: #fff; }
-.cabecera-fila { display: flex; align-items: center; gap: 12px 36px; min-height: 81px; }
-/* Misma marca que barraca.jurmaq.cl: JURMAQ 30/800, negocio 20/600 (24 y 18 en celular y pie). */
-.marca, .pie-marca { display: flex; align-items: baseline; gap: 4px; text-decoration: none; white-space: nowrap; }
-.marca { margin-right: auto; }
-.marca strong { font-size: 30px; font-weight: 800; letter-spacing: -0.75px; line-height: 36px; }
-.marca span { color: var(--oro); font-size: 20px; font-weight: 600; line-height: 28px; }
-.nav { display: flex; gap: 32px; font-size: 1rem; }
-.nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; border-bottom: 2px solid transparent; transition: color 150ms ease, border-color 150ms ease; }
-.nav a[aria-current="page"] { border-bottom-color: var(--oro); }
-.menu { display: none; position: relative; }
-.menu summary { list-style: none; cursor: pointer; display: flex; align-items: center; min-height: 44px; padding-inline: 4px; }
-.menu summary::-webkit-details-marker { display: none; }
-.menu nav {
-  position: absolute; right: 0; top: 52px; width: min(calc(100vw - 32px), 280px); background: var(--noche-2);
-  display: grid; padding: 8px 0; box-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
-}
-.menu a { padding: 13px 20px; text-decoration: none; }
+/* La cabecera y el pie vienen de @jurmaq/shared/ui/grupo. */
+.cabecera { display: contents; }
 
 /* Botones */
 .boton {
@@ -78,12 +61,10 @@ button { font: inherit; color: inherit; }
 .boton:active { transform: scale(0.97); }
 .boton:disabled { opacity: 0.6; cursor: default; }
 .boton-chico { min-height: 44px; padding: 0 14px; font-size: 0.97rem; }
-.boton-borde { background: transparent; color: #fff; }
 .boton-claro { background: rgb(8 20 40 / 0.4); color: #fff; border-color: rgb(255 255 255 / 0.7); }
 .boton-linea { background: transparent; color: var(--noche); border-color: var(--noche); }
 .acciones { display: flex; flex-wrap: wrap; gap: 12px; }
 .flecha { flex: none; transition: transform var(--g-hover) var(--ease-out); }
-.boton-borde .flecha { color: var(--oro); }
 .enlace {
   display: inline-flex; align-items: center; gap: 10px; min-height: 44px; width: fit-content; color: var(--noche); font-weight: 600;
   text-decoration-color: var(--oro); text-decoration-thickness: 2px; text-underline-offset: 6px; transition: color 150ms ease;
@@ -91,9 +72,8 @@ button { font: inherit; color: inherit; }
 .enlace .flecha { color: var(--oro-texto); }
 .enlace-grande { font-size: clamp(1.3rem, 2.4vw, 1.75rem); font-weight: 800; letter-spacing: -0.02em; }
 @media (hover: hover) and (pointer: fine) {
-  .nav a:hover { color: var(--oro); }
   .boton:hover { background: var(--oro-hover); border-color: var(--oro-hover); }
-  .boton-borde:hover, .boton-claro:hover { background: rgb(255 255 255 / 0.12); border-color: var(--oro); }
+  .boton-claro:hover { background: rgb(255 255 255 / 0.12); border-color: var(--oro); }
   .boton-linea:hover { background: var(--noche); color: #fff; border-color: var(--noche); }
   .enlace:hover .flecha, .especialidades a:hover .flecha, .boton:hover .flecha { transform: translateX(4px); }
   .especialidades a:hover strong { color: var(--oro-texto); }
@@ -263,38 +243,12 @@ button { font: inherit; color: inherit; }
 .mensaje-error { color: #a02c1e; }
 .mensaje-ok { padding: 16px 20px; background: var(--gris-panel); color: var(--noche); font-weight: 600; }
 
-/* Pie claro, con los colores medidos en barraca.jurmaq.cl. */
-.pie { background: #f4f5f7; border-top: 1px solid #e5e7eb; color: #4a5565; padding-block: 56px 28px; font-size: 14px; line-height: 1.6; }
-.pie-columnas { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; }
-.pie-marca { color: var(--noche); margin-bottom: 8px; }
-.pie-marca strong { font-size: 24px; font-weight: 800; letter-spacing: -0.6px; line-height: 32px; }
-.pie-marca span { color: var(--oro-texto); font-size: 18px; font-weight: 600; line-height: 28px; }
-.pie h2 { font-size: 14px; font-weight: 700; letter-spacing: 0; color: var(--noche); margin-bottom: 8px; line-height: 1.6; }
-.pie li a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; color: #4a5565; transition: color 150ms ease; }
-.pie a { text-decoration: none; }
-.pie a[href^="tel:"] { color: var(--noche); font-weight: 600; }
-.legal { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb; color: #6a7282; font-size: 12px; }
-.legal a { display: inline-block; min-height: 44px; line-height: 44px; margin-left: 12px; }
-@media (hover: hover) and (pointer: fine) {
-  .pie a:hover { color: var(--noche); }
-}
-
-@media (max-width: 1000px) {
-  .nav { display: none; }
-  .menu { display: block; }
-}
-@media (max-width: 640px) {
-  .marca strong { font-size: 24px; letter-spacing: -0.6px; line-height: 32px; }
-  .marca span { font-size: 18px; }
-}
 @media (max-width: 860px) {
   body { font-size: 17px; }
   .cifras-grilla, .servicios-grilla, .ficha-grilla, .roles, .dos-columnas, .recursos, .destacada { grid-template-columns: 1fr; }
   .especialidades a { grid-template-columns: 36px minmax(0, 1fr) 22px; }
   .especialidades .detalle { grid-column: 2; grid-row: 2; }
   .especialidades .flecha { grid-column: 3; grid-row: 1 / span 2; }
-  .pie-columnas { grid-template-columns: 1fr 1fr; }
-  .pie-columnas > :first-child { grid-column: span 2; }
   .logos { grid-template-columns: repeat(3, 1fr); }
   .logos img { scale: 0.82; }
   .mosaico, .mosaico-portada { grid-template-columns: 1fr; }
@@ -307,7 +261,6 @@ button { font: inherit; color: inherit; }
   .boton-formulario { width: 100%; }
 }
 @media (max-width: 480px) {
-  .cabecera .boton-chico { display: none; }
   .acciones .boton { flex: 1 1 auto; }
   .montos li { grid-template-columns: 1fr; gap: 0; }
 }
