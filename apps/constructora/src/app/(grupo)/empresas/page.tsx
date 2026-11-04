@@ -50,7 +50,7 @@ const EMPRESAS: {
     ],
     ir: 'Ver maquinaria',
     foto: '/images/grupo/arriendo-excavacion.webp',
-    alt: 'Retroexcavadora excavando en una obra de JURMAQ en Teno',
+    alt: 'Retroexcavadora HMK 102B del arriendo JURMAQ',
   },
   {
     negocio: 'constructora',
@@ -64,7 +64,7 @@ const EMPRESAS: {
     ],
     ir: 'Ver obras',
     foto: '/images/grupo/constructora-fachada.webp',
-    alt: 'Brazo articulado y trabajadores en el revestimiento de una bodega industrial',
+    alt: 'Brazo articulado en el revestimiento de una bodega industrial',
   },
 ];
 

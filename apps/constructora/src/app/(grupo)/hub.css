@@ -69,13 +69,23 @@
   overflow: hidden;
   background: var(--h-marino);
 }
-.h-portada__fondo img {
-  width: 100%;
-  height: 112%;
-  object-fit: cover;
-  object-position: 50% 20%;
-  opacity: 0.18;
-  mix-blend-mode: luminosity;
+/* Carrusel de fondo: fotos en color bajo un velo marino que asegura el
+   contraste del título (más denso a la izquierda, donde va el texto). */
+.h-lamina__foto {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.h-lamina__foto[data-activa="true"] { opacity: 1; }
+.h-lamina__foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; }
+.h-portada__fondo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(8 20 40 / 0.95) 0%, rgb(8 20 40 / 0.86) 50%, rgb(8 20 40 / 0.55) 100%),
+    linear-gradient(0deg, rgb(8 20 40 / 0.85) 0%, rgb(8 20 40 / 0) 40%);
 }
 .h-portada__ancho {
   max-width: var(--g-ancho);
@@ -94,7 +104,7 @@
 .h-empresas {
   display: grid;
   gap: 1.5rem;
-  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+  margin: clamp(2rem, 4vw, 3rem) 0 0;
   padding: 0;
   list-style: none;
   scroll-margin-top: 1rem;
@@ -172,6 +182,81 @@
 .h-empresa:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px var(--h-marino), var(--h-sombra-alta);
+}
+
+
+/* Frase y CTA de cada lámina: comparten una celda, así el alto no cambia. */
+.h-carrusel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 2rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.h-carrusel__frases { display: grid; flex: 1 1 28rem; max-width: 40rem; }
+.h-lamina {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 400ms ease, visibility 0s linear 400ms;
+}
+.h-lamina[data-activa="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 400ms ease 150ms, visibility 0s;
+}
+.h-lamina__negocio { margin: 0; color: var(--acento-texto); font-size: 0.875rem; font-weight: 700; }
+.h-lamina__frase {
+  margin: 0.5rem 0 1.5rem;
+  color: var(--g-tinta);
+  font-size: clamp(1.125rem, 1.8vw, 1.375rem);
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.h-lamina__ir { min-height: 48px; padding: 0 1.5rem; border-radius: var(--h-radio-boton); font-size: 1rem; }
+.h-carrusel__controles { display: flex; align-items: center; gap: 0.5rem; }
+.h-carrusel__flecha {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgb(244 243 240 / 0.28);
+  border-radius: 50%;
+  background: rgb(8 20 40 / 0.4);
+  color: #f4f3f0;
+  font-size: 1.125rem;
+  cursor: pointer;
+  transition: background-color var(--h-t) var(--h-ease), border-color var(--h-t) var(--h-ease);
+}
+.h-carrusel__puntos { display: flex; align-items: center; }
+.h-carrusel__punto {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.h-carrusel__punto span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgb(244 243 240 / 0.45);
+  transition: width var(--h-t) var(--h-ease), background-color var(--h-t) var(--h-ease);
+}
+.h-carrusel__punto[aria-current="true"] span { width: 24px; background: var(--acento); }
+.h-carrusel__flecha:focus-visible,
+.h-carrusel__punto:focus-visible,
+.h-lamina__ir:focus-visible { outline: 2px solid #f4f3f0; outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .h-carrusel__flecha:hover { background: rgb(244 243 240 / 0.14); border-color: rgb(244 243 240 / 0.5); }
+  .h-lamina__ir:hover { background: var(--acento-hover); border-color: var(--acento-hover); }
+  .h-lamina__ir:hover .h-flecha { transform: translateX(4px); }
 }
 
 /* --- Sección Nosotros de la portada --------------------------------- */
@@ -497,4 +582,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .h-empresa__foto img, .h-flecha { transition: none !important; transform: none !important; }
+  .h-lamina__foto, .h-lamina, .h-carrusel__punto span { transition: none !important; }
 }

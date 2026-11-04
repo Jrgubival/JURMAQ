@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import HeroPortada, { type Lamina } from './HeroPortada';
 import MovimientoPortada from './MovimientoPortada';
 import { CONTACTO_GRUPO, MarcaGrupo, NEGOCIOS, type Negocio } from '@jurmaq/shared/ui/grupo';
 
@@ -37,7 +38,7 @@ const EMPRESAS: {
     texto: 'Retroexcavadoras, minicargadores, camión tolva, brazo articulado y plataformas.',
     ir: 'Ver maquinaria',
     foto: '/images/grupo/arriendo-excavacion.webp',
-    alt: 'Retroexcavadora excavando en una obra de JURMAQ en Teno',
+    alt: 'Retroexcavadora HMK 102B del arriendo JURMAQ',
   },
   {
     negocio: 'constructora',
@@ -45,7 +46,35 @@ const EMPRESAS: {
     texto: 'Obras civiles e industriales en la Región del Maule.',
     ir: 'Ver obras',
     foto: '/images/grupo/constructora-fachada.webp',
-    alt: 'Brazo articulado y trabajadores en el revestimiento de una bodega industrial',
+    alt: 'Brazo articulado en el revestimiento de una bodega industrial',
+  },
+];
+
+/* Una foto real por negocio. La primera es la imagen LCP (prioridad alta). */
+const LAMINAS: Lamina[] = [
+  {
+    marca: 'constructora',
+    negocio: 'JURMAQ Constructora',
+    frase: 'Obras dentro de plantas en operación, como las fundaciones de silos de Nestlé en Teno.',
+    ir: 'Ver obras',
+    href: NEGOCIOS.constructora.url,
+    foto: '/images/grupo/hero-constructora',
+  },
+  {
+    marca: 'barraca',
+    negocio: 'JURMAQ Barraca',
+    frase: 'Fierro, perfiles y techumbre en Molina, con despacho propio a 13 zonas del Maule.',
+    ir: 'Ir a la tienda',
+    href: NEGOCIOS.barraca.url,
+    foto: '/images/grupo/hero-barraca',
+  },
+  {
+    marca: 'arriendo',
+    negocio: 'JURMAQ Arriendo',
+    frase: 'Retroexcavadoras, minicargadores y camión tolva desde Maquehua, Curicó.',
+    ir: 'Ver maquinaria',
+    href: NEGOCIOS.arriendo.url,
+    foto: '/images/grupo/hero-arriendo',
   },
 ];
 
@@ -58,14 +87,15 @@ const TELEFONOS: { negocio: Negocio; nombre: string }[] = [
 export default function InicioGrupo() {
   return (
     <>
-      <section className="h-portada" data-tema="marino">
-        <div className="h-portada__fondo">
-          <Image src="/images/grupo/silos-general.webp" alt="" fill sizes="100vw" priority />
-        </div>
-        <div className="h-portada__ancho">
-          <h1 className="g-display">Maquinaria, fierro y obra en el Maule</h1>
-          <p className="h-portada__baja">Tres negocios JURMAQ, desde 2000.</p>
-
+      <HeroPortada
+        laminas={LAMINAS}
+        encabezado={
+          <>
+            <h1 className="g-display">Maquinaria, fierro y obra en el Maule</h1>
+            <p className="h-portada__baja">Tres negocios JURMAQ, desde 2000.</p>
+          </>
+        }
+      >
           <ul className="h-empresas" id="empresas">
             {EMPRESAS.map((e) => (
               <li key={e.negocio} data-marca={e.negocio}>
@@ -84,8 +114,7 @@ export default function InicioGrupo() {
               </li>
             ))}
           </ul>
-        </div>
-      </section>
+      </HeroPortada>
 
       <MovimientoPortada />
 

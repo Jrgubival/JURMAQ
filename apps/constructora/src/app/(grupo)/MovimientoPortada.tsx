@@ -21,13 +21,6 @@ export default function MovimientoPortada() {
         gsap.registerPlugin(ScrollTrigger);
 
         const ctx = gsap.context(() => {
-          // Paralaje mínimo de la foto de fondo: la obra queda atrás.
-          gsap.to('.h-portada__fondo img', {
-            yPercent: 8,
-            ease: 'none',
-            scrollTrigger: { trigger: '.h-portada', start: 'top top', end: 'bottom top', scrub: 0.6 },
-          });
-
           // Nada parte oculto: si esto no corre, todo sigue a la vista.
           gsap.from('.h-grupo__foto', {
             y: 14,
