@@ -1,0 +1,32 @@
+# Comunas sin obra documentada: siguen los 301 que hacía el middleware.
+/obras-civiles-en/molina /servicios 301
+/obras-civiles-en/sagrada-familia /servicios 301
+/obras-civiles-en/rauco /servicios 301
+/obras-civiles-en/talca /servicios 301
+/obras-civiles-en/san-javier /servicios 301
+/obras-civiles-en/constitucion /servicios 301
+# Iansagro queda en Curicó según el portafolio y Jorge (03-11-2026).
+/obras-civiles-en/linares /obras-civiles-en/curico 301
+/obras-civiles-en/linares/ /obras-civiles-en/curico 301
+/obras-civiles-en/molina/ /servicios 301
+/obras-civiles-en/sagrada-familia/ /servicios 301
+/obras-civiles-en/rauco/ /servicios 301
+/obras-civiles-en/talca/ /servicios 301
+/obras-civiles-en/san-javier/ /servicios 301
+/obras-civiles-en/constitucion/ /servicios 301
+
+# Sitio sin panel (decisión de Jorge, 03-11-2026): el acceso vive en jurmaq.cl.
+/cuenta https://jurmaq.cl/cuenta 302
+/cuenta/* https://jurmaq.cl/cuenta/:splat 302
+/login https://jurmaq.cl/login 302
+/login/ https://jurmaq.cl/login 302
+/contrato https://jurmaq.cl/contrato 302
+/contrato/* https://jurmaq.cl/contrato/:splat 302
+/admin https://jurmaq.cl/admin 302
+/admin/* https://jurmaq.cl/admin/:splat 302
+
+# Estos archivos siguen en la app de jurmaq.cl.
+/brochure https://jurmaq.cl/brochure/ 302
+/brochure/* https://jurmaq.cl/brochure/:splat 302
+/pdf/* https://jurmaq.cl/pdf/:splat 302
+/llms.txt https://jurmaq.cl/llms.txt 302
