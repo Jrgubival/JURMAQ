@@ -22,8 +22,8 @@
   "workers_dev": true,
   "routes": [
     { "pattern": "jurmaq.cl", "custom_domain": true },
-    { "pattern": "www.jurmaq.cl", "custom_domain": true },
-    { "pattern": "constructora.jurmaq.cl", "custom_domain": true }
+    { "pattern": "www.jurmaq.cl", "custom_domain": true }
+    // constructora.jurmaq.cl lo sirve el Worker constructora-sitio (apps/constructora-sitio).
   ],
   "vars": { "AUTH_SCOPE": "constructora", "DESPLIEGUE": "cloudflare" },
   "observability": { "enabled": true },
