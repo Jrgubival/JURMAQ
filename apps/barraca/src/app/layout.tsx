@@ -7,6 +7,7 @@ import { pagoEnLineaDisponible } from "@/lib/pagos";
 import AnalyticsConConsentimiento from "@/components/AnalyticsConConsentimiento";
 import CookieBanner from "@jurmaq/shared/ui/CookieBanner";
 import MetaPixel from "@/components/MetaPixel";
+import AvisoVentasOnline from "@/components/barraca/AvisoVentasOnline";
 import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
 import { ZONAS_DESPACHO } from "@/lib/despacho/zonas";
 // Side-effect import: valida env vars al startup. Si falta una required en
@@ -211,6 +212,7 @@ export default function BarracaLayout({
           productLabel="productos"
           mensaje={<>Usamos cookies propias y de Google y Meta para medir visitas y mostrar publicidad. Puedes aceptarlas o usar solo las esenciales. <a href="/privacidad" className="underline underline-offset-2 hover:text-white">Ver Política de Privacidad</a>.</>}
         />
+        <AvisoVentasOnline />
       </body>
     </html>
   );

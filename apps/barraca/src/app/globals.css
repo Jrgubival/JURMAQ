@@ -113,6 +113,21 @@
   .entra-suave { animation: none; }
 }
 
+/* Aviso de ventas online: opacidad + 8px hacia arriba, 200 ms, sin rebote. */
+@keyframes aviso-entra {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes aviso-fondo {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.aviso-entra { animation: aviso-entra 200ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+.aviso-fondo { animation: aviso-fondo 200ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .aviso-entra, .aviso-fondo { animation: none; }
+}
+
 /* Menú del celular: baja desde el header. */
 @keyframes menu-baja {
   from { opacity: 0; transform: translateY(-8px); }
