@@ -179,7 +179,7 @@ export default function AvisoVentasOnline() {
           Estamos partiendo con las ventas online
         </h2>
         <p id={idTexto} className="mt-1 text-[13.5px] leading-[1.4] text-gray-600 [@media(max-width:639px)_and_(max-height:760px)]:text-[13px] [@media(max-width:639px)_and_(max-height:760px)]:leading-[1.35] sm:mt-2 sm:text-[15px] sm:leading-normal">
-          Por eso más de 1.100 productos tienen mejor precio en la web que en el local, hasta el 1 de diciembre.
+          Por eso más de 900 productos tienen mejor precio en la web que en el local, hasta el 1 de diciembre.
         </p>
 
         <div className="mt-3 flex gap-2 [@media(max-width:639px)_and_(max-height:760px)]:mt-2 sm:mt-5">
