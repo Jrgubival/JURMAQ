@@ -176,7 +176,7 @@ export default function AvisoVentasOnline() {
         </button>
 
         {/* Foto de la bodega con el titular pegado abajo, sobre un degradado azul. */}
-        <div className={`relative h-[200px] shrink-0 overflow-hidden border-b-4 border-marca-600 bg-navy-950 [@media(max-width:639px)_and_(max-height:700px)]:h-[148px] sm:h-auto sm:w-[44%] sm:border-b-0 sm:border-r-4`}>
+        <div className={`relative h-[200px] shrink-0 overflow-hidden border-b-4 border-marca-600 bg-navy-950 [@media(max-width:639px)_and_(max-height:700px)]:h-[148px] sm:h-auto sm:min-h-[360px] sm:w-[44%] sm:border-b-0 sm:border-r-4`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/aviso-bodega-perfiles.webp"
@@ -187,7 +187,7 @@ export default function AvisoVentasOnline() {
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover object-[50%_38%]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/75 to-navy-950/5 sm:via-navy-950/70 sm:to-navy-950/10" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/75 to-navy-950/5 sm:via-navy-950/45 sm:to-transparent" aria-hidden="true" />
           <h2
             id={idTitulo}
             className={`absolute inset-x-0 bottom-0 px-4 pb-3.5 pr-12 text-[25px] font-extrabold leading-[1.04] tracking-[-0.03em] text-white [@media(max-width:639px)_and_(max-height:700px)]:pb-2.5 [@media(max-width:639px)_and_(max-height:700px)]:text-[21px] sm:px-6 sm:pb-6 sm:pr-6 sm:text-[34px] sm:leading-[1.02]`}
