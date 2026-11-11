@@ -24,6 +24,7 @@
     "./mail/templates/*": "./src/mail/templates/*.ts",
     "./mail/transport": "./src/mail/transport.ts",
     "./mail/barraca": "./src/mail/barraca.ts",
+    "./mail/aviso-contacto": "./src/mail/aviso-contacto.ts",
     "./otp": "./src/otp/index.ts",
     "./whatsapp": "./src/whatsapp/index.ts",
     "./notifications/admin": "./src/notifications/admin.ts",

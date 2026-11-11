@@ -3,6 +3,7 @@ import { env } from '@jurmaq/shared/env';
 import { transporter, renderEmailLayout, renderOrderItems, renderButton, escapeHtml, formatCLP } from '@jurmaq/shared/mail/email';
 import { textoCombo } from '@/lib/combos';
 import { avisosBarraca } from '@jurmaq/shared/mail/barraca';
+import { botonesContacto, filaDato } from '@jurmaq/shared/mail/aviso-contacto';
 import { logSafeError } from '@jurmaq/shared/logging';
 import { HORARIO_BARRACA } from '@jurmaq/shared/seo';
 import { montoDespacho, textoDespacho } from '@/lib/despacho/texto';
@@ -151,11 +152,23 @@ export async function correoAvisoBarraca(p: Pedido, motivo: 'nuevo' | 'pagado') 
   const destino = avisosBarraca();
   try {
     const titulo = motivo === 'pagado' ? `Pedido PAGADO ${p.numero}` : `Pedido nuevo ${p.numero} (${p.metodo_pago === 'transferencia' ? 'transferencia' : 'pago en línea pendiente'})`;
-    const datos = `<p style="margin:0 0 16px;font-size:14px;">${escapeHtml(p.nombre)} · ${escapeHtml(p.telefono)} · ${escapeHtml(p.email)}${p.rut ? ` · RUT ${escapeHtml(p.rut)}` : ''}${p.notas ? `<br>Nota: ${escapeHtml(p.notas)}` : ''}</p>`;
+    const formaPago = p.metodo_pago === 'transferencia' ? 'Transferencia' : 'Pago en línea (Webpay)';
+    const entrega = p.entrega === 'retiro' ? 'Retiro en la barraca' : `Despacho a ${escapeHtml(p.comuna || 'comuna sin indicar')}`;
+    const primerNombre = p.nombre.trim().split(/\s+/)[0] || '';
+    const datos = `<table role="presentation" width="100%" style="margin:0 0 4px;">
+${filaDato('Pedido', `<strong>N° ${escapeHtml(p.numero)}</strong>`)}
+${filaDato('Cliente', `<strong>${escapeHtml(p.nombre)}</strong>`)}
+${filaDato('Teléfono', escapeHtml(p.telefono))}
+${filaDato('Correo', escapeHtml(p.email))}
+${filaDato('Pago', `${formaPago} · <strong>${escapeHtml(ETIQUETA_ESTADO[p.estado])}</strong>`)}
+${filaDato('Entrega', entrega)}
+${p.rut ? filaDato('RUT', escapeHtml(p.rut)) : ''}${p.notas ? filaDato('Nota', escapeHtml(p.notas)) : ''}
+</table>
+${botonesContacto({ telefono: p.telefono, mensajeWhatsApp: `Hola ${primerNombre}, soy Jorge de la Barraca JURMAQ. Recibí tu pedido N° ${p.numero}.`, panelUrl: `${URL_PANEL}/${encodeURIComponent(p.numero)}` })}`;
     await transporter.sendMail({
       to: destino,
       subject: `${titulo} · ${formatCLP(p.total)}`,
-      html: renderEmailLayout({ title: titulo, bodyHtml: datos + cuerpo(p, `Pedido <strong>${escapeHtml(p.numero)}</strong> desde la tienda web.`, false) }),
+      html: renderEmailLayout({ title: titulo, bodyHtml: datos + cuerpo(p, `Detalle del pedido <strong>${escapeHtml(p.numero)}</strong> desde la tienda web.`, false) }),
       skipAdminBcc: true,
     });
   } catch (error) {
