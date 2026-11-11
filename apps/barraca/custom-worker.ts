@@ -11,12 +11,14 @@ interface Env {
 
 export default {
   fetch: handler.fetch,
-  async scheduled(_controller: unknown, env: Env, ctx: { waitUntil: (p: Promise<unknown>) => void }) {
+  async scheduled(controller: { cron?: string }, env: Env, ctx: { waitUntil: (p: Promise<unknown>) => void }) {
     const secret = env.CRON_SECRET?.trim();
     if (!secret) return; // fail-closed: sin secreto no se llama
+    // Cada media hora: aviso interno de carritos sin pagar. Diario 09:00 UTC: post-purchase.
+    const ruta = controller.cron === "*/30 * * * *" ? "avisos-carritos" : "post-purchase";
     ctx.waitUntil(
       env.WORKER_SELF_REFERENCE.fetch(
-        new Request("https://barraca.jurmaq.cl/api/cron/post-purchase", {
+        new Request(`https://barraca.jurmaq.cl/api/cron/${ruta}`, {
           method: "POST",
           headers: { authorization: `Bearer ${secret}` },
         }),

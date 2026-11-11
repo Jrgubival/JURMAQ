@@ -26,7 +26,9 @@ const ES_BARRACA = env.AUTH_SCOPE?.trim().toLowerCase() === 'barraca';
 const ADMIN_BCC_EMAILS: string[] = ES_BARRACA
   ? // Barraca (oct-2026): la copia oculta va sólo a la casilla de la barraca,
     // nunca a constructora@jurmaq.cl. Por defecto contacto@jurmaq.cl (Jorge, 31-10-2026).
-    [(env.BARRACA_AVISOS_EMAIL?.trim() || 'contacto@jurmaq.cl').toLowerCase()]
+    // Siempre la casilla de la empresa: la variable BARRACA_AVISOS_EMAIL puede
+    // traer varias (avisos a Jorge), y las copias de correos a clientes no van a su correo personal.
+    ['contacto@jurmaq.cl']
   : (env.ADMIN_BCC_EMAILS ||
     `${env.ADMIN_EMAIL || 'contacto@jurmaq.cl'},constructora@jurmaq.cl`)
     .split(',')
@@ -65,19 +67,21 @@ async function sendMail(options: SendMailOptions): Promise<SendMailResult> {
     if (Array.isArray(options.bcc)) options.bcc.forEach((b) => b && bccSet.add(b.toLowerCase()));
     else bccSet.add(options.bcc.toLowerCase());
   }
-  const toLower = options.to.trim().toLowerCase();
+  // `to` acepta varias casillas separadas por coma.
+  const toList = options.to.split(',').map((t) => t.trim()).filter(Boolean);
+  const toLowerSet = new Set(toList.map((t) => t.toLowerCase()));
   if (!options.skipAdminBcc) {
     for (const admin of ADMIN_BCC_EMAILS) {
-      if (admin && admin !== toLower) bccSet.add(admin);
+      if (admin && !toLowerSet.has(admin)) bccSet.add(admin);
     }
   }
-  bccSet.delete(toLower);
+  toLowerSet.forEach((t) => bccSet.delete(t));
   const bcc = Array.from(bccSet);
 
   try {
     const result = await resend.emails.send({
       from: options.from || EMAIL_FROM,
-      to: [options.to],
+      to: toList,
       ...(bcc.length > 0 ? { bcc } : {}),
       subject: options.subject,
       html: options.html,

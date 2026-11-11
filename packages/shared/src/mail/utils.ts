@@ -21,3 +21,17 @@ export function escapeHtml(input: unknown): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+/**
+ * Teléfono chileno a formato internacional sin signos (56912345678) para wa.me.
+ * Devuelve null si no calza con un celular o fijo chileno razonable.
+ */
+export function telefonoWhatsApp(raw: unknown): string | null {
+  let d = String(raw ?? '').replace(/\D/g, '');
+  if (!d) return null;
+  d = d.replace(/^0+/, '');
+  if (d.startsWith('56') && d.length === 11) return d;
+  if (d.length === 9) return `56${d}`;
+  if (d.length === 8) return `569${d}`;
+  return null;
+}

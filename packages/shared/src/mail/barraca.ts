@@ -11,6 +11,10 @@ import { env } from '@jurmaq/shared/env';
  */
 export const AVISOS_BARRACA_POR_DEFECTO = 'contacto@jurmaq.cl';
 
+/**
+ * Una o varias casillas separadas por coma (10-11-2026: Jorge como principal y
+ * contacto@jurmaq.cl en copia). El transporte reparte la lista.
+ */
 export function avisosBarraca(): string {
   return env.BARRACA_AVISOS_EMAIL?.trim() || AVISOS_BARRACA_POR_DEFECTO;
 }

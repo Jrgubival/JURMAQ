@@ -21,5 +21,5 @@
   "vars": { "AUTH_SCOPE": "barraca", "DESPLIEGUE": "cloudflare" },
   "observability": { "enabled": true },
   // Antes en vercel.json.
-  "triggers": { "crons": ["0 9 * * *"] }
+  "triggers": { "crons": ["0 9 * * *", "*/30 * * * *"] }
 }

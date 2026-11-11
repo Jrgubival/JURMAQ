@@ -329,10 +329,12 @@ export async function POST(request: NextRequest) {
       sendCotizacionAdminEmail({
         numero,
         nombre,
+        empresa: empresa || undefined,
         email,
         telefono: telefono || '',
         total,
         itemCount: trustedItems.length,
+        items: emailItems,
       }),
     ]);
     if (clientResult.status === 'fulfilled') {

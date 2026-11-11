@@ -280,7 +280,15 @@ const serverEnvSchema = z.object({
     .string()
     .optional()
     .transform((v) => v?.trim() || undefined)
-    .pipe(z.string().email().optional()),
+    .pipe(
+      z
+        .string()
+        .refine(
+          (v) => v.split(',').every((c) => z.string().email().safeParse(c.trim()).success),
+          'Una o más casillas separadas por coma',
+        )
+        .optional(),
+    ),
 
   /** Scope de autenticación legacy (cuenta vs constructora vs admin). */
   AUTH_SCOPE: z.string().optional(),
