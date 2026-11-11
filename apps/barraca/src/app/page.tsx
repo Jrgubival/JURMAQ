@@ -126,7 +126,8 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image-barraca-1200x630.png",
+        url: "/og-barraca-jurmaq-fachada-1200x630.jpg",
+        type: "image/jpeg",
         width: 1200,
         height: 630,
         alt: "Barraca de Fierros JURMAQ — Molina, Curicó y Talca",

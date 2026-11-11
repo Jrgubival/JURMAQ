@@ -68,7 +68,7 @@ export default async function GuiaPage({ params }: { params: Promise<{ slug: str
         "@id": `https://barraca.jurmaq.cl/guias/${guia.slug}#article`,
         headline: guia.titulo,
         description: guia.descripcionMeta,
-        image: "https://barraca.jurmaq.cl/og-image-barraca-1200x630.png",
+        image: "https://barraca.jurmaq.cl/og-barraca-jurmaq-fachada-1200x630.jpg",
         author: { "@type": "Organization", name: "JURMAQ Barraca" },
         publisher: { "@id": "https://barraca.jurmaq.cl/#organization" },
         url: `https://barraca.jurmaq.cl/guias/${guia.slug}`,

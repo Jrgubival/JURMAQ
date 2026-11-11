@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     locale: "es_CL",
     type: "website",
     images: [
-      { url: "/og-image-barraca-1200x630.png", width: 1200, height: 630, alt: "Barraca JURMAQ Curicó · Molina" },
+      { url: "/og-barraca-jurmaq-fachada-1200x630.jpg", type: "image/jpeg", width: 1200, height: 630, alt: "Barraca JURMAQ Curicó · Molina" },
     ],
   },
   // Sin bloque `icons:` ni `manifest:` a propósito.

@@ -108,7 +108,8 @@ export async function generateMetadata({
       type: "website",
       images: [
         {
-          url: "/og-image-barraca-1200x630.png",
+          url: "/og-barraca-jurmaq-fachada-1200x630.jpg",
+          type: "image/jpeg",
           width: 1200,
           height: 630,
           alt: `${cat.nombre} en Barraca JURMAQ Curicó · Molina`,

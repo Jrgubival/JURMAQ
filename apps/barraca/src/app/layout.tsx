@@ -138,9 +138,10 @@ export const metadata: Metadata = {
     locale: "es_CL",
     type: "website",
     images: [
-      // Primary OG image 1200×630 — generado por scripts/og/generate-og-images.mjs.
+      // Primary OG image 1200×630 — foto de la fachada de la barraca.
       {
-        url: "/og-image-barraca-1200x630.png",
+        url: "/og-barraca-jurmaq-fachada-1200x630.jpg",
+        type: "image/jpeg",
         width: 1200,
         height: 630,
         alt: "Barraca JURMAQ — Fierros y Materiales en Curicó",
