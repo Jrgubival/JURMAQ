@@ -154,7 +154,7 @@ export default function AvisoVentasOnline() {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] [@media(max-width:639px)_and_(max-height:760px)]:pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:py-4">
-      <div className="aviso-fondo absolute inset-0 bg-navy-950/40" onClick={() => cerrar(true)} aria-hidden="true" />
+      <div className="aviso-fondo absolute inset-0 bg-navy-950/55" onClick={() => cerrar(true)} aria-hidden="true" />
       <div
         ref={tarjeta}
         role="dialog"
@@ -162,49 +162,70 @@ export default function AvisoVentasOnline() {
         aria-labelledby={idTitulo}
         aria-describedby={idTexto}
         onKeyDown={alTeclearEnTarjeta}
-        className="aviso-entra relative w-full max-w-[420px] rounded-xl border border-gray-200 bg-white px-4 pb-2 pt-4 [@media(max-width:639px)_and_(max-height:760px)]:pt-3 shadow-[0_8px_24px_-14px_rgba(12,29,58,0.3)] sm:px-6 sm:pb-4 sm:pt-6"
+        className="aviso-entra relative flex w-full max-w-[420px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_18px_44px_-16px_rgba(12,29,58,0.55)] sm:max-w-[760px] sm:flex-row"
       >
         <button
           type="button"
           onClick={() => cerrar(true)}
           aria-label="Cerrar aviso"
-          className="absolute right-1 top-1 flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 transition-colors duration-150 hover:text-navy-950 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-navy-950 sm:right-2 sm:top-2"
+          className="absolute right-2 top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-navy-950/60 text-white transition-colors duration-150 hover:bg-navy-950/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:bg-transparent sm:text-gray-500 sm:hover:bg-gray-100 sm:hover:text-navy-950 sm:focus-visible:outline-navy-950"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
             <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" />
           </svg>
         </button>
 
-        <h2 id={idTitulo} className="pr-8 text-[17px] font-extrabold leading-[1.2] tracking-[-0.025em] text-navy-950 [@media(max-width:639px)_and_(max-height:760px)]:text-base sm:text-xl">
-          Estamos partiendo con las ventas online
-        </h2>
-        <p id={idTexto} className="mt-1 text-[13.5px] leading-[1.4] text-gray-600 [@media(max-width:639px)_and_(max-height:760px)]:text-[13px] [@media(max-width:639px)_and_(max-height:760px)]:leading-[1.35] sm:mt-2 sm:text-[15px] sm:leading-normal">
-          Por eso más de 900 productos tienen mejor precio en la web que en el local, hasta el 1 de diciembre.
-        </p>
-
-        <div className="mt-3 flex gap-2 [@media(max-width:639px)_and_(max-height:760px)]:mt-2 sm:mt-5">
-          <Link
-            ref={botonPrincipal}
-            href="/categorias"
-            onClick={() => cerrar(false)}
-            className="flex h-10 flex-1 items-center justify-center rounded-lg bg-marca-600 px-3 text-sm font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-marca-700 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-950 sm:h-11"
+        {/* Foto de la bodega con el titular pegado abajo, sobre un degradado azul. */}
+        <div className={`relative h-[200px] shrink-0 overflow-hidden border-b-4 border-marca-600 bg-navy-950 [@media(max-width:639px)_and_(max-height:700px)]:h-[148px] sm:h-auto sm:w-[44%] sm:border-b-0 sm:border-r-4`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/aviso-bodega-perfiles.webp"
+            alt=""
+            width={640}
+            height={712}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-[50%_38%]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/75 to-navy-950/5 sm:via-navy-950/70 sm:to-navy-950/10" aria-hidden="true" />
+          <h2
+            id={idTitulo}
+            className={`absolute inset-x-0 bottom-0 px-4 pb-3.5 pr-12 text-[25px] font-extrabold leading-[1.04] tracking-[-0.03em] text-white [@media(max-width:639px)_and_(max-height:700px)]:pb-2.5 [@media(max-width:639px)_and_(max-height:700px)]:text-[21px] sm:px-6 sm:pb-6 sm:pr-6 sm:text-[34px] sm:leading-[1.02]`}
           >
-            Ver productos
-          </Link>
-          <button
-            type="button"
-            onClick={() => cerrar(true)}
-            className="flex h-10 flex-1 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-navy-950 transition-[border-color,transform] duration-150 ease-out hover:border-gray-400 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-950 sm:h-11"
-          >
-            Seguir mirando
-          </button>
+            Estamos recién partiendo con la venta en línea
+          </h2>
         </div>
 
-        <p className="text-[12px] leading-4 text-gray-500">
-          <Link href="/terminos#5-precios" onClick={() => cerrar(false)} className="-mx-2 inline-flex h-11 items-center px-2 underline underline-offset-2 hover:text-navy-950">
-            Condiciones
-          </Link>
-        </p>
+        <div className="px-4 pb-1 pt-3.5 sm:flex sm:flex-1 sm:flex-col sm:justify-center sm:px-8 sm:pb-6 sm:pt-12">
+          <p id={idTexto} className={`text-[14px] leading-[1.4] text-gray-700 [@media(max-width:639px)_and_(max-height:700px)]:text-[13px] [@media(max-width:639px)_and_(max-height:700px)]:leading-[1.35] sm:text-[16px] sm:leading-normal`}>
+            Por eso, hasta el 1 de diciembre, comprar en la página sale más barato que en el local. Más de 900 productos con precio web.
+          </p>
+
+          <div className={`mt-3 flex gap-2 [@media(max-width:639px)_and_(max-height:700px)]:mt-2 sm:mt-6`}>
+            <Link
+              ref={botonPrincipal}
+              href="/categorias"
+              onClick={() => cerrar(false)}
+              className="flex h-11 flex-[1.4] items-center justify-center rounded-lg bg-marca-600 px-3 text-sm font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-marca-700 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-950"
+            >
+              Ver precios web
+            </Link>
+            <button
+              type="button"
+              onClick={() => cerrar(true)}
+              className="flex h-11 flex-1 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-navy-950 transition-[border-color,transform] duration-150 ease-out hover:border-gray-400 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-950"
+            >
+              Ahora no
+            </button>
+          </div>
+
+          <p className="mt-2 text-[12px] leading-4 text-gray-500 sm:mt-3">
+            El precio web vale solo comprando en la página.{" "}
+            <Link href="/terminos#5-precios" onClick={() => cerrar(false)} className="-mx-1 inline-flex h-11 items-center px-1 underline underline-offset-2 hover:text-navy-950 sm:h-8">
+              Condiciones
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
