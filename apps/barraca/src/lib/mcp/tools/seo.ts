@@ -12,13 +12,13 @@ import { PAGINAS_SEO } from "../../seo-editable/reglas.ts";
 const texto = z.string().max(400).nullable().optional();
 
 const item = z.strictObject({
-  tipo: z.enum(["producto", "categoria", "pagina"]).describe("producto (la clave es el CÓDIGO: se aplica a todas sus fichas), categoria (la clave es el slug) o pagina."),
-  clave: z.string().trim().min(1).max(80).describe(`Código del producto, slug de la categoría o id de la página (${PAGINAS_SEO.join(", ")}).`),
-  titulo: texto.describe("Título para Google (ideal hasta 60 caracteres). Texto plano, sin precios, reseñas ni plazos. null o vacío = volver al automático en ese campo; sin indicar = no tocar."),
-  descripcion: texto.describe("Descripción para Google (ideal hasta 160 caracteres). Mismas reglas."),
-  og_titulo: texto.describe("Título al compartir en redes (opcional)."),
-  og_descripcion: texto.describe("Descripción al compartir en redes (opcional)."),
-  restablecer: z.boolean().optional().describe("true = borra el texto propio y vuelve al que genera el código. No se combina con textos."),
+  tipo: z.enum(["producto", "categoria", "pagina"]).describe("producto (clave = CÓDIGO), categoria (clave = slug) o pagina."),
+  clave: z.string().trim().min(1).max(80).describe(`Código, slug o id de página (${PAGINAS_SEO.join(", ")}).`),
+  titulo: texto.describe("Ideal hasta 60; sin precios, reseñas ni plazos. null o vacío = automático; sin indicar = no tocar."),
+  descripcion: texto.describe("Ideal hasta 160; mismas reglas."),
+  og_titulo: texto.describe("Título al compartir en redes."),
+  og_descripcion: texto.describe("Descripción al compartir en redes."),
+  restablecer: z.boolean().optional().describe("true = vuelve al texto automático (sin textos)."),
 });
 
 const aEntradas = (items: Array<z.infer<typeof item>>): ItemSeoEntrada[] => items;
@@ -37,7 +37,7 @@ export const auditarSeoHerramienta = defineHerramienta({
   nombre: "auditar_seo",
   titulo: "Auditar el SEO de la tienda",
   descripcion:
-    "Revisa por lote (paginado) qué entradas no tienen título o descripción propios, cuáles tienen título de más de 60 caracteres o descripción de más de 160 o vacía, y (con alcance 'repetidos') qué títulos propios se repiten. Alcance: 'producto' (lotes de fichas activas, los códigos repetidos cuentan una vez; usa 'pagina_lote' para avanzar), 'categoria', 'pagina', 'guia' o 'repetidos'. Devuelve conteos y pocos ejemplos, nunca la lista completa. No cambia nada.",
+    "Revisa por lote qué entradas no tienen título o descripción propios, o los tienen muy largos (más de 60 y 160) o vacíos, y con alcance 'repetidos' qué títulos se repiten. Alcance: 'producto' (lotes de fichas activas; avanza con 'pagina_lote'), 'categoria', 'pagina', 'guia' o 'repetidos'. Devuelve conteos y pocos ejemplos. No cambia nada.",
   esquema: z.object({
     alcance: z.enum(["producto", "categoria", "pagina", "guia", "repetidos"]).describe("Qué revisar."),
     pagina_lote: z.number().int().min(1).max(500).optional().describe("Número de lote (1 por defecto)."),
@@ -56,7 +56,7 @@ export const editarSeoHerramienta = defineHerramienta({
   nombre: "editar_seo",
   titulo: "Editar título y descripción para Google",
   descripcion:
-    "Cambia el título y/o la descripción para Google (y opcionalmente los de redes) de hasta 5 entradas: producto por código (todas sus fichas), categoría por slug o página por id. Texto plano; título ideal hasta 60 caracteres y descripción hasta 160 (pasarse poco es solo un aviso, mucho se rechaza); sin precios, reseñas ni plazos de entrega. Avisa si el título se repite con otra entrada. Con restablecer=true vuelve al texto automático. No toca canonical, robots, slugs ni URL. Es libre, salvo términos y privacidad, o textos que agreguen un teléfono, un correo o un enlace a otro sitio: eso queda PENDIENTE del OK de Jorge (repite la misma llamada cuando apruebe). Para más de 5 entradas usa previsualizar_seo y confirmar_seo. Se puede deshacer.",
+    "Cambia título y/o descripción para Google (y opcional los de redes) de hasta 5 entradas: producto por código (todas sus fichas), categoría por slug o página por id. Texto plano: título ideal hasta 60 y descripción hasta 160 (pasarse poco avisa; mucho se rechaza), sin precios, reseñas ni plazos. Avisa si el título se repite. restablecer=true vuelve al texto automático. No toca canonical, robots ni URL. Es libre, salvo términos, privacidad o textos con un teléfono, correo o enlace a otro sitio: quedan PENDIENTES del OK de Jorge (repite la misma llamada). Más de 5: previsualizar_seo y confirmar_seo. Se puede deshacer.",
   esquema: z.object({ entradas: z.array(item).min(1).max(5) }),
   anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   ejecutar: async (a, ctx) => ejecutarSeo(async () => editarSeo(await obtenerDepsSeo(), aCtxSeo(ctx), aEntradas(a.entradas))),
@@ -67,7 +67,7 @@ export const previsualizarSeoHerramienta = defineHerramienta({
   nombre: "previsualizar_seo",
   titulo: "Previsualizar cambio masivo de SEO",
   descripcion:
-    "PASO 1 de un cambio de SEO de hasta 200 entradas (mismas entradas y reglas que editar_seo): valida todo y NO cambia la tienda. Si hay un solo error en una entrada no crea la vista previa y los lista. Devuelve cuántas cambian, ejemplos, avisos de largo y de títulos repetidos, si necesita el OK de Jorge, y un id de un solo uso (15 minutos; 5 horas si necesita aprobación). Para aplicar usa confirmar_seo con ese id.",
+    "PASO 1 de un cambio de SEO de hasta 200 entradas (mismas reglas que editar_seo): valida todo y NO cambia nada. Con un solo error no crea la vista previa y los lista. Devuelve cuántas cambian, ejemplos, avisos de largo y títulos repetidos, si necesita el OK de Jorge y un id de un solo uso. Aplica con confirmar_seo.",
   esquema: z.object({ entradas: z.array(item).min(1).max(200) }),
   anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
   ejecutar: async (a, ctx) => ejecutarSeo(async () => previsualizarSeo(await obtenerDepsSeo(), aCtxSeo(ctx), aEntradas(a.entradas))),
@@ -77,7 +77,7 @@ export const confirmarSeoHerramienta = defineHerramienta({
   nombre: "confirmar_seo",
   titulo: "Confirmar cambio masivo de SEO",
   descripcion:
-    "PASO 2: aplica la vista previa de previsualizar_seo (el id sirve una sola vez, es solo tuyo y se rechaza si alguien cambió esos textos desde que se calculó). Si incluye términos o privacidad, o agrega un teléfono, un correo o un enlace a otro sitio, queda PENDIENTE del OK de Jorge: repite confirmar_seo con el mismo id cuando apruebe. Se refrescan solo las fichas, categorías o páginas afectadas. Se puede deshacer desde el historial.",
+    "PASO 2: aplica la vista previa de previsualizar_seo con su id (un solo uso, solo tuyo; se rechaza si alguien cambió esos textos). Si necesita el OK de Jorge queda PENDIENTE: repite la misma llamada con el mismo id cuando apruebe. Solo se refrescan las páginas afectadas. Se puede deshacer.",
   esquema: z.object({ vista_previa_id: z.string().trim().min(6).max(20).describe("El id que devolvió previsualizar_seo.") }),
   anotaciones: { readOnlyHint: false, destructiveHint: true, idempotentHint: false },
   ejecutar: async (a, ctx) => ejecutarSeo(async () => confirmarSeo(await obtenerDepsSeo(), aCtxSeo(ctx), a)),

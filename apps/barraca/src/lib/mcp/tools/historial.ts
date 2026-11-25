@@ -46,7 +46,7 @@ export function crearHerramientasHistorial(obtenerRegistro: () => Registro): Her
     nombre: "ver_historial",
     titulo: "Ver el historial de cambios",
     descripcion:
-      "Sin «lote_id»: lista los lotes de cambios recientes (quién, cuándo, con qué herramienta, cuántos cambios, si ya se deshizo y si se puede deshacer). Con «lote_id»: muestra el detalle de ese lote, con el valor de antes y de después. Para deshacer un lote usa previsualizar_deshacer_lote.",
+    "Sin «lote_id» lista los lotes de cambios recientes (quién, cuándo, herramienta, cuántos cambios, si se deshizo o se puede deshacer). Con «lote_id», el detalle con el valor de antes y de después. Para deshacer: previsualizar_deshacer_lote.",
     esquema: z.object({
       lote_id: ID_LOTE.optional(),
       limite: z.number().int().min(1).max(50).optional(),
@@ -86,7 +86,7 @@ export function crearHerramientasHistorial(obtenerRegistro: () => Registro): Her
     nombre: "previsualizar_deshacer_lote",
     titulo: "Previsualizar un deshacer",
     descripcion:
-      "Paso 1 de 2 para deshacer. No cambia nada: muestra qué se revertiría de ese lote (cada cambio con su valor de antes y de después) y entrega un id corto de un solo uso (15 minutos). Muéstrale el resumen al usuario y espera su OK antes de llamar a deshacer_lote. Si alguien cambió algo después, esa parte no se pisa y el deshacer entero se cancela.",
+    "Paso 1 de 2 para deshacer. No cambia nada: muestra qué se revertiría de ese lote y da un id de un solo uso. Muestra el resumen y espera el OK del usuario antes de deshacer_lote. Si alguien cambió algo después, esa parte no se pisa y el deshacer entero se cancela.",
     esquema: z.object({ lote_id: ID_LOTE }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ lote_id }, ctx) {
@@ -109,7 +109,7 @@ export function crearHerramientasHistorial(obtenerRegistro: () => Registro): Her
     nombre: "deshacer_lote",
     titulo: "Deshacer un lote de cambios (paso 2)",
     descripcion:
-      "Paso 2 de 2: deshace el lote con el id que dio previsualizar_deshacer_lote. Se rechaza si el id es de otro usuario, ya se usó, venció o si el lote cambió desde la vista previa. Si algún dato fue cambiado por otra persona después, no se pisa y no se deshace nada (todo o nada). Úsala solo con el OK del usuario.",
+    "Paso 2 de 2: deshace el lote con el id de previsualizar_deshacer_lote (un solo uso, solo tuyo; se rechaza si el lote cambió). Todo o nada: si otra persona cambió un dato después, no se pisa y no se deshace nada. Solo con el OK del usuario.",
     esquema: z.object({ lote_id: ID_LOTE, vista_previa_id: z.string().min(8).max(20) }),
     anotaciones: { readOnlyHint: false, destructiveHint: true, idempotentHint: false },
     async ejecutar({ lote_id, vista_previa_id }, ctx) {

@@ -40,14 +40,14 @@ async function contar(): Promise<number | null> {
 const ENTIDAD = "campana";
 const AVISO_NO_ENVIA = "Esto es solo un borrador: ninguna herramienta lo envía. Jorge lo envía él mismo, desde donde corresponde.";
 
-const idSchema = z.string().trim().min(10).max(10).regex(/^[2-9A-Za-hj-km-np-zA-HJ-KM-NP-Z]{10}$/, "Id de campaña no válido").describe("Id del borrador (listar_campanas).");
+const idSchema = z.string().trim().min(10).max(10).regex(/^[2-9A-Za-hj-km-np-zA-HJ-KM-NP-Z]{10}$/, "Id de campaña no válido").describe("Id del borrador (ver_campanas).");
 
 const campos = {
-  asunto: z.string().max(200).describe("Asunto. Tiene que decir «Publicidad» (ley del consumidor). Ej.: «Publicidad: catálogo de fierro JURMAQ»."),
-  texto: z.string().max(4500).describe("Texto del correo, en párrafos separados por una línea en blanco. Sin HTML ni enlaces (el enlace va en `enlace`)."),
-  enlace: z.string().max(400).nullable().describe("Enlace del botón: https a jurmaq.cl o barraca.jurmaq.cl. null = sin botón."),
-  segmento: z.string().max(300).nullable().describe("Para quién es, en palabras (no correos). Ej.: «Clientes que compraron fierro este año»."),
-  fecha_sugerida: z.string().max(10).nullable().describe("Fecha sugerida para enviar, AAAA-MM-DD. Es solo una sugerencia: nada se programa."),
+  asunto: z.string().max(200).describe("Debe decir «Publicidad» (ley del consumidor)."),
+  texto: z.string().max(4500).describe("Párrafos separados por una línea en blanco. Sin HTML ni enlaces."),
+  enlace: z.string().max(400).nullable().describe("Botón: https a jurmaq.cl o barraca.jurmaq.cl. null = sin botón."),
+  segmento: z.string().max(300).nullable().describe("Para quién es, en palabras (no correos)."),
+  fecha_sugerida: z.string().max(10).nullable().describe("AAAA-MM-DD. Solo sugerencia: nada se programa."),
 };
 
 async function resumen(c: Campana, suscriptores: number | null): Promise<string> {
@@ -56,32 +56,28 @@ async function resumen(c: Campana, suscriptores: number | null): Promise<string>
 
 const filaListado = (c: Campana) => `- ${c.id}: «${c.asunto}»${c.segmento ? ` · para: ${c.segmento}` : ""}${c.fecha_sugerida ? ` · fecha sugerida ${c.fecha_sugerida}` : ""} · versión ${c.version}${c.borradoEn ? " · BORRADA" : ""}`;
 
-export const crearCampanaBorrador = defineHerramienta({
-  nombre: "crear_campana_borrador",
-  titulo: "Crear un borrador de campaña a suscriptores",
+const CAMPOS_EDITABLES = ["asunto", "texto", "enlace", "segmento", "fecha_sugerida"] as const;
+
+export const guardarCampanaBorrador = defineHerramienta({
+  nombre: "guardar_campana_borrador",
+  titulo: "Crear o editar un borrador de campaña",
   descripcion:
-    "Guarda un BORRADOR de campaña de correo para los suscriptores (asunto, texto, enlace a jurmaq.cl, para quién y fecha sugerida). No envía ni programa nada: Jorge la envía él mismo después. El asunto tiene que decir «Publicidad». Sin HTML; el enlace va aparte. Muestra la vista previa con el número de suscriptores activos (nunca sus correos). Se puede deshacer.",
-  esquema: z.object({ asunto: campos.asunto, texto: campos.texto, enlace: campos.enlace.optional(), segmento: campos.segmento.optional(), fecha_sugerida: campos.fecha_sugerida.optional() }),
+    "Sin «id» crea un BORRADOR de campaña para suscriptores (asunto y texto obligatorios); con «id» cambia solo los campos que pases y crea una versión nueva. NO envía ni programa nada: Jorge la envía él mismo. Asunto con «Publicidad», sin HTML, enlace solo a jurmaq.cl; null quita enlace, segmento o fecha. Muestra la vista previa con el número de suscriptores (nunca correos). Se puede deshacer.",
+  esquema: z.object({ id: idSchema.optional(), asunto: campos.asunto.optional(), texto: campos.texto.optional(), enlace: campos.enlace.optional(), segmento: campos.segmento.optional(), fecha_sugerida: campos.fecha_sugerida.optional() })
+    .refine((o) => o.id === undefined || CAMPOS_EDITABLES.some((k) => o[k] !== undefined), "Con id, pasa al menos un campo para cambiar.")
+    .refine((o) => o.id !== undefined || (o.asunto !== undefined && o.texto !== undefined), "Para crear un borrador hacen falta asunto y texto."),
   anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
   ejecutar: async (a, ctx) => {
-    const r = await crearCampana(ctx.db, { asunto: a.asunto, texto: a.texto, enlace: a.enlace ?? null, segmento: a.segmento ?? null, fecha_sugerida: a.fecha_sugerida ?? null }, usuarioDe(ctx), ctx.ahora);
-    if (!r.ok) throw new ErrorHerramienta(`No guardé la campaña:\n- ${r.errores.join("\n- ")}`);
-    await ctx.auditar([{ entidad: ENTIDAD, entidadId: r.campana.id, antes: null, despues: { version: 1, datos: datosDe(r.campana) } }]);
-    return { texto: `Borrador creado (id ${r.campana.id}).\n\n${await resumen(r.campana, await contar())}\n\n${AVISO_NO_ENVIA}`, datos: { id: r.campana.id, version: 1, enviada: false } };
-  },
-  revertidor: revertirCampanas(),
-});
-
-export const editarCampanaBorrador = defineHerramienta({
-  nombre: "editar_campana_borrador",
-  titulo: "Editar un borrador de campaña",
-  descripcion:
-    "Cambia uno o más campos de un borrador de campaña (los que no pases quedan como estaban). Crea una versión nueva en el historial. Mismas reglas: asunto con «Publicidad», sin HTML, enlace solo a jurmaq.cl. No envía ni programa nada. Pasa null para quitar el enlace, el segmento o la fecha. Se puede deshacer.",
-  esquema: z.object({ id: idSchema, asunto: campos.asunto.optional(), texto: campos.texto.optional(), enlace: campos.enlace.optional(), segmento: campos.segmento.optional(), fecha_sugerida: campos.fecha_sugerida.optional() })
-    .refine((o) => ["asunto", "texto", "enlace", "segmento", "fecha_sugerida"].some((k) => (o as Record<string, unknown>)[k] !== undefined), "Pasa al menos un campo para cambiar."),
-  anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
-  ejecutar: async (a, ctx) => {
+    if (a.id === undefined) {
+      // El servidor valida con la forma sin `refine`, así que se revisa aquí también.
+      if (a.asunto === undefined || a.texto === undefined) throw new ErrorHerramienta("Para crear un borrador hacen falta asunto y texto (o pasa «id» para editar uno).");
+      const r = await crearCampana(ctx.db, { asunto: a.asunto, texto: a.texto, enlace: a.enlace ?? null, segmento: a.segmento ?? null, fecha_sugerida: a.fecha_sugerida ?? null }, usuarioDe(ctx), ctx.ahora);
+      if (!r.ok) throw new ErrorHerramienta(`No guardé la campaña:\n- ${r.errores.join("\n- ")}`);
+      await ctx.auditar([{ entidad: ENTIDAD, entidadId: r.campana.id, antes: null, despues: { version: 1, datos: datosDe(r.campana) } }]);
+      return { texto: `Borrador creado (id ${r.campana.id}).\n\n${await resumen(r.campana, await contar())}\n\n${AVISO_NO_ENVIA}`, datos: { id: r.campana.id, version: 1, enviada: false } };
+    }
     const { id, ...cambios } = a;
+    if (!CAMPOS_EDITABLES.some((k) => cambios[k] !== undefined)) throw new ErrorHerramienta("Pasa al menos un campo para cambiar.");
     const r = await editarCampana(ctx.db, id.toUpperCase(), cambios, usuarioDe(ctx), ctx.ahora);
     if (!r.ok) throw new ErrorHerramienta(`No cambié la campaña:\n- ${r.errores.join("\n- ")}`);
     const cambio = r.antes !== null && !igualesCampana(r.antes, datosDe(r.campana));
@@ -94,27 +90,29 @@ export const editarCampanaBorrador = defineHerramienta({
   revertidor: revertirCampanas(),
 });
 
-export const listarCampanasHerramienta = defineHerramienta({
-  nombre: "listar_campanas",
-  titulo: "Listar borradores de campañas",
-  descripcion: "Lista los borradores de campañas a suscriptores (id, asunto, para quién, fecha sugerida, versión), los más recientes primero. Solo lectura; no muestra correos de nadie.",
-  esquema: z.object({ limite: z.number().int().min(1).max(50).optional().describe("Cuántos mostrar (máx. 50; por defecto 25)."), incluir_borradas: z.boolean().optional().describe("Incluir las ya borradas.") }),
+export const verCampanas = defineHerramienta({
+  nombre: "ver_campanas",
+  titulo: "Ver borradores de campañas",
+  descripcion:
+    "Solo lectura. Sin «id»: lista los borradores (más recientes primero) y dice cuántos suscriptores activos hay (solo el número, nunca correos). Con «id»: el borrador completo y su historial (con «version», esa versión anterior; con «vista_previa», cómo quedaría el correo).",
+  esquema: z.object({
+    id: idSchema.optional(),
+    version: z.number().int().min(1).max(100000).optional().describe("Con id: versión anterior a mostrar."),
+    vista_previa: z.boolean().optional().describe("Con id: mostrar cómo queda el correo."),
+    limite: z.number().int().min(1).max(50).optional().describe("Sin id: cuántos listar (25 por defecto)."),
+    incluir_borradas: z.boolean().optional().describe("Sin id: incluir las borradas."),
+  }),
   anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
   ejecutar: async (a, ctx) => {
-    const lista = await listarCampanas(ctx.db, { limite: a.limite, incluirBorradas: a.incluir_borradas });
-    if (lista.length === 0) return { texto: "No hay borradores de campañas. Crea uno con crear_campana_borrador.", datos: { campanas: [] } };
-    return { texto: `${lista.map(filaListado).join("\n")}\n\n${AVISO_NO_ENVIA}`, datos: { campanas: lista.map((c) => ({ id: c.id, asunto: c.asunto, version: c.version, borrada: c.borradoEn !== null })) } };
-  },
-});
-
-export const verCampana = defineHerramienta({
-  nombre: "ver_campana",
-  titulo: "Ver un borrador de campaña",
-  descripcion: "Muestra un borrador de campaña completo (asunto, texto, enlace, segmento, fecha sugerida) y su historial de versiones. Con `version` muestra esa versión anterior. Solo lectura.",
-  esquema: z.object({ id: idSchema, version: z.number().int().min(1).max(100000).optional().describe("Versión anterior a mostrar.") }),
-  anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
-  ejecutar: async (a, ctx) => {
+    if (a.id === undefined) {
+      const lista = await listarCampanas(ctx.db, { limite: a.limite, incluirBorradas: a.incluir_borradas });
+      const n = await contar();
+      const susc = n === null ? "Suscriptores activos: no pude consultarlo ahora." : `Suscriptores activos hoy: ${n} (el envío real además salta a quienes pidieron la baja).`;
+      if (lista.length === 0) return { texto: `No hay borradores de campañas. Crea uno con guardar_campana_borrador.\n${susc}`, datos: { campanas: [], suscriptores_activos: n } };
+      return { texto: `${lista.map(filaListado).join("\n")}\n\n${susc}\n${AVISO_NO_ENVIA}`, datos: { campanas: lista.map((c) => ({ id: c.id, asunto: c.asunto, version: c.version, borrada: c.borradoEn !== null })), suscriptores_activos: n } };
+    }
     const c = await campanaOError(ctx, a.id);
+    if (a.vista_previa) return { texto: `${await resumen(c, await contar())}\n\n${AVISO_NO_ENVIA}`, datos: { id: c.id, enviada: false } };
     const versiones = await versionesDeCampana(ctx.db, c.id, 15);
     let datos: DatosCampana = datosDe(c);
     if (a.version !== undefined) {
@@ -133,34 +131,10 @@ export const verCampana = defineHerramienta({
   },
 });
 
-export const previsualizarCampana = defineHerramienta({
-  nombre: "previsualizar_campana",
-  titulo: "Vista previa de un borrador de campaña",
-  descripcion: "Muestra cómo quedaría la campaña (asunto, párrafos, botón, pie) y cuántos suscriptores activos hay hoy (solo el número, nunca correos). No cambia nada ni envía nada.",
-  esquema: z.object({ id: idSchema }),
-  anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
-  ejecutar: async (a, ctx) => {
-    const c = await campanaOError(ctx, a.id);
-    return { texto: `${await resumen(c, await contar())}\n\n${AVISO_NO_ENVIA}`, datos: { id: c.id, enviada: false } };
-  },
-});
-
-export const contarSuscriptoresHerramienta = defineHerramienta({
-  nombre: "contar_suscriptores",
-  titulo: "Contar suscriptores activos",
-  descripcion: "Dice cuántos suscriptores activos hay. Solo el número: nunca muestra correos ni nombres. Solo lectura.",
-  esquema: z.object({}),
-  anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
-  ejecutar: async () => {
-    const n = await contar();
-    return { texto: n === null ? "No pude consultar el número de suscriptores ahora." : `Hay ${n} suscriptores activos (el envío real además salta a quienes pidieron la baja).`, datos: { suscriptores_activos: n } };
-  },
-});
-
 export const borrarCampanaBorrador = defineHerramienta({
   nombre: "borrar_campana_borrador",
   titulo: "Borrar un borrador de campaña",
-  descripcion: "Borra un borrador de campaña (queda marcado como borrado; se puede deshacer). Solo borra el borrador: no toca a ningún suscriptor ni cancela envíos, porque esta herramienta no envía nada.",
+  descripcion: "Borra un borrador de campaña (queda marcado como borrado; se puede deshacer). No toca a ningún suscriptor: nada de esto envía correos.",
   esquema: z.object({ id: idSchema }),
   anotaciones: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
   ejecutar: async (a, ctx) => {
@@ -175,8 +149,8 @@ export const borrarCampanaBorrador = defineHerramienta({
 export const restaurarCampanaVersion = defineHerramienta({
   nombre: "restaurar_campana_version",
   titulo: "Restaurar una versión anterior de un borrador de campaña",
-  descripcion: "Deja el borrador con el contenido de una versión anterior (crea una versión nueva; el historial no se borra). Solo borradores: no envía nada. Se puede deshacer.",
-  esquema: z.object({ id: idSchema, version: z.number().int().min(1).max(100000).describe("Versión a restaurar (ver_campana).") }),
+  descripcion: "Deja el borrador con el contenido de una versión anterior (crea una versión nueva; el historial se conserva). No envía nada. Se puede deshacer.",
+  esquema: z.object({ id: idSchema, version: z.number().int().min(1).max(100000).describe("Versión a restaurar (ver_campanas).") }),
   anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   ejecutar: async (a, ctx) => {
     const c = await campanaOError(ctx, a.id);

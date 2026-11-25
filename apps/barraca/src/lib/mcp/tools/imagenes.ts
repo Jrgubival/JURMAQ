@@ -32,7 +32,7 @@ export function crearHerramientasImagenes(depsInyectadas?: Partial<DepsImagenes>
     nombre: "subir_imagen",
     titulo: "Subir una imagen a la tienda",
     descripcion:
-      "Sube una imagen (JPG, PNG, WebP o GIF; sin SVG) y devuelve la URL pública para usarla en el popup, las láminas del carrusel o la portada. Dos formas, indica solo una: «url» (https público; la tienda la descarga; hasta 5 MB) o «base64» (la imagen en base64; el pedido completo no puede pasar de 128 KB, así que solo sirve para imágenes muy livianas, de unos 90 KB). Lo preferible es «url». El tipo se verifica por el contenido real del archivo, no por su nombre.",
+    "Sube una imagen (JPG, PNG, WebP o GIF; sin SVG) y devuelve la URL pública para el popup, las láminas o la portada. Indica solo una forma: «url» (https público; hasta 5 MB; la preferible) o «base64» (el pedido completo no puede pasar de 128 KB: solo imágenes muy livianas). El tipo se verifica por el contenido real.",
     esquema: z.object({
       url: z.string().url().max(2000).refine((u) => u.startsWith("https://"), "Solo https.").optional().describe("Dirección https pública de la imagen."),
       base64: z.string().max(MAX_BASE64_CARACTERES).optional().describe("Imagen en base64 (sin el prefijo data:). Solo para imágenes livianas."),

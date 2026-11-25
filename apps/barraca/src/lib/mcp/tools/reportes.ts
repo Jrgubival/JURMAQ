@@ -77,9 +77,9 @@ const zDia = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Usa la fecha AAAA-MM-DD.")
 const PRESETS = ["hoy", "7d", "mes", "mes_pasado"] as const;
 
 const ESQUEMA_PERIODO = {
-  periodo: z.enum(PRESETS).optional().describe("Período rápido: hoy, 7d (últimos 7 días), mes (este mes, por defecto) o mes_pasado."),
-  desde: zDia.optional().describe("Primer día, AAAA-MM-DD (hora de Chile). Úsalo junto con «hasta»; reemplaza a «periodo»."),
-  hasta: zDia.optional().describe("Último día incluido, AAAA-MM-DD. Máximo 400 días entre ambos."),
+  periodo: z.enum(PRESETS).optional().describe("hoy, 7d, mes (por defecto) o mes_pasado."),
+  desde: zDia.optional().describe("AAAA-MM-DD; con «hasta», reemplaza a «periodo»."),
+  hasta: zDia.optional().describe("AAAA-MM-DD, incluido; máx. 400 días."),
 };
 
 function periodoDe(a: { periodo?: (typeof PRESETS)[number]; desde?: string; hasta?: string }, ahora: number): Periodo {
@@ -101,7 +101,7 @@ export function crearHerramientasReportes(deps: DepsReportes = depsReportesReale
     nombre: "reporte_ventas",
     titulo: "Reporte de ventas por período",
     descripcion:
-      "Ventas de un período: total vendido, cantidad de pedidos, ticket medio y desglose por forma de pago (Webpay, transferencia). Cuenta solo pedidos pagados según el criterio del panel (pagado, en preparación, listo para retiro, despachado o entregado; no cuenta pendientes, cancelados ni no aprobados) y por la fecha del pedido, hora de Chile. Por defecto, el mes en curso.",
+    "Ventas de un período: total, pedidos, ticket medio y desglose por forma de pago. Cuenta pedidos pagados según el panel (pagado, en preparación, listo para retiro, despachado o entregado) por fecha del pedido, hora de Chile. Por defecto, el mes en curso.",
     esquema: z.object(ESQUEMA_PERIODO),
     anotaciones: ANOTACION_LECTURA,
     async ejecutar(a, ctx) {
@@ -124,7 +124,7 @@ export function crearHerramientasReportes(deps: DepsReportes = depsReportesReale
     nombre: "reporte_mas_vendidos",
     titulo: "Productos más vendidos",
     descripcion:
-      "Los productos más vendidos de un período (agrupados por código), con unidades, ingresos y cantidad de pedidos. Mismo criterio de venta que reporte_ventas. Máximo 50 productos; por defecto 10, ordenados por unidades.",
+    "Productos más vendidos de un período (por código): unidades, ingresos y pedidos. Mismo criterio que reporte_ventas. Máximo 50; por defecto 10 por unidades.",
     esquema: z.object({
       ...ESQUEMA_PERIODO,
       limite: z.number().int().min(1).max(50).optional().describe("Cuántos productos mostrar (máximo 50, por defecto 10)."),
@@ -149,7 +149,7 @@ export function crearHerramientasReportes(deps: DepsReportes = depsReportesReale
     nombre: "reporte_catalogo",
     titulo: "Reporte de estado del catálogo",
     descripcion:
-      "Lista productos activos con un problema: sin_foto (sin imagen o con la imagen de relleno), sin_stock (menos de 1 unidad; los «solo cotizar» no cuentan), bajo_costo (precio menor al costo) o margen_menor_15 (precio con menos de 15 % de utilidad sobre el costo). Agrupa por código (las fichas duplicadas cuentan una vez). Paginado, máximo 50 por página.",
+    "Lista productos activos con un problema: sin_foto, sin_stock (los «solo cotizar» no cuentan), bajo_costo o margen_menor_15. Agrupa por código. Paginado, máximo 50 por página.",
     esquema: z.object({
       tipo: z.enum(TIPOS_REPORTE_CATALOGO).describe("Qué problema buscar."),
       pagina: z.number().int().min(1).max(500).optional().describe("Página, desde 1."),
@@ -177,7 +177,7 @@ export function crearHerramientasReportes(deps: DepsReportes = depsReportesReale
     nombre: "reporte_carritos_abandonados",
     titulo: "Reporte de carritos abandonados",
     descripcion:
-      "Carritos abandonados (sin compra) en un período: cantidad, monto total y promedio, y los productos que más se dejaron. Sin ningún dato personal: no muestra correos, teléfonos ni quién fue. Por defecto, el mes en curso.",
+    "Carritos abandonados de un período: cantidad, monto total y promedio, y los productos más dejados. Sin datos personales. Por defecto, el mes en curso.",
     esquema: z.object({
       ...ESQUEMA_PERIODO,
       limite_productos: z.number().int().min(1).max(30).optional().describe("Cuántos productos mostrar (máximo 30, por defecto 10)."),
@@ -201,7 +201,7 @@ export function crearHerramientasReportes(deps: DepsReportes = depsReportesReale
     nombre: "reporte_cupones",
     titulo: "Reporte de uso de cupones",
     descripcion:
-      "Cuántas veces se usó cada cupón en un período: usos confirmados (pedido pagado), reservados vigentes, liberados, descuento total entregado y monto de compra. Sin datos personales. Si el interruptor de cupones está apagado, no habrá usos.",
+    "Cuántas veces se usó cada cupón en un período (confirmados, reservados, liberados), descuento entregado y monto de compra. Sin datos personales. Con el interruptor apagado no habrá usos.",
     esquema: z.object(ESQUEMA_PERIODO),
     anotaciones: ANOTACION_LECTURA,
     async ejecutar(a, ctx) {

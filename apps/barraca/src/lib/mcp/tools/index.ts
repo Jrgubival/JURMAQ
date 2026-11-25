@@ -25,10 +25,7 @@ import {
 } from "./guias-contenido.ts";
 import { verMarcasHerramienta } from "./marcas.ts";
 import { editarBorradorCorreo, listarPlantillasCorreo, previsualizarCorreo, publicarCorreo, restaurarCorreo, verPlantillaCorreo } from "./correos.ts";
-import {
-  borrarCampanaBorrador, contarSuscriptoresHerramienta, crearCampanaBorrador, editarCampanaBorrador, listarCampanasHerramienta, previsualizarCampana,
-  restaurarCampanaVersion, verCampana,
-} from "./campanas.ts";
+import { borrarCampanaBorrador, guardarCampanaBorrador, restaurarCampanaVersion, verCampanas } from "./campanas.ts";
 
 export const registro = crearRegistro();
 registro.agregar(guia);
@@ -83,11 +80,7 @@ registro.agregar(editarBorradorCorreo);
 registro.agregar(previsualizarCorreo);
 registro.agregar(publicarCorreo);
 registro.agregar(restaurarCorreo);
-registro.agregar(crearCampanaBorrador);
-registro.agregar(editarCampanaBorrador);
-registro.agregar(listarCampanasHerramienta);
-registro.agregar(verCampana);
-registro.agregar(previsualizarCampana);
-registro.agregar(contarSuscriptoresHerramienta);
-registro.agregar(borrarCampanaBorrador);
+registro.agregar(verCampanas);
+registro.agregar(guardarCampanaBorrador);
 registro.agregar(restaurarCampanaVersion);
+registro.agregar(borrarCampanaBorrador);

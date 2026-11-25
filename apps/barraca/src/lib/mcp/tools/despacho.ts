@@ -19,7 +19,7 @@ export const cambiarDespacho = defineHerramienta({
   nombre: "cambiar_despacho",
   titulo: "Cambiar despacho de una zona",
   descripcion:
-    "Cambia el costo de despacho de una zona, el monto desde el que el despacho sale gratis (null = nunca gratis) o la activa o desactiva. TODO cambio de despacho necesita la aprobación de Jorge: esta herramienta deja la solicitud (le llega un correo con el enlace) y NO cambia nada hasta que él apruebe; entonces repite la misma llamada y se aplica. Montos en pesos enteros. Queda registrado y se puede deshacer.",
+    "Cambia el costo de despacho de una zona, el monto desde el que es gratis (null = nunca) o la activa o desactiva. SIEMPRE necesita el OK de Jorge: deja la solicitud (le llega un correo) y NO cambia nada hasta que apruebe; entonces repite la misma llamada. Pesos enteros. Se puede deshacer.",
   esquema: z.object({
     zona_id: z.string().trim().regex(/^[a-z][a-z-]{1,29}$/, "Id de zona no válido").describe("Id de la zona (ver_zonas_despacho)."),
     costo: z.number().optional().describe("Costo de despacho en pesos enteros (0 = sin costo)."),

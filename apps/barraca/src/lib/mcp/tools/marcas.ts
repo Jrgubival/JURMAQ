@@ -11,7 +11,8 @@ import { ejecutarSeo, obtenerDepsSeo } from "./seo-comun.ts";
 export const verMarcasHerramienta = defineHerramienta({
   nombre: "ver_marcas",
   titulo: "Ver las marcas reconocidas del catálogo",
-  descripcion: "Solo lectura. La tienda no guarda la marca como dato: se reconoce por el nombre del producto. Sin parámetros muestra cuántos productos activos (por código) tiene cada marca reconocida y cuántos no tienen marca. Con 'marca' (el slug, p. ej. tolmat) lista hasta 40 productos de esa marca; con marca='ninguna' lista productos sin marca reconocida, como sugerencia de nombres a revisar. No se pueden asignar marcas ni crear páginas de marca desde acá. No cambia nada.",
+  descripcion:
+    "Solo lectura. La marca no es un dato: se reconoce por el nombre del producto. Sin parámetros: cuántos productos activos tiene cada marca y cuántos no tienen. Con 'marca' (slug, p. ej. tolmat) lista hasta 40 productos; con 'ninguna', los sin marca reconocida. No se asignan marcas desde aquí.",
   esquema: z.object({ marca: z.string().trim().min(1).max(40).optional() }),
   anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
   ejecutar: async (a) =>

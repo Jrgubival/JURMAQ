@@ -57,7 +57,7 @@ export const listarPlantillasCorreo = defineHerramienta({
   nombre: "listar_plantillas_correo",
   titulo: "Listar los correos al cliente que se pueden editar",
   descripcion:
-    "Muestra los correos que la tienda manda a los clientes (confirmación de pedido, pago recibido, rechazo, anulación, devolución, opinión, boleta o factura) con cuándo se envían, si hoy salen con el texto original del código o con uno publicado, y si hay un borrador sin publicar. Solo se editan los textos; el detalle del pedido, los datos de transferencia y los enlaces son fijos.",
+    "Lista los correos que la tienda manda a clientes (confirmación, pago recibido, rechazo, anulación, devolución, opinión, boleta o factura): cuándo salen, si usan el texto del código o uno publicado y si hay borrador. Solo se editan los textos; el detalle del pedido, los datos de transferencia y los enlaces son fijos.",
   esquema: z.object({}),
   anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
   ejecutar: async (_a, ctx) => {
@@ -74,7 +74,7 @@ export const verPlantillaCorreo = defineHerramienta({
   nombre: "ver_plantilla_correo",
   titulo: "Ver los textos de un correo al cliente",
   descripcion:
-    "Muestra, campo por campo, el texto que sale hoy, el borrador (si hay) y el texto original del código de un correo al cliente, junto con las variables permitidas, el largo máximo y las reglas. Con `version` muestra una versión anterior del historial (0 = el texto original del código).",
+    "Muestra, campo por campo, el texto que sale hoy, el borrador (si hay) y el original del código de un correo al cliente, con las variables permitidas, el largo máximo y las reglas. Con `version`, una versión anterior (0 = el original del código).",
   esquema: z.object({
     clave: esquemaClave,
     version: z.number().int().min(0).max(100000).optional().describe("Versión del historial a mostrar (0 = texto original del código)."),
@@ -123,7 +123,7 @@ export const previsualizarCorreo = defineHerramienta({
   nombre: "previsualizar_correo",
   titulo: "Vista previa de un correo al cliente",
   descripcion:
-    "Muestra cómo queda un correo al cliente con datos de ejemplo (nombre, número de pedido, total…): asunto, resumen de la bandeja, título y cada párrafo, con una línea [FIJO] donde la tienda pone sus bloques (productos, datos de transferencia, botones, Términos). Por defecto muestra el borrador si hay y si no lo que sale hoy. No cambia nada ni envía nada.",
+    "Muestra cómo queda un correo con datos de ejemplo (asunto, bandeja, título, párrafos), con [FIJO] donde la tienda pone sus bloques. Por defecto el borrador si hay; si no, lo que sale hoy. No cambia ni envía nada.",
   esquema: z.object({
     clave: esquemaClave,
     fuente: z.enum(["borrador", "publicado", "codigo"]).optional().describe("Qué texto mostrar: el borrador, lo que sale hoy («publicado») o el original del código."),
@@ -150,7 +150,7 @@ export const editarBorradorCorreo = defineHerramienta({
   nombre: "editar_borrador_correo",
   titulo: "Editar el borrador de un correo al cliente",
   descripcion:
-    "Cambia uno o más textos del BORRADOR de un correo al cliente (los demás campos quedan como estaban en el borrador, o como salen hoy si no había borrador). Pasa `campos` con la clave de cada campo y su texto nuevo. Las variables van entre llaves, por ejemplo {nombre} o {numero_pedido}; **negrita** solo en párrafos; sin HTML, sin enlaces, sin teléfonos, sin datos bancarios ni montos escritos a mano. El borrador no cambia nada para los clientes: para que salga hay que publicarlo con publicar_correo (necesita el OK de Jorge). Se puede deshacer.",
+    "Cambia textos del BORRADOR de un correo al cliente (los demás campos quedan igual). Pasa `campos` {campo: texto}. Variables entre llaves, p. ej. {nombre}; **negrita** solo en párrafos; sin HTML, enlaces, teléfonos, datos bancarios ni montos escritos a mano. Los clientes no ven el borrador: se publica con publicar_correo (OK de Jorge). Se puede deshacer.",
   esquema: z.object({
     clave: esquemaClave,
     campos: z.record(z.string().trim().min(1).max(40), z.string().max(700)).refine((o) => Object.keys(o).length >= 1 && Object.keys(o).length <= 12, "Pasa entre 1 y 12 campos.")
@@ -182,7 +182,7 @@ export const restaurarCorreo = defineHerramienta({
   nombre: "restaurar_correo",
   titulo: "Restaurar un texto anterior de un correo al cliente",
   descripcion:
-    "Copia al BORRADOR el texto de una versión anterior del historial de un correo al cliente (`version` 0 = el texto original del código). No cambia lo que reciben los clientes: después hay que publicarlo con publicar_correo (necesita el OK de Jorge). Se puede deshacer.",
+    "Copia al BORRADOR el texto de una versión anterior de un correo (`version` 0 = el original del código). No cambia lo que reciben los clientes: hay que publicarlo con publicar_correo (OK de Jorge). Se puede deshacer.",
   esquema: z.object({ clave: esquemaClave, version: z.number().int().min(0).max(100000).describe("Versión del historial; 0 = texto original del código.") }),
   anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
   ejecutar: async (a, ctx) => {
@@ -237,7 +237,7 @@ export const publicarCorreo = defineHerramienta({
   nombre: "publicar_correo",
   titulo: "Publicar el texto de un correo al cliente (necesita OK de Jorge)",
   descripcion:
-    "Hace que un correo al cliente salga con el texto del borrador. SIEMPRE necesita la aprobación de Jorge, en dos pasos: (1) sin `vista_previa_id` muestra cómo queda y entrega un id de un solo uso (vale 5 horas); (2) con ese id manda a Jorge el correo con el enlace de aprobación y NO publica nada hasta que él apruebe; cuando apruebe, repite la misma llamada con el mismo id y se publica una sola vez. Si cambió el borrador o el correo entre medio, se rechaza. Sin el correo del aprobador configurado queda bloqueado. Se puede deshacer volviendo a una versión ya aprobada.",
+    "Hace que un correo al cliente salga con el texto del borrador. SIEMPRE necesita el OK de Jorge, en dos pasos: (1) sin `vista_previa_id` muestra cómo queda y da un id de un solo uso (5 horas); (2) con ese id le manda a Jorge el enlace de aprobación y NO publica hasta que apruebe; entonces repite la misma llamada con el mismo id. Si cambió el borrador o el correo, se rechaza. Sin el correo del aprobador, queda bloqueado. Se puede deshacer volviendo a una versión aprobada.",
   esquema: z.object({
     clave: esquemaClave,
     vista_previa_id: z.string().trim().min(8).max(16).optional().describe("Id de la vista previa del paso 1. Sin id se hace el paso 1."),

@@ -129,23 +129,23 @@ async function terminosDicenSinCupones(db: D1Like): Promise<boolean> {
 
 // ───────── Entradas ─────────
 
-const codigoSchema = z.string().trim().min(3).max(30).describe("Código del cupón, como aparece en listar_cupones (se acepta en minúsculas).");
-const fechaCupon = z.string().trim().max(40).nullable().optional().describe("AAAA-MM-DD o fecha y hora ISO. «hasta» en AAAA-MM-DD vale hasta el fin de ese día (hora de Chile). null en «hasta» = sin vencimiento.");
+const codigoSchema = z.string().trim().min(3).max(30).describe("Código del cupón (listar_cupones).");
+const fechaCupon = z.string().trim().max(40).nullable().optional().describe("AAAA-MM-DD (hora de Chile; «hasta» vale hasta fin de ese día) o ISO. null = sin límite.");
 
 const camposCupon = {
   descripcion: z.string().max(200).nullable().optional(),
   tipo: z.enum(["porcentaje", "monto_fijo"]).optional().describe("porcentaje (valor 1 a 50) o monto_fijo (pesos, hasta 200000)."),
   valor: z.number().positive().max(MAX_MONTO_FIJO_HERRAMIENTA).optional(),
-  compra_minima: z.number().int().min(0).max(100_000_000).optional().describe("Pesos. Se mide sobre lo que califica para el cupón."),
-  max_usos_total: z.number().int().positive().max(1_000_000).nullable().optional().describe("Tope total de usos. No va junto con «un_uso_por_cliente»."),
+  compra_minima: z.number().int().min(0).max(100_000_000).optional().describe("Pesos, sobre lo que califica."),
+  max_usos_total: z.number().int().positive().max(1_000_000).nullable().optional().describe("Tope total; no va con un_uso_por_cliente."),
   max_usos_por_cliente: z.number().int().min(0).max(1000).optional(),
   valido_desde: fechaCupon,
   valido_hasta: fechaCupon,
-  categorias_modo: z.enum(["todas", "incluir", "excluir"]).optional().describe("todas, solo en las categorías indicadas (incluir) o todas menos esas (excluir). Las subcategorías heredan."),
+  categorias_modo: z.enum(["todas", "incluir", "excluir"]).optional().describe("todas, incluir (solo esas) o excluir (todas menos esas). Heredan las subcategorías."),
   categorias_ids: z.array(z.number().int().positive()).max(100).optional(),
-  categorias_slugs: z.array(z.string().trim().min(1).max(120)).max(100).optional().describe("Alternativa a categorias_ids: los slugs que muestra categorias_para_cupones."),
-  un_uso_por_cliente: z.boolean().optional().describe("Cada cliente (correo y RUT) puede usarlo una sola vez."),
-  no_acumulable: z.boolean().optional().describe("No se suma a productos con oferta, combo o promoción de categoría."),
+  categorias_slugs: z.array(z.string().trim().min(1).max(120)).max(100).optional().describe("Alternativa a categorias_ids (categorias_para_cupones)."),
+  un_uso_por_cliente: z.boolean().optional().describe("Una vez por cliente (correo y RUT)."),
+  no_acumulable: z.boolean().optional().describe("No se suma a ofertas, combos ni promociones."),
 };
 
 type EntradaCampos = { [K in keyof typeof camposCupon]?: z.infer<(typeof camposCupon)[K]> };
@@ -382,7 +382,8 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
   const categorias_para_cupones = defineHerramienta({
     nombre: "categorias_para_cupones",
     titulo: "Categorías de la tienda (para reglas de cupones)",
-    descripcion: "Lista las categorías de la tienda con su id y slug, para armar las reglas «categorías incluidas o excluidas» de un cupón. Las subcategorías heredan la regla de su categoría padre.",
+    descripcion:
+    "Lista las categorías con id y slug para armar las reglas de incluir o excluir de un cupón. Las subcategorías heredan la regla del padre.",
     esquema: z.object({}),
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
     async ejecutar() {
@@ -396,7 +397,8 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
   const listar_cupones = defineHerramienta({
     nombre: "listar_cupones",
     titulo: "Listar cupones",
-    descripcion: "Lista los cupones con su descuento, compra mínima, vigencia, estado (activo o apagado), reglas (categorías, un uso por cliente, no acumulable) y cuántas veces se usaron en pedidos. También dice si el interruptor del checkout está encendido: si está apagado, ningún cupón funciona aunque esté activo.",
+    descripcion:
+    "Lista los cupones con descuento, compra mínima, vigencia, estado, reglas y usos en pedidos. Dice si el interruptor del checkout está encendido: apagado, ningún cupón funciona.",
     esquema: z.object({ solo_activos: z.boolean().optional(), limite: z.number().int().min(1).max(100).optional() }),
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
     async ejecutar({ solo_activos, limite }, ctx) {
@@ -429,7 +431,7 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
   const crear_cupon = defineHerramienta({
     nombre: "crear_cupon",
     titulo: "Crear un cupón",
-    descripcion: `Crea un cupón. Obligatorios: codigo (3 a 30 caracteres: letras, números, guion), tipo y valor. Tope de seguridad: porcentaje hasta ${MAX_PORCENTAJE_HERRAMIENTA} %, monto fijo hasta ${clp(MAX_MONTO_FIJO_HERRAMIENTA)}. Reglas opcionales: categorías incluidas o excluidas, un uso por cliente (por correo y RUT; no va junto con un tope total) y no acumulable (no se suma a ofertas ni combos). Crearlo no lo hace funcionar en la tienda: eso depende del interruptor general, que aprueba Jorge. Muestra el resumen al usuario y pide su OK antes de crear.`,
+    descripcion: `Crea un cupón: codigo (3 a 30: letras, números, guion), tipo y valor (tope: ${MAX_PORCENTAJE_HERRAMIENTA} % o ${clp(MAX_MONTO_FIJO_HERRAMIENTA)}). Opcional: categorías incluidas o excluidas, un uso por cliente (no va con tope total) y no acumulable. Crearlo no lo activa en la tienda: depende del interruptor general que aprueba Jorge. Muestra el resumen y pide el OK del usuario antes de crear.`,
     esquema: z.object({ codigo: codigoSchema, activo: z.boolean().optional().describe("Por defecto true."), ...camposCupon, tipo: z.enum(["porcentaje", "monto_fijo"]), valor: z.number().positive().max(MAX_MONTO_FIJO_HERRAMIENTA) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar(a, ctx) {
@@ -463,7 +465,7 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
   const editar_cupon = defineHerramienta({
     nombre: "editar_cupon",
     titulo: "Editar un cupón",
-    descripcion: `Cambia solo lo que indiques de un cupón existente (descuento, compra mínima, topes, vigencia, reglas). El código no se puede cambiar. Mismos topes de seguridad que crear_cupon (${MAX_PORCENTAJE_HERRAMIENTA} % o ${clp(MAX_MONTO_FIJO_HERRAMIENTA)}). Para encender o apagar un cupón usa activar_cupon o desactivar_cupon.`,
+    descripcion: `Cambia solo lo que indiques de un cupón (descuento, compra mínima, topes, vigencia, reglas); el código no se cambia. Mismos topes que crear_cupon (${MAX_PORCENTAJE_HERRAMIENTA} % o ${clp(MAX_MONTO_FIJO_HERRAMIENTA)}). Para encender o apagar: activar_cupon o desactivar_cupon.`,
     esquema: z.object({ codigo: codigoSchema, ...camposCupon }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     async ejecutar(a, ctx) {
@@ -534,13 +536,14 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
       revertidor: revertir,
     });
 
-  const activar_cupon = cambiarEstado("activar_cupon", "Activar un cupón", "Deja un cupón activo (aplicable). Para que los clientes lo usen, además el interruptor general de cupones debe estar encendido (lo aprueba Jorge).", true);
-  const desactivar_cupon = cambiarEstado("desactivar_cupon", "Apagar un cupón", "Apaga un cupón: deja de aplicarse a nuevos pedidos. No se borra ni afecta los pedidos ya hechos.", false);
+  const activar_cupon = cambiarEstado("activar_cupon", "Activar un cupón", "Deja un cupón activo. Para que los clientes lo usen, el interruptor general de cupones debe estar encendido (lo aprueba Jorge).", true);
+  const desactivar_cupon = cambiarEstado("desactivar_cupon", "Apagar un cupón", "Apaga un cupón: deja de aplicarse a nuevos pedidos (no se borra; los pedidos hechos no cambian).", false);
 
   const ver_usos_cupones = defineHerramienta({
     nombre: "ver_usos_cupones",
     titulo: "Ver usos de cupones por período",
-    descripcion: "Cuántas veces se usó cada cupón entre dos fechas (confirmados, reservados, liberados), cuánto descontó y cuánto compraron en total. Solo cifras: no incluye datos de clientes. Con «por_dia» agrega el detalle diario. Fechas AAAA-MM-DD (hora de Chile), máximo 366 días.",
+    descripcion:
+    "Cuántas veces se usó cada cupón entre dos fechas (confirmados, reservados, liberados), cuánto descontó y cuánto compraron. Solo cifras, sin datos de clientes. «por_dia» agrega el detalle diario. AAAA-MM-DD (hora de Chile), máximo 366 días.",
     esquema: z.object({
       desde: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), hasta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Incluida."),
       codigo: codigoSchema.optional(), por_dia: z.boolean().optional(),
@@ -585,7 +588,8 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
   const solicitar_encender_cupones = defineHerramienta({
     nombre: "solicitar_encender_cupones",
     titulo: "Pedir a Jorge que encienda los cupones",
-    descripcion: "SOLO crea la solicitud de aprobación: le llega un correo a Jorge con un enlace de un solo uso (vale 4 horas) y no enciende nada. Antes hay que aplicar en Supabase la migración supabase/migrations/2026_11_26_barraca_cupones_pedidos.sql y actualizar los términos, que hoy dicen que no hay cupones; si la migración falta, no pido la aprobación. Cuando Jorge apruebe, usa aplicar_encendido_cupones. Si cambian los cupones activos entremedio, la aprobación deja de servir.",
+    descripcion:
+    "SOLO crea la solicitud: le llega a Jorge un correo con un enlace de un solo uso (4 horas) y no enciende nada. Antes hay que aplicar en Supabase la migración supabase/migrations/2026_11_26_barraca_cupones_pedidos.sql y actualizar los términos (hoy dicen que no hay cupones); si falta la migración, no se pide. Cuando apruebe, usa aplicar_encendido_cupones. Si cambian los cupones activos, la aprobación deja de servir.",
     esquema: z.object({}),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     async ejecutar(_a, ctx) {
@@ -620,7 +624,8 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
   const aplicar_encendido_cupones = defineHerramienta({
     nombre: "aplicar_encendido_cupones",
     titulo: "Encender los cupones (solo con aprobación de Jorge)",
-    descripcion: "Enciende el interruptor de cupones del checkout ÚNICAMENTE si Jorge ya aprobó la solicitud hecha con solicitar_encender_cupones, la aprobación no venció ni se usó, los cupones activos siguen siendo los que él vio y la migración de pedidos está aplicada. En cualquier otro caso no cambia nada. La aprobación sirve una sola vez.",
+    descripcion:
+    "Enciende el interruptor de cupones SOLO si Jorge aprobó la solicitud de solicitar_encender_cupones, no venció ni se usó, los cupones activos siguen siendo los que vio y la migración está aplicada. Si no, no cambia nada. Sirve una sola vez.",
     esquema: z.object({ aprobacion_id: z.string().min(8).max(64) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ aprobacion_id }, ctx) {

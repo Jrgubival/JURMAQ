@@ -93,9 +93,7 @@ export function depsContenidoReales(): DepsContenido {
 
 // ───────── Utilidades ─────────
 
-const claveSchema = z.enum(CLAVES_CONTENIDO).describe(
-  "Qué contenido: terminos, privacidad, envios, nosotros, contacto, datos_local (teléfono, WhatsApp, dirección, horario), popup, slides (carrusel de la portada), cinta (cinta superior), avisos (cierres, feriados, despacho), portada (orden de secciones y destacados) o textos.",
-);
+const claveSchema = z.enum(CLAVES_CONTENIDO).describe("Qué contenido: terminos, privacidad, envios, nosotros, contacto, datos_local, popup, slides, cinta, avisos, portada o textos.");
 
 const CLAVES_OBJETO = ["contacto", "datos_local", "popup", "cinta", "portada", "textos"] as const;
 
@@ -284,14 +282,14 @@ async function baseDeEdicion(db: D1Like, clave: ClaveContenido) {
 
 const textoCorto = (max: number) => z.string().max(max);
 const botonSchema = z.strictObject({ texto: textoCorto(40), enlace: textoCorto(300) }).nullable();
-const fechaOpc = z.string().max(40).nullable().optional().describe("Fecha y hora: AAAA-MM-DDTHH:MM (hora de Chile) o ISO con zona. null = sin límite. «hasta» no se incluye.");
+const fechaOpc = z.string().max(40).nullable().optional().describe("AAAA-MM-DDTHH:MM (hora de Chile); null = sin límite. «hasta» no se incluye.");
 
 const camposSlide = {
   activa: z.boolean().optional(),
-  imagenDesktop: textoCorto(500).optional().describe("URL de la imagen de escritorio (usa la que devuelve subir_imagen)."),
-  imagenMovil: textoCorto(500).nullable().optional().describe("URL de la imagen para celular; null = usa la de escritorio."),
-  alt: textoCorto(160).optional().describe("Descripción de la imagen (accesibilidad)."),
-  eyebrow: textoCorto(70).optional().describe("Texto chico sobre el título."),
+  imagenDesktop: textoCorto(500).optional().describe("URL (la de subir_imagen)."),
+  imagenMovil: textoCorto(500).nullable().optional().describe("URL para celular; null = la de escritorio."),
+  alt: textoCorto(160).optional(),
+  eyebrow: textoCorto(70).optional(),
   titulo: textoCorto(80).optional(),
   subtitulo: textoCorto(200).optional(),
   boton: botonSchema.optional(),
@@ -301,11 +299,10 @@ const camposSlide = {
 };
 
 const operacionSlide = z.discriminatedUnion("op", [
-  z.strictObject({ op: z.literal("agregar"), id: textoCorto(40).optional(), posicion: z.number().int().min(1).max(50).optional().describe("Posición (1 = primera). Si falta, va al final."), ...camposSlide }),
+  z.strictObject({ op: z.literal(["agregar", "editar"]), id: textoCorto(40).optional().describe("Obligatorio para editar."), posicion: z.number().int().min(1).max(50).optional().describe("Solo al agregar (1 = primera; sin esto, al final)."), ...camposSlide }),
   z.strictObject({ op: z.literal("quitar"), id: textoCorto(40) }),
-  z.strictObject({ op: z.literal("ordenar"), ids: z.array(textoCorto(40)).min(1).max(30).describe("Ids en el orden nuevo. Los que no nombres quedan al final.") }),
+  z.strictObject({ op: z.literal("ordenar"), ids: z.array(textoCorto(40)).min(1).max(30).describe("Orden nuevo; los no nombrados quedan al final.") }),
   z.strictObject({ op: z.literal("activar"), id: textoCorto(40), activa: z.boolean() }),
-  z.strictObject({ op: z.literal("editar"), id: textoCorto(40), ...camposSlide }),
 ]);
 
 const camposAviso = {
@@ -320,10 +317,9 @@ const camposAviso = {
 };
 
 const operacionAviso = z.discriminatedUnion("op", [
-  z.strictObject({ op: z.literal("agregar"), id: textoCorto(40).optional(), ...camposAviso }),
+  z.strictObject({ op: z.literal(["agregar", "editar"]), id: textoCorto(40).optional().describe("Obligatorio para editar."), ...camposAviso }),
   z.strictObject({ op: z.literal("quitar"), id: textoCorto(40) }),
   z.strictObject({ op: z.literal("activar"), id: textoCorto(40), activo: z.boolean() }),
-  z.strictObject({ op: z.literal("editar"), id: textoCorto(40), ...camposAviso }),
 ]);
 
 function sinIndefinidos<T extends Record<string, unknown>>(o: T): Record<string, unknown> {
@@ -368,6 +364,8 @@ function aplicarOperaciones(lista: Elemento[], ops: Array<Record<string, unknown
       }
       case "activar": items[buscar(op.id)][cfg.flagActivo] = op[cfg.flagActivo]; break;
       case "editar": {
+        if (op.id === undefined) throw new ErrorHerramienta("«editar» necesita el id del elemento.");
+        if (op.posicion !== undefined) throw new ErrorHerramienta("«posicion» solo sirve al agregar; para mover usa «ordenar».");
         const i = buscar(op.id);
         const { op: _o, id: _i, ...campos } = op;
         void _o; void _i;
@@ -393,12 +391,12 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "ver_contenido",
     titulo: "Ver contenido de la tienda",
     descripcion:
-      "Sin «clave» lista todos los contenidos editables (qué está publicado, si hay borrador o una publicación esperando aprobación). Con «clave» muestra el contenido: «efectivo» es lo que ve hoy la tienda (si nunca se editó, es el texto original del código) y es el punto de partida para editar. Los textos largos (términos, privacidad) vienen por partes.",
+    "Sin «clave» lista los contenidos editables (publicado, borrador, publicación pendiente de aprobación). Con «clave» muestra el contenido: «efectivo» es lo que ve hoy la tienda (el texto del código si nunca se editó) y es el punto de partida para editar. Los textos largos vienen por partes.",
     esquema: z.object({
       clave: claveSchema.optional(),
-      fuente: z.enum(["efectivo", "borrador", "publicado", "pendiente"]).optional().describe("Cuál versión ver. Por defecto: el borrador si existe; si no, lo que ve la tienda."),
-      version: z.number().int().min(1).max(100000).optional().describe("Número de una versión del historial (ver_historial_contenido). Reemplaza a «fuente»."),
-      parte: z.number().int().min(1).max(100).optional().describe("Para textos largos: qué parte leer (de a 12.000 caracteres)."),
+      fuente: z.enum(["efectivo", "borrador", "publicado", "pendiente"]).optional().describe("Por defecto: el borrador si existe; si no, lo publicado."),
+      version: z.number().int().min(1).max(100000).optional().describe("Versión del historial; reemplaza a «fuente»."),
+      parte: z.number().int().min(1).max(100).optional().describe("Parte a leer en textos largos."),
     }),
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
     async ejecutar({ clave, fuente, version, parte }, ctx) {
@@ -436,7 +434,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "ver_historial_contenido",
     titulo: "Ver versiones de un contenido",
     descripcion:
-      "Lista las versiones de un contenido (quién, cuándo, si está publicada, reemplazada, pendiente de aprobación o descartada). Para ver el texto de una versión usa ver_contenido con «version»; para volver a una usa restaurar_version_contenido.",
+    "Lista las versiones de un contenido (quién, cuándo, estado). Para ver el texto de una usa ver_contenido con «version»; para volver a una, restaurar_version_contenido.",
     esquema: z.object({ clave: claveSchema, limite: z.number().int().min(1).max(50).optional() }),
     anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
     async ejecutar({ clave, limite }, ctx) {
@@ -452,8 +450,8 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "guardar_borrador_contenido",
     titulo: "Guardar borrador de contenido",
     descripcion:
-      "Guarda el contenido COMPLETO de un tipo como borrador (reemplaza el borrador anterior). No se ve en la tienda hasta publicarlo. Parte siempre de ver_contenido (fuente efectivo) y respeta su forma exacta: los campos desconocidos se rechazan. Para cambiar solo algunos campos usa editar_campos_contenido; para láminas y avisos, editar_slides y editar_avisos. Sin HTML ni scripts: se limpian.",
-    esquema: z.object({ clave: claveSchema, valor: z.any().describe("El contenido completo, con la misma forma que muestra ver_contenido (para términos y privacidad: { texto: \"...\" } en markdown).") }),
+    "Guarda el contenido COMPLETO de un tipo como borrador (reemplaza el anterior); no se ve hasta publicar. Parte de ver_contenido (fuente efectivo) y respeta su forma: los campos desconocidos se rechazan. Para cambiar pocos campos usa editar_campos_contenido; para láminas y avisos, editar_slides y editar_avisos. Sin HTML ni scripts.",
+    esquema: z.object({ clave: claveSchema, valor: z.any().describe("Contenido completo, con la forma de ver_contenido (términos y privacidad: {texto} en markdown).") }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     async ejecutar({ clave, valor }, ctx) {
       const limpio = await validarONada(clave, valor);
@@ -469,7 +467,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "editar_campos_contenido",
     titulo: "Cambiar algunos campos de un contenido",
     descripcion:
-      "Cambia solo los campos que indiques de contacto, datos_local (teléfono, WhatsApp, dirección, correo, horario), popup, cinta, portada (secciones, productos y categorías destacados) o textos, y guarda el resultado como borrador. Los objetos anidados (horario, geo, botones) se mezclan campo a campo; las listas se reemplazan completas. Parte del borrador si existe; si no, de lo que ve la tienda. No se publica solo.",
+    "Cambia solo los campos indicados de contacto, datos_local, popup, cinta, portada o textos y lo guarda como borrador. Los objetos anidados se mezclan campo a campo; las listas se reemplazan completas. Parte del borrador si existe; si no, de lo que ve la tienda.",
     esquema: z.object({
       clave: z.enum(CLAVES_OBJETO),
       cambios: z.record(z.string().max(60), z.any()).refine((o) => Object.keys(o).length >= 1 && Object.keys(o).length <= 30, "Entre 1 y 30 campos."),
@@ -490,7 +488,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "editar_slides",
     titulo: "Editar el carrusel de la portada",
     descripcion:
-      "Cambia las láminas del carrusel de la portada en una o varias operaciones seguidas: agregar, quitar, ordenar, activar (activa true/false), editar (imagen, textos, botón, vigencia desde/hasta). Si algo falla no se guarda nada. Antes mira las láminas actuales con ver_contenido clave slides. Sube las fotos con subir_imagen y usa la URL que devuelve. Queda como borrador; para publicar usa previsualizar_publicacion_contenido.",
+      "Cambia las láminas del carrusel de la portada con operaciones seguidas (agregar, editar, quitar, ordenar, activar). Si algo falla no se guarda nada. Mira antes ver_contenido clave slides; las fotos se suben con subir_imagen. Queda como borrador (publicar: tema «contenido» de guia).",
     esquema: z.object({ operaciones: z.array(operacionSlide).min(1).max(20) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ operaciones }, ctx) {
@@ -513,7 +511,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "editar_avisos",
     titulo: "Editar avisos de cierre, feriados y despacho",
     descripcion:
-      "Agrega, quita, activa o edita avisos que se muestran bajo el encabezado (cierre del local, feriados, demoras de despacho). Cada aviso tiene tipo, severidad, texto, dónde se ve (tienda, carrito, checkout) y vigencia (desde/hasta). Solo informan: nunca bloquean una compra. Si algo falla no se guarda nada. Queda como borrador hasta publicarlo con previsualizar_publicacion_contenido.",
+      "Avisos bajo el encabezado (cierre, feriados, demoras de despacho): agregar, editar, quitar o activar, con tipo, severidad, texto, dónde se ve y vigencia. Solo informan, nunca bloquean una compra. Si algo falla no se guarda nada. Queda como borrador.",
     esquema: z.object({ operaciones: z.array(operacionAviso).min(1).max(20) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ operaciones }, ctx) {
@@ -534,7 +532,8 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
   const descartar_borrador_contenido = defineHerramienta({
     nombre: "descartar_borrador_contenido",
     titulo: "Descartar un borrador",
-    descripcion: "Borra el borrador de un contenido (lo publicado y lo que ve la tienda no cambia).",
+    descripcion:
+    "Borra el borrador de un contenido (lo publicado no cambia).",
     esquema: z.object({ clave: claveSchema }),
     anotaciones: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
     async ejecutar({ clave }, ctx) {
@@ -566,7 +565,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "restaurar_version_contenido",
     titulo: "Volver a una versión anterior (como borrador)",
     descripcion:
-      "Pone una versión anterior (ver_historial_contenido) como BORRADOR; el historial no se borra. Para que se vea en la tienda hay que publicarla con previsualizar_publicacion_contenido (en términos y privacidad, con aprobación de Jorge).",
+    "Pone una versión anterior (ver_historial_contenido) como BORRADOR; el historial se conserva. Para verla en la tienda hay que publicarla.",
     esquema: z.object({ clave: claveSchema, version: z.number().int().min(1).max(100000) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     async ejecutar({ clave, version }, ctx) {
@@ -592,7 +591,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "previsualizar_publicacion_contenido",
     titulo: "Previsualizar la publicación de un borrador",
     descripcion:
-      "Paso 1 de 2 para publicar. No cambia nada: compara el borrador con lo que ve la tienda hoy, resume qué cambia (líneas agregadas y quitadas, campos modificados), avisa si necesita aprobación de Jorge (términos y privacidad, datos del local, o textos que agreguen un teléfono, un correo o un enlace a otro sitio) y entrega un id corto de un solo uso (15 minutos). Muéstrale el resumen al usuario y espera su OK antes de llamar a confirmar_publicacion_contenido.",
+    "Paso 1 de 2 para publicar contenido. No cambia nada: compara el borrador con lo que ve la tienda, resume qué cambia, avisa si necesita el OK de Jorge y da un id de un solo uso. Muestra el resumen al usuario y espera su OK antes de confirmar_publicacion_contenido.",
     esquema: z.object({ clave: claveSchema, nota: z.string().max(200).optional().describe("Nota corta para el historial.") }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ clave, nota }, ctx) {
@@ -624,7 +623,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "confirmar_publicacion_contenido",
     titulo: "Confirmar la publicación (paso 2)",
     descripcion:
-      "Paso 2 de 2: publica el borrador con el id que dio previsualizar_publicacion_contenido. Se rechaza si el id es de otro usuario, ya se usó, venció o si el borrador o lo publicado cambió desde la vista previa. Lo que necesita aprobación (términos, privacidad, datos del local y textos con teléfonos, correos o enlaces nuevos) NO se publica: queda pendiente y se pide la aprobación de Jorge por correo (si su correo no está configurado, queda bloqueado). Úsala solo con el OK del usuario.",
+    "Paso 2 de 2: publica el borrador con el id de previsualizar_publicacion_contenido (un solo uso, solo tuyo; se rechaza si algo cambió). Lo que necesita el OK de Jorge NO se publica: queda pendiente y se le pide por correo (sin correo configurado, queda bloqueado). Solo con el OK del usuario.",
     esquema: z.object({ clave: claveSchema, vista_previa_id: z.string().min(8).max(20) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ clave, vista_previa_id }, ctx) {
@@ -678,7 +677,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "aplicar_aprobacion_contenido",
     titulo: "Aplicar una publicación ya aprobada por Jorge",
     descripcion:
-      "Después de que Jorge aprobó por correo una publicación que lo necesitaba (términos, privacidad, datos del local como WhatsApp, teléfono, correo, dirección, RUT o Instagram, o cualquier texto que agregue un teléfono, un correo o un enlace a otro sitio), publica esa versión pendiente. Si todavía no aprobó, solo informa el estado y no cambia nada. Si el texto cambió después de pedir la aprobación, o venció, hay que pedirla de nuevo (previsualizar y confirmar otra vez). La aprobación sirve una sola vez.",
+    "Después de que Jorge aprobó por correo una publicación que lo necesitaba, publica esa versión pendiente. Si aún no aprobó, solo informa el estado. Si el texto cambió tras pedir la aprobación o venció, hay que pedirla de nuevo. La aprobación sirve una sola vez.",
     esquema: z.object({ clave: claveSchema, aprobacion_id: z.string().min(8).max(64) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ clave, aprobacion_id }, ctx) {

@@ -75,15 +75,61 @@ function esquemaEstricto(h: Herramienta): z.ZodObject {
   return e;
 }
 
+/**
+ * Achica el JSON Schema que ve Claude (el contexto se paga por cada token de `tools/list`) SIN cambiar lo
+ * que el servidor valida: la validación real sigue siendo el esquema zod estricto. Quita lo redundante:
+ * `additionalProperties:false` de los objetos anidados (el de arriba se conserva), topes de largo/valor
+ * que solo son resguardos (maxLength >= 100, maximum >= 1000), «anyOf [X, null]» pasa a `type: [X, "null"]`
+ * y una descripción que ya apareció en la misma herramienta no se repite.
+ */
+export function compactarEsquema(nodo: unknown, vistas: Set<string>, raiz = true): Record<string, unknown> {
+  const o = { ...(nodo as Record<string, unknown>) };
+  if (!raiz && o.type === "object") delete o.additionalProperties;
+  if (typeof o.maxLength === "number" && o.maxLength >= 100) delete o.maxLength;
+  if (typeof o.maximum === "number" && o.maximum >= 1000) delete o.maximum;
+  if (typeof o.description === "string") {
+    if (vistas.has(o.description)) delete o.description;
+    else vistas.add(o.description);
+  }
+  if (Array.isArray(o.anyOf) && o.anyOf.length === 2) {
+    const nulo = o.anyOf.find((x) => (x as { type?: unknown })?.type === "null") as Record<string, unknown> | undefined;
+    const otro = o.anyOf.find((x) => x !== nulo) as Record<string, unknown> | undefined;
+    if (nulo && otro && Object.keys(nulo).length === 1 && ["string", "integer", "number", "boolean"].includes(otro.type as string)) {
+      delete o.anyOf;
+      Object.assign(o, compactarEsquema(otro, vistas, false), { type: [otro.type, "null"] });
+    }
+  }
+  for (const k of ["properties", "$defs"]) {
+    const props = o[k];
+    if (props && typeof props === "object") {
+      o[k] = Object.fromEntries(Object.entries(props as Record<string, unknown>).map(([n, v]) => [n, compactarEsquema(v, vistas, false)]));
+    }
+  }
+  for (const k of ["items", "additionalProperties"]) if (o[k] && typeof o[k] === "object") o[k] = compactarEsquema(o[k], vistas, false);
+  for (const k of ["anyOf", "oneOf", "allOf"]) if (Array.isArray(o[k])) o[k] = (o[k] as unknown[]).map((v) => compactarEsquema(v, vistas, false));
+  return o;
+}
+
 function jsonSchemaDe(h: Herramienta): Record<string, unknown> {
   let s = jsonSchemas.get(h);
   if (!s) {
     const { $schema: _omitido, ...resto } = z.toJSONSchema(esquemaEstricto(h)) as Record<string, unknown>;
     void _omitido;
-    s = resto;
+    s = compactarEsquema(resto, new Set());
     jsonSchemas.set(h, s);
   }
   return s;
+}
+
+/** Lo que devuelve `tools/list` (también lo mide una prueba: tope de tamaño). */
+export function listarHerramientasMcp(registro: Registro, puedeEscribir: boolean) {
+  return registro.lista().filter((h) => puedeEscribir || !esEscritura(h)).map((h) => ({
+    name: h.nombre,
+    title: h.titulo,
+    description: h.descripcion,
+    inputSchema: jsonSchemaDe(h),
+    annotations: { ...h.anotaciones, openWorldHint: false },
+  }));
 }
 
 const LIMITE_TOKENS_MALOS_POR_MIN = 30;
@@ -172,14 +218,7 @@ export async function manejarSolicitudMcp(p: PeticionMcp, deps: DepsServidor): P
       return ok(m.id, {});
     case "tools/list": {
       const puedeEscribir = scopeIncluye(acceso.scope, SCOPE_ESCRIBIR);
-      const tools = deps.registro.lista().filter((h) => puedeEscribir || !esEscritura(h)).map((h) => ({
-        name: h.nombre,
-        title: h.titulo,
-        description: h.descripcion,
-        inputSchema: jsonSchemaDe(h),
-        annotations: { title: h.titulo, ...h.anotaciones, openWorldHint: false },
-      }));
-      return ok(m.id, { tools });
+      return ok(m.id, { tools: listarHerramientasMcp(deps.registro, puedeEscribir) });
     }
     case "tools/call":
       return llamarHerramienta(m.id, params, acceso, u.usuario, deps, base, ahora);
