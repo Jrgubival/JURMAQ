@@ -7,7 +7,7 @@ import { z, parseBody } from '@jurmaq/shared/validation';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { pedidos, PATRON_NUMERO, MOTIVOS_CANCELACION } from '@/lib/pedidos';
 import { correoCancelacionComprador, correoConfirmacionComprador } from '@/lib/pedidos/correos';
-import { devolverWebpay, pagadoConWebpay } from '@/lib/pedidos/rechazo';
+import { devolverWebpayDetallado, pagadoConWebpay } from '@/lib/pedidos/rechazo';
 import { CANCELABLE_PAGADO, DESDE_PANEL } from '@/lib/pedidos/transiciones';
 
 /**
@@ -37,7 +37,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const store = pedidos();
     const pedido = await store.porNumero(numero);
     if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
-    let reembolso: 'hecho' | 'error' | 'transferencia' | null = null;
+    let reembolso: 'hecho' | 'error' | 'incierto' | 'transferencia' | null = null;
 
     // Sólo transiciones razonables (tabla compartida con el MCP: lib/pedidos/transiciones.ts).
     if (!DESDE_PANEL[parsed.data.estado]?.includes(pedido.estado)) {
@@ -77,8 +77,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       await revalidarFichasDePedido(cerrado?.items);
       if (cerrado?.pagado_at) {
         if (pagadoConWebpay(cerrado)) {
-          const ok = await devolverWebpay(cerrado);
-          reembolso = ok === null ? null : ok ? 'hecho' : 'error';
+          const d = await devolverWebpayDetallado(cerrado);
+          reembolso = d.resultado === 'ocupada' ? null : d.resultado === 'hecho' ? 'hecho' : d.resultado === 'incierta' ? 'incierto' : 'error';
         } else {
           reembolso = 'transferencia';
         }

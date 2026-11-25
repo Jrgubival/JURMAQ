@@ -52,8 +52,11 @@ export { MOTIVOS_RECHAZO, type MotivoRechazo, MOTIVOS_CANCELACION, type MotivoCa
 import type { MotivoRechazo, MotivoCancelacion } from './motivos';
 
 export interface Reembolso {
-  /** 'en_curso' = candado mientras se pide la anulación a Webpay. */
-  estado: 'hecho' | 'pendiente' | 'error' | 'en_curso';
+  /**
+   * 'en_curso' = candado mientras se pide la anulación a Webpay.
+   * 'incierto' = falló la red o el tiempo y NO se sabe si Webpay devolvió: nada reintenta solo, se revisa en Transbank.
+   */
+  estado: 'hecho' | 'pendiente' | 'error' | 'en_curso' | 'incierto';
   medio: 'webpay' | 'transferencia';
   monto: number;
   tipo?: string | null;
@@ -228,6 +231,17 @@ export interface PedidosStore {
   tomarReembolso(numero: string, r: Reembolso): Promise<boolean>;
   /** Marca hecha una devolución por transferencia pendiente (una sola vez aunque lleguen dos clics). */
   tomarDevolucionHecha(numero: string, r: Reembolso): Promise<boolean>;
+  /**
+   * Resuelve a mano una devolución de Webpay 'incierta' (se revisó en el portal de Transbank): condicional, solo si
+   * seguía 'incierto'. Devuelve false si ya estaba resuelta.
+   */
+  resolverReembolsoIncierto(numero: string, nuevo: Reembolso): Promise<boolean>;
+  /**
+   * Borra DEFINITIVAMENTE un pedido (herramienta MCP de borrado), en un solo delete condicional: solo si es 'cancelado',
+   * nunca se pagó (`pagado_at` vacío), no tiene documento tributario ni devolución. Los registros hijos (historial)
+   * se borran por la cascada de la base. Devuelve false si algo no calzó (nada se borra).
+   */
+  borrarPedidoNuncaPagado(numero: string): Promise<boolean>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
   /**
    * Cambia el estado SOLO si el pedido sigue en `desde` (update condicional).
@@ -382,6 +396,33 @@ const storeSupabase: PedidosStore = {
       .eq('reembolso->>estado', 'pendiente')
       // La cuenta que se marca como pagada es la que está en la base, no otra.
       .eq('reembolso->cuenta->>numero', r.cuenta?.numero ?? '')
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
+  },
+  async resolverReembolsoIncierto(numero, nuevo) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({ reembolso: nuevo })
+      .eq('numero', numero)
+      .eq('reembolso->>medio', 'webpay')
+      .eq('reembolso->>estado', 'incierto')
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
+  },
+  async borrarPedidoNuncaPagado(numero) {
+    // Todo en la condición del delete: si el pedido cambió en medio (se pagó, se subió una boleta...) no borra nada.
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .delete()
+      .eq('numero', numero)
+      .eq('estado', 'cancelado')
+      .is('pagado_at', null)
+      .is('documento_path', null)
+      .is('documento_subido_at', null)
+      .is('documento_enviado_at', null)
+      .is('reembolso', null)
       .select('numero');
     if (error) throw error;
     return (data ?? []).length > 0;

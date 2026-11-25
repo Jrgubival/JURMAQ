@@ -4,7 +4,7 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { z, parseBody } from '@jurmaq/shared/validation';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { pedidos, PATRON_NUMERO, MOTIVOS_RECHAZO, type MotivoRechazo } from '@/lib/pedidos';
-import { rechazarPedido, reintentarDevolucion } from '@/lib/pedidos/rechazo';
+import { rechazarPedido, reintentarDevolucion, resolverDevolucionIncierta } from '@/lib/pedidos/rechazo';
 
 /**
  * POST /api/admin/pedidos/[numero]/rechazar — la barraca no aprueba un pedido
@@ -24,6 +24,8 @@ const motivos = Object.keys(MOTIVOS_RECHAZO) as [MotivoRechazo, ...MotivoRechazo
 const schema = z.discriminatedUnion('accion', [
   z.object({ accion: z.literal('rechazar'), motivo: z.enum(motivos), nota: z.string().trim().max(500).optional() }),
   z.object({ accion: z.literal('reembolsar') }),
+  // Devolución 'incierta' (Webpay no confirmó si devolvió): se cierra a mano tras revisar el portal de Transbank.
+  z.object({ accion: z.literal('resolver_incierta'), resultado: z.enum(['hecha', 'no_hecha']) }),
 ]);
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ numero: string }> }) {
@@ -40,7 +42,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (parsed.data.accion === 'reembolsar') {
       const r = await reintentarDevolucion(numero);
       if (r.error) return NextResponse.json({ error: r.error }, { status: r.status });
-      return NextResponse.json({ ok: r.ok, reembolso: r.ok ? 'hecho' : 'error' }, { status: r.status });
+      return NextResponse.json({ ok: r.ok, reembolso: r.reembolso ?? (r.ok ? 'hecho' : 'error') }, { status: r.status });
+    }
+    if (parsed.data.accion === 'resolver_incierta') {
+      const r = await resolverDevolucionIncierta(numero, parsed.data.resultado, session.user?.email ?? null);
+      if (r.error) return NextResponse.json({ error: r.error }, { status: r.status });
+      logSafe('admin-devolucion-incierta-resuelta', { numero, resultado: parsed.data.resultado, por: session.user?.id ?? null });
+      return NextResponse.json({ ok: true });
     }
     const r = await rechazarPedido(numero, parsed.data.motivo, parsed.data.nota || null);
     if (!r.ok) return NextResponse.json({ error: r.error }, { status: r.status });

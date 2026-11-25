@@ -168,10 +168,24 @@ export const webpay: PasarelaPago = {
  * panel, con confirmación previa del administrador.
  */
 export async function reembolsarWebpay(token: string, monto: number): Promise<{ ok: boolean; tipo: string | null; autorizacion: string | null }> {
-  if (!Number.isInteger(monto) || monto <= 0) throw new Error('Monto inválido');
-  const r = (await transaccion().refund(token, monto)) as Record<string, unknown> | null;
+  // Errores ANTES de hablar con Transbank (marcados `sinEnviar`): garantizan que no se devolvió nada.
+  const sinEnviar = (m: string) => Object.assign(new Error(m), { sinEnviar: true });
+  if (!Number.isInteger(monto) || monto <= 0) throw sinEnviar('Monto inválido');
+  let tx: ReturnType<typeof transaccion>;
+  try { tx = transaccion(); } catch (e) { throw sinEnviar(String(e)); }
+  const r = (await tx.refund(token, monto)) as Record<string, unknown> | null;
   const tipo = typeof r?.type === 'string' ? r.type : null;
   const codigo = typeof r?.response_code === 'number' ? r.response_code : null;
   const ok = tipo === 'REVERSED' || (tipo === 'NULLIFIED' && codigo === 0);
   return { ok, tipo, autorizacion: typeof r?.authorization_code === 'string' ? r.authorization_code : null };
+}
+
+/**
+ * Estado de la transacción en Transbank (solo consulta; no mueve dinero). Sirve para revisar una devolución incierta:
+ * AUTHORIZED = sigue cobrada (no se devolvió); REVERSED / NULLIFIED / PARTIALLY_NULLIFIED = ya se devolvió (todo o parte).
+ */
+export async function estadoTransaccionWebpay(token: string): Promise<{ estado: string | null; monto: number | null; saldo: number | null }> {
+  const r = (await transaccion().status(token)) as Record<string, unknown> | null;
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  return { estado: typeof r?.status === 'string' ? r.status : null, monto: num(r?.amount), saldo: num(r?.balance) };
 }

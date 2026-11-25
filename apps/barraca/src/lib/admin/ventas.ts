@@ -372,7 +372,7 @@ export function motivoCierre(p: Pick<PedidoVenta, 'estado' | 'cancelacion_motivo
 export function textoDevolucion(r: PedidoVenta['reembolso']): string {
   if (!r) return '';
   const medio = r.medio === 'webpay' ? 'Webpay' : 'Transferencia';
-  const estado = r.estado === 'hecho' ? 'hecha' : r.estado === 'pendiente' ? 'pendiente' : r.estado === 'en_curso' ? 'en curso' : 'falló';
+  const estado = r.estado === 'hecho' ? 'hecha' : r.estado === 'pendiente' ? 'pendiente' : r.estado === 'en_curso' ? 'en curso' : r.estado === 'incierto' ? 'incierta (revisar en Transbank)' : 'falló';
   return `${medio}: ${estado}`;
 }
 
@@ -393,7 +393,7 @@ export function aFilaLista(p: PedidoVenta & { items?: Array<{ cantidad: number }
     documentoSubido: !!p.documento_path,
     articulos: (p.items ?? []).reduce((s, i) => s + (Number.isFinite(i.cantidad) ? i.cantidad : 0), 0),
     cierre: motivoCierre(p),
-    devolucionPendiente: p.reembolso?.estado === 'pendiente' || p.reembolso?.estado === 'error',
+    devolucionPendiente: p.reembolso?.estado === 'pendiente' || p.reembolso?.estado === 'error' || p.reembolso?.estado === 'incierto',
   };
 }
 

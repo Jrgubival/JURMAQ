@@ -203,6 +203,7 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
       body: JSON.stringify({ estado: "cancelado", motivoCancelacion: cancelacion.motivo }),
     }, "Pedido cancelado. Se avisó al cliente.");
     if (data?.reembolso === "error") setAviso({ tipo: "error", texto: "Quedó cancelado, pero Webpay no confirmó la anulación. Usa «Reintentar devolución» o revisa el portal de Transbank." });
+    if (data?.reembolso === "incierto") setAviso({ tipo: "error", texto: "Quedó cancelado, pero NO se sabe si Webpay devolvió el dinero (falló la conexión). No la repitas: revisa el pago en el portal de Transbank y ciérrala aquí con «Ya se devolvió» o «No se devolvió»." });
     if (data) setCancelacion(null);
   }
 
@@ -233,6 +234,7 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
       body: JSON.stringify({ accion: "rechazar", motivo: rechazo.motivo, nota: rechazo.nota.trim() || undefined }),
     }, "Pedido no aprobado. Se avisó al cliente.");
     if (data?.reembolso === "error") setAviso({ tipo: "error", texto: "Quedó no aprobado, pero Webpay no confirmó la anulación. Usa «Reintentar devolución» o revisa el portal de Transbank." });
+    if (data?.reembolso === "incierto") setAviso({ tipo: "error", texto: "Quedó no aprobado, pero NO se sabe si Webpay devolvió el dinero (falló la conexión). No la repitas: revisa el pago en el portal de Transbank y ciérrala aquí con «Ya se devolvió» o «No se devolvió»." });
     if (data) setRechazo(null);
   }
 
@@ -241,6 +243,16 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
     await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}/rechazar`, {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "reembolsar" }),
     }, "Devolución hecha en Webpay.");
+  }
+
+  async function resolverIncierta(resultado: "hecha" | "no_hecha") {
+    const pregunta = resultado === "hecha"
+      ? `¿En el portal de Transbank ya aparece devuelto el pago de ${formatCLP(p.total)} del pedido ${p.numero}?`
+      : `¿Confirmas que Transbank NO devolvió el pago de ${formatCLP(p.total)} del pedido ${p.numero}? Después podrás reintentar la devolución.`;
+    if (!confirm(pregunta)) return;
+    await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}/rechazar`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "resolver_incierta", resultado }),
+    }, resultado === "hecha" ? "Devolución marcada como hecha." : "Devolución marcada como no hecha: ya puedes reintentarla.");
   }
 
   async function generarEnvio(manual: boolean) {
@@ -483,7 +495,7 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
             {p.reembolso && !(p.reembolso.medio === "transferencia" && p.reembolso.estado === "pendiente") && (
               <p className="mt-3 text-[14px] rounded-lg bg-[#F7F6F3] px-3 py-2">
                 Devolución {p.reembolso.medio === "webpay" ? "Webpay" : "por transferencia"} de <span className="tabular-nums">{formatCLP(p.reembolso.monto)}</span>:{" "}
-                <strong>{p.reembolso.estado === "hecho" ? "hecha" : p.reembolso.estado === "en_curso" ? "en curso" : "falló"}</strong>
+                <strong>{p.reembolso.estado === "hecho" ? "hecha" : p.reembolso.estado === "en_curso" ? "en curso" : p.reembolso.estado === "incierto" ? "incierta (no se sabe si Webpay devolvió)" : "falló"}</strong>
                 {p.reembolso.estado === "hecho" && p.reembolso.hecho_at && <> el {fechaCorta(p.reembolso.hecho_at)}{p.reembolso.hecho_por ? ` (${p.reembolso.hecho_por})` : ""}</>}
                 {p.reembolso.cuenta && <><br /><span className="text-[13px] text-[#5F5E5A]">{p.reembolso.cuenta.banco} · {p.reembolso.cuenta.tipo} · {p.reembolso.cuenta.numero} · {p.reembolso.cuenta.titular} · {p.reembolso.cuenta.rut}</span></>}
               </p>
@@ -520,6 +532,13 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
                     <button type="submit" disabled={ocupado} className={`${btn} w-full bg-white text-navy-950 ring-1 ring-inset ring-navy-950`}>Guardar cuenta</button>
                   </form>
                 )}
+              </div>
+            )}
+            {p.reembolso?.medio === "webpay" && p.reembolso.estado === "incierto" && (
+              <div className="mt-2 space-y-2 rounded-lg ring-1 ring-inset ring-[#EBD39A] bg-[#FFFaF0] px-3 py-3">
+                <p className="text-[13.5px] text-[#7A4E00]">Falló la conexión con Webpay y no se sabe si devolvió el dinero. No se reintenta sola, para no devolver dos veces. Mira el pago en el portal de Transbank y ciérrala aquí.</p>
+                <button type="button" disabled={ocupado || !puedeReembolsar} onClick={() => resolverIncierta("hecha")} className={`${btn} w-full bg-navy-950 text-white hover:bg-navy-900`}>Ya se devolvió</button>
+                <button type="button" disabled={ocupado || !puedeReembolsar} onClick={() => resolverIncierta("no_hecha")} className={`${btn} w-full bg-white text-navy-950 ring-1 ring-inset ring-navy-950`}>No se devolvió</button>
               </div>
             )}
             {p.reembolso?.medio === "webpay" && p.reembolso.estado === "error" && (

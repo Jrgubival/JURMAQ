@@ -176,6 +176,17 @@ export function crearStoreArchivo(): PedidosStore {
       });
       return tomado;
     },
+    async resolverReembolsoIncierto(numero, nuevo) {
+      let ok = false;
+      editar(numero, (p) => { if (p.reembolso?.medio === 'webpay' && p.reembolso.estado === 'incierto') { p.reembolso = nuevo; ok = true; } });
+      return ok;
+    },
+    async borrarPedidoNuncaPagado(numero) {
+      const p = leer().find((x) => x.numero === numero);
+      if (!p || p.estado !== 'cancelado' || p.pagado_at || p.documento_path || p.documento_subido_at || p.documento_enviado_at || p.reembolso) return false;
+      escribir(leer().filter((x) => x.numero !== numero));
+      return true;
+    },
     async tomarReembolso(numero, r) {
       let tomado = false;
       editar(numero, (p) => {
