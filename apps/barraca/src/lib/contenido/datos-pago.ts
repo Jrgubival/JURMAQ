@@ -18,15 +18,15 @@
  * Función pura: sin Next ni D1.
  */
 
-const CUENTA = /(?:cuenta\s+(?:corriente|vista|rut|de\s+ahorros?|bancaria)|n[°º.]?\s*de\s+cuenta|n[úu]mero\s+de\s+cuenta|\bcta\.?(?:\s*(?:cte|corriente|vista))?)[^.\n]{0,40}?\d[\d.\- ]{5,}/i;
-const IBAN = /\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/;
+const CUENTA = /(?:cuenta\s+(?:corriente|vista|rut|de\s+ahorros?|bancaria)|n[°º.]?\s*de\s+cuenta|n[úu]mero\s+de\s+cuenta|\bcta\.?(?:\s*(?:cte|corriente|vista))?)[^.\n]{0,40}?\d[\d.\- ]{5,}/gi;
+const IBAN = /\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/g;
 const RUT = /\b\d{1,2}\.?\d{3}\.?\d{3}\s?-\s?[\dkK]\b/g;
 const CONTEXTO_BANCARIO = /banco|cuenta|\bcta\b|transfier|transferir|dep[óo]sit|abon[ae]|giro|vista|corriente|ahorro|bancari|pagar\s+a|pago\s+a|destinatari/i;
 /**
- * Una corrida de 10 o más dígitos con separadores variados entre ellos (hasta 3 caracteres de espacio, punto, guion, raya o
+ * Una corrida de 10 o más dígitos con separadores variados entre ellos (hasta 3 caracteres de espacio, sin saltos de línea: un número al final de una línea no se une al de la siguiente; punto, guion, raya o
  * barra): «1234 5678 9012», «1234 - 5678 - 9012», «1234  5678», «1.234.567.890», «12-34-56…».
  */
-const CORRIDA = /\d(?:[\s.\-‐-―−_/]{0,3}\d){9,}/g;
+const CORRIDA = /\d(?:[ \t\u00a0.\-‐-―−_/]{0,3}\d){9,}/g;
 /**
  * Contexto que anuncia una cuenta o un pago, alrededor de un número largo. Un número largo SIN este contexto (código de
  * fabricante, lote, SKU) no se bloquea; una tarjeta (13 a 19 dígitos que pasan Luhn) sí, con o sin contexto.
@@ -81,16 +81,65 @@ const FECHA_AMD = /\b(?:19|20)\d{2}[-/.](?:0?[1-9]|1[0-2])[-/.](?:0?[1-9]|[12]\d
 const FECHA_DMA = /\b(?:0?[1-9]|[12]\d|3[01])[-/.](?:0?[1-9]|1[0-2])[-/.](?:19|20)?\d{2}\b/g;
 const HORA = /\b\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?\b/g;
 
-function enTexto(t: string, out: Set<string>): void {
-  const c = CUENTA.exec(t);
-  if (c) out.add(`cuenta:${(c[0].match(/\d/g) ?? []).join("")}`);
-  const g = IBAN.exec(t);
-  if (g) out.add(`iban:${g[0]}`);
+/** Palabras que NO nombran un banco aunque vayan después de «banco» («el banco o emisor», «el banco que…»). */
+const NO_ES_BANCO = new Set([
+  "o", "a", "y", "e", "u", "de", "del", "la", "el", "al", "en", "es", "se", "su", "tu", "no", "si", "un", "ya", "ha", "lo", "le", "me", "mi", "te",
+  "que", "para", "con", "por", "desde", "donde", "cuando", "sin", "como", "segun", "esta", "este", "esos", "esas", "emisor", "emisores", "central",
+  "cliente", "tuyo", "correspondiente", "respectivo", "elegido", "indicado", "mismo", "misma", "tarjeta", "titular", "pagador", "comprador", "destino",
+  "origen", "cuenta", "informado", "sera", "seria", "tambien", "cobra", "cobre", "abona", "abone", "devuelve", "aprueba", "rechaza", "autoriza",
+  "antes", "luego", "elige", "eliges", "emitio", "emitió", "depende", "rechace", "acepte", "acepta", "que", "pueda", "puede", "tenga", "tiene", "dice",
+]);
+const BANCO_GENERICO = /banco\s*(?:del?\s+)?([a-záéíóúñ0-9]{2,})/gi;
+const BANCO_ALIAS = /\b(santander|scotiabank|itau|itaú|bci|tenpo|coopeuch|tapp|mach|mercado\s*pago|cuenta\s*rut)\b/gi;
+const TITULAR_ETIQUETA = /\btitular\s*:\s*([^\n]{2,90})/gi;
+const A_NOMBRE_DE = /\ba\s+nombre\s+de\s+([^\n]{2,90})/gi;
+const CORREO = /[a-z0-9._%+-]+@([a-z0-9-]+(?:\.[a-z0-9-]+)+)/gi;
+const CONTEXTO_CORREO = /pag|transfer|comprobante|cuenta|banco|cobr|dep[óo]sit|abon|factura|boleta|titular/i;
+
+const sinTildes = (x: string) => x.normalize("NFD").replace(/[̀-ͯ]/g, "");
+/** «bancoestado», «del estado», «Estado» → «estado»; «Banco de Chile» → «chile». */
+function canonBanco(palabra: string): string {
+  return sinTildes(palabra.toLowerCase()).replace(/^banco/, "").replace(/[^a-z0-9]/g, "");
+}
+/** Nombre de titular (de «Titular: …» o «a nombre de …»): solo si empieza con mayúscula; corta en coma, paréntesis o «RUT». */
+function canonTitular(valor: string): string | null {
+  if (!/^[A-ZÁÉÍÓÚÑ0-9]/.test(valor)) return null;
+  const corte = valor.split(/[,;(]|\s+r\.?u\.?t\b|\.\s/i)[0];
+  const c = sinTildes(corte).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return c.length >= 3 ? c : null;
+}
+
+/** Lo que `datosDePagoEn` no mira porque en prosa común es normal: banco, titular y correos ajenos de pago. Solo para comparar antes/después. */
+function ampliadoEnTexto(t: string, out: string[]): void {
+  let resto = t.replace(/\bbanco\s*:\s*/gi, "banco ");
+  resto = resto.replace(BANCO_GENERICO, (todo, palabra: string) => {
+    const c = canonBanco(palabra);
+    if (c.length >= 2 && !NO_ES_BANCO.has(sinTildes(palabra.toLowerCase())) && !NO_ES_BANCO.has(c)) out.push(`banco:${c}`);
+    return " ".repeat(todo.length);
+  });
+  for (const m of resto.matchAll(BANCO_ALIAS)) out.push(`banco:${canonBanco(m[1])}`);
+  for (const re of [TITULAR_ETIQUETA, A_NOMBRE_DE]) {
+    for (const m of t.matchAll(re)) {
+      const c = canonTitular(m[1]);
+      if (c) out.push(`titular:${c}`);
+    }
+  }
+  for (const m of t.matchAll(CORREO)) {
+    if (PROPIO.test(m[1])) continue;
+    const i = m.index ?? 0;
+    if (CONTEXTO_CORREO.test(t.slice(Math.max(0, i - 100), i + m[0].length + 100))) out.push(`correo:${m[0].toLowerCase()}`);
+  }
+}
+
+function enTexto(t: string, out: string[]): void {
+  // TODAS las coincidencias, no solo la primera: una segunda cuenta más abajo en el texto también cuenta.
+  for (const c of t.matchAll(CUENTA)) out.push(`cuenta:${(c[0].match(/\d/g) ?? []).join("")}`);
+  for (const g of t.matchAll(IBAN)) out.push(`iban:${g[0]}`);
   // Un RUT suelto es dato público normal del local (sale en los Términos): solo cuenta si va junto a palabras de banco o pago.
   for (const m of t.matchAll(RUT)) {
     const i = m.index ?? 0;
     const alrededor = t.slice(Math.max(0, i - 80), i + m[0].length + 80);
-    if (CONTEXTO_BANCARIO.test(alrededor)) out.add(`rut:${m[0].replace(/[^0-9kK]/g, "").toUpperCase()}`);
+    if (CONTEXTO_BANCARIO.test(alrededor)) out.push(`rut:${m[0].replace(/[^0-9kK]/g, "").toUpperCase()}`);
   }
   // Las fechas y horas («25-11-2026 15:00») no son números largos: se quitan antes de buscar.
   const sinFechas = t.replace(FECHA_AMD, " ").replace(FECHA_DMA, " ").replace(HORA, " ");
@@ -101,7 +150,7 @@ function enTexto(t: string, out: Set<string>): void {
     const antes = sinFechas.slice(Math.max(0, i - 40), i);
     if (ANUNCIA_BARRAS.test(antes)) continue;
     const alrededor = sinFechas.slice(Math.max(0, i - 60), i + m[0].length + 60);
-    if (CONTEXTO_CUENTA.test(alrededor) || (digitos.length >= 13 && digitos.length <= 19 && luhn(digitos))) out.add(`numero:${digitos}`);
+    if (CONTEXTO_CUENTA.test(alrededor) || (digitos.length >= 13 && digitos.length <= 19 && luhn(digitos))) out.push(`numero:${digitos}`);
   }
   for (const m of t.matchAll(DOMINIO)) {
     const explicito = /^https?:\/\//i.test(m[0]) || /^www\./i.test(m[1]);
@@ -109,25 +158,38 @@ function enTexto(t: string, out: Set<string>): void {
     if (!explicito && !SUFIJOS.has(host.slice(host.lastIndexOf(".") + 1))) continue;
     const resto = (m[2] ?? "").toLowerCase();
     if (PROPIO.test(host)) continue;
-    if (ACORTADORES.has(host)) { out.add(`enlace:${host}`); continue; }
+    if (ACORTADORES.has(host)) { out.push(`enlace:${host}`); continue; }
     if (WHATSAPP.has(host)) {
       const num = /(?:^\/|phone=|\/)(\d{7,15})/.exec(resto)?.[1];
-      out.add(`whatsapp:${host}${num ? `/${num}` : resto.split(/[?#]/)[0]}`);
+      out.push(`whatsapp:${host}${num ? `/${num}` : resto.split(/[?#]/)[0]}`);
       continue;
     }
-    if (PASARELAS.test(host) || RUTA_DE_PAGO.test(resto)) out.add(`enlace:${host}`);
+    if (PASARELAS.test(host) || RUTA_DE_PAGO.test(resto)) out.push(`enlace:${host}`);
   }
+}
+
+function recoger(texto: unknown, ampliado: boolean): Map<string, number> {
+  const crudo = typeof texto === "string" ? texto : JSON.stringify(texto ?? "");
+  // Un texto que llega ya como JSON trae los saltos de línea y las comillas escapados: se deshace para mirar el texto real.
+  const t = normalizar(crudo).replace(/\\[nrt]/g, "\n").replace(/\\"/g, '"');
+  const d = decodificado(t);
+  const cuenta = (x: string) => {
+    const lista: string[] = [];
+    enTexto(x, lista);
+    if (ampliado) ampliadoEnTexto(x, lista);
+    const m = new Map<string, number>();
+    for (const k of lista) m.set(k, (m.get(k) ?? 0) + 1);
+    return m;
+  };
+  const m = cuenta(t);
+  // La versión con %XX decodificado se suma por MÁXIMO (no por suma): un «%20» suelto no debe duplicar lo que ya estaba.
+  if (d !== t) for (const [k, n] of cuenta(d)) m.set(k, Math.max(m.get(k) ?? 0, n));
+  return m;
 }
 
 /** Cada dato de pago que trae el texto, normalizado (cuenta o número solo con dígitos, enlaces por su dominio). */
 export function datosDePagoEn(texto: unknown): string[] {
-  const crudo = typeof texto === "string" ? texto : JSON.stringify(texto ?? "");
-  const t = normalizar(crudo);
-  const out = new Set<string>();
-  enTexto(t, out);
-  const d = decodificado(t);
-  if (d !== t) enTexto(d, out);
-  return [...out];
+  return [...recoger(texto, false).keys()];
 }
 
 export function contieneDatosDePago(texto: unknown): boolean {
@@ -135,12 +197,15 @@ export function contieneDatosDePago(texto: unknown): boolean {
 }
 
 /**
- * ¿El texto nuevo AGREGA o CAMBIA un dato de pago respecto del vigente? Lo que ya estaba (p. ej. el número de cuenta que
- * los Términos traen desde antes) se puede dejar; agregar uno nuevo o cambiar el número no.
+ * ¿El texto nuevo AGREGA o CAMBIA un dato de pago respecto del vigente? Se comparan TODAS las coincidencias de ambos textos como
+ * multiconjuntos: cuentas, IBAN, RUT, números largos, enlaces, banco, titular y correos ajenos junto a palabras de pago. Lo que ya
+ * estaba y sigue igual (p. ej. los datos de la cuenta que los Términos traen desde antes) se puede dejar; un dato de más (aunque
+ * sea repetido), uno distinto o uno que reemplaza a otro se rechaza. Quitar uno es libre.
  */
 export function agregaDatosDePago(antes: unknown, despues: unknown): boolean {
-  const previos = new Set(datosDePagoEn(antes));
-  return datosDePagoEn(despues).some((d) => !previos.has(d));
+  const previos = recoger(antes, true);
+  for (const [k, n] of recoger(despues, true)) if (n > (previos.get(k) ?? 0)) return true;
+  return false;
 }
 
 export const MENSAJE_DATOS_DE_PAGO =

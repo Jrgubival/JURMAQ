@@ -1051,7 +1051,6 @@ test("textos libres con desvío necesitan a Jorge: popup con teléfono, cinta co
   const casos = [
     ["popup", { titular: "Escríbenos al +56 9 1111 2222" }],
     ["cinta", { texto: "Oferta", enlace: { texto: "Ver", enlace: "https://ofertas.example/catalogo" } }],
-    ["contacto", { nota: "Pagos a pagos@gmail.com" }],
   ];
   for (const [clave, cambios] of casos) {
     const m = montar();
@@ -1083,6 +1082,13 @@ test("textos libres con desvío necesitan a Jorge: popup con teléfono, cinta co
   const ce = await e.llamar("confirmar_publicacion_contenido", { clave: "envios", vista_previa_id: pe.datos.vistaPreviaId });
   assert.match(String(ce.error ?? ce.texto ?? JSON.stringify(ce)), /datos bancarios o un enlace de pago/);
   assert.equal(e.correos.length, 0, "no se pide OK: se rechaza");
+  // un correo ajeno de pago en el contacto tampoco pide OK: tope duro (antes pedía el OK de Jorge)
+  const k = montar();
+  const ek = await k.llamar("editar_campos_contenido", { clave: "contacto", cambios: { nota: "Pagos a pagos@gmail.com" } });
+  const pk = await k.llamar("previsualizar_publicacion_contenido", { clave: "contacto" });
+  const ck = await k.llamar("confirmar_publicacion_contenido", { clave: "contacto", vista_previa_id: pk.datos.vistaPreviaId });
+  assert.match(String(ek.error ?? ck.error ?? ck.texto ?? JSON.stringify(ck)), /datos bancarios o un enlace de pago/);
+  assert.equal(k.correos.length, 0);
 });
 
 test("Instagram del local: cambiarlo pide el OK de Jorge", async () => {

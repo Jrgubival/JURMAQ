@@ -253,14 +253,14 @@ test("texto de permisos: sin dinero dice que NO puede tocar pagos ni borrar; con
 });
 
 test("pantalla de autorización: sección «Dinero y borrado» aparte, casilla desmarcada, y la decisión usa scopeConcedido", () => {
-  const pantalla = readFileSync(new URL("../src/app/admin/conexiones/autorizar/route.ts", import.meta.url), "utf8");
+  const pantalla = readFileSync(new URL("../src/lib/mcp/pantalla-autorizar.ts", import.meta.url), "utf8");
   assert.match(pantalla, /Dinero y borrado/);
   assert.match(pantalla, /pideDinero/);
   const casilla = /<input type="checkbox" name="dinero" value="si"[^>]*>/.exec(pantalla)?.[0] ?? "";
   assert.ok(casilla, "falta la casilla");
   assert.doesNotMatch(casilla, /checked/, "la casilla va desmarcada");
   const decision = readFileSync(new URL("../src/app/oauth/decision/route.ts", import.meta.url), "utf8");
-  assert.match(decision, /scopeConcedido\(s\.scope, form\.get\("dinero"\) === "si"\)/);
+  assert.match(decision, /scopeConcedido\(s\.scope, dineroMarcado\(form\)\)/);
   assert.doesNotMatch(decision, /scope: s\.scope/, "el código no puede emitirse con el scope pedido sin pasar por scopeConcedido");
   // Ninguna otra ruta emite códigos.
   const token = readFileSync(new URL("../src/app/oauth/token/route.ts", import.meta.url), "utf8");
