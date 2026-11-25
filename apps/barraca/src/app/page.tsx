@@ -16,6 +16,10 @@ import { familiaDe } from '@/lib/variantes';
 import masVendidos from '@/data/mas-vendidos.json';
 import { vistaPrecio, type ProductoConPrecio } from '@/lib/precio-web';
 import { ZONAS_DESPACHO } from '@/lib/despacho/zonas';
+import { leerContenido } from '@/lib/contenido/lectura';
+import { vigenteEn } from '@/lib/contenido/fechas';
+import type { SeccionPortada } from '@/lib/contenido/tipos';
+import { Fragment } from 'react';
 
 type BarracaCategoriaRow = Database['public']['Tables']['barraca_categorias']['Row'];
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
@@ -182,6 +186,13 @@ interface Producto {
 }
 
 export default async function BarracaHomePage() {
+  // Contenido editable (D1, con respaldo en código): láminas, orden de las
+  // secciones, productos y categorías destacados, y títulos. Las vigencias de
+  // las láminas se evalúan al regenerar la página (cada hora y al publicar).
+  const [slidesCfg, portada, textos] = await Promise.all([leerContenido('slides'), leerContenido('portada'), leerContenido('textos')]);
+  const ahora = Date.now();
+  const slides = slidesCfg.filter((sl) => sl.activa && vigenteEn(sl, ahora));
+
   // Fetch ALL parent categories, then sort by product count (most popular first)
   const { data: rawCategorias } = await supabasePublic
     .from('barraca_categorias')
@@ -195,7 +206,23 @@ export default async function BarracaHomePage() {
   // (hay 1.978 productos activos). Acá el daño era doble: además de mostrar un
   // número falso, la portada ORDENA por este conteo para elegir qué 6
   // categorías destacar — con el conteo truncado elegía las 6 equivocadas.
-  const allCatIds = (rawCategorias || []).map((c) => c.id);
+  // Categorías destacadas elegidas a mano (slugs, en ese orden). Si no hay
+  // (o ninguna existe) se usa lo de siempre: las 10 con más productos.
+  const slugsElegidos = portada.categoriasDestacadas;
+  let categoriasElegidas: Categoria[] = [];
+  if (slugsElegidos.length > 0) {
+    const { data: elegidas } = await supabasePublic
+      .from('barraca_categorias')
+      .select('id, nombre, slug, imagen')
+      .eq('activa', true)
+      .in('slug', slugsElegidos);
+    const porSlug = new Map((elegidas || []).map((c) => [c.slug, c]));
+    categoriasElegidas = slugsElegidos.flatMap((sl) => {
+      const c = porSlug.get(sl);
+      return c ? [{ ...c, product_count: 0 }] : [];
+    });
+  }
+  const allCatIds = categoriasElegidas.length > 0 ? [] : (rawCategorias || []).map((c) => c.id);
   const productCounts: Record<number, number> = {};
   if (allCatIds.length > 0) {
     const counts = await Promise.all(
@@ -211,10 +238,12 @@ export default async function BarracaHomePage() {
     for (const [id, n] of counts) productCounts[id] = n;
   }
   // Por cantidad de productos; 10 llenan la fila de círculos en escritorio.
-  const categorias: Categoria[] = (rawCategorias || [])
-    .map((c) => ({ ...c, product_count: productCounts[c.id] || 0 }))
-    .sort((a: Categoria, b: Categoria) => b.product_count - a.product_count)
-    .slice(0, 10);
+  const categorias: Categoria[] = categoriasElegidas.length > 0
+    ? categoriasElegidas
+    : (rawCategorias || [])
+        .map((c) => ({ ...c, product_count: productCounts[c.id] || 0 }))
+        .sort((a: Categoria, b: Categoria) => b.product_count - a.product_count)
+        .slice(0, 10);
 
   // Precios mínimos REALES para el banner de portada. Se consultan acá y no
   // se escriben en el slider, para que "desde $3.990" nunca sea una cifra que
@@ -296,7 +325,10 @@ export default async function BarracaHomePage() {
   // "Los más vendidos": el ranking real de ventas del mes en pesos (columna
   // "Venta mes" de la planilla de precios, ver src/data/mas-vendidos.json),
   // una medida por familia. Si no alcanzan, los destacados y los de más stock.
-  const ranking: string[] = masVendidos.codigos;
+  // Con productos elegidos a mano (códigos) se muestran esos, en ese orden, sin
+  // el filtro de "una medida por familia" (los eligió una persona).
+  const explicitos = portada.productosDestacados.length > 0;
+  const ranking: string[] = explicitos ? portada.productosDestacados : masVendidos.codigos;
   const { data: vendidosRaw } = await supabasePublic
     .from('barraca_productos')
     .select(SELECT_TARJETA)
@@ -306,9 +338,18 @@ export default async function BarracaHomePage() {
   const vendidosOrden = (vendidosRaw || []).sort(
     (a, b) => (posicion.get(String(a.codigo)) ?? 999) - (posicion.get(String(b.codigo)) ?? 999),
   );
-  const vendidos = unaPorFamilia(vendidosOrden, POR_FILA, familiasUsadas);
-  const destacadosBase = [...vendidos, ...unaPorFamilia(destacadosRaw || [], POR_FILA - vendidos.length, familiasUsadas)];
-  const relleno = unaPorFamilia(masStockRaw || [], POR_FILA - destacadosBase.length, familiasUsadas);
+  let vendidos: typeof vendidosOrden;
+  if (explicitos) {
+    const codigosVistos = new Set<string>();
+    vendidos = vendidosOrden
+      .filter((p) => vistaPrecio(p).disponible && !codigosVistos.has(String(p.codigo)) && !!codigosVistos.add(String(p.codigo)))
+      .slice(0, 20);
+    for (const p of vendidos) familiasUsadas.add(familiaDe(p.nombre) || p.nombre.toLowerCase());
+  } else {
+    vendidos = unaPorFamilia(vendidosOrden, POR_FILA, familiasUsadas);
+  }
+  const destacadosBase = explicitos ? vendidos : [...vendidos, ...unaPorFamilia(destacadosRaw || [], POR_FILA - vendidos.length, familiasUsadas)];
+  const relleno = explicitos ? [] : unaPorFamilia(masStockRaw || [], POR_FILA - destacadosBase.length, familiasUsadas);
   const destacados = await conCombos(await applyDailyPromosToProducts([...destacadosBase, ...relleno]));
   const nuevos = await conCombos(await applyDailyPromosToProducts(unaPorFamilia(nuevosRaw || [], POR_FILA, familiasUsadas)));
 
@@ -350,26 +391,8 @@ export default async function BarracaHomePage() {
     // Promotions table may not exist yet - fail silently
   }
 
-  return (
+  const seccion_ofertas = (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              // Sólo la barraca: la constructora (jurmaq.cl) es otro negocio.
-              { "@type": "ListItem", position: 1, name: "Barraca de Fierros JURMAQ", item: "https://barraca.jurmaq.cl" },
-            ],
-          }),
-        }}
-      />
-      {/* Carrusel con fotos reales del local, igual en celular y escritorio. */}
-      <HeroSlider precios={{ fierro: precioFierro, tubo: precioTubo }} />
-
-      <h1 className="sr-only">Barraca de fierros y materiales de construcción en Molina, con despacho a Curicó, Talca y alrededores</h1>
-
       {/* === OFERTAS DEL DIA === */}
       {dailyPromo && promotedProducts.length > 0 && (
         <section className="py-12 lg:py-16 bg-gray-50 border-t border-b border-gray-200">
@@ -424,14 +447,18 @@ export default async function BarracaHomePage() {
           </div>
         </section>
       )}
+    </>
+  );
 
+  const seccion_categorias = (
+    <>
       {/* Categorías: círculos con foto en una fila que se desliza (elegido por
           el dueño, oct-2026: ocupa poco y no abruma). En escritorio caben todas
           en la fila. */}
       <section id="categorias" aria-labelledby="titulo-categorias" className="bg-white pt-6 pb-2 lg:pt-10 scroll-mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-3">
-            <h2 id="titulo-categorias" className="text-lg lg:text-2xl font-bold text-navy-950 leading-none">Categorías</h2>
+            <h2 id="titulo-categorias" className="text-lg lg:text-2xl font-bold text-navy-950 leading-none">{textos.tituloCategorias}</h2>
             <Link href="/categorias" className="text-sm font-semibold text-marca-600 hover:text-marca-700 min-h-[32px] inline-flex items-center">
               Ver todas
             </Link>
@@ -457,14 +484,18 @@ export default async function BarracaHomePage() {
           </ul>
         </div>
       </section>
+    </>
+  );
 
+  const seccion_mas_vendidos = (
+    <>
       {/* Featured Products */}
       {(destacados || []).length > 0 && (
         <section id="destacados" className="bg-white pt-6 pb-8 lg:py-16 scroll-mt-24 content-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-3 lg:mb-10">
               <h2 className="text-lg lg:text-2xl font-extrabold text-navy-950 leading-none">
-                Los más vendidos
+                {textos.tituloMasVendidos}
               </h2>
               <Link href="/categorias" className="text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors lg:inline-flex lg:items-center lg:gap-1">
                 Ver todos
@@ -479,13 +510,17 @@ export default async function BarracaHomePage() {
           </div>
         </section>
       )}
+    </>
+  );
 
+  const seccion_fierro_perfiles = (
+    <>
       {/* New Products */}
       {(nuevos || []).length > 0 && (
         <section id="nuevos" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16 scroll-mt-24 content-auto">
           <div className="flex items-center justify-between mb-3 lg:mb-10">
             <div>
-              <h2 className="text-lg lg:text-2xl font-extrabold text-navy-950 leading-none">Fierro, perfiles y techumbre</h2>
+              <h2 className="text-lg lg:text-2xl font-extrabold text-navy-950 leading-none">{textos.tituloFierroPerfiles}</h2>
             </div>
             <Link href="/categorias/fierros-construccion" className="inline-flex items-center gap-1 text-sm font-semibold text-marca-600 hover:text-marca-700 transition-colors">
               Ver todos
@@ -499,14 +534,18 @@ export default async function BarracaHomePage() {
           </div>
         </section>
       )}
+    </>
+  );
 
+  const seccion_marcas = (
+    <>
       {/* Marcas. El fondo alterna con la sección de arriba: "Recién llegados"
           va sobre el gris de la página, así que acá blanco; si no hay
           recién llegados, arriba queda "Más vendidos" (blanco) y acá gris. */}
       <section className={`${(nuevos || []).length > 0 ? 'bg-white' : 'bg-gray-50'} border-t border-b border-gray-200 py-14 lg:py-20 content-auto`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <h2 className="text-2xl font-extrabold text-navy-950">Marcas que trabajamos</h2>
+            <h2 className="text-2xl font-extrabold text-navy-950">{textos.tituloMarcas}</h2>
           </div>
           {/* Carrusel continuo de los fabricantes con los que trabaja la barraca.
               Los nueve llevan su logo oficial; CAP e Inchalam vienen de los
@@ -527,7 +566,40 @@ export default async function BarracaHomePage() {
           />
         </div>
       </section>
+    </>
+  );
 
+  const secciones: Record<SeccionPortada, React.ReactNode> = {
+    ofertas: seccion_ofertas,
+    categorias: seccion_categorias,
+    mas_vendidos: seccion_mas_vendidos,
+    fierro_perfiles: seccion_fierro_perfiles,
+    marcas: seccion_marcas,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              // Sólo la barraca: la constructora (jurmaq.cl) es otro negocio.
+              { "@type": "ListItem", position: 1, name: "Barraca de Fierros JURMAQ", item: "https://barraca.jurmaq.cl" },
+            ],
+          }),
+        }}
+      />
+      {/* Carrusel con fotos reales del local, igual en celular y escritorio. */}
+      <HeroSlider slides={slides} precios={{ fierro: precioFierro, tubo: precioTubo }} />
+
+      <h1 className="sr-only">{textos.h1}</h1>
+
+      {portada.secciones.filter((x) => x.visible).map((x) => (
+        <Fragment key={x.id}>{secciones[x.id]}</Fragment>
+      ))}
     </>
   );
 }
