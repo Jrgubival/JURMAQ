@@ -1,6 +1,7 @@
 import { requireAuth, forbiddenResponse, unauthorizedResponse } from "@jurmaq/shared/auth/guard";
 import { z } from "@jurmaq/shared/validation";
 import { esGestionNoDisponible, usarGestion } from "@/lib/gestion";
+import { conSeguimientoDeAvisos, enviarAvisosDeLlamada } from "@/lib/mcp/aviso-operacion";
 import { baseCanonica } from "@/lib/mcp/config";
 import { deshacerLote } from "@/lib/mcp/deshacer";
 import { leerTextoLimitado, mismoOrigen, respuestaJson } from "@/lib/mcp/http";
@@ -40,7 +41,13 @@ export async function POST(req: Request) {
         const n = await revocarFamilia(db, p.data.familiaId, "revocado_en_panel");
         return respuestaJson(n > 0 ? { ok: true, mensaje: "Conexión cortada. Claude ya no puede entrar." } : { ok: false, mensaje: "Esa conexión ya estaba cortada." }, n > 0 ? 200 : 409);
       }
-      const r = await deshacerLote(db, registro, p.data.loteId, u.usuario);
+      // En modo avisar, un deshacer con reglas también avisa a Jorge por correo (igual que las herramientas).
+      const loteId = p.data.loteId;
+      const { valor: r, ids } = await conSeguimientoDeAvisos(() => deshacerLote(db, registro, loteId, u.usuario));
+      if (ids.length > 0) {
+        const { depsAvisoReales } = await import("@/lib/mcp/aviso-servidor");
+        await enviarAvisosDeLlamada(db, depsAvisoReales(), ids).catch(() => []);
+      }
       if (r.ok) return respuestaJson({ ok: true, mensaje: ["Listo, se deshizo el cambio.", ...r.mensajes].join(" ") });
       return respuestaJson({ ok: false, mensaje: r.mensaje }, r.motivo === "fallo" ? 500 : 409);
     });
