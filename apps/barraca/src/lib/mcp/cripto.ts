@@ -64,7 +64,7 @@ export async function pkceCoincide(verificador: string, desafio: string): Promis
 
 async function claveHmac(secreto: string, uso: string): Promise<CryptoKey> {
   // Subclave por uso: la firma de una pantalla no sirve en otra.
-  const base = await crypto.subtle.importKey("raw", enc.encode(secreto), "HMAC", false, ["sign"]);
+  const base = await crypto.subtle.importKey("raw", enc.encode(secreto), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sub = await crypto.subtle.sign("HMAC", base, enc.encode(`jurmaq-mcp:${uso}`));
   return crypto.subtle.importKey("raw", sub, { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
 }
