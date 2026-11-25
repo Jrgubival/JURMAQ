@@ -17,6 +17,7 @@ const Re = await import("../src/lib/correos-cliente/render.ts");
 const Rp = await import("../src/lib/correos-cliente/repositorio.ts");
 const Lector = await import("../src/lib/correos-cliente/lector.ts");
 const { escapeHtml } = await import("@jurmaq/shared/mail/utils");
+const UtilsCopia = await import("../src/lib/correos-cliente/utils.ts");
 const { resolverAprobacion } = await import("../src/lib/mcp/aprobaciones.ts");
 const { obtenerLote } = await import("../src/lib/gestion/index.ts");
 const { deshacerLote } = await import("../src/lib/mcp/deshacer.ts");
@@ -42,6 +43,12 @@ async function usar(h, args, db, t, usuario = JORGE) {
 }
 
 // ───────── plantillas y validación ─────────
+test("copia local de escapeHtml y formatCLP = la de @jurmaq/shared, byte a byte", async () => {
+  const { formatCLP } = await import("@jurmaq/shared/mail/utils");
+  for (const v of [null, undefined, "", "Ana & <b>\"Pérez\"</b> 'x'", 12, 0, "&amp;", "<script>alert(1)</script>", "ñandú ’”", {}, [1, 2]]) assert.equal(UtilsCopia.escapeHtml(v), escapeHtml(v), String(v));
+  for (const n of [0, 1, 999, 1000, 15000, 1234567, 9_999_999, -500]) assert.equal(UtilsCopia.formatCLP(n), formatCLP(n), String(n));
+});
+
 test("los textos del código validan con sus propias reglas y se arman sin errores", () => {
   assert.equal(Pl.CLAVES_CORREO.length, 8);
   for (const k of Pl.CLAVES_CORREO) {

@@ -2,7 +2,7 @@
  * Variables de un correo a partir del pedido y los datos del local. Puro.
  * Los valores van SIN escapar: el armado (render.ts) escapa todo lo que va en HTML.
  */
-import { formatCLP } from "@jurmaq/shared/mail/utils";
+import { formatCLP } from "./utils.ts";
 import type { TextosLocal } from "../pedidos/textos-local.ts";
 import type { VariablesCorreo } from "./plantillas.ts";
 

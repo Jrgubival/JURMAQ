@@ -2,7 +2,7 @@
  * Armado de los textos de un correo al cliente (puro). El HTML solo sale de acá y del código de
  * lib/pedidos/correos.ts: el texto editable se ESCAPA entero y de formato solo admite negrita (**).
  */
-import { escapeHtml } from "@jurmaq/shared/mail/utils";
+import { escapeHtml } from "./utils.ts";
 import { PLANTILLAS, VARIABLES, esCampoHtml, textosPorDefecto, type ClaveCorreo, type TipoCampo, type VariablesCorreo } from "./plantillas.ts";
 import { trocear, validarPlantilla } from "./validar.ts";
 
