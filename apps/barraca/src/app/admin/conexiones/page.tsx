@@ -3,6 +3,8 @@ import SinPermiso from "@/components/admin/SinPermiso";
 import { listarLotes, obtenerGestionDb } from "@/lib/gestion";
 import { listarConexiones, type Conexion } from "@/lib/mcp/oauth";
 import { loteSePuedeDeshacer } from "@/lib/mcp/deshacer";
+import { avisosConProblemas, type AvisoConProblema } from "@/lib/mcp/aviso-operacion";
+import { leerModoAprobacion } from "@/lib/mcp/modo-aprobacion";
 import { etiquetaPermiso } from "@/lib/mcp/permisos-texto";
 import { registro } from "@/lib/mcp/tools";
 import AccionConexion from "./AccionesConexiones";
@@ -37,7 +39,12 @@ export default async function ConexionesPage() {
   let conexiones: Conexion[] = [];
   let lotes: Array<Awaited<ReturnType<typeof listarLotes>>[number] & { sePuedeDeshacer: boolean }> = [];
   let noDisponible = !db;
+  let avisosFallidos: AvisoConProblema[] = [];
+  // Solo se LEE (nadie lo cambia desde el panel): lo define el secreto del worker.
+  const modo = leerModoAprobacion();
   if (db) {
+    // Si la tabla de avisos aún no existe (falta aplicar la migración 0010), el resto del panel sigue igual.
+    avisosFallidos = await avisosConProblemas(db).catch(() => []);
     try {
       conexiones = await listarConexiones(db);
       const base = await listarLotes(db, { limite: 25 });
@@ -58,6 +65,32 @@ export default async function ConexionesPage() {
         <p className="mb-6 text-sm text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
           La base de gestión todavía no está lista (falta crearla y aplicar las migraciones). Mientras tanto no hay conexiones ni historial.
         </p>
+      )}
+
+      <p className="mb-6 text-sm text-gray-700 bg-white border border-gray-200 rounded-xl px-3 py-2">
+        Modo de aprobación: <b>{modo === "avisar" ? "avisar" : "exigir"}</b>.{" "}
+        {modo === "avisar"
+          ? "Lo riesgoso se aplica en dos llamadas y te llega un correo de aviso con el enlace para deshacer."
+          : "Lo riesgoso espera tu OK por correo."}{" "}
+        Se define en la configuración del sitio; Claude no puede cambiarlo.
+      </p>
+
+      {avisosFallidos.length > 0 && (
+        <section aria-labelledby="t-avisos" className="mb-10">
+          <h2 id="t-avisos" className="mb-3 text-[13px] font-semibold uppercase tracking-[0.1em] text-red-700">Avisos que no salieron</h2>
+          <p className="mb-2 text-sm text-gray-700">
+            Estos avisos por correo no se pudieron enviar. Se reintentan solos cada 30 minutos; revisa que el correo del aprobador esté bien configurado.
+          </p>
+          <ul className="space-y-2">
+            {avisosFallidos.map((a) => (
+              <li key={a.id} className="bg-red-50 border border-red-200 rounded-2xl p-3 sm:p-4">
+                <p className="font-semibold text-gray-900 break-words">{a.operacion}{a.pedidoNumero ? ` (pedido N° ${a.pedidoNumero})` : ""}</p>
+                <p className="text-sm text-gray-700">{a.tipo === "dinero" ? "Operación de dinero o borrado" : "Cambio en modo avisar"} · {fecha(a.creadoEn)} · {a.intentos} {a.intentos === 1 ? "intento" : "intentos"}</p>
+                {a.ultimoError && <p className="text-xs text-gray-500">Motivo: {a.ultimoError === "sin_aprobador" ? "falta el correo del aprobador" : "el correo no salió"}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <section aria-labelledby="t-conexiones" className="mb-10">

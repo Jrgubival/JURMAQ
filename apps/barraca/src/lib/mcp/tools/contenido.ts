@@ -37,6 +37,7 @@ import {
   type Herramienta,
   type Revertidor,
 } from "./registro.ts";
+import { aprobarEnModoAvisar } from "../modo-avisar.ts";
 import { diferenciaPorLineas, esObjeto, mezclarProfundo, recortar, textoRechazoVistaPrevia, usuarioDe } from "./contenido-comun.ts";
 
 /**
@@ -673,6 +674,25 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
 
       if (publicacionRequiereAprobacion(clave, estado.efectivo, estado.borrador)) {
         const decision = requiereAprobacion({ banderas: motivosPublicacion(clave, estado.efectivo, estado.borrador) });
+        // Modo `avisar` (mcp/modo-aprobacion.ts): esta confirmación ya es el segundo paso (vista previa + confirmar), así que
+        // se publica sin esperar el OK de Jorge y después se le avisa por correo. Sin correo de Jorge válido: flujo normal.
+        const auto = await aprobarEnModoAvisar(ctx.db, {
+          usuario, herramienta: "confirmar_publicacion_contenido", motivos: decision.motivos,
+          resumen: `Publicar ${etiqueta(clave)} en la tienda. ${resumirCambio(clave, estado.efectivo, estado.borrador).lineas[0] ?? ""}`,
+          detalle: { clave, ...resumirCambio(clave, estado.efectivo, estado.borrador).detalle },
+          huella: await huellaDeDatos({ clave, valor: estado.borrador, v: "avisar" }),
+        }, ctx.ahora);
+        if (auto) {
+          if (!(await auto.gastar())) throw new ErrorHerramienta("No pude registrar el aviso a Jorge. No se publicó nada; intenta de nuevo.");
+          const pub = await repo.publicar(ctx.db, { clave, usuario, nota, ahora: ctx.ahora, aprobacion: { aprobadoPor: `modo_avisar:${usuario.id}`, referencia: auto.id } });
+          if (!pub.ok) {
+            await auto.devolver();
+            throw new ErrorHerramienta(pub.motivo === "sin_cambios" ? "Sin cambios: ya estaba publicado así." : `No se pudo publicar${pub.errores ? `: ${pub.errores.slice(0, 6).join(" | ")}` : ""}.`);
+          }
+          await ctx.auditar([{ entidad: "contenido", entidadId: clave, antes: { version: estado.versionPublicada }, despues: { version: pub.version, estado: pub.estado, modo: "avisar" } }]);
+          await deps().revalidar(clave);
+          return { texto: `${etiqueta(clave)} publicado (versión ${pub.version}) en modo avisar: no esperó el OK de Jorge y se le avisa por correo. Las páginas se regeneran en unos minutos. Para volver atrás usa restaurar_version_contenido.`, datos: { estado: "publicada", version: pub.version, modo: "avisar" } };
+        }
         const r = await repo.publicar(ctx.db, { clave, usuario, nota, ahora: ctx.ahora });
         if (!r.ok || r.estado !== "pendiente") throw new ErrorHerramienta(r.ok ? "No se pudo dejar la publicación pendiente." : `No se pudo publicar: ${r.motivo}.`);
         const pendiente = await repo.obtenerVersion(ctx.db, clave, r.version);

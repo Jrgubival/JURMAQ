@@ -1111,3 +1111,83 @@ test("cupón: si crearlo falla después de gastar la aprobación, esta se devuel
   assert.equal(m.correos.length, 1, "no hizo falta pedir otra aprobación");
   assert.equal((await m.db.prepare("SELECT estado FROM aprobaciones").first()).estado, "usada");
 });
+
+// ───────── Modo de aprobación `avisar` (Parte B, base) ─────────
+async function conModo(modo, fn) {
+  const antes = { m: process.env.BARRACA_MODO_APROBACION, a: process.env.BARRACA_APROBADOR_EMAIL };
+  process.env.BARRACA_MODO_APROBACION = modo;
+  process.env.BARRACA_APROBADOR_EMAIL = "aprobador@example.com";
+  try { return await fn(); } finally {
+    for (const [k, v] of [["BARRACA_MODO_APROBACION", antes.m], ["BARRACA_APROBADOR_EMAIL", antes.a]]) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
+  }
+}
+
+test("modo avisar: publicar términos se aplica en la confirmación (ya es el segundo paso), sin correo de OK, y queda el aviso a Jorge; en exigir sigue pendiente", async () => {
+  const { reintentarAvisos } = await import("../src/lib/mcp/aviso-operacion.ts");
+  await conModo("avisar", async () => {
+    const m = montar();
+    const base = (await Repo.obtenerEstado(m.db, "terminos")).efectivo.texto;
+    await m.llamar("guardar_borrador_contenido", { clave: "terminos", valor: { texto: `${base}\n\n17. Cláusula de prueba en modo avisar.` } });
+    const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "terminos" });
+    const c = await m.llamar("confirmar_publicacion_contenido", { clave: "terminos", vista_previa_id: p.datos.vistaPreviaId });
+    assert.ok(!c.error, c.error);
+    assert.equal(c.datos.estado, "publicada");
+    assert.equal(c.datos.modo, "avisar");
+    assert.equal(m.correos.length, 0, "no se pide el OK de Jorge por correo");
+    assert.ok((await Repo.obtenerEstado(m.db, "terminos")).publicado.texto.includes("Cláusula de prueba en modo avisar"));
+    assert.deepEqual(m.revalidadas, ["terminos"]);
+    const fila = await m.db.prepare("SELECT tipo, estado, herramienta FROM avisos_operacion").first();
+    assert.deepEqual({ ...fila }, { tipo: "cambio", estado: "pendiente", herramienta: "confirmar_publicacion_contenido" });
+    // El aviso sale (el servidor lo envía al terminar la llamada; el cron si no).
+    const enviados = [];
+    const r = await reintentarAvisos(m.db, { aprobadorEmail: "aprobador@example.com", base: "https://barraca.jurmaq.cl", enviar: async (x) => { enviados.push(x); return true; } }, T0 + 5 * MIN);
+    assert.equal(r.enviados, 1);
+    assert.match(JSON.stringify(enviados[0]), /Términos/i);
+    assert.equal(enviados[0].botones.at(-1).href, "https://barraca.jurmaq.cl/admin/conexiones");
+  });
+  await conModo("exigir", async () => {
+    const m = montar();
+    const base = (await Repo.obtenerEstado(m.db, "terminos")).efectivo.texto;
+    await m.llamar("guardar_borrador_contenido", { clave: "terminos", valor: { texto: `${base}\n\n17. Otra cláusula.` } });
+    const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "terminos" });
+    const c = await m.llamar("confirmar_publicacion_contenido", { clave: "terminos", vista_previa_id: p.datos.vistaPreviaId });
+    assert.equal(c.datos.estado, "pendiente");
+    assert.equal(m.correos.length, 1);
+  });
+});
+
+test("modo avisar sin correo de Jorge válido: publicar términos sigue BLOQUEADO (cae a exigir)", async () => {
+  await conModo("avisar", async () => {
+    process.env.BARRACA_APROBADOR_EMAIL = "";
+    const m = montar({ aprobadorEmail: "" });
+    const base = (await Repo.obtenerEstado(m.db, "terminos")).efectivo.texto;
+    await m.llamar("guardar_borrador_contenido", { clave: "terminos", valor: { texto: `${base}\n\n17. Sin aprobador.` } });
+    const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "terminos" });
+    const c = await m.llamar("confirmar_publicacion_contenido", { clave: "terminos", vista_previa_id: p.datos.vistaPreviaId });
+    assert.equal(c.datos.estado, "bloqueada");
+    assert.equal((await Repo.obtenerEstado(m.db, "terminos")).publicado, null);
+  });
+});
+
+test("modo avisar: encender cupones = pedir (queda lista la aprobación automática) y aplicar (enciende y registra el aviso)", async () => {
+  await conModo("avisar", async () => {
+    const m = montar();
+    // En avisar, crear un cupón activo es vista previa + repetir la llamada.
+    const pr = await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 });
+    assert.equal(pr.datos.estado, "pendiente");
+    const ok = await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 + 1000 });
+    assert.match(ok.texto, /creado \(activo\)/);
+    assert.equal(m.correos.length, 0, "ningún correo de aprobación");
+    const s = await m.llamar("solicitar_encender_cupones", {}, { ahora: T0 + 2000 });
+    assert.equal(s.datos.modo, "avisar", s.texto);
+    assert.equal(m.correos.length, 0);
+    assert.equal(await leerInterruptorCupones(m.db), false, "pedir no enciende");
+    const a = await m.llamar("aplicar_encendido_cupones", { aprobacion_id: s.datos.aprobacionId }, { ahora: T0 + 3000 });
+    assert.match(a.texto, /ENCENDIDOS/, a.texto);
+    assert.equal(await leerInterruptorCupones(m.db), true);
+    const avisos = (await m.db.prepare("SELECT herramienta, estado FROM avisos_operacion ORDER BY creado_en").all()).results.map((f) => f.herramienta);
+    assert.deepEqual(avisos, ["crear_cupon", "solicitar_encender_cupones"]);
+    // Una sola vez.
+    assert.match((await m.llamar("aplicar_encendido_cupones", { aprobacion_id: s.datos.aprobacionId }, { ahora: T0 + 4000 })).texto, /ya estaban encendidos|ya se usó/);
+  });
+});

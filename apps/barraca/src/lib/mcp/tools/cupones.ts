@@ -41,6 +41,7 @@ import { usosDeCuponesConCodigo, usosDeCuponesPorDia } from "../../cupones/repor
 import type { CuponRegistro } from "../../cupones/servicio.ts";
 import {
   consumirAprobacion,
+  crearAprobacionAutomatica,
   estadoAprobacion,
   requiereAprobacion,
   TEXTO_MOTIVO,
@@ -49,6 +50,7 @@ import {
   type ResultadoSolicitud,
 } from "../aprobaciones.ts";
 import { exigirAprobacion } from "../../gestion-precios/aprobacion.ts";
+import { avisoPosible } from "../modo-avisar.ts";
 import { PISO_COBRABLE_MINIMO } from "../../cupones/totales.ts";
 import { defineHerramienta, ErrorHerramienta, z, type ContextoHerramienta, type Herramienta, type Revertidor, type SalidaHerramienta } from "./registro.ts";
 import { aEnteroSeguro, fechaChileAMs, recortar, usuarioDe } from "./contenido-comun.ts";
@@ -602,12 +604,25 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
       const sinCupones = await terminosDicenSinCupones(ctx.db);
       const nombres = await nombresCategorias();
       const decision = requiereAprobacion({ banderas: ["cupones_interruptor"] });
-      const sol = await deps().solicitarAprobacion(ctx.db, {
+      const datosSolicitud: DatosSolicitud = {
         usuario: usuarioDe(ctx), herramienta: "solicitar_encender_cupones", motivos: decision.motivos,
         resumen: `Encender los cupones en el checkout. Cupones activos que empezarían a aplicarse: ${activos.map((c) => c.codigo).join(", ")}.${sinCupones ? " OJO: los términos todavía dicen que no hay cupones." : ""}`,
         detalle: { cupones: activos.map((c) => ({ codigo: c.codigo, tipo: c.tipo, valor: Number(c.valor), compraMinima: Number(c.monto_minimo_compra), hasta: c.valido_hasta, reglas: textoReglas(c.reglas, nombres) })), terminosDicenSinCupones: sinCupones },
         huella,
-      });
+      };
+      // Modo `avisar` (mcp/modo-aprobacion.ts): en vez del correo con enlace, queda lista una aprobación automática que
+      // `aplicar_encendido_cupones` gasta (y ahí se le avisa a Jorge). Sin correo de Jorge válido: flujo normal.
+      if (avisoPosible(datosSolicitud.usuario.email, decision.motivos)) {
+        const auto = await crearAprobacionAutomatica(ctx.db, datosSolicitud, ctx.ahora);
+        if (auto) {
+          await ctx.auditar([{ entidad: "ajuste", entidadId: "cupones_checkout", antes: { encendido: false }, despues: { solicitud: auto.id, estado: "modo_avisar" } }]);
+          return {
+            texto: `Modo AVISAR: no hace falta esperar a Jorge. Para encender los cupones llama a aplicar_encendido_cupones con aprobacion_id ${auto.id}; al aplicarse, a Jorge le llega un correo de aviso. Nada se encendió todavía. Cupones activos que empezarían a aplicarse: ${activos.map((c) => c.codigo).join(", ")}.${sinCupones ? " Ojo: los términos todavía dicen que no hay cupones; hay que actualizarlos antes de que se vea." : ""}\n${AVISO_ENCENDIDO}`,
+            datos: { solicitada: true, aprobacionId: auto.id, venceEn: auto.venceEn, modo: "avisar" },
+          };
+        }
+      }
+      const sol = await deps().solicitarAprobacion(ctx.db, datosSolicitud);
       if (!sol.ok) {
         const porque = sol.motivo === "mismo_usuario" ? "el correo del aprobador es el mismo del usuario que pide (nadie puede aprobar; hay que configurar otro correo en BARRACA_APROBADOR_EMAIL)" : sol.motivo === "usuario_sin_correo" ? "tu usuario no tiene correo registrado y no se puede comprobar que quien pide sea otra persona que quien aprueba" : sol.motivo === "sin_aprobador" ? "el correo de aprobación de Jorge no está configurado" : sol.motivo === "limite" ? "se pidieron demasiadas aprobaciones en la última hora" : "no pude enviar el correo a Jorge";
         return { texto: `BLOQUEADO: ${porque}. Los cupones siguen apagados. Avísale a Jorge.`, datos: { solicitada: false, estado: "bloqueada", motivo: sol.motivo } };

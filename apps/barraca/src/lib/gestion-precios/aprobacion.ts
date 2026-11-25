@@ -24,10 +24,9 @@ import type { D1Like, UsuarioGestion } from "../gestion/index.ts";
 import { type CambioEvaluable, cifrasDeCambios, lineasDeCambios } from "./reglas.ts";
 import {
   TEXTO_MOTIVO, TTL_APROBACION_MS, consumirAprobacion, crearAprobacionAutomatica, devolverAprobacion, estadoAprobacion,
-  mismoCorreo, motivosAvisables, type DatosSolicitud, type MotivoAprobacion, type ResultadoSolicitud,
+  type DatosSolicitud, type MotivoAprobacion, type ResultadoSolicitud,
 } from "../mcp/aprobaciones.ts";
-import { correoAprobadorDeEntorno } from "../mcp/aviso-operacion.ts";
-import { leerModoAprobacion } from "../mcp/modo-aprobacion.ts";
+import { avisoPosible } from "../mcp/modo-avisar.ts";
 
 export interface DepsAprobacionGestion {
   solicitar(db: D1Like, datos: DatosSolicitud): Promise<ResultadoSolicitud>;
@@ -83,10 +82,7 @@ export async function exigirAprobacion(
   };
 
   // Modo `avisar`: vista previa ahora, se aplica en la siguiente llamada y se avisa a Jorge. Sin aprobador válido, cae a `exigir`.
-  if (leerModoAprobacion() === "avisar" && motivosAvisables(p.motivos) && p.usuario.email && (() => {
-    const para = correoAprobadorDeEntorno();
-    return !!para && !mismoCorreo(para, p.usuario.email);
-  })()) {
+  if (avisoPosible(p.usuario.email, p.motivos)) {
     const auto = await crearAprobacionAutomatica(db, datos, ahora);
     if (!auto) return { tipo: "bloqueada", mensaje: "Hay demasiados cambios en modo avisar en la última hora. No se cambió nada; espera un rato y vuelve a intentar." };
     return {
