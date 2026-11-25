@@ -1,3 +1,5 @@
+import { metaPaginaDefecto } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from "next";
 import Link from "@/components/barraca/Enlace";
 import Image from "next/image";
@@ -52,11 +54,9 @@ function getCategoryImage(imagen: string | null, slug: string): string | null {
   return categoryImages[slug] || imagen || null;
 }
 
-export const metadata: Metadata = {
-  title:
-    "Barraca de Fierros y Materiales · Curicó · JURMAQ",
-  description:
-    `Fierro estriado, perfiles, planchas, tubos, mallas Acma, pinturas y materiales de construcción en Barraca JURMAQ Curicó · Molina. Retiro en Molina y despacho en camión a Molina, Curicó, Talca y alrededores.`,
+const metadataCodigo: Metadata = {
+  title: metaPaginaDefecto("portada").titulo,
+  description: metaPaginaDefecto("portada").descripcion,
   keywords: [
     // Brand + value prop
     "barraca jurmaq",
@@ -155,6 +155,11 @@ export const metadata: Metadata = {
     canonical: "https://barraca.jurmaq.cl",
   },
 };
+
+// El texto propio guardado (si lo hay) reemplaza título y descripción; sin él, idéntico a siempre.
+export async function generateMetadata(): Promise<Metadata> {
+  return metaConSeo<Metadata>("pagina", "portada", metadataCodigo);
+}
 
 // Audit M10: ISR en lugar de force-dynamic. Antes cada visita disparaba
 // SSR y queries a Supabase, lo que en serverless Vercel es ~$ por visita

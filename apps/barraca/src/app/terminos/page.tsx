@@ -1,3 +1,5 @@
+import { metaPaginaDefecto } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from "next";
 import DocumentoLegal, { leerDocumento, tieneMarcas } from "@/components/barraca/DocumentoLegal";
 
@@ -8,13 +10,14 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const borrador = tieneMarcas(await leerDocumento("terminos"));
-  return {
-    title: "Términos y Condiciones · Barraca JURMAQ",
-    description: "Términos y Condiciones de la tienda online de Barraca de Fierros JURMAQ SpA, Molina.",
+  const textos = metaPaginaDefecto("terminos");
+  return metaConSeo<Metadata>("pagina", "terminos", {
+    title: textos.titulo,
+    description: textos.descripcion,
     alternates: { canonical: "https://barraca.jurmaq.cl/terminos" },
     // Mientras sea borrador (con datos por completar) no se indexa.
     robots: borrador ? { index: false, follow: true } : undefined,
-  };
+  });
 }
 
 export default function Page() {

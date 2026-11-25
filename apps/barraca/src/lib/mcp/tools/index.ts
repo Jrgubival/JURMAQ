@@ -17,7 +17,13 @@ import { confirmarPrecios, previsualizarPrecios } from "./precios.ts";
 import { cambiarDespacho, verZonasDespacho } from "./despacho.ts";
 import { herramientasDescuentoTransferencia } from "./descuento-transferencia.ts";
 import { cancelarOferta, programarOferta, verOfertas } from "./ofertas.ts";
-
+import { auditarSeoHerramienta, confirmarSeoHerramienta, editarSeoHerramienta, previsualizarSeoHerramienta, verSeoHerramienta } from "./seo.ts";
+import { fijarRelacionadosHerramienta, quitarRelacionadosHerramienta, verRelacionadosHerramienta } from "./relacionados.ts";
+import {
+  confirmarPublicacionGuiaHerramienta, descartarBorradorGuiaHerramienta, guardarBorradorGuiaHerramienta, listarGuiasHerramienta,
+  previsualizarPublicacionGuiaHerramienta, restaurarVersionGuiaHerramienta, verGuiaHerramienta,
+} from "./guias-contenido.ts";
+import { verMarcasHerramienta } from "./marcas.ts";
 import { editarBorradorCorreo, listarPlantillasCorreo, previsualizarCorreo, publicarCorreo, restaurarCorreo, verPlantillaCorreo } from "./correos.ts";
 import {
   borrarCampanaBorrador, contarSuscriptoresHerramienta, crearCampanaBorrador, editarCampanaBorrador, listarCampanasHerramienta, previsualizarCampana,
@@ -53,6 +59,23 @@ registro.agregar(verOfertas);
 registro.agregar(cancelarOferta);
 // Descuento por transferencia configurable (ver, previsualizar, confirmar con aprobación).
 registro.agregar(...herramientasDescuentoTransferencia);
+// Etapa 2, SEO editable, guías, relacionados y marcas (solo lectura).
+registro.agregar(verSeoHerramienta);
+registro.agregar(auditarSeoHerramienta);
+registro.agregar(editarSeoHerramienta);
+registro.agregar(previsualizarSeoHerramienta);
+registro.agregar(confirmarSeoHerramienta);
+registro.agregar(verRelacionadosHerramienta);
+registro.agregar(fijarRelacionadosHerramienta);
+registro.agregar(quitarRelacionadosHerramienta);
+registro.agregar(listarGuiasHerramienta);
+registro.agregar(verGuiaHerramienta);
+registro.agregar(guardarBorradorGuiaHerramienta);
+registro.agregar(descartarBorradorGuiaHerramienta);
+registro.agregar(restaurarVersionGuiaHerramienta);
+registro.agregar(previsualizarPublicacionGuiaHerramienta);
+registro.agregar(confirmarPublicacionGuiaHerramienta);
+registro.agregar(verMarcasHerramienta);
 // Etapa 2: textos de correos al cliente (publicar siempre con OK de Jorge) y borradores de campañas (nunca envían).
 registro.agregar(listarPlantillasCorreo);
 registro.agregar(verPlantillaCorreo);

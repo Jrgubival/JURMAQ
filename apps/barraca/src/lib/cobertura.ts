@@ -4,7 +4,7 @@
  * en la lista (revisión legal, oct-2026): sin courier, sin el resto de la
  * región. Las landings SEO de ciudades fuera de la lista ofrecen retiro.
  */
-import { ZONAS_DESPACHO } from "@/lib/despacho/zonas";
+import { ZONAS_DESPACHO } from "./despacho/zonas.ts";
 
 function normalizar(s: string): string {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();

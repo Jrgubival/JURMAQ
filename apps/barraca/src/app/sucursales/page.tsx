@@ -1,3 +1,5 @@
+import { metaPaginaDefecto, localParaMeta } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
 import { whatsappCtaSucursal } from '@jurmaq/shared/whatsapp';
@@ -36,27 +38,24 @@ import { LUGARES_DESPACHO } from '@/lib/cobertura';
  * esta página muestra ahora, con los tiempos reales de despacho.
  */
 
-const TITLE = 'Dónde estamos · Barraca en Molina · Despacho a Curicó, Talca y alrededores · JURMAQ';
-const descripcion = (direccionCorta: string) =>
-  `Nuestra barraca de fierros está en ${direccionCorta}. Retiro en el local y despacho en camión a ${LUGARES_DESPACHO}. Horarios, teléfono y WhatsApp directo.`;
 
 // Datos del local de la fuente única (D1 con respaldo en código); se regenera cada 5 minutos y al publicar.
 export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const DESCRIPTION = descripcion((await leerLocal()).direccionCorta);
-  return {
-    title: TITLE,
-    description: DESCRIPTION,
+  const textos = metaPaginaDefecto('sucursales', localParaMeta(await leerLocal()));
+  return metaConSeo<Metadata>('pagina', 'sucursales', {
+    title: textos.titulo,
+    description: textos.descripcion,
     alternates: { canonical: 'https://barraca.jurmaq.cl/sucursales' },
     openGraph: {
-      title: TITLE,
-      description: DESCRIPTION,
+      title: textos.titulo,
+      description: textos.descripcion,
       url: 'https://barraca.jurmaq.cl/sucursales',
       locale: 'es_CL',
       type: 'website',
     },
-  };
+  });
 }
 
 /**

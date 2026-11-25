@@ -16,6 +16,8 @@ import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import { CIUDADES } from "@jurmaq/shared/seo";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 import { despachaA, COBERTURA_CORTA, LUGARES_DESPACHO } from "@/lib/cobertura";
+import { metaCategoriaDefecto } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 
 type BarracaCategoriaRow = Pick<
   Database['public']['Tables']['barraca_categorias']['Row'],
@@ -82,9 +84,11 @@ export async function generateMetadata({
   const productCount = { total: productTotal || 0 };
 
   const lowerName = cat.nombre.toLowerCase();
-  return {
-    title: `${cat.nombre} en Molina · Despacho a Curicó y Talca · Barraca JURMAQ`,
-    description: `${productCount.total} productos de ${lowerName} con precio publicado en Barraca JURMAQ Curicó · Molina. ${COBERTURA_CORTA}`,
+  // Textos que genera el código; si hay texto propio guardado para esta categoría, ese los reemplaza.
+  const textos = metaCategoriaDefecto({ nombre: cat.nombre, total: productCount.total });
+  return metaConSeo<Metadata>('categoria', cat.slug, {
+    title: textos.titulo,
+    description: textos.descripcion,
     keywords: [
       `${lowerName} Curicó`,
       `${lowerName} Molina`,
@@ -100,8 +104,8 @@ export async function generateMetadata({
       "ferretería online Maule",
     ],
     openGraph: {
-      title: `${cat.nombre} · Barraca JURMAQ Curicó · Molina`,
-      description: `${productCount.total} productos de ${lowerName} con precio publicado y stock. ${COBERTURA_CORTA}`,
+      title: textos.ogTitulo,
+      description: textos.ogDescripcion,
       url: `https://barraca.jurmaq.cl/categorias/${cat.slug}`,
       siteName: "Barraca JURMAQ",
       locale: "es_CL",
@@ -127,7 +131,7 @@ export async function generateMetadata({
     alternates: {
       canonical: `https://barraca.jurmaq.cl/categorias/${cat.slug}`,
     },
-  };
+  });
 }
 
 // Página estática: se genera una vez por categoría y se refresca cada hora.

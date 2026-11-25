@@ -23,6 +23,8 @@ import { combosDe, conCombos } from "@/lib/combos-servidor";
 import { resolvePrice } from "@/lib/pricing";
 import { vistaDesde, vistaPrecio } from "@/lib/precio-web";
 import { esComprable, unidadesDisponibles } from "@/lib/stock";
+import { metaProductoDefecto } from "@/lib/seo-editable/defecto";
+import { leerRelacionadosManual, metaConSeo } from "@/lib/seo-editable/lectura";
 import Precio from "@/components/barraca/Precio";
 import AvisoSinRetracto from "@/components/barraca/AvisoSinRetracto";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
@@ -122,18 +124,13 @@ export async function generateMetadata({
   );
   // Sin stock o sin precio: "No disponible" y sin monto (ni en Google).
   const metaDisponible = esComprable({ precio: metaResolved.precioFinal, stock: producto.stock, solo_cotizar: producto.solo_cotizar });
-  const precioFormateado = metaDisponible ? formatCLP(metaResolved.precioFinal) : "No disponible";
-  const stockTexto = metaDisponible ? "Stock disponible" : "Por ahora no disponible en línea";
-  // Etiqueta corta de stock para el TÍTULO visible (lo que el usuario ve en
-  // Google). Antes el título solo decía "Precio y Stock" como palabras; ahora
-  // surfacea el precio real + stock → sube CTR en consultas tipo "fierro
-  // estriado 18mm", "cemento talca", "perfiles curico" (rankean pos 6–8.5, 0
-  // clics). El precio ya estaba solo en el OG title.
-  const titlePrecio = metaDisponible ? `${precioFormateado} · En stock` : "No disponible";
+  // Textos que genera el código (título con el precio y stock reales) y, si hay texto propio
+  // guardado para este código, ese lo reemplaza (lib/seo-editable). Sin texto propio: idéntico a siempre.
+  const textos = metaProductoDefecto({ nombre: producto.nombre, codigo: producto.codigo, disponible: metaDisponible, precioFinal: metaResolved.precioFinal });
 
-  return {
-    title: `${producto.nombre} ${titlePrecio} · Barraca JURMAQ Curicó`,
-    description: `Compra ${producto.nombre} en Barraca JURMAQ, Molina. ${metaDisponible ? `Precio web: ${precioFormateado}. ` : ''}${stockTexto}. Retiro en Molina y despacho en camión a Curicó, Talca y alrededores. Código: ${producto.codigo}.`,
+  return metaConSeo<Metadata>('producto', producto.codigo, {
+    title: textos.titulo,
+    description: textos.descripcion,
     // Sin stock o sin precio no se puede comprar: fuera del índice hasta que vuelva
     // (la ficha sigue abierta para quien llegue por un enlace). También sale del sitemap.
     ...(metaDisponible ? {} : { robots: { index: false, follow: true } }),
@@ -146,8 +143,8 @@ export async function generateMetadata({
       "materiales construccion Curico",
     ],
     openGraph: {
-      title: `${producto.nombre} - ${titlePrecio} | Barraca JURMAQ`,
-      description: `${producto.nombre}${metaDisponible ? ` a ${precioFormateado}` : ''}. ${stockTexto}. Despacho en Region del Maule.`,
+      title: textos.ogTitulo,
+      description: textos.ogDescripcion,
       url: `https://barraca.jurmaq.cl/producto/${producto.slug}`,
       // siteName se hereda del layout ("Barraca JURMAQ").
       locale: "es_CL",
@@ -181,7 +178,7 @@ export async function generateMetadata({
     alternates: {
       canonical: `https://barraca.jurmaq.cl/producto/${producto.slug}`,
     },
-  };
+  });
 }
 
 export default async function ProductoPage({
@@ -214,7 +211,7 @@ export default async function ProductoPage({
   // consultas en fila: ~2 s por ficha generada, y las fichas fueron el 53% del
   // tiempo de funciones de la cuenta de Vercel en oct-2026 (bloqueo del plan
   // Hobby el 03-11-2026).
-  const [categoria, variantes, promoMapOrNull, combosMap, relacionados, ratingRow] = await Promise.all([
+  const [categoria, variantes, promoMapOrNull, combosMap, relacionados, ratingRow, codigosRelacionados] = await Promise.all([
     producto.categoria_id
       ? Promise.resolve(
           supabasePublic.from('barraca_categorias').select('id, nombre, slug').eq('id', producto.categoria_id).single(),
@@ -251,7 +248,24 @@ export default async function ProductoPage({
         .eq('producto_id', producto.id)
         .maybeSingle(),
     ).then((r) => r.data, () => null),
+    // Relacionados fijados a mano para este código (D1 de gestión); null = criterio automático.
+    leerRelacionadosManual(producto.codigo),
   ]);
+
+  // Si hay lista fijada: esos productos (activos), en ese orden y sin repetir código. Si ninguno
+  // se puede comprar, queda la lista automática de arriba (misma categoría, con más stock).
+  let relacionadosFijados: NonNullable<typeof relacionados> = [];
+  if (codigosRelacionados && codigosRelacionados.length > 0) {
+    const { data: fijados } = await supabasePublic
+      .from('barraca_productos')
+      .select('id, codigo, nombre, slug, precio, precio_original, en_oferta, solo_cotizar, stock, unidad, imagen, medida, categoria_id')
+      .in('codigo', codigosRelacionados)
+      .eq('activo', true)
+      .order('id');
+    const porCodigo = new Map<string, NonNullable<typeof relacionados>[number]>();
+    for (const f of fijados ?? []) if (f.codigo && f.codigo !== producto.codigo && !porCodigo.has(f.codigo)) porCodigo.set(f.codigo, f);
+    relacionadosFijados = codigosRelacionados.flatMap((c) => porCodigo.get(c) ?? []);
+  }
 
   // Mirror the listing-page promo logic: any active promo on this product's
   // category (or parent category, via cascade) applies, regardless of whether
@@ -297,9 +311,11 @@ export default async function ProductoPage({
   // precio lleno → inconsistencia $3.990 vs $3.791 de tu captura).
   // Sólo lo que se puede comprar (con los precios vigentes, no sólo los de la
   // base): una sugerencia "No disponible" no sirve para nada.
-  const relacionadosConPromo = await conCombos(
-    (await applyDailyPromosToProducts(relacionados || [])).filter((p) => vistaPrecio(p).disponible).slice(0, 4),
-  );
+  const disponiblesDe = async (lista: NonNullable<typeof relacionados>) =>
+    (await applyDailyPromosToProducts(lista)).filter((p) => vistaPrecio(p).disponible).slice(0, 4);
+  let relacionadosElegidos = relacionadosFijados.length > 0 ? await disponiblesDe(relacionadosFijados) : [];
+  if (relacionadosElegidos.length === 0) relacionadosElegidos = await disponiblesDe(relacionados || []);
+  const relacionadosConPromo = await conCombos(relacionadosElegidos);
 
   // AggregateRating REAL (no fabricado): agregado de reviews moderadas
   // ('aprobada') desde la vista barraca_productos_rating. Solo se inyecta en el

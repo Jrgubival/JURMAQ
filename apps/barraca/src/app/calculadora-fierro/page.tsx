@@ -1,3 +1,5 @@
+import { metaPaginaDefecto } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from "next";
 import Link from "@/components/barraca/Enlace";
 import CalculadoraFierroClient from "./CalculadoraFierroClient";
@@ -14,10 +16,12 @@ import { LUGARES_DESPACHO } from '@/lib/cobertura';
  * el contenido server-rendered da el SEO.
  */
 
-export const metadata: Metadata = {
-  title: "Calculadora de Fierro para Losa, Muros y Radier · JURMAQ Barraca",
-  description:
-    "Calcula cuántos quintales de fierro necesitas para tu obra: losa, sobrelosa, muros de hormigón armado, radier. Cuantías típicas chilenas (kg/m²). Compra en barraca.jurmaq.cl con retiro en Molina o despacho en camión a Molina, Curicó, Talca y alrededores.",
+// El texto de título y descripción puede venir de D1 (SEO editable): se regenera cada hora y al publicar.
+export const revalidate = 3600;
+
+const metadataCodigo: Metadata = {
+  title: metaPaginaDefecto("calculadora_fierro").titulo,
+  description: metaPaginaDefecto("calculadora_fierro").descripcion,
   keywords: [
     "calculadora fierro",
     "cuantos quintales de fierro por m2",
@@ -43,6 +47,11 @@ export const metadata: Metadata = {
     canonical: "https://barraca.jurmaq.cl/calculadora-fierro",
   },
 };
+
+// El texto propio guardado (si lo hay) reemplaza título y descripción; sin él, idéntico a siempre.
+export async function generateMetadata(): Promise<Metadata> {
+  return metaConSeo<Metadata>("pagina", "calculadora_fierro", metadataCodigo);
+}
 
 /**
  * Cuantías típicas chilenas (kg de fierro por m² o m³ de hormigón).

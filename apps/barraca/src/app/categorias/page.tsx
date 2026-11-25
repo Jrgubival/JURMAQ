@@ -1,3 +1,5 @@
+import { metaPaginaDefecto } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from "next";
 import Link from "@/components/barraca/Enlace";
 import { supabasePublic } from "@jurmaq/shared/supabase";
@@ -43,10 +45,9 @@ function getCategoryImage(imagen: string | null, slug: string): string | null {
   return categoryImages[slug] || imagen || null;
 }
 
-export const metadata: Metadata = {
-  title: "Categorías · Barraca JURMAQ Curicó · Materiales de Construcción Maule",
-  description:
-    `Todas las categorías de la Barraca JURMAQ Curicó · Molina: fierros, perfiles, planchas, tubos, mallas Acma, cementos, pinturas, herramientas y más. ${COBERTURA_CORTA}`,
+const metadataCodigo: Metadata = {
+  title: metaPaginaDefecto("categorias").titulo,
+  description: metaPaginaDefecto("categorias").descripcion,
   keywords: [
     "categorías barraca Curicó",
     "categorías materiales construcción Maule",
@@ -80,6 +81,11 @@ export const metadata: Metadata = {
   // <link rel=icon> contra los 6 del resto del sitio. Heredando del layout
   // hay una sola fuente de verdad.
 };
+
+// El texto propio guardado (si lo hay) reemplaza título y descripción; sin él, idéntico a siempre.
+export async function generateMetadata(): Promise<Metadata> {
+  return metaConSeo<Metadata>("pagina", "categorias", metadataCodigo);
+}
 
 interface Categoria {
   id: number;

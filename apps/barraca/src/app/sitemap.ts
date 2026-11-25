@@ -7,7 +7,7 @@ import { MetadataRoute } from "next";
 // tiene REVOKE de anon.
 import { supabasePublic } from "@jurmaq/shared/supabase";
 import { CIUDADES } from "@jurmaq/shared/seo";
-import { GUIAS } from "@/lib/guias-seo-data";
+import { leerGuiasEfectivas } from "@/lib/seo-editable/lectura";
 import { despachaA } from "@/lib/cobertura";
 
 /**
@@ -77,7 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
 
   // pSEO guias programaticas — una entry por guia en GUIAS
-  const guiasUrls: MetadataRoute.Sitemap = GUIAS.map((g) => ({
+  const guiasUrls: MetadataRoute.Sitemap = (await leerGuiasEfectivas()).map((g) => ({
     url: `${baseUrl}/guias/${g.slug}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,

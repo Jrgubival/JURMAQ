@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "@/components/barraca/Enlace";
 import { notFound } from "next/navigation";
-import { GUIAS, getGuia } from "@/lib/guias-seo-data";
+import { GUIAS } from "@/lib/guias-seo-data";
+import { leerGuiaEfectiva, leerGuiasEfectivas } from "@/lib/seo-editable/lectura";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
@@ -14,6 +15,9 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
  * (mín. 600 palabras) evita penalty de thin content (pSEO playbook).
  */
 
+// Las guías publicadas desde la gestión (D1) se leen al regenerar; una guía nueva se genera al pedirla.
+export const revalidate = 3600;
+
 export async function generateStaticParams() {
   return GUIAS.map((g) => ({ slug: g.slug }));
 }
@@ -24,7 +28,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const guia = getGuia(slug);
+  const guia = await leerGuiaEfectiva(slug);
   if (!guia) return { title: "Guía no encontrada" };
   return {
     title: `${guia.titulo} · Barraca JURMAQ`,
@@ -45,12 +49,12 @@ export async function generateMetadata({
 
 export default async function GuiaPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const guia = getGuia(slug);
+  const [guia, todas] = await Promise.all([leerGuiaEfectiva(slug), leerGuiasEfectivas()]);
   if (!guia) notFound();
 
   // Build internal links to related guides
   const relacionadas = (guia.guiasRelacionadas ?? [])
-    .map((s) => GUIAS.find((g) => g.slug === s))
+    .map((s) => todas.find((g) => g.slug === s))
     .filter((g): g is NonNullable<typeof g> => !!g);
 
   // Fechas estables: las guías son contenido evergreen. Usamos la fecha

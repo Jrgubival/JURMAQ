@@ -1,3 +1,5 @@
+import { metaPaginaDefecto, localParaMeta } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
 import { LUGARES_DESPACHO } from '@/lib/cobertura';
@@ -18,11 +20,12 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const B = await leerLocal();
-  return {
-    title: 'Quiénes somos · Barraca de Fierros JURMAQ, Molina',
-    description: `${B.razonSocial}: barraca de fierros y materiales de construcción en ${B.direccionCorta}. Venta en el local y en línea, retiro en Molina y despacho en camión propio.`,
+  const textos = metaPaginaDefecto('nosotros', localParaMeta(B));
+  return metaConSeo<Metadata>('pagina', 'nosotros', {
+    title: textos.titulo,
+    description: textos.descripcion,
     alternates: { canonical: 'https://barraca.jurmaq.cl/nosotros' },
-  };
+  });
 }
 
 const CONTENEDOR = 'max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-[16px] leading-relaxed text-[#37352F]';

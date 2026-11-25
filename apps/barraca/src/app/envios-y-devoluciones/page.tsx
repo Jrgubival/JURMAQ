@@ -1,3 +1,5 @@
+import { metaPaginaDefecto } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
 import { formatCLP } from '@jurmaq/shared/format';
@@ -19,11 +21,16 @@ import { renderizar } from '@/components/barraca/DocumentoLegal';
  */
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: 'Envíos y devoluciones · Barraca JURMAQ',
-  description: 'Retiro gratis en Molina y despacho en camión propio con tarifa por zona (Molina gratis). Devoluciones dentro de 10 días corridos y reembolsos según los Términos.',
+const metadataCodigo: Metadata = {
+  title: metaPaginaDefecto('envios').titulo,
+  description: metaPaginaDefecto('envios').descripcion,
   alternates: { canonical: 'https://barraca.jurmaq.cl/envios-y-devoluciones' },
 };
+
+// El texto propio guardado (si lo hay) reemplaza título y descripción; sin él, idéntico a siempre.
+export async function generateMetadata(): Promise<Metadata> {
+  return metaConSeo<Metadata>("pagina", "envios", metadataCodigo);
+}
 
 const h2 = 'text-xl font-bold text-navy-950 mt-10 mb-3';
 

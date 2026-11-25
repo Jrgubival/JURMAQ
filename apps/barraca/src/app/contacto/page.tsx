@@ -1,3 +1,5 @@
+import { metaPaginaDefecto, localParaMeta } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
 import { leerContenido, leerLocal } from '@/lib/contenido/lectura';
@@ -14,11 +16,12 @@ export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const B = await leerLocal();
-  return {
-    title: 'Contacto · Barraca de Fierros JURMAQ, Molina',
-    description: `${B.razonSocial} · ${B.direccionCorta}. WhatsApp y teléfono ${B.telefonoDisplay}, correo ${B.email}. ${B.h.semana}.`,
+  const textos = metaPaginaDefecto('contacto', localParaMeta(B));
+  return metaConSeo<Metadata>('pagina', 'contacto', {
+    title: textos.titulo,
+    description: textos.descripcion,
     alternates: { canonical: 'https://barraca.jurmaq.cl/contacto' },
-  };
+  });
 }
 
 const fila = 'grid grid-cols-[120px_minmax(0,1fr)] gap-x-4 py-3 border-b border-[#EAEAEA] last:border-0 text-[15px]';

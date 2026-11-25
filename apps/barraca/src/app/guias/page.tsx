@@ -1,6 +1,8 @@
+import { metaPaginaDefecto } from "@/lib/seo-editable/defecto";
+import { metaConSeo } from "@/lib/seo-editable/lectura";
 import type { Metadata } from "next";
 import Link from "@/components/barraca/Enlace";
-import { GUIAS } from "@/lib/guias-seo-data";
+import { leerGuiasEfectivas } from "@/lib/seo-editable/lectura";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
 
 /**
@@ -8,16 +10,25 @@ import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
  * desde y hacia cada /guias/[slug]. Aparece en sitemap automáticamente.
  */
 
-export const metadata: Metadata = {
-  title: "Guías de Construcción · Barraca JURMAQ",
-  description:
-    "Guías técnicas sobre fierros, mallas, cementos y materiales de construcción. Diferencias, usos y cuándo elegir cada uno. Por barraca JURMAQ Maule.",
+// El texto de título y descripción puede venir de D1 (SEO editable): se regenera cada hora y al publicar.
+export const revalidate = 3600;
+
+const metadataCodigo: Metadata = {
+  title: metaPaginaDefecto("guias").titulo,
+  description: metaPaginaDefecto("guias").descripcion,
   alternates: {
     canonical: "https://barraca.jurmaq.cl/guias",
   },
 };
 
-export default function GuiasIndexPage() {
+// El texto propio guardado (si lo hay) reemplaza título y descripción; sin él, idéntico a siempre.
+export async function generateMetadata(): Promise<Metadata> {
+  return metaConSeo<Metadata>("pagina", "guias", metadataCodigo);
+}
+
+export default async function GuiasIndexPage() {
+  // Guías de código con las publicadas desde la gestión encima (sin nada publicado: las de siempre).
+  const GUIAS = await leerGuiasEfectivas();
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
