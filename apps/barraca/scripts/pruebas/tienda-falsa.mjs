@@ -7,7 +7,7 @@ import { solicitarAprobacion } from "../../src/lib/mcp/aprobaciones.ts";
 
 export const ficha = (o) => ({
   id: 1, codigo: "X", nombre: "Producto", slug: `p-${o.id ?? 1}`, descripcion: null, precio: 1000, precio_original: null, en_oferta: false,
-  oferta_fin: null, combo_cantidad: null, combo_precio: null, costo: null, stock: 10, activo: true, categoria_id: null,
+  oferta_fin: null, combo_cantidad: null, combo_precio: null, costo: 10, stock: 10, activo: true, categoria_id: null,
   imagen: "/images/barraca/x.jpg", solo_cotizar: false, ...o,
 });
 

@@ -235,6 +235,7 @@ export async function confirmarPrecios(deps: DepsGestion, ctx: CtxGestion, entra
       motivos: ev.motivos,
       resumen: `Cambiar precios de ${resumen.productosQueCambian} productos (${resumen.fichasQueCambian} fichas). ${(vista.payload as { formula?: string }).formula ?? ""}`.trim(),
       detalle: { motivos: ev.motivosTexto, subidas: resumen.mayoresSubidas.slice(0, 5), bajadas: resumen.mayoresBajadas.slice(0, 5), bajoCosto: resumen.bajoCosto, menos15: resumen.menos15 },
+      cambios: evaluables(cambios),
       huella: vista.huella,
     }, ahora);
     if (r.tipo !== "aprobada") {

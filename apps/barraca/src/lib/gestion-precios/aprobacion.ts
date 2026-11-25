@@ -15,6 +15,7 @@
  * ligada a su id y nadie más puede gastarla).
  */
 import type { D1Like, UsuarioGestion } from "../gestion/index.ts";
+import { type CambioEvaluable, cifrasDeCambios, lineasDeCambios } from "./reglas.ts";
 import {
   TEXTO_MOTIVO, TTL_APROBACION_MS, consumirAprobacion, estadoAprobacion,
   type DatosSolicitud, type MotivoAprobacion, type ResultadoSolicitud,
@@ -37,7 +38,11 @@ export function textoMotivos(motivos: MotivoAprobacion[]): string {
 export async function exigirAprobacion(
   db: D1Like,
   deps: DepsAprobacionGestion,
-  p: { usuario: UsuarioGestion; herramienta: string; motivos: MotivoAprobacion[]; resumen: string; detalle?: unknown; huella: string },
+  p: {
+    usuario: UsuarioGestion; herramienta: string; motivos: MotivoAprobacion[]; resumen: string; detalle?: unknown; huella: string;
+    /** Los cambios de precio que se aprobarían: de ahí salen las cifras del correo y la lista completa de la página. */
+    cambios?: CambioEvaluable[];
+  },
   ahora: number = Date.now(),
 ): Promise<ResultadoExigir> {
   const previa = await db
@@ -58,7 +63,10 @@ export async function exigirAprobacion(
 
   const r = await deps.solicitar(db, {
     usuario: { id: p.usuario.id, email: p.usuario.email ?? null },
-    herramienta: p.herramienta, motivos: p.motivos, resumen: p.resumen, detalle: p.detalle, huella: p.huella,
+    herramienta: p.herramienta, motivos: p.motivos, resumen: p.resumen, huella: p.huella,
+    detalle: p.cambios && p.cambios.length > 0
+      ? { cifras: cifrasDeCambios(p.cambios), lineas: lineasDeCambios(p.cambios), ...(p.detalle && typeof p.detalle === "object" && !Array.isArray(p.detalle) ? (p.detalle as Record<string, unknown>) : p.detalle === undefined ? {} : { detalle: p.detalle }) }
+      : p.detalle,
   });
   if (r.ok) {
     const horas = Math.round(TTL_APROBACION_MS / 3_600_000);
@@ -73,6 +81,7 @@ export async function exigirAprobacion(
   const razon: Record<typeof r.motivo, string> = {
     sin_aprobador: "Este cambio necesita el OK de Jorge, pero falta configurar el correo del aprobador, así que queda bloqueado. No se cambió nada. Avísale a Jorge.",
     limite: "Hay demasiadas solicitudes de aprobación en la última hora. No se cambió nada; espera un rato y vuelve a intentar.",
+    mismo_usuario: "Este cambio necesita el OK de Jorge, pero el correo del aprobador es el mismo del usuario que lo pide, así que nadie puede aprobarlo (quien pide no aprueba). Hay que configurar BARRACA_APROBADOR_EMAIL con otro correo. No se cambió nada. Avísale a Jorge.",
     correo_fallo: "Este cambio necesita el OK de Jorge, pero no pude mandarle el correo. No se cambió nada; intenta de nuevo en unos minutos.",
   };
   return { tipo: "bloqueada", mensaje: razon[r.motivo] };

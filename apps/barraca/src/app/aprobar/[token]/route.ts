@@ -3,7 +3,8 @@ import { TEXTO_MOTIVO, resolverAprobacion, verAprobacionPorToken, type VistaApro
 import { abrirFirmado, empaquetarFirmado, sha256Hex } from "@/lib/mcp/cripto";
 import { MAX_BODY_OAUTH_BYTES, MIN, baseCanonica } from "@/lib/mcp/config";
 import { escapar, huellaIp, leerTextoLimitado, mismoOrigen, paginaError, paginaHtml, respuestaHtml, secretoFirma } from "@/lib/mcp/http";
-import { limitar } from "@/lib/mcp/limites";
+import { consultarLimite, limitar } from "@/lib/mcp/limites";
+import { htmlDetalleAprobacion } from "@/lib/mcp/detalle-aprobacion";
 
 /**
  * Página pública de aprobación (enlace del correo de Jorge).
@@ -25,16 +26,9 @@ const ESTADOS: Record<string, string> = {
   vencida: "Esta solicitud venció. Pídele a Claude que la prepare de nuevo.",
 };
 
-function detalleTexto(d: unknown): string {
-  if (d === null || d === undefined) return "";
-  let t = typeof d === "string" ? d : JSON.stringify(d, null, 2);
-  if (t.length > 4000) t = `${t.slice(0, 4000)}\n…`;
-  return t;
-}
-
 function pagina(v: VistaAprobacion, token: string, csrf: string | null, mensaje?: { tipo: "ok" | "info"; texto: string }): Response {
   const motivos = v.motivos.map((m) => `<li>${escapar(TEXTO_MOTIVO[m])}</li>`).join("");
-  const detalle = detalleTexto(v.detalle);
+  const detalleHtml = htmlDetalleAprobacion(v.detalle, escapar);
   const formulario = v.estado === "pendiente" && csrf
     ? `<form method="post" action="/aprobar/${escapar(token)}" autocomplete="off">
 <input type="hidden" name="csrf" value="${escapar(csrf)}">
@@ -50,8 +44,8 @@ function pagina(v: VistaAprobacion, token: string, csrf: string | null, mensaje?
 ${mensaje ? `<div class="${mensaje.tipo === "ok" ? "dato" : "aviso"}"><b>${escapar(mensaje.texto)}</b></div>` : ""}
 <p>${escapar(v.resumen)}</p>
 <h2>Por qué pide aprobación</h2><ul>${motivos}</ul>
-${detalle ? `<h2>Detalle</h2><div class="dato"><pre>${escapar(detalle)}</pre></div>` : ""}
-<p><small>Pedido por ${escapar(v.solicitante ?? "Claude")}. Vence ${escapar(new Date(v.venceEn).toLocaleString("es-CL", { timeZone: "America/Santiago" }))}.</small></p>
+${detalleHtml}
+<p><small>Huella del cambio: <code>${escapar(v.huella.slice(0, 16))}</code>. Pedido por ${escapar(v.solicitante ?? "Claude")}. Vence ${escapar(new Date(v.venceEn).toLocaleString("es-CL", { timeZone: "America/Santiago" }))}.</small></p>
 ${formulario}
 <p><small>Si apruebas, vuelve a Claude y pídele que continúe. Si los datos cambian antes de aplicarlo, la aprobación deja de servir.</small></p>
 </div>`,
@@ -68,10 +62,16 @@ export async function GET(req: Request, { params }: Ctx) {
   const db = await obtenerGestionDb();
   if (!db || !secreto) return paginaError("No disponible", "Esta página todavía no está lista.", 503);
   try {
-    const lim = await limitar(db, `aprobar:${await huellaIp(req)}`, 40, MIN);
+    // El GET no escribe en D1 cuando el enlace es bueno: solo mira el contador por IP (sin sumar). Cada
+    // intento con un enlace que no existe sí suma, así adivinar enlaces tiene tope por IP.
+    const ip = await huellaIp(req);
+    const lim = await consultarLimite(db, `aprobar-malo:${ip}`, 20, MIN);
     if (!lim.permitido) return paginaError("Demasiados intentos", "Espera un momento.", 429);
     const v = await verAprobacionPorToken(db, token);
-    if (!v) return paginaError("Enlace no válido", "Este enlace no existe o está mal copiado.", 404);
+    if (!v) {
+      await limitar(db, `aprobar-malo:${ip}`, 20, MIN).catch(() => undefined);
+      return paginaError("Enlace no válido", "Este enlace no existe o está mal copiado.", 404);
+    }
     return pagina(v, token, v.estado === "pendiente" ? await csrfPara(token, secreto) : null);
   } catch {
     return paginaError("No disponible", "No pude cargar la solicitud. Intenta de nuevo en un momento.", 503);

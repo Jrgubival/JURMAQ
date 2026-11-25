@@ -15,7 +15,7 @@
  * BLOQUEADAS: nunca se aprueban solas.
  */
 import type { D1Like } from "../gestion/index.ts";
-import { aJson, desdeJson, huellaDeDatos, idUuid } from "../gestion/util.ts";
+import { desdeJson, huellaDeDatos, idUuid } from "../gestion/util.ts";
 import { secretoAleatorio, sha256Hex } from "./cripto.ts";
 import { HORA, DIA } from "./config.ts";
 
@@ -26,7 +26,8 @@ export const MARGEN_MINIMO = 0.15;
 /** El enlace del correo vive poco. */
 export const TTL_APROBACION_MS = 4 * HORA;
 const MAX_SOLICITUDES_POR_HORA = 10;
-const MAX_DETALLE_BYTES = 64 * 1024;
+/** Tope del detalle que ve Jorge. Si se pasa, NO se recorta en silencio: queda marcado como incompleto y la página y el correo lo avisan. */
+export const MAX_DETALLE_BYTES = 256 * 1024;
 
 export type MotivoAprobacion =
   | "masivo_cantidad"          // más de 300 productos en 24 h
@@ -38,7 +39,10 @@ export type MotivoAprobacion =
   | "envio_gratis"             // umbral de envío gratis
   | "texto_legal"              // publicar términos o privacidad
   | "cupones_interruptor"      // encender el interruptor de cupones
-  | "correo_cliente";          // textos de correos al cliente
+  | "correo_cliente"          // textos de correos al cliente
+  | "cupon_activo"            // cupón creado, editado o activado por la IA que queda activo
+  | "datos_local"             // WhatsApp, teléfono, correo, dirección o RUT del local
+  | "sin_costo_baja";         // baja de precio de un producto sin costo cargado (no se puede medir el margen)
 
 export const TEXTO_MOTIVO: Record<MotivoAprobacion, string> = {
   masivo_cantidad: "Cambia más de 300 productos en 24 horas",
@@ -51,6 +55,9 @@ export const TEXTO_MOTIVO: Record<MotivoAprobacion, string> = {
   texto_legal: "Publica términos o privacidad",
   cupones_interruptor: "Enciende los cupones",
   correo_cliente: "Cambia un correo que reciben los clientes",
+  cupon_activo: "Deja un cupón activo (puede dar descuentos a los clientes)",
+  datos_local: "Cambia datos de contacto del local (WhatsApp, teléfono, correo, dirección o RUT)",
+  sin_costo_baja: "Baja el precio de un producto sin costo cargado (no se puede medir el margen)",
 };
 
 // ───────── Reglas (puras) ─────────
@@ -63,7 +70,7 @@ export interface EntradaRequiere {
   /** Productos que toca ESTE cambio; `clave` = código del producto (todas sus fichas cuentan como uno). */
   productos?: Array<{ clave: string; variacionPct?: number }>;
   /** Precios finales y costo, para revisar el margen. costo null/0 = no se evalúa. */
-  precios?: Array<{ precio: number; costo?: number | null }>;
+  precios?: Array<{ precio: number; costo?: number | null; /** El cambio BAJA el precio respecto de hoy. */ baja?: boolean }>;
   /** Reglas que la herramienta ya sabe por su cuenta (transferencia, despacho, texto legal, etc.). */
   banderas?: MotivoAprobacion[];
 }
@@ -80,8 +87,11 @@ export function requiereAprobacion(e: EntradaRequiere): DecisionAprobacion {
   }
   if (Object.keys(suma).length > UMBRAL_PRODUCTOS_24H) motivos.add("masivo_cantidad");
   if (Object.values(suma).some((v) => v > UMBRAL_VARIACION_PCT)) motivos.add("variacion_precio");
-  for (const { precio, costo } of e.precios ?? []) {
-    if (!Number.isFinite(precio) || !costo || !Number.isFinite(costo) || costo <= 0) continue;
+  for (const { precio, costo, baja } of e.precios ?? []) {
+    const sinCosto = !costo || !Number.isFinite(costo) || costo <= 0;
+    // Sin costo cargado no se puede medir el margen: una baja de precio queda pendiente de Jorge.
+    if (sinCosto && baja) motivos.add("sin_costo_baja");
+    if (!Number.isFinite(precio) || sinCosto) continue;
     if (precio < costo) motivos.add("precio_bajo_costo");
     else if (precio < costo * (1 + MARGEN_MINIMO)) motivos.add("margen_menor_15");
   }
@@ -132,6 +142,21 @@ export interface AvisoAprobacion {
   resumen: string;
   motivos: MotivoAprobacion[];
   venceEn: number;
+  /** Datos clave del cambio (cuántos productos, mayor variación, bajo costo…). */
+  cifras?: Record<string, number>;
+  /** El detalle completo no cupo y no se guardó: Jorge no debe aprobar a ciegas. */
+  detalleIncompleto?: boolean;
+}
+
+/** Saca de `detalle.cifras` solo números sanos (el detalle lo arma la herramienta, pero se revisa igual). */
+export function cifrasDeDetalle(detalle: unknown): Record<string, number> | undefined {
+  const c = (detalle && typeof detalle === "object" ? (detalle as { cifras?: unknown }).cifras : undefined);
+  if (!c || typeof c !== "object" || Array.isArray(c)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(c as Record<string, unknown>).slice(0, 12)) {
+    if (typeof v === "number" && Number.isFinite(v) && /^[A-Za-z0-9_]{1,30}$/.test(k)) out[k] = v;
+  }
+  return Object.keys(out).length ? out : undefined;
 }
 
 export interface DepsAprobacion {
@@ -144,7 +169,21 @@ export interface DepsAprobacion {
 
 export type ResultadoSolicitud =
   | { ok: true; id: string; estado: "pendiente"; venceEn: number; nueva: boolean }
-  | { ok: false; estado: "bloqueada"; motivo: "sin_aprobador" | "limite" | "correo_fallo" };
+  | { ok: false; estado: "bloqueada"; motivo: "sin_aprobador" | "limite" | "correo_fallo" | "mismo_usuario" };
+
+/** Compara correos sin importar mayúsculas, espacios ni "+etiqueta". */
+export function mismoCorreo(a: string | null | undefined, b: string | null | undefined): boolean {
+  const n = (x: string | null | undefined) => {
+    const e = String(x ?? "").trim().toLowerCase();
+    const i = e.lastIndexOf("@");
+    if (i < 1) return e;
+    const local = e.slice(0, i);
+    const mas = local.indexOf("+");
+    return `${mas > 0 ? local.slice(0, mas) : local}@${e.slice(i + 1)}`;
+  };
+  const x = n(a);
+  return x !== "" && x === n(b);
+}
 
 const EMAIL_RE = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
 
@@ -153,6 +192,8 @@ export async function solicitarAprobacion(
 ): Promise<ResultadoSolicitud> {
   const para = deps.aprobadorEmail?.trim().toLowerCase();
   if (!para || para.length > 254 || !EMAIL_RE.test(para)) return { ok: false, estado: "bloqueada", motivo: "sin_aprobador" };
+  // Quien pide no puede ser quien aprueba: si el correo del aprobador es el del usuario que solicita, no es aprobable.
+  if (mismoCorreo(para, d.usuario.email)) return { ok: false, estado: "bloqueada", motivo: "mismo_usuario" };
 
   // Misma solicitud todavía pendiente: no se manda otro correo.
   const existente = await db
@@ -171,8 +212,13 @@ export async function solicitarAprobacion(
   const id = idUuid();
   const venceEn = ahora + TTL_APROBACION_MS;
   let detalle: string | null = null;
-  try { detalle = aJson(d.detalle, "detalle"); } catch { detalle = null; }
-  if (detalle && new TextEncoder().encode(detalle).length > MAX_DETALLE_BYTES) detalle = JSON.stringify({ truncado: true });
+  // Sin aJson (si se pasaba del tope fallaba en silencio y la solicitud salía SIN detalle): aquí, si se pasa, se marca como incompleto.
+  try { detalle = d.detalle === undefined || d.detalle === null ? null : (JSON.stringify(d.detalle) ?? null); } catch { detalle = null; }
+  let incompleto = false;
+  if (detalle && new TextEncoder().encode(detalle).length > MAX_DETALLE_BYTES) {
+    incompleto = true;
+    detalle = JSON.stringify({ detalleIncompleto: true, cifras: cifrasDeDetalle(d.detalle) ?? null });
+  }
   const resumen = d.resumen.replace(/[\u0000-\u0008\u000b-\u001f]/g, " ").slice(0, 600);
   await db
     .prepare(
@@ -187,6 +233,7 @@ export async function solicitarAprobacion(
     salio = await deps.enviar({
       para, enlace: `${deps.base}/aprobar/${token}`, solicitante: d.usuario.email ?? null,
       herramienta: d.herramienta, resumen, motivos: d.motivos, venceEn,
+      cifras: cifrasDeDetalle(d.detalle), detalleIncompleto: incompleto,
     });
   } catch { salio = false; }
   if (!salio) {
@@ -246,6 +293,8 @@ export interface VistaAprobacion {
   estado: EstadoAprobacion;
   creadoEn: number;
   venceEn: number;
+  /** Huella del cambio (primeros caracteres sirven para cotejar con lo que mostró Claude). */
+  huella: string;
 }
 
 const TOKEN_RE = /^mcpv_[A-Za-z0-9_-]{43}$/;
@@ -258,7 +307,7 @@ export async function verAprobacionPorToken(db: D1Like, token: string, ahora: nu
   return {
     id: f.id, herramienta: f.herramienta, motivos: (desdeJson<MotivoAprobacion[]>(f.motivos) ?? []).filter((m: string) => m in TEXTO_MOTIVO),
     resumen: f.resumen, detalle: desdeJson(f.detalle), solicitante: f.usuario_email, estado: estadoEfectivo(f, ahora),
-    creadoEn: f.creado_en, venceEn: f.expira_en,
+    creadoEn: f.creado_en, venceEn: f.expira_en, huella: f.huella,
   };
 }
 

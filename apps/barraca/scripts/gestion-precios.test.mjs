@@ -155,7 +155,7 @@ test("evaluarCambioPrecios: bajo costo, 15 %, 30 % y banderas", async () => {
 
 test("las fichas repetidas cuentan como un solo producto", async () => {
   const db = nuevaDb();
-  const cambios = Array.from({ length: 400 }, () => ({ clave: "MISMO", precioAntes: 1000, precioDespues: 990 }));
+  const cambios = Array.from({ length: 400 }, () => ({ clave: "MISMO", precioAntes: 1000, precioDespues: 990, costo: 100 }));
   const e = await R.evaluarCambioPrecios(db, { usuarioId: "1", cambios, ahora: T0 });
   assert.equal(e.productos, 1);
   assert.equal(e.requiere, false);
@@ -490,7 +490,16 @@ test("despacho: siempre pide aprobación, se aplica al repetir tras el OK y se d
     assert.deepEqual([T.zonas[0].costo, T.zonas[0].gratis_desde], [6000, 200000]);
     assert.equal(T.contadores.zonasInvalidadas, 1);
     assert.equal((await obtenerLote(db, c.loteId))[0].entidad, "zona");
-    assert.equal((await deshacerLote(db, reg, c.loteId, JORGE, T0 + 5)).ok, true);
+    // Deshacer NO es puerta trasera: restaurar un despacho también necesita el OK de Jorge.
+    const intento = await deshacerLote(db, reg, c.loteId, JORGE, T0 + 5);
+    assert.equal(intento.ok, false);
+    assert.match(intento.mensaje, /pendiente de Jorge/);
+    assert.deepEqual([T.zonas[0].costo, T.zonas[0].gratis_desde], [6000, 200000]);
+    assert.equal(T.correos.length, 2);
+    await deshacerLote(db, reg, c.loteId, JORGE, T0 + 6);
+    assert.equal(T.correos.length, 2); // sigue pendiente: no manda otro correo
+    await aprobarUltimoCorreo(db, T.correos, resolverAprobacion);
+    assert.equal((await deshacerLote(db, reg, c.loteId, JORGE, T0 + 7)).ok, true);
     assert.deepEqual([T.zonas[0].costo, T.zonas[0].gratis_desde], [5000, 150000]);
     // "nunca gratis" y bloqueo sin aprobador
     T.estadoAprobador.email = null;

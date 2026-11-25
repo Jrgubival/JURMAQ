@@ -35,4 +35,4 @@ export async function ejecutarServicio(fn: () => Promise<Salida>): Promise<Salid
 }
 
 /** Deshacer genérico para productos, categorías y zonas: no pisa lo que alguien cambió después. */
-export const revertidorGeneral: Revertidor = async ({ usuario, entradas }) => revertirEntradas(await obtenerDeps(), usuario.id, entradas);
+export const revertidorGeneral: Revertidor = async ({ db, usuario, ahora, entradas }) => revertirEntradas(await obtenerDeps(), { db, usuario, ahora }, entradas);

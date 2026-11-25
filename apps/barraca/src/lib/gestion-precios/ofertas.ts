@@ -222,7 +222,8 @@ export async function programarOferta(deps: DepsGestion, ctx: CtxGestion, e: Ent
       const r = await exigirAprobacion(db, deps.aprobacion, {
         usuario, herramienta: HERRAMIENTA_OFERTAS, motivos: ev.motivos, huella: vista.huella,
         resumen: `Programar oferta en ${plan.items.length} productos, del ${chile(plan.inicio)} al ${chile(plan.fin)}.`,
-        detalle: { productos: plan.items.slice(0, 10).map((i) => ({ codigo: i.codigo, precio_oferta: i.precioOferta, descuento_pct: i.descuentoPct })), motivos: ev.motivosTexto },
+        detalle: { productos: plan.items.map((i) => ({ codigo: i.codigo, precio_oferta: i.precioOferta, descuento_pct: i.descuentoPct })), motivos: ev.motivosTexto },
+        cambios: evaluablesOferta(plan),
       }, ahora);
       if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, motivos: ev.motivosTexto } };
       gastar = r.gastar;
@@ -285,6 +286,7 @@ export async function programarOferta(deps: DepsGestion, ctx: CtxGestion, e: Ent
       usuario, herramienta: HERRAMIENTA_OFERTAS, motivos: ev.motivos, huella: await huellaPlan(plan),
       resumen: `Programar oferta en ${cantidad} producto(s), del ${chile(plan.inicio)} al ${chile(plan.fin)}.`,
       detalle: { productos: plan.items.map((i) => ({ codigo: i.codigo, precio_oferta: i.precioOferta, descuento_pct: i.descuentoPct })), motivos: ev.motivosTexto },
+      cambios: evaluablesOferta(plan),
     }, ahora);
     if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, motivos: ev.motivosTexto } };
     if (!(await r.gastar())) throw new ErrorGestion("La aprobación de Jorge ya se había usado. No se programó nada; vuelve a pedirlo.");

@@ -36,6 +36,8 @@ export interface CambioEvaluable {
   costo?: number | null;
   /** Precio unitario de combo (combo_precio / combo_cantidad), si el cambio lo toca. */
   precioComboUnitario?: number | null;
+  /** Precio unitario implícito del combo que tenía antes (si tenía). */
+  comboUnitarioAntes?: number | null;
 }
 
 export interface EvaluacionCambio {
@@ -53,7 +55,9 @@ export interface EvaluacionCambio {
 function variacionDe(c: CambioEvaluable): number {
   const web = variacionPct(c.precioAntes, c.precioDespues);
   const local = c.localAntes && c.localDespues ? variacionPct(c.localAntes, c.localDespues) : 0;
-  return Math.max(web, local);
+  // Un combo es un precio por unidad: se mide contra el combo anterior, o contra el precio web.
+  const combo = c.precioComboUnitario ? variacionPct(c.comboUnitarioAntes ?? c.precioDespues, c.precioComboUnitario) : 0;
+  return Math.max(web, local, combo);
 }
 
 /** Un renglón por producto (código): se queda con la mayor variación entre sus fichas. */
@@ -69,10 +73,11 @@ export async function evaluarCambioPrecios(
 ): Promise<EvaluacionCambio> {
   const acumulado: Acumulado24h = await leerAcumulado(db, e.usuarioId, e.ahora);
   const productos = resumirPorProducto(e.cambios);
-  const precios: Array<{ precio: number; costo?: number | null }> = [];
+  const precios: Array<{ precio: number; costo?: number | null; baja?: boolean }> = [];
   for (const c of e.cambios) {
-    precios.push({ precio: c.precioDespues, costo: c.costo });
-    if (c.precioComboUnitario) precios.push({ precio: c.precioComboUnitario, costo: c.costo });
+    precios.push({ precio: c.precioDespues, costo: c.costo, baja: c.precioDespues < c.precioAntes });
+    // El combo cuenta como precio por unidad: contra el costo y contra el precio que tenía (o el web).
+    if (c.precioComboUnitario) precios.push({ precio: c.precioComboUnitario, costo: c.costo, baja: c.precioComboUnitario < (c.comboUnitarioAntes ?? c.precioDespues) });
   }
   const d = requiereAprobacion({ acumulado, productos, precios, banderas: e.banderas });
   const claves = new Set([...Object.keys(acumulado.porClave), ...productos.map((p) => p.clave)]);
@@ -95,4 +100,46 @@ export async function registrarCambioAplicado(
   const items = resumirPorProducto(cambios);
   if (items.length === 0) return;
   await registrarAcumulado(db, usuarioId, items, { aprobado: o.aprobado, ahora: o.ahora });
+}
+
+// ───────── Cifras para Jorge (correo y página de aprobación) ─────────
+export interface CifrasAprobacion {
+  productos: number;
+  fichas: number;
+  /** Mayor variación (en %) de un precio, web, local o combo. */
+  mayorVariacionPct: number;
+  /** Cuántos productos quedarían con un precio bajo el costo. */
+  bajoCosto: number;
+  /** Cuántos quedarían con menos de 15 % sobre el costo (sin contar los bajo el costo). */
+  menos15: number;
+  /** Cuántos no tienen costo cargado (no se puede medir su margen). */
+  sinCosto: number;
+}
+
+export function cifrasDeCambios(cambios: CambioEvaluable[]): CifrasAprobacion {
+  const claves = new Set<string>();
+  const bajo = new Set<string>();
+  const menos = new Set<string>();
+  const sin = new Set<string>();
+  let mayor = 0;
+  for (const c of cambios) {
+    claves.add(c.clave);
+    mayor = Math.max(mayor, variacionDe(c));
+    const precios = [c.precioDespues, ...(c.precioComboUnitario ? [c.precioComboUnitario] : [])];
+    if (!c.costo || c.costo <= 0) { sin.add(c.clave); continue; }
+    for (const p of precios) {
+      if (p < c.costo) bajo.add(c.clave);
+      else if (p < c.costo * 1.15) menos.add(c.clave);
+    }
+  }
+  for (const k of bajo) menos.delete(k);
+  return { productos: claves.size, fichas: cambios.length, mayorVariacionPct: mayor, bajoCosto: bajo.size, menos15: menos.size, sinCosto: sin.size };
+}
+
+/** Una línea por ficha, completa (nada se recorta: es lo que Jorge revisa antes de aprobar). */
+export function lineasDeCambios(cambios: CambioEvaluable[]): Array<Record<string, number | string | null>> {
+  return cambios.map((c) => ({
+    codigo: c.clave, antes: c.precioAntes, despues: c.precioDespues, costo: c.costo ?? null,
+    ...(c.precioComboUnitario ? { combo_unitario: c.precioComboUnitario, combo_unitario_antes: c.comboUnitarioAntes ?? null } : {}),
+  }));
 }

@@ -157,6 +157,7 @@ export async function editarProducto(deps: DepsGestion, ctx: CtxGestion, e: Entr
     return {
       clave: codigo, precioAntes: precioWebDe(f), precioDespues: precioWebDe(despues), localAntes: precioLocalDe(f), localDespues: precioLocalDe(despues),
       costo: f.costo, precioComboUnitario: cantidad && pc && (campos.combo_precio !== undefined || campos.combo_cantidad !== undefined) ? Math.ceil(pc / cantidad) : null,
+      comboUnitarioAntes: f.combo_cantidad && f.combo_precio ? Math.ceil(f.combo_precio / f.combo_cantidad) : null,
     };
   });
   let requiere = false;
@@ -170,6 +171,7 @@ export async function editarProducto(deps: DepsGestion, ctx: CtxGestion, e: Entr
         usuario: ctx.usuario, herramienta, motivos: ev.motivos, huella,
         resumen: `Cambiar el producto ${codigo} (${planes[0].f.nombre}): ${describir(planes[0].campos)}.`,
         detalle: { codigo, fichas: planes.length, antes: resumenFicha(planes[0].f, Object.keys(planes[0].campos)), despues: planes[0].campos, motivos: ev.motivosTexto },
+        cambios: evaluables,
       }, ctx.ahora);
       if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, motivos: ev.motivosTexto, codigo } };
       gastar = r.gastar;
@@ -264,6 +266,7 @@ export async function crearProducto(deps: DepsGestion, ctx: CtxGestion, e: Entra
       usuario: ctx.usuario, herramienta: "crear_producto", motivos: ev.motivos, huella,
       resumen: `Crear el producto ${codigo} (${nombre}) a ${pesos(e.precio_web)}.`,
       detalle: { codigo, nombre, precio_web: e.precio_web, costo: e.costo ?? null, motivos: ev.motivosTexto },
+      cambios: [{ clave: codigo, precioAntes: e.precio_web, precioDespues: e.precio_web, costo: e.costo ?? null }],
     }, ctx.ahora);
     if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, motivos: ev.motivosTexto } };
     if (!(await r.gastar())) throw new ErrorGestion("La aprobación de Jorge ya se había usado. No se creó nada; vuelve a pedirlo.");
