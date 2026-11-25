@@ -14,14 +14,20 @@ export default {
   async scheduled(controller: { cron?: string }, env: Env, ctx: { waitUntil: (p: Promise<unknown>) => void }) {
     const secret = env.CRON_SECRET?.trim();
     if (!secret) return; // fail-closed: sin secreto no se llama
-    // Cada media hora: aviso interno de carritos sin pagar. Diario 09:00 UTC: post-purchase.
-    const ruta = controller.cron === "*/30 * * * *" ? "avisos-carritos" : "post-purchase";
+    // Cada media hora: aviso interno de carritos sin pagar y mantenimiento de la gestión por MCP
+    // (ofertas con fecha, limpiezas). Cada ruta va aparte: si una falla, la otra corre igual.
+    // Diario 09:00 UTC: post-purchase.
+    const rutas = controller.cron === "*/30 * * * *" ? ["avisos-carritos", "mantenimiento-gestion"] : ["post-purchase"];
     ctx.waitUntil(
-      env.WORKER_SELF_REFERENCE.fetch(
-        new Request(`https://barraca.jurmaq.cl/api/cron/${ruta}`, {
-          method: "POST",
-          headers: { authorization: `Bearer ${secret}` },
-        }),
+      Promise.allSettled(
+        rutas.map((ruta) =>
+          env.WORKER_SELF_REFERENCE.fetch(
+            new Request(`https://barraca.jurmaq.cl/api/cron/${ruta}`, {
+              method: "POST",
+              headers: { authorization: `Bearer ${secret}` },
+            }),
+          ),
+        ),
       ),
     );
   },

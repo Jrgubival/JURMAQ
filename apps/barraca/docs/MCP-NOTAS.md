@@ -282,3 +282,51 @@ Archivos: `src/lib/mcp/tools/contenido.ts`, `contenido-comun.ts`, `imagenes.ts`,
 - No se probó contra Supabase ni D1 reales ni con un cliente MCP (regla de no prender servidor): lo cubierto son las pruebas con D1 simulada y repositorios falsos. Las consultas reales de opiniones (relación `barraca_productos:producto_id`) y de categorías no se ejecutaron desde las herramientas.
 - `categorias_para_cupones` y `listar_opiniones` leen Supabase directo; si otra pieza expone un listado de categorías conviene reutilizarlo.
 - Fechas de cupones/reportes: «día» en hora de Chile aproximada (UTC−3 fijo en reportes; en verano coincide, en invierno puede correrse una hora).
+
+## Productos, precios, ofertas y despacho (pieza de precios, 25-11-2026)
+
+Código en `src/lib/gestion-precios/`, herramientas en `src/lib/mcp/tools/{productos,precios,despacho,ofertas}.ts` (más `productos-comun.ts`), migración D1 `0005_ofertas.sql`, ruta de cron `src/app/api/cron/mantenimiento-gestion/route.ts`. Pruebas: `scripts/gestion-precios.test.mjs` y `scripts/ofertas.test.mjs` (tienda falsa en `scripts/pruebas/tienda-falsa.mjs`).
+
+### Herramientas (15)
+- Lectura: `buscar_productos` (texto, código, categoría, estado, sin foto, sin stock, oferta; paginado, sin costos), `ver_producto` (todas las fichas del código con costo y margen, y sus ofertas), `listar_categorias` (con conteo), `ver_margenes` (bajo costo, menos de 15 %, sin costo), `ver_zonas_despacho`, `ver_ofertas` (vigentes y avisos de 30 días).
+- Escritura directa con auditoría y deshacer: `editar_producto` (por código a todas las fichas), `crear_producto` (queda OCULTO por defecto), `crear_categoria`, `editar_categoria`.
+- Dos pasos: `previsualizar_precios` / `confirmar_precios`; `programar_oferta` (hasta 5 productos directo; más, con `modo` previsualizar y confirmar).
+- Siempre con aprobación de Jorge: `cambiar_despacho`. `cancelar_oferta` sin aprobación (no tiene deshacer: se reprograma).
+
+### Modelo de precios y redondeo (documentado)
+- `precio` = precio web (lo que se cobra); `precio_original` = precio local (tachado); `en_oferta` = hay tachado (local > web). Local igual al web = sin tachado (`precio_original` null, `en_oferta` false). Todo se escribe con `construirEstado` (modelo.ts), así `pricing.ts` y `precio-web.ts` cobran exactamente `precio` y muestran el tachado (probado con `resolvePrice` y `vistaPrecio`).
+- Caso de Claudia: "precio normal = local, web = 5 % menos" = `previsualizar_precios` con `por: "porcentaje"` (o `categoria`) y `descuento_web_pct: 5`. Local = el tachado de hoy, o el precio si no hay tachado. Web = local × (1 − X %), al peso entero más cercano, la mitad sube (en enteros con puntos base: $1.990 → $1.891). Es idempotente. La fórmula sale en la vista previa. `reajuste_pct` (solo `categoria`) sube o baja local y web.
+- Nunca precio 0, negativo ni decimal; web no puede superar al local. Si queda con ahorro menor a 5 % la tienda no muestra el tachado (la vista previa lo avisa).
+- Se escribe `oferta_fin = null` solo cuando la ficha traía una fecha ya vencida y queda en oferta (si no, el "expirar" manual de `/api/promociones/import?mode=expire`, que usa la convención vieja, la revertiría mal). Las ofertas programadas NO escriben `oferta_fin`.
+- `en_oferta` no se pide directo salvo `editar_producto` (`false` apaga el tachado): se deriva de precio local > precio web.
+
+### Centro de reglas (para otros ejecutores)
+- `evaluarCambioPrecios(db, { usuarioId, cambios, banderas?, ahora? })` en `reglas.ts` (importable desde `@/lib/gestion-precios/index`): lee el acumulado de 24 h, aplica `requiereAprobacion` (bajo costo, menos de 15 %, más de 300 productos, más de 30 % acumulado, y banderas `despacho`, `envio_gratis`, `descuento_transferencia`, etc.). Después de aplicar: `registrarCambioAplicado(db, usuarioId, cambios, { aprobado })`. Clave de acumulado = código (las fichas repetidas cuentan como uno).
+- `exigirAprobacion(db, deps, { usuario, herramienta, motivos, resumen, detalle, huella })` en `aprobacion.ts`: pide el correo, no repite si sigue pendiente, devuelve `gastar()` cuando Jorge aprobó (un solo uso), o `pendiente` / `rechazada` / `bloqueada` (sin `BARRACA_APROBADOR_EMAIL`, correo caído o más de 10 solicitudes por hora). La huella debe incluir el estado actual de los datos: si cambian, la aprobación anterior no sirve.
+- "Ejecutor de aprobada": cuando Jorge aprueba, Claude repite la MISMA llamada (`confirmar_precios` con el mismo id, `editar_producto`, `cambiar_despacho`, `programar_oferta`…); esa llamada encuentra la aprobación por huella, la gasta y aplica con las mismas validaciones y auditoría, a nombre del usuario que la pidió (la aprobación está ligada a su id). No hay ejecución desde la página `/aprobar`.
+- Las dependencias van inyectadas (`DepsGestion`, `deps.ts`): `deps-reales.ts` (server-only) las arma; las herramientas las obtienen con `obtenerDeps()` y las pruebas usan `fijarDepsGestion(falsas)`.
+
+### Dos pasos de precios
+- `previsualizar_precios`: no cambia la tienda; guarda una vista previa (tipo `precios_masivos`, ligada al usuario, 15 min, o 5 h si necesita aprobación) con la huella de lo que se verá y se escribirá. Resumen: cuántos cambian, 5 mayores subidas y bajadas, bajo costo, menos de 15 %, no encontrados, filas no válidas, efectos (sin correos al cliente).
+- `confirmar_precios`: mira la vista sin gastarla, compara la huella con el estado actual (si alguien cambió algo, rechaza), pasa por el centro de reglas, y recién entonces la consume (atómico) y aplica. Cada ficha se escribe solo si su precio sigue como se vio (si no, queda en "no aplicadas"). Máximo 1.200 fichas por operación (cada ficha es una escritura a Supabase; límite de subpeticiones de Workers). Revalida fichas (hasta 40) o el catálogo.
+- Dividir en varios chicos no evade el umbral (acumulado 24 h por usuario; probado con 4 partes de 100).
+
+### Ofertas con vigencia (D1 `ofertas`, estados programada → activando → activa → terminando → terminada | cancelada | omitida)
+- Al empezar: precio web = oferta; tachado = el local de hoy; se guarda la foto `antes` y `aplicado` por ficha. Al terminar, cada ficha que SIGUE como la dejó la oferta vuelve a `antes`; si alguien la cambió, no se pisa y queda `aviso` (visible en `ver_ofertas` y en la auditoría como entrada `oferta` de la herramienta `ofertas_automatico`, sin botón Deshacer).
+- Doble ejecución del cron: cada paso reclama la oferta con UPDATE atómico. Una corrida caída se retoma a los 10 min desde la foto guardada (antes de escribir en la tienda).
+- Se omite sin tocar nada si ya pasó el plazo, si el precio web ya es menor, o si con los costos de hoy queda bajo costo/menos de 15 % y no tenía el OK de Jorge (las ofertas aprobadas guardan `aprobada = 1`).
+- No se cruzan dos ofertas del mismo código. Fechas en hora de Chile (`AAAA-MM-DDTHH:MM`) o ISO con zona. Si ya le toca empezar, se activa en la misma llamada.
+- Deshacer de `programar_oferta`: cancela las programadas y termina las activas devolviendo precios sin pisar cambios ajenos.
+
+### Cron (cada 30 min)
+- `custom-worker.ts` llama a `avisos-carritos` (sin cambios) y a `/api/cron/mantenimiento-gestion` (con `Promise.allSettled`: una no frena a la otra). La ruta pide `CRON_SECRET`, procesa hasta 25 ofertas por fase y responde solo contadores.
+- Una vez por hora (minutos 0 a 29): `limpiarOauth`, `limpiarLimites`, `limpiarAprobaciones`, `limpiarVistasPrevias` y `limpiarOfertas` (terminadas hace más de 120 días).
+
+### Deshacer (productos, categorías, zonas)
+- `revertirEntradas` (revertir.ts): restaura `antes` solo si el dato sigue como `despues`; si ya estaba como `antes`, cuenta como hecho; si alguien lo cambió, no lo toca y lo informa. Si nada se pudo restaurar devuelve error y el lote queda vigente. Crear = desactivar (nunca borrar). Cambios de despacho se restauran desde el panel (acción humana del admin).
+
+### Pendientes / riesgos
+- El 2 % de transferencia es una constante en código (`pagos/descuento-transferencia.ts`): no hay herramienta para cambiarlo (la bandera `descuento_transferencia` ya está en el centro de reglas para cuando exista).
+- `barraca_zonas_despacho` debe existir en Supabase (migración `2026_10_31_barraca_admin.sql`); si no, `cambiar_despacho` avisa y `ver_zonas_despacho` muestra las tarifas fijas del código.
+- Subpeticiones de Workers: cada ficha escrita y cada consulta cuentan; un masivo de 1.200 fichas puede acercarse al límite del plan. Si se corta, lo aplicado queda auditado y el resto se rehace con una vista previa nueva.
+- No se probó contra Supabase ni D1 reales (no existen en este entorno); sí con tienda falsa y D1 simulada. `precio-web.ts` ahora importa `./stock.ts` en vez de `@/lib/stock` para poder cargarse en pruebas.

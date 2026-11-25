@@ -1,4 +1,4 @@
-import { esComprable } from '@/lib/stock';
+import { esComprable } from './stock.ts';
 
 /**
  * Cómo se muestra el precio en la tienda web (reglas del 29-10-2026):
