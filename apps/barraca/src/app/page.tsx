@@ -17,7 +17,7 @@ import masVendidos from '@/data/mas-vendidos.json';
 import { vistaPrecio, type ProductoConPrecio } from '@/lib/precio-web';
 import { ZONAS_DESPACHO } from '@/lib/despacho/zonas';
 import { leerContenido } from '@/lib/contenido/lectura';
-import { vigenteEn } from '@/lib/contenido/fechas';
+import { slidesVigentes } from '@/lib/contenido/publico';
 import type { SeccionPortada } from '@/lib/contenido/tipos';
 import { Fragment } from 'react';
 
@@ -190,8 +190,7 @@ export default async function BarracaHomePage() {
   // secciones, productos y categorías destacados, y títulos. Las vigencias de
   // las láminas se evalúan al regenerar la página (cada hora y al publicar).
   const [slidesCfg, portada, textos] = await Promise.all([leerContenido('slides'), leerContenido('portada'), leerContenido('textos')]);
-  const ahora = Date.now();
-  const slides = slidesCfg.filter((sl) => sl.activa && vigenteEn(sl, ahora));
+  const slides = slidesVigentes(slidesCfg);
 
   // Fetch ALL parent categories, then sort by product count (most popular first)
   const { data: rawCategorias } = await supabasePublic

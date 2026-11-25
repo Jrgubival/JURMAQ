@@ -5,7 +5,7 @@
  * hora. Las vigencias (desde/hasta) se evalúan acá, en el servidor.
  */
 import { parseFecha, vigenteEn } from "./fechas.ts";
-import type { AvisoConfig, CintaConfig, LugarAviso, PopupConfig, ValoresContenido } from "./tipos.ts";
+import type { AvisoConfig, CintaConfig, LugarAviso, PopupConfig, SlideConfig, ValoresContenido } from "./tipos.ts";
 
 export interface PopupPublico extends Omit<PopupConfig, "desde" | "hasta"> {
   /** ms UTC (o null). El navegador compara con su reloj. */
@@ -56,4 +56,9 @@ export function armarPublico(v: Pick<ValoresContenido, "popup" | "cinta" | "avis
 /** Respaldo para el navegador si la ruta falla: el popup de código, sin cinta ni avisos. */
 export function publicoVacio(): ContenidoPublico {
   return { popup: null, cinta: null, avisos: [] };
+}
+
+/** Láminas activas y dentro de su vigencia (la portada lo evalúa al regenerarse). */
+export function slidesVigentes(slides: SlideConfig[], ahoraMs: number = Date.now()): SlideConfig[] {
+  return slides.filter((s) => s.activa && vigenteEn(s, ahoraMs));
 }

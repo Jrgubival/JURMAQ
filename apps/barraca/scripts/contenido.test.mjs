@@ -200,6 +200,19 @@ test("avisos y cinta: filtrados por vigencia, lugar y severidad al momento de pe
   assert.equal(P.cintaVigente({ ...cinta, texto: "" }, durante), null);
 });
 
+test("láminas: solo activas y dentro de su vigencia", () => {
+  const base = R.respaldoDe("slides")[0];
+  const lista = [
+    { ...base, id: "a" },
+    { ...base, id: "apagada", activa: false },
+    { ...base, id: "futura", desde: "2026-12-24T00:00" },
+    { ...base, id: "vencida", hasta: "2026-11-01T00:00" },
+    { ...base, id: "navidad", desde: "2026-12-24T00:00", hasta: "2026-12-26T00:00" },
+  ];
+  assert.deepEqual(P.slidesVigentes(lista, Date.parse("2026-11-25T12:00:00Z")).map((s) => s.id), ["a"]);
+  assert.deepEqual(P.slidesVigentes(lista, Date.parse("2026-12-25T12:00:00Z")).map((s) => s.id), ["a", "futura", "navidad"]);
+});
+
 test("popup público: respaldo vigente hasta el 02-12-2026 00:00 de Chile, y no después", () => {
   const pop = R.respaldoDe("popup");
   const p = P.popupPublico(pop);

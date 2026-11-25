@@ -174,3 +174,57 @@ Rama `claude/mcp-tienda` (base 7a4923b). Este archivo lo amplían todas las piez
 - Términos (`src/content/legal/terminos.md:257`) dicen que la tienda no tiene cupones: cambiarlos antes de encender (no es de esta pieza).
 - Migración D1 `0004_cupones.sql`: crea `ajustes`, `cupon_reglas`, `cupon_usos`. Si otra pieza necesita `ajustes`, reutilizarla.
 - Pruebas: `scripts/cupones.test.mjs` (40) y `scripts/importar-barraca.test.mjs` (22). No se vio en navegador (regla: no prender servidor).
+
+## 7. Contenido editable en D1 (pieza B, Etapa 1, 25-11-2026)
+
+Código en `src/lib/contenido/`, migración `migrations-gestion/0003_contenido.sql`, pruebas en `scripts/contenido.test.mjs` (más `scripts/pruebas/cargar-shared.mjs`, que deja importar `@jurmaq/shared/*` desde las pruebas).
+
+### Regla de oro y respaldo
+Si D1 no está, falla, tarda más de 1,2 s, está vacía, sin migrar o el valor guardado no valida, la tienda muestra EXACTAMENTE lo que estaba en código. El respaldo vive en `respaldo.ts` (y `popup-respaldo.ts`, `local-respaldo.ts`); los datos del local parten de `HQ`, `LEGAL_INFO` y `HORARIO_BARRACA` de `@jurmaq/shared/seo`, que siguen siendo el respaldo. Probado con D1 vacía, sin tablas, sin binding, que lanza, lenta y con valores dañados (`lector.ts`). Una D1 caída no agrega latencia: tras un fallo no se reintenta por 15 s y mientras tanto se muestra lo último bueno o el respaldo. Una consulta trae todo lo publicado; caché por isla de 30 s.
+
+### Tipos de contenido (`ClaveContenido`)
+`terminos` y `privacidad` (markdown, **requieren aprobación para publicar**), `envios` y `nosotros` (markdown con marcadores `{{razon_social}}`, `{{rut}}`, `{{direccion}}`, `{{direccion_corta}}`, `{{telefono}}`, `{{whatsapp}}`, `{{email}}`, `{{horario}}`, `{{lugares_despacho}}`; en envíos la línea `{{tarifas}}` marca dónde va la tabla de zonas, siempre en vivo), `contacto` (intro y nota), `datos_local`, `popup`, `slides`, `cinta`, `avisos`, `portada` (orden de secciones, códigos de producto y slugs de categoría destacados), `textos` (h1, títulos de secciones de la portada, descripción del pie). Formas exactas en `tipos.ts`; validación estricta (campos desconocidos se rechazan) en `esquemas.ts`: `validarContenido(clave, valor)` devuelve el valor limpio o la lista de errores en español.
+- Cada tipo tiene un valor inicial: `obtenerEstado` entrega `efectivo` (lo que ve la tienda) aunque nunca se haya publicado; ese es el punto de partida para editar.
+- Fechas `desde`/`hasta`: ISO con zona o `AAAA-MM-DDTHH:MM` en hora de Chile (con horario de verano); `hasta` es exclusivo. Una fecha ilegible no se muestra.
+- Horario: se guarda por día (`lunes`..`domingo`, lista de tramos) y de ahí salen los textos del cliente y el `openingHoursSpecification`; con el respaldo da exactamente `HORARIO_BARRACA`.
+
+### API de servidor (para las herramientas MCP): `src/lib/contenido/servicio.ts`
+Quien llama comprueba antes el permiso (sesión + rol revalidado contra la base) y pasa `usuario: {id, email}` desde esa sesión. Todas las funciones lanzan `GestionNoDisponibleError` si D1 no está lista (`esGestionNoDisponible`).
+- Leer: `contenidoListar()`, `contenidoObtener(clave)` (borrador, publicado, `efectivo`, `origen` d1/codigo, versión, pendiente), `contenidoVersiones(clave)`, `contenidoVerVersion(clave, n)`, `contenidoPendientes()`, `contenidoValidar(clave, valor)` (sin guardar).
+- Escribir: `contenidoGuardarBorrador(clave, valor, usuario)` y `contenidoDescartarBorrador`. `contenidoPublicar({clave, usuario, nota?, valor?, aprobacion?})` publica el borrador (o `valor`); si no hay cambios responde `sin_cambios`. `contenidoRestaurar({clave, version, usuario, destino: "borrador" | "publicado"})`: `destino` es obligatorio; restaurar a "publicado" crea una versión NUEVA, el historial no se borra.
+- Aprobación (términos y privacidad): `contenidoPublicar` sin `aprobacion` deja la versión **pendiente** (no se ve en la tienda; el borrador sigue libre y la solicitud nueva descarta la pendiente anterior). El servicio de aprobaciones, cuando Jorge aprueba, llama `contenidoAprobarPendiente({clave, version, aprobadoPor, referencia?})` (publica, es idempotente, devuelve `no_pendiente` si ya no aplica) o `contenidoRechazarPendiente`. Si ya tiene el OK antes de publicar, pasa `aprobacion: {aprobadoPor, referencia?}` a `contenidoPublicar`. Qué tipos requieren aprobación: `META_CONTENIDO[clave].requiereAprobacion` (`tipos.ts`).
+- Portada: `contenidoVerificarPortada(valor)` y `contenidoPublicar("portada")` comprueban que cada código de producto y slug de categoría existan y estén activos (`referencias.ts`; con Supabase en `referencias-supabase.ts`).
+- Imágenes: `contenidoSubirImagen({base64} | {url}, usuario)` devuelve `{ok, url, bytes, mime}` o `{ok:false, codigo, mensaje}`. La `url` es la que se pasa a `popup.imagen`, `slides[].imagenDesktop` o `imagenMovil`.
+- Cada acción queda en la auditoría de gestión (`contenido.guardar_borrador`, `.publicar`, `.solicitar_publicacion`, `.aprobar`, `.restaurar`, `.subir_imagen`) con quién y cuándo; las versiones guardan además `creado_por`, `creado_en`, `aprobado_por`.
+- Al publicar se regeneran solo las páginas afectadas (`META_CONTENIDO[clave].paginas`).
+
+### Caché en OpenNext (decisión)
+- El build (`next build`) y `next dev` NO leen D1 a propósito (`lectura.ts`: OpenNext levantaría un miniflare local por worker de generación). Las páginas salen horneadas con el respaldo y, ya en el Worker, se regeneran leyendo D1.
+- Páginas con contenido: `terminos`, `privacidad`, `envios-y-devoluciones`, `nosotros`, `contacto`, `sucursales` pasan a ISR de **300 s** (antes `force-static` o estáticas; siguen sirviéndose desde la caché de OpenNext: una lectura de D1 cada 5 min por página como mucho). La portada sigue en 3600 s y `/en/[ciudad]` pasa a 3600 s. Al publicar se llama `revalidatePath` de las páginas afectadas (como ya hace `lib/revalidar.ts`; no se usa `revalidateTag`).
+- Por qué 300 s en lugar de infinito: el build no ve D1, así que tras cada deploy esas páginas vuelven al respaldo hasta regenerarse. Con 300 s un texto legal nuevo publicado no queda viejo más de 5 minutos tras un deploy. Además `POST /api/contenido/revalidar` (con `Authorization: Bearer $CRON_SECRET`; `?ambito=toda` incluye todo el layout) regenera de inmediato: conviene correrlo después de cada deploy.
+- Datos del local, pie y textos (`datos_local`, `textos`) van en el HTML (layout): al publicarlos se hace `revalidatePath("/", "layout")` (se regenera de a poco, a medida que se piden las páginas). Son cambios raros.
+- Popup, cinta superior y avisos NO van en el HTML: el navegador los pide a `GET /api/contenido/publico` (caché 60 s, se filtran por vigencia en el servidor). Así publicar un aviso de cierre no regenera la tienda. Mientras no hay cinta ni avisos no se dibuja nada; si publican una cinta o un aviso aparece al cargar la página (puede mover un poco el contenido). El popup espera esa respuesta (máx. 3,5 s) y, si falla, sale el de código.
+- Las vigencias de las láminas se evalúan al regenerar la portada (hasta 1 h de desfase en el instante exacto; publicar fuerza la regeneración).
+
+### Imágenes (`imagenes.ts`, `imagenes-supabase.ts`)
+- El bucket público `barraca-redes` es de **Supabase Storage** (proyecto de la tienda), no un binding R2. Se sube con el service role del servidor a `tienda/AAAA-MM/<azar>.<ext>`; el nombre lo genera el servidor. Si se pasa a R2, solo cambia `subirASupabase` (el resto no cambia). `esUrlImagenPermitida` solo acepta rutas propias, `barraca.jurmaq.cl` y `…supabase.co/storage/v1/object/public/barraca-redes/tienda/…`.
+- Tipo real por magic bytes (jpeg, png, webp, gif; sin SVG), tope 5 MB (base64 se mide antes de decodificar; la descarga se corta al pasarse).
+- URL https pública con defensa SSRF: solo https al 443, sin credenciales, sin IPs literales privadas/loopback/link-local/metadata (v4 y v6, incluidas formas disfrazadas), sin nombres internos, el nombre se resuelve por DNS sobre HTTPS y TODAS las IPs deben ser públicas, redirecciones a mano (máx. 3) revalidando cada salto, 8 s en total, sin cookies. Limitación: Workers no permite fijar la IP de la conexión; el DNS rebinding entre la comprobación y la conexión lo frena la bandera `global_fetch_strictly_public` ya presente en `wrangler.jsonc`.
+
+### Markdown seguro (`markdown.ts`, función pura `sanearMarkdown`)
+Sin HTML (se descarta; script/style/iframe/svg con su contenido), enlaces solo `https://` o rutas internas/anclas (`javascript:`, `data:`, `mailto:`, `http:`, entidades, `//host` se descartan dejando el texto), imágenes markdown fuera, caracteres de control y bidi fuera, máximo 200.000 caracteres, idempotente. El render (`DocumentoLegal.tsx`) vuelve a comprobar cada enlace. Los textos legales actuales pasan sin cambios por el saneador (hay prueba).
+
+### Textos legales embebidos
+`src/content/legal/*.md` sigue siendo la fuente; `scripts/generar-legal.mjs` los copia a `src/lib/contenido/legal-embebido.ts` (el Worker no tiene sistema de archivos del proyecto). `npm run build` lo corre antes de `next build`; una prueba falla si el generado no calza (correr `node scripts/generar-legal.mjs`). Quien edite el .md (p. ej. al agregar cupones a los términos) debe regenerar. `VERSION_TERMINOS` (`lib/vigencia.ts`) NO cambia sola al publicar términos nuevos: hay que actualizarla a mano si cambia la versión.
+
+### Una sola fuente de datos del local
+`datos_local` alimenta: pie, botón flotante de WhatsApp, `/contacto`, `/sucursales`, `/nosotros` y `/envios-y-devoluciones` (marcadores), `/pedido/[numero]` (contacto y retiro), `/pago/error`, `/en/[ciudad]` (teléfono, botón de WhatsApp, schema), y el JSON-LD del layout (`aplicarDatosAJsonLd`: nombre, razón social, RUT, correo, teléfono, dirección, geo, horario, Instagram). Helpers: `leerLocal()` (servidor, con respaldo), `useLocal()` (navegador), `vistaLocal`, `whatsappCotizar`, `whatsappConTexto`.
+- Todavía duplicado (fuera de mi alcance o a propósito): checkout (`CheckoutClient.tsx`: dirección, horario y el WhatsApp de "otra comuna"), `lib/despacho/index.ts` (WhatsApp de despacho), correos de pedido (`lib/pedidos/correos.ts`), PDF y mensajes de cotización, plantillas de correo de `packages/shared/src/mail`, `packages/shared/src/whatsapp` (`DEFAULT_PHONE` desde `HQ`) y la prosa de los Términos/Privacidad. Para unificarlos: leer `leerLocal()` en servidor y pasar los valores.
+
+### Avisos
+Tipos `cierre`, `feriado`, `despacho`, `otro`; severidad `info`/`aviso`/`alerta`; `donde`: `tienda`, `carrito`, `checkout`. Solo informan, nunca bloquean. Se muestran bajo el encabezado (`CintaYAvisos.tsx`, dentro del shell, así que cubre carrito y checkout sin tocar esos archivos).
+
+### Para publicar (Jorge)
+1. Crear la D1 real y aplicar migraciones (sección 1): incluye `0003_contenido.sql`.
+2. Después de cada deploy: `POST /api/contenido/revalidar` (ver arriba).
+3. Quien arme las herramientas MCP debe registrar en la auditoría y exigir permiso antes de llamar a `servicio.ts`.
