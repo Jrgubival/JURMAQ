@@ -49,6 +49,7 @@ export default async function VentasPage({ searchParams }: { searchParams: Param
       conteos={r.conteos}
       atender={r.atender}
       truncado={r.truncado}
+      archivados={r.archivados}
       puedeExportar={can(role, 'barraca_ventas', 'export')}
     />
   );

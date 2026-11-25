@@ -11,6 +11,7 @@
  * cableado que usan el panel y los reportes. Sin la base o sin la migración, devuelve «ninguno»: el panel no se rompe.
  */
 import type { D1Like } from "../gestion/tipos.ts";
+import { ESTADOS_VENTA } from "../admin/ventas.ts";
 
 export const LIMITE_ARCHIVADOS = 5000;
 
@@ -18,9 +19,67 @@ export interface ConjuntoArchivados {
   numeros: Set<string>;
   /** Había más de LIMITE_ARCHIVADOS: los más antiguos no se excluyen. */
   truncado: boolean;
+  /** No se pudo leer la lista (sin base, sin migración, red): el filtro NO se aplicó y hay que decirlo. */
+  noDisponible?: boolean;
 }
 
 export const SIN_ARCHIVADOS: ConjuntoArchivados = { numeros: new Set(), truncado: false };
+export const ARCHIVADOS_NO_DISPONIBLES: ConjuntoArchivados = { numeros: new Set(), truncado: false, noDisponible: true };
+
+/** Lo que quedó fuera de una lista o un total por estar archivado. */
+export interface ResumenExcluidos {
+  /** Pedidos archivados que quedaron fuera. */
+  pedidos: number;
+  /** De ellos, los que cuentan como VENTA pagada (pagado, en preparación, listo, despachado, entregado). */
+  ventasPagadas: number;
+  /** Suma del total de esas ventas pagadas, en pesos. */
+  montoVentas: number;
+}
+
+export interface ResultadoArchivados<T> {
+  lista: T[];
+  excluidos: ResumenExcluidos;
+  /** false = no se pudo leer la lista de archivados: `lista` viene completa, sin filtrar. */
+  filtroAplicado: boolean;
+  truncado: boolean;
+}
+
+/**
+ * Como `filtrarArchivados` pero INFORMANDO: cuántos pedidos archivados (y cuánta venta pagada) quedaron fuera, y si el filtro no
+ * pudo aplicarse. Así los reportes y totales no ocultan ventas en silencio.
+ */
+export function filtrarArchivadosInformando<T extends { numero: string; estado: string; total: number }>(
+  lista: readonly T[], archivados: ConjuntoArchivados, modo: ModoArchivados = "excluir",
+): ResultadoArchivados<T> {
+  const filtrada = filtrarArchivados(lista, archivados, modo);
+  const fuera = modo === "excluir" && !archivados.noDisponible ? lista.filter((p) => archivados.numeros.has(p.numero)) : [];
+  const ventas = fuera.filter((p) => (ESTADOS_VENTA as string[]).includes(p.estado));
+  return {
+    lista: filtrada,
+    excluidos: { pedidos: fuera.length, ventasPagadas: ventas.length, montoVentas: ventas.reduce((a, p) => a + (Number.isFinite(p.total) ? p.total : 0), 0) },
+    filtroAplicado: !archivados.noDisponible,
+    truncado: archivados.truncado,
+  };
+}
+
+const pesosCl = (n: number) => `$${Math.round(n).toLocaleString("es-CL")}`;
+
+/** Frases para reportes y pantallas: qué quedó fuera por archivado y avisos. Vacía si no hay nada que decir. */
+export function textoArchivados(r: Pick<ResultadoArchivados<unknown>, "excluidos" | "filtroAplicado" | "truncado">): string[] {
+  const out: string[] = [];
+  if (!r.filtroAplicado) out.push("ATENCIÓN: no pude leer la lista de pedidos archivados, así que el filtro de archivados NO se aplicó: estas cifras pueden incluir pedidos archivados.");
+  if (r.excluidos.pedidos > 0) {
+    const n = r.excluidos.pedidos;
+    const v = r.excluidos.ventasPagadas;
+    out.push(
+      `Quedaron fuera ${n} pedido${n === 1 ? "" : "s"} archivado${n === 1 ? "" : "s"}` +
+      (v > 0 ? `, entre ellos ${v} venta${v === 1 ? "" : "s"} pagada${v === 1 ? "" : "s"} por ${pesosCl(r.excluidos.montoVentas)} que NO están en estas cifras` : "") +
+      ". Se ven con el filtro de archivados.",
+    );
+  }
+  if (r.truncado) out.push(`Aviso: hay más de ${LIMITE_ARCHIVADOS} pedidos archivados y los más antiguos no se pudieron excluir.`);
+  return out;
+}
 
 /** Una consulta, acotada: los números archivados (los más recientes primero). */
 export async function cargarArchivados(db: D1Like): Promise<ConjuntoArchivados> {
@@ -62,15 +121,24 @@ export async function contarArchivados(db: D1Like): Promise<number> {
 }
 
 /**
- * Para el panel y los reportes: los archivados de HOY desde la D1 real. Fallo (sin binding, sin migración, red) =
- * «ninguno» (la lista se ve completa en vez de romperse).
+ * Para el panel y los reportes: los archivados de HOY desde la D1 real. Fallo (sin binding, sin migración, red) = lista
+ * completa (no se rompe nada) pero marcada `noDisponible`, para que la pantalla o el reporte lo diga.
  */
 export async function archivadosDeServidor(): Promise<ConjuntoArchivados> {
   try {
     const { usarGestion } = await import("../gestion/d1.ts");
     return await usarGestion((db) => cargarArchivados(db));
   } catch {
-    return SIN_ARCHIVADOS;
+    return ARCHIVADOS_NO_DISPONIBLES;
+  }
+}
+
+/** Igual que `cargarArchivados` pero nunca lanza: si falla, devuelve el conjunto marcado `noDisponible`. */
+export async function cargarArchivadosSeguro(db: D1Like): Promise<ConjuntoArchivados> {
+  try {
+    return await cargarArchivados(db);
+  } catch {
+    return ARCHIVADOS_NO_DISPONIBLES;
   }
 }
 

@@ -3,6 +3,7 @@ import XLSX from 'xlsx';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { consultarVentas } from '@/lib/admin/ventas-servidor';
+import { textoArchivados } from '@/lib/pedidos/archivados';
 import { ETIQUETA_ESTADO, medioPago, motivoCierre, textoDevolucion, textoEntrega } from '@/lib/admin/ventas';
 import { rutaDocumentoValida } from '@/lib/pedidos/documentos';
 import type { Pedido } from '@/lib/pedidos';
@@ -63,6 +64,9 @@ export async function GET(request: NextRequest) {
     ws['!cols'] = [16, 16, 22, 34, 18, 28, 14, 30, 16, 22, 14, 12, 12, 12, 12, 60, 12].map((wch) => ({ wch }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
+    // Lo archivado que no entró en el Excel (y si el filtro no pudo aplicarse) queda dicho en una hoja aparte.
+    const notasArchivados = textoArchivados(r.archivados);
+    if (notasArchivados.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(notasArchivados.map((t) => [t])), 'Aviso');
     const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
 
     logSafe('admin-ventas-export', { filas: filas.length, desde: r.periodo.desde, hasta: r.periodo.hasta, por: session.user?.id ?? null });

@@ -19,7 +19,7 @@ import {
 import { detallePedido, filaListado, ETIQUETA_ESTADO_MCP, type PedidoCrudo } from "../../pedidos/vista-mcp.ts";
 import { agregarNota, borrarNota, notasDePedido, MAX_NOTA } from "../../pedidos/notas.ts";
 import { PATRON_NUMERO } from "../../pedidos/numero.ts";
-import { cargarArchivados, estaArchivado, filtrarArchivados } from "../../pedidos/archivados.ts";
+import { cargarArchivadosSeguro, estaArchivado, filtrarArchivadosInformando, textoArchivados } from "../../pedidos/archivados.ts";
 import { limitesPeriodo, resolverPeriodo, diaValido, sumarDias, diaChile } from "../../admin/ventas.ts";
 import type { EstadoPedido } from "../../pedidos/index.ts";
 
@@ -91,8 +91,9 @@ export function crearHerramientasPedidos(deps: DepsPedidos = depsPedidosReales):
       const lim = limitesPeriodo(periodo);
       const puerto = await deps.puerto();
       const todos = await puerto.listarRango({ desde: lim.desde, hasta: lim.hasta, limite: LIMITE_LISTADO });
-      let sinArch = todos;
-      try { sinArch = filtrarArchivados(todos, await cargarArchivados(ctx.db), a.archivados ?? "excluir"); } catch { /* sin la tabla de archivados: lista completa */ }
+      // Si D1 no responde, la lista sale completa PERO se dice (no se incluye ni se excluye en silencio).
+      const filtroArch = filtrarArchivadosInformando(todos, await cargarArchivadosSeguro(ctx.db), a.archivados ?? "excluir");
+      const sinArch = filtroArch.lista;
       const filtrados = a.estado ? sinArch.filter((p) => p.estado === a.estado) : sinArch;
       const porPagina = a.por_pagina ?? 20;
       const total = filtrados.length;
@@ -104,10 +105,10 @@ export function crearHerramientasPedidos(deps: DepsPedidos = depsPedidosReales):
         (f) => `${f.numero} · ${f.estadoTexto} · ${cl(f.total)} · ${f.formaPago} · ${f.entrega === "retiro" ? "retiro" : `despacho ${f.comuna ?? ""}`.trim()} · ${f.articulos} art. · ${f.creado.slice(0, 10)}`,
       );
       const cabecera = `Pedidos del ${desde} al ${hasta}${a.estado ? ` en estado «${ETIQUETA_ESTADO_MCP[a.estado]}»` : ""}: ${total}. Página ${pagina} de ${paginas}.`;
-      const aviso = truncado ? `\nAviso: el período tiene más de ${LIMITE_LISTADO} pedidos y solo se revisaron los más nuevos. Acorta las fechas.` : "";
+      const aviso = (truncado ? `\nAviso: el período tiene más de ${LIMITE_LISTADO} pedidos y solo se revisaron los más nuevos. Acorta las fechas.` : "") + textoArchivados(filtroArch).map((t) => `\n${t}`).join("");
       return {
         texto: `${cabecera}\n${lineas.length ? lineas.join("\n") : "No hay pedidos con ese filtro."}${aviso}`,
-        datos: { desde, hasta, estado: a.estado ?? null, total, pagina, paginas, porPagina, truncado, pedidos: filas },
+        datos: { desde, hasta, estado: a.estado ?? null, total, pagina, paginas, porPagina, truncado, archivadosFuera: filtroArch.excluidos.pedidos, ventasArchivadasFuera: filtroArch.excluidos.ventasPagadas, montoVentasArchivadasFuera: filtroArch.excluidos.montoVentas, filtroArchivadosAplicado: filtroArch.filtroAplicado, pedidos: filas },
       };
     },
   });

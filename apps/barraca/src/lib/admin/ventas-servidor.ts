@@ -1,6 +1,6 @@
 import 'server-only';
 import { pedidos, type Pedido } from '@/lib/pedidos';
-import { archivadosDeServidor, filtrarArchivados } from '@/lib/pedidos/archivados';
+import { archivadosDeServidor, filtrarArchivados, filtrarArchivadosInformando, type ResumenExcluidos } from '@/lib/pedidos/archivados';
 import {
   resolverPeriodo, limitesPeriodo, leerFiltros, calzaMedio, calzaZona, calzaBusqueda, calzaEstado,
   ordenarVentas, calcularTotales, contarAtender, GRUPOS_ESTADO, inicioDiaChile, sumarDias, diaChile,
@@ -40,6 +40,11 @@ export interface ResultadoVentas {
   /** Pendientes de los últimos 90 días, aunque estén fuera del período. */
   atender: ConteoAtender;
   truncado: boolean;
+  /**
+   * Pedidos archivados que quedaron FUERA de los totales (con su monto de venta pagada), si el filtro de archivados pudo
+   * aplicarse y si hay más archivados de los que se pueden excluir. La pantalla lo dice para no ocultar ventas en silencio.
+   */
+  archivados: { excluidos: ResumenExcluidos; filtroAplicado: boolean; truncado: boolean };
 }
 
 export async function consultarVentas(sp: URLSearchParams): Promise<ResultadoVentas> {
@@ -55,12 +60,13 @@ export async function consultarVentas(sp: URLSearchParams): Promise<ResultadoVen
     store.listarRango({ desde: desde90, hasta: new Date(Date.now() + 60_000).toISOString(), limite: LIMITE_PERIODO }),
     archivadosDeServidor(),
   ]);
-  const enPeriodo = filtrarArchivados(enPeriodoTodos, archivados, filtros.archivados);
   const recientes = filtrarArchivados(recientesTodos, archivados, filtros.archivados === 'solo' ? 'solo' : 'excluir');
 
   // Medio, entrega y búsqueda mandan en los totales; el estado sólo en la lista
-  // (si no, "Por pagar" mostraría $0 vendido).
-  const base = enPeriodo.filter((p) => calzaMedio(p, filtros.medio) && calzaZona(p, filtros.zona) && calzaBusqueda(p, filtros.q));
+  // (si no, "Por pagar" mostraría $0 vendido). Lo archivado que queda fuera se cuenta (y su monto) para decirlo en pantalla.
+  const calzan = enPeriodoTodos.filter((p) => calzaMedio(p, filtros.medio) && calzaZona(p, filtros.zona) && calzaBusqueda(p, filtros.q));
+  const filtroArch = filtrarArchivadosInformando(calzan, archivados, filtros.archivados);
+  const base = filtroArch.lista;
   const conteos = Object.fromEntries(
     GRUPOS_ESTADO.map((g) => [g.id, base.filter((p) => calzaEstado(p, g.id)).length]),
   ) as Record<GrupoEstado, number>;
@@ -73,5 +79,6 @@ export async function consultarVentas(sp: URLSearchParams): Promise<ResultadoVen
     conteos,
     atender: contarAtender(recientes),
     truncado: enPeriodoTodos.length >= LIMITE_PERIODO,
+    archivados: { excluidos: filtroArch.excluidos, filtroAplicado: filtroArch.filtroAplicado, truncado: filtroArch.truncado },
   };
 }

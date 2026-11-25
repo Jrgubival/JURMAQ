@@ -8,6 +8,7 @@ import {
   PRESETS, GRUPOS_ESTADO, MEDIOS, OPCIONES_ZONA, TONO_ESTADO, diaChile, sumarDias, fechaCorta, textoPeriodo, medioPago, textoEntrega,
   type Periodo, type Filtros, type FilaLista, type Totales, type ConteoAtender, type GrupoEstado,
 } from "@/lib/admin/ventas";
+import { textoArchivados, type ResumenExcluidos } from "@/lib/pedidos/archivados";
 import EstadoChip from "@/components/admin/ventas/EstadoChip";
 
 /**
@@ -24,6 +25,8 @@ interface Props {
   conteos: Record<GrupoEstado, number>;
   atender: ConteoAtender;
   truncado: boolean;
+  /** Lo archivado que quedó fuera de los totales (y su monto), o el aviso de que el filtro no se pudo aplicar. */
+  archivados: { excluidos: ResumenExcluidos; filtroAplicado: boolean; truncado: boolean };
   puedeExportar: boolean;
 }
 
@@ -72,7 +75,7 @@ function Linea({ label, valor, grande = false, nota }: { label: string; valor: s
   );
 }
 
-export default function VentasClient({ periodo, filtros, filas, totales, conteos, atender, truncado, puedeExportar }: Props) {
+export default function VentasClient({ periodo, filtros, filas, totales, conteos, atender, truncado, archivados, puedeExportar }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [pendiente, startTransition] = useTransition();
@@ -196,6 +199,9 @@ export default function VentasClient({ periodo, filtros, filas, totales, conteos
           <Linea label="Ticket promedio" valor={formatCLP(totales.ticket)} />
           <Linea label="Despachos" valor={formatCLP(totales.despachos)} />
         </div>
+        {textoArchivados(archivados).map((t) => (
+          <p key={t} className="mt-4 text-[13px] text-[#7A4E00] bg-[#FBF0D5] rounded-lg px-3 py-2">{t}</p>
+        ))}
       </section>
 
       {/* Lo que espera a la barraca (últimos 90 días, aunque esté fuera del período) */}
