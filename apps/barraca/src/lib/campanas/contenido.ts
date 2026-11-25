@@ -10,7 +10,7 @@
  * asunto debe decir «Publicidad» (Ley 19.496, art. 28 B), igual que exige el script de envío.
  */
 import { extraerEnlaces } from "../contenido/desvio.ts";
-import { RE_CONTROL, RE_NUMERO_LARGO, RE_RUT } from "../correos-cliente/validar.ts";
+import { RE_BANCARIO, RE_CONTROL, RE_NUMERO_LARGO, RE_RUT } from "../correos-cliente/validar.ts";
 
 export interface DatosCampana {
   asunto: string;
@@ -44,6 +44,7 @@ function chequearLibre(nombre: string, t: string, max: number, multilinea: boole
   if (enl.correos.size) e.push(`${nombre}: no se pueden escribir correos.`);
   const ajenos = [...enl.hosts].filter((h) => h !== DOMINIO && !h.endsWith(`.${DOMINIO}`));
   if (ajenos.length) e.push(`${nombre}: solo se pueden nombrar direcciones de jurmaq.cl (encontré ${ajenos.slice(0, 2).join(", ")}).`);
+  if (RE_BANCARIO.test(t)) e.push(`${nombre}: no se pueden escribir datos bancarios ni de pago (banco, cuenta, Webpay, enlaces de pago…).`);
   if (RE_RUT.test(t)) e.push(`${nombre}: no se puede escribir un RUT.`);
   if (RE_NUMERO_LARGO.test(t.replace(/\d{4}-\d{2}-\d{2}/g, " "))) e.push(`${nombre}: no se pueden escribir números largos (cuentas, teléfonos).`);
   return e;

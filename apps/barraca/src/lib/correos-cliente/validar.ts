@@ -17,7 +17,7 @@ import { PLANTILLAS, campoDe, esCampoHtml, esClaveCorreo, variablesDeCampo, type
 export const RE_VARIABLE = /\{([^{}]*)\}/g;
 
 export const RE_CONTROL = /[\u0000-\u0008\u000b-\u001f\u007f​-‏‪-‮⁠-⁩﻿]/;
-const RE_BANCARIO = /\bbanco\b|bancoestado|banco\s?estado|cuenta\s+(?:corriente|vista|rut|de\s+ahorro|bancaria)|\bn[°º.]?\s*de\s+cuenta|\bn[úu]mero\s+de\s+cuenta|\bcta\b|\bcuenta\s+n|\biban\b|\bswift\b|webpay|transbank|link\s+de\s+pago|enlace\s+de\s+pago|paga\s+aqu[ií]|mercado\s?pago|\bkhipu\b|\bflow\.cl\b/i;
+export const RE_BANCARIO = /\bbanco\b|bancoestado|banco\s?estado|cuenta\s+(?:corriente|vista|rut|de\s+ahorro|bancaria)|\bn[°º.]?\s*de\s+cuenta|\bn[úu]mero\s+de\s+cuenta|\bcta\b|\bcuenta\s+n|\biban\b|\bswift\b|webpay|transbank|link\s+de\s+pago|enlace\s+de\s+pago|paga\s+aqu[ií]|mercado\s?pago|\bkhipu\b|\bflow\.cl\b/i;
 export const RE_RUT = /\b\d{1,2}\.?\d{3}\.?\d{3}\s?-\s?[\dkK]\b/;
 const RE_MONTO = /\$\s*\d|\d\s*(?:pesos|clp)\b/i;
 export const RE_NUMERO_LARGO = /\d[\d .-]{6,}\d/;
