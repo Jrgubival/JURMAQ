@@ -181,9 +181,15 @@ export function crearStoreArchivo(): PedidosStore {
       editar(numero, (p) => { if (p.reembolso?.medio === 'webpay' && p.reembolso.estado === 'incierto') { p.reembolso = nuevo; ok = true; } });
       return ok;
     },
+    async retomarReembolsoEnCurso(numero, fechaVieja, nuevo) {
+      let ok = false;
+      editar(numero, (p) => { if (p.reembolso?.medio === 'webpay' && p.reembolso.estado === 'en_curso' && p.reembolso.fecha === fechaVieja) { p.reembolso = nuevo; ok = true; } });
+      return ok;
+    },
     async borrarPedidoNuncaPagado(numero) {
       const p = leer().find((x) => x.numero === numero);
-      if (!p || p.estado !== 'cancelado' || p.pagado_at || p.documento_path || p.documento_subido_at || p.documento_enviado_at || p.reembolso) return false;
+      if (!p || p.estado !== 'cancelado' || p.pagado_at || p.documento_path || p.documento_subido_at || p.documento_enviado_at || p.reembolso
+        || p.pasarela_referencia || p.pago_id || p.pago_detalle || p.transferencia_informada_at || p.comprobante_path || p.courier_envio_id || p.stock_descontado) return false;
       escribir(leer().filter((x) => x.numero !== numero));
       return true;
     },

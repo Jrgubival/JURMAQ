@@ -237,6 +237,11 @@ export interface PedidosStore {
    */
   resolverReembolsoIncierto(numero: string, nuevo: Reembolso): Promise<boolean>;
   /**
+   * Retoma una devolución de Webpay que quedó «en curso» (el proceso murió a medias): update condicional, solo si sigue
+   * 'en_curso' con la MISMA fecha que se leyó. Devuelve false si cambió en medio (otro clic o el resultado llegó).
+   */
+  retomarReembolsoEnCurso(numero: string, fechaVieja: string, nuevo: Reembolso): Promise<boolean>;
+  /**
    * Borra DEFINITIVAMENTE un pedido (herramienta MCP de borrado), en un solo delete condicional: solo si es 'cancelado',
    * nunca se pagó (`pagado_at` vacío), no tiene documento tributario ni devolución. Los registros hijos (historial)
    * se borran por la cascada de la base. Devuelve false si algo no calzó (nada se borra).
@@ -411,6 +416,18 @@ const storeSupabase: PedidosStore = {
     if (error) throw error;
     return (data ?? []).length > 0;
   },
+  async retomarReembolsoEnCurso(numero, fechaVieja, nuevo) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({ reembolso: nuevo })
+      .eq('numero', numero)
+      .eq('reembolso->>medio', 'webpay')
+      .eq('reembolso->>estado', 'en_curso')
+      .eq('reembolso->>fecha', fechaVieja)
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
+  },
   async borrarPedidoNuncaPagado(numero) {
     // Todo en la condición del delete: si el pedido cambió en medio (se pagó, se subió una boleta...) no borra nada.
     const { data, error } = await db
@@ -423,6 +440,14 @@ const storeSupabase: PedidosStore = {
       .is('documento_subido_at', null)
       .is('documento_enviado_at', null)
       .is('reembolso', null)
+      // Defensa en profundidad: ningún rastro de cobro (pasarela, comprobante, detalle de pago) ni de stock o envío.
+      .is('pasarela_referencia', null)
+      .is('pago_id', null)
+      .is('pago_detalle', null)
+      .is('transferencia_informada_at', null)
+      .is('comprobante_path', null)
+      .is('courier_envio_id', null)
+      .eq('stock_descontado', false)
       .select('numero');
     if (error) throw error;
     return (data ?? []).length > 0;
