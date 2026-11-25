@@ -9,7 +9,7 @@
  *  2. Se pide el reembolso a Transbank por el TOTAL guardado y SOLO al pago original (token de la transacción).
  *  3. Se guarda el resultado:
  *     - Transbank respondió que devolvió  → `hecho`.
- *     - Transbank respondió que NO (rechazo claro, respuesta 4xx, o error nuestro antes de enviar) → `rechazada`
+ *     - Transbank respondió que NO (rechazo claro, respuesta 400/401/403/404/422, o error nuestro antes de enviar) → `rechazada`
  *       (estado `error`: el panel puede reintentar).
  *     - Cualquier otra falla (red, tiempo agotado, 5xx, respuesta ilegible) → `incierta` (estado `incierto`): no se sabe
  *       si devolvió, así que NADA reintenta solo (`tomarReembolso` solo acepta «sin reembolso» o «error»). Se revisa a
@@ -36,12 +36,14 @@ export interface DepsDevolucionWebpay {
 
 /**
  * ¿La falla garantiza que Transbank NO devolvió? Solo dos casos: (a) falló antes de enviar nada (error local marcado),
- * (b) Transbank respondió con un 4xx (rechazó la solicitud). Todo lo demás es ambiguo.
+ * (b) Transbank respondió con un 4xx que de verdad rechaza la solicitud: SOLO 400, 401, 403, 404 y 422. Todo lo demás es
+ * ambiguo: 408 (tiempo agotado), 409 (conflicto: puede haber una devolución en proceso), 429 (límite) y cualquier 5xx
+ * no dicen si se devolvió, así que quedan como «incierta».
  */
 export function fallaGarantizaQueNoSeDevolvio(e: unknown): boolean {
   if (e && typeof e === "object" && (e as { sinEnviar?: unknown }).sinEnviar === true) return true;
   const err = e as { name?: unknown; message?: unknown } | null;
-  if (err?.name === "TransbankError" && typeof err.message === "string") return /status code 4\d\d\b/.test(err.message);
+  if (err?.name === "TransbankError" && typeof err.message === "string") return /status code (?:400|401|403|404|422)\b/.test(err.message);
   return false;
 }
 

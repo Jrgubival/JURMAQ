@@ -5,6 +5,7 @@ import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { pedidos, PATRON_NUMERO } from '@/lib/pedidos';
 import { aplicarEstadoPago, origenTienda } from '@/lib/pagos';
 import { confirmarWebpay, reembolsarWebpay, sesionWebpay } from '@/lib/pagos/webpay';
+import { ejecutarDevolucionWebpay } from '@/lib/pedidos/devolucion-webpay';
 
 /**
  * Retorno de Webpay Plus: /api/pagos/webpay/retorno?pedido=<numero>.
@@ -89,17 +90,18 @@ async function atender(request: NextRequest) {
       if (r.aprobado && resultado === 'ya_procesado') {
         const actual = await store.porNumero(numero);
         if (actual && (actual.estado === 'cancelado' || actual.estado === 'rechazado')) {
-          const fecha = () => new Date().toISOString();
-          if (await store.tomarReembolso(numero, { estado: 'en_curso', medio: 'webpay', monto: r.detalle.monto, fecha: fecha() })) {
-            let ok = false;
-            try {
-              ok = (await reembolsarWebpay(tokenWs, r.detalle.monto)).ok;
-            } catch (e) {
-              logSafeError('webpay-reembolso-pedido-cerrado', { numero, error: String(e) });
-            }
-            await store.guardarReembolso(numero, { estado: ok ? 'hecho' : 'error', medio: 'webpay', monto: r.detalle.monto, fecha: fecha() });
-            logSafeError('webpay-pago-sobre-pedido-cerrado', { numero, reembolsado: ok });
-          }
+          // Misma función que el panel y las herramientas MCP: candado antes de Transbank y, si Transbank no
+          // responde o falla (red, tiempo agotado, 5xx), queda «incierto» (NO se reintenta sola; se revisa a mano).
+          const d = await ejecutarDevolucionWebpay(
+            {
+              tomarReembolso: (n, rb) => store.tomarReembolso(n, rb),
+              guardarReembolso: (n, rb) => store.guardarReembolso(n, rb),
+              reembolsar: reembolsarWebpay,
+              log: (evento, datos) => (datos.error ? logSafeError(evento, datos) : logSafe(evento, datos)),
+            },
+            { numero, total: r.detalle.monto, pasarela_referencia: tokenWs },
+          );
+          logSafeError('webpay-pago-sobre-pedido-cerrado', { numero, devolucion: d.resultado });
           return volver(request, numero, 'cerrado');
         }
       }

@@ -6,12 +6,14 @@
 import "./pruebas/cargar-alias.mjs";
 import "./pruebas/cargar-shared.mjs";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { crearCtx, crearTienda, ficha } from "./pruebas/tienda-falsa.mjs";
 import { crearD1Simulada } from "./pruebas/d1-simulada.mjs";
 
 const DP = await import("../src/lib/contenido/datos-pago.ts");
 const Prod = await import("../src/lib/gestion-precios/productos-servicio.ts");
+const { ejecutarDevolucionWebpay, fallaGarantizaQueNoSeDevolvio } = await import("../src/lib/pedidos/devolucion-webpay.ts");
 
 const T0 = Date.UTC(2026, 10, 25, 15, 0, 0);
 const JORGE = { id: "1", email: "contacto@jurmaq.cl" };
@@ -71,4 +73,32 @@ test("datos de pago: nombre y descripción de producto y categoría, crear y edi
   // lo normal sigue funcionando
   const ok = await Prod.editarProducto(Tn.deps, ctx("editar_producto"), { codigo: "A", nombre: "Fierro estriado 10 mm", descripcion: "Barra de 6 m. Llama al +56 9 6123 4567." });
   assert.equal(ok.datos.aplicado !== false, true);
+});
+
+// ───────── BAJO: clasificación 4xx de Transbank + 5. pago tardío ─────────
+const tb = (m) => Object.assign(new Error(m), { name: "TransbankError" });
+test("Transbank: solo 400, 401, 403, 404 y 422 garantizan que no se devolvió; 408, 409, 429 y 5xx son inciertos", () => {
+  for (const c of [400, 401, 403, 404, 422]) assert.equal(fallaGarantizaQueNoSeDevolvio(tb(`AxiosError: Request failed with status code ${c}\n`)), true, String(c));
+  for (const c of [402, 405, 408, 409, 410, 418, 429, 500, 502, 503, 504]) assert.equal(fallaGarantizaQueNoSeDevolvio(tb(`AxiosError: Request failed with status code ${c}\n`)), false, String(c));
+  assert.equal(fallaGarantizaQueNoSeDevolvio(Object.assign(new Error("x"), { sinEnviar: true })), true);
+  assert.equal(fallaGarantizaQueNoSeDevolvio(new Error("timeout")), false);
+});
+
+test("pago tardío (retorno de Webpay con el pedido ya cerrado): la devolución usa la misma función, y un tiempo agotado o 5xx queda incierto sin reintentar", async () => {
+  const fuente = readFileSync(new URL("../src/app/api/pagos/webpay/retorno/route.ts", import.meta.url), "utf8");
+  assert.match(fuente, /ejecutarDevolucionWebpay\(/, "el retorno usa la función común");
+  assert.ok(!/reembolsarWebpay\(tokenWs/.test(fuente), "el retorno ya no llama a Transbank por su cuenta");
+  for (const falla of [new Error("AxiosError: timeout of 5000ms exceeded"), tb("AxiosError: Request failed with status code 503\n")]) {
+    let reembolso = null; let llamadas = 0;
+    const deps = {
+      tomarReembolso: async (_n, r) => { if (reembolso && reembolso.estado !== "error") return false; reembolso = r; return true; },
+      guardarReembolso: async (_n, r) => { reembolso = r; },
+      reembolsar: async () => { llamadas++; throw falla; },
+    };
+    const r = await ejecutarDevolucionWebpay(deps, { numero: "BJ-261120-AAAA", total: 15000, pasarela_referencia: "T" });
+    assert.equal(r.resultado, "incierta");
+    assert.equal(reembolso.estado, "incierto");
+    assert.equal((await ejecutarDevolucionWebpay(deps, { numero: "BJ-261120-AAAA", total: 15000, pasarela_referencia: "T" })).resultado, "ocupada", "no se reintenta sola");
+    assert.equal(llamadas, 1);
+  }
 });
