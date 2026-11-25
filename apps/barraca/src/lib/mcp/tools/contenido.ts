@@ -729,7 +729,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
           return { texto: `${etiqueta(clave)} publicado (versión ${pub.version}) en modo avisar: no esperó el OK de Jorge y se le avisa por correo. Las páginas se regeneran en unos minutos. Para volver atrás usa restaurar_version_contenido.`, datos: { estado: "publicada", version: pub.version, modo: "avisar" } };
         }
         const r = await repo.publicar(ctx.db, { clave, usuario, nota, ahora: ctx.ahora });
-        if (!r.ok || r.estado !== "pendiente") throw new ErrorHerramienta(r.ok ? "No se pudo dejar la publicación pendiente." : `No se pudo publicar: ${r.motivo}.`);
+        if (!r.ok || r.estado !== "pendiente") throw new ErrorHerramienta(r.ok ? "No se pudo dejar la publicación pendiente." : `No se pudo publicar${r.errores?.length ? `: ${r.errores.slice(0, 6).join(" | ")}` : `: ${r.motivo}`}.`);
         const pendiente = await repo.obtenerVersion(ctx.db, clave, r.version);
         const resumen = resumirCambio(clave, estado.efectivo, pendiente?.valor ?? estado.borrador);
         const sol = await deps().solicitarAprobacion(ctx.db, {

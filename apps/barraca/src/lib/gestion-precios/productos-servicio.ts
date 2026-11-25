@@ -8,6 +8,7 @@
  */
 import { esUrlImagenPermitida, sanearTextoMultilinea, sanearTextoPlano } from "../contenido/markdown.ts";
 import { parseFecha } from "../contenido/fechas.ts";
+import { errorDatosDePagoEnTextos } from "../contenido/datos-pago.ts";
 import { huellaDeDatos } from "../gestion/util.ts";
 import { TEXTO_MOTIVO, type MotivoAprobacion } from "../mcp/aprobaciones.ts";
 import { camposDeProductoPidenOk } from "../mcp/escrituras-libres.ts";
@@ -68,6 +69,12 @@ export interface EntradaEditarProducto {
   categoria_id?: number;
 }
 
+/** TOPE DURO: ningún texto libre que se publica (nombre, descripción, categoría) puede traer datos bancarios ni enlaces de pago. */
+function exigirSinDatosDePago(...textos: Array<string | null | undefined>): void {
+  const m = errorDatosDePagoEnTextos(...textos);
+  if (m) throw new ErrorGestion(m);
+}
+
 const CLAVES_PRECIO = ["precio", "precio_original", "en_oferta"] as const;
 
 export async function editarProducto(deps: DepsGestion, ctx: CtxGestion, e: EntradaEditarProducto, herramienta = "editar_producto"): Promise<Salida> {
@@ -80,9 +87,13 @@ export async function editarProducto(deps: DepsGestion, ctx: CtxGestion, e: Entr
   if (e.nombre !== undefined) {
     const n = sanearTextoPlano(e.nombre, 200);
     if (!n) throw new ErrorGestion("El nombre no puede quedar vacío.");
+    exigirSinDatosDePago(n);
     base.nombre = n;
   }
-  if (e.descripcion !== undefined) base.descripcion = e.descripcion === null ? null : sanearTextoMultilinea(e.descripcion, 4000) || null;
+  if (e.descripcion !== undefined) {
+    base.descripcion = e.descripcion === null ? null : sanearTextoMultilinea(e.descripcion, 4000) || null;
+    exigirSinDatosDePago(base.descripcion);
+  }
   if (e.imagen !== undefined) {
     if (e.imagen !== null && !esUrlImagenPermitida(e.imagen)) {
       throw new ErrorGestion("Esa imagen no vale: debe estar ya subida a la tienda (ruta propia, barraca.jurmaq.cl o el bucket barraca-redes). Súbela primero y pega la URL que te devuelve.");
@@ -255,6 +266,7 @@ export async function crearProducto(deps: DepsGestion, ctx: CtxGestion, e: Entra
   if (!CODIGO_OK.test(codigo)) throw new ErrorGestion("El código debe tener hasta 40 caracteres: letras, números, espacio, punto, guion o barra.");
   const nombre = sanearTextoPlano(e.nombre, 200);
   if (!nombre) throw new ErrorGestion("Falta el nombre del producto.");
+  exigirSinDatosDePago(nombre, e.descripcion ? sanearTextoMultilinea(e.descripcion, 4000) : null);
   if (!esPesosValido(e.precio_web)) throw new ErrorGestion("precio_web debe ser un entero de pesos mayor a 0.");
   if (e.precio_local !== undefined && (!esPesosValido(e.precio_local) || e.precio_local < e.precio_web)) throw new ErrorGestion("precio_local debe ser un entero de pesos igual o mayor al precio web.");
   if (e.costo !== undefined && !esPesosValido(e.costo)) throw new ErrorGestion("costo debe ser un entero de pesos mayor a 0.");
@@ -298,6 +310,7 @@ export async function crearProducto(deps: DepsGestion, ctx: CtxGestion, e: Entra
 export async function crearCategoria(deps: DepsGestion, ctx: CtxGestion, e: { nombre: string; descripcion?: string; padre_id?: number }): Promise<Salida> {
   const nombre = sanearTextoPlano(e.nombre, 80);
   if (!nombre) throw new ErrorGestion("Falta el nombre de la categoría.");
+  exigirSinDatosDePago(nombre, e.descripcion ? sanearTextoMultilinea(e.descripcion, 500) : null);
   const todas = await deps.categorias.listar({ incluirInactivas: true });
   if (e.padre_id !== undefined && !todas.some((c) => c.id === e.padre_id)) throw new ErrorGestion("No encontré la categoría padre. Mira las ids con listar_categorias.");
   if (todas.some((c) => c.nombre.trim().toLowerCase() === nombre.toLowerCase() && (c.padre_id ?? null) === (e.padre_id ?? null))) throw new ErrorGestion(`Ya existe una categoría llamada "${nombre}" en ese nivel.`);
@@ -316,12 +329,14 @@ export async function editarCategoria(deps: DepsGestion, ctx: CtxGestion, e: { i
   if (e.nombre !== undefined) {
     const n = sanearTextoPlano(e.nombre, 80);
     if (!n) throw new ErrorGestion("El nombre no puede quedar vacío.");
+    exigirSinDatosDePago(n);
     if (n !== actual.nombre) campos.nombre = n;
   }
   if (e.orden !== undefined && e.orden !== actual.orden) campos.orden = e.orden;
   if (e.activa !== undefined && e.activa !== actual.activa) campos.activa = e.activa;
   if (e.descripcion !== undefined) {
     const d = e.descripcion === null ? null : sanearTextoMultilinea(e.descripcion, 500) || null;
+    exigirSinDatosDePago(d);
     if (d !== actual.descripcion) campos.descripcion = d;
   }
   if (Object.keys(campos).length === 0) return { texto: "No hay nada que cambiar: ya estaba así.", datos: { aplicado: false } };

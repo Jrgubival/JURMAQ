@@ -1,6 +1,7 @@
 import { registrarCambio } from "../gestion/auditoria.ts";
 import type { D1Like, UsuarioGestion } from "../gestion/tipos.ts";
 import { idUuid } from "../gestion/util.ts";
+import { errorDatosDePagoEnTextos } from "../contenido/datos-pago.ts";
 import { borrarReglas, guardarReglas, leerReglas, leerReglasDeVarios, validarReglas, type ReglasCupon, REGLAS_POR_DEFECTO } from "./reglas.ts";
 import type { CuponRegistro } from "./servicio.ts";
 
@@ -99,6 +100,8 @@ function validarCampos(c: CambiosCupon, completo: boolean): { ok: true; v: Campo
   if (c.descripcion !== undefined) {
     const d = limpiarTexto(c.descripcion, 200);
     if (d === undefined) return { ok: false, error: "La descripción no es válida." };
+    const dp = errorDatosDePagoEnTextos(d);
+    if (dp) return { ok: false, error: dp };
     campos.descripcion = d;
   }
   if (c.validoDesde !== undefined) {

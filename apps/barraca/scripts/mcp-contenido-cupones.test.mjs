@@ -1050,7 +1050,7 @@ test("moderar_opinion «mostrar»: tampoco si lo último en la auditoría de esa
 test("textos libres con desvío necesitan a Jorge: popup con teléfono, cinta con enlace ajeno, envíos con correo; jurmaq.cl y lo ya presente, no", async () => {
   const casos = [
     ["popup", { titular: "Escríbenos al +56 9 1111 2222" }],
-    ["cinta", { texto: "Oferta", enlace: { texto: "Ver", enlace: "https://ofertas.example/cobro" } }],
+    ["cinta", { texto: "Oferta", enlace: { texto: "Ver", enlace: "https://ofertas.example/catalogo" } }],
     ["contacto", { nota: "Pagos a pagos@gmail.com" }],
   ];
   for (const [clave, cambios] of casos) {
@@ -1075,12 +1075,14 @@ test("textos libres con desvío necesitan a Jorge: popup con teléfono, cinta co
   const c = await m.llamar("confirmar_publicacion_contenido", { clave: "cinta", vista_previa_id: p.datos.vistaPreviaId });
   assert.match(c.texto, /publicado/);
   assert.equal(m.correos.length, 0);
-  // envíos (markdown): un enlace nuevo a otro dominio pide OK
+  // envíos (markdown): un enlace de WhatsApp a otro número ya no pide OK: es un tope duro (ver datos-pago.ts)
   const e = await montar();
   const base = (await Repo.obtenerEstado(e.db, "envios")).efectivo.texto;
   await e.llamar("guardar_borrador_contenido", { clave: "envios", valor: { texto: `${base}\n\nPaga por [aquí](https://wa.me/56911112222).` } });
   const pe = await e.llamar("previsualizar_publicacion_contenido", { clave: "envios" });
-  assert.equal((await e.llamar("confirmar_publicacion_contenido", { clave: "envios", vista_previa_id: pe.datos.vistaPreviaId })).datos?.estado, "pendiente");
+  const ce = await e.llamar("confirmar_publicacion_contenido", { clave: "envios", vista_previa_id: pe.datos.vistaPreviaId });
+  assert.match(String(ce.error ?? ce.texto ?? JSON.stringify(ce)), /datos bancarios o un enlace de pago/);
+  assert.equal(e.correos.length, 0, "no se pide OK: se rechaza");
 });
 
 test("Instagram del local: cambiarlo pide el OK de Jorge", async () => {
