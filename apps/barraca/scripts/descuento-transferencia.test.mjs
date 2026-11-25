@@ -141,6 +141,31 @@ test("lectura del servidor sin binding de D1 (pruebas, build, dev) = 2 %", async
   assert.equal(await CFG.pctTransferenciaActual(), 2);
 });
 
+test("lectura del servidor: con la D1 caída usa el último valor bueno del isolate (0 % se respeta); isolate frío = 2 %", async () => {
+  CFG.reiniciarPausaDescuento();
+  let t = T0;
+  const ahora = () => t;
+  const db0 = nuevaDb();
+  await poner(db0, "0");
+  assert.equal(await CFG.pctTransferenciaActual({ obtenerDb: async () => db0, ahora }), 0);
+  const rota = { prepare() { throw new Error("D1 caída"); }, async batch() { throw new Error("x"); } };
+  // cae: sigue 0, no 2
+  assert.equal(await CFG.pctTransferenciaActual({ obtenerDb: async () => rota, ahora }), 0);
+  // en la pausa tampoco vuelve al 2 %
+  t += 5_000;
+  assert.equal(await CFG.pctTransferenciaActual({ obtenerDb: async () => db0, ahora }), 0);
+  // se recupera con otro valor
+  t += 20_000;
+  const db1 = nuevaDb();
+  await poner(db1, "4.5");
+  assert.equal(await CFG.pctTransferenciaActual({ obtenerDb: async () => db1, ahora }), 4.5);
+  assert.equal(await CFG.pctTransferenciaActual({ obtenerDb: async () => { throw new Error("sin binding"); }, ahora: () => t + 1 }), 4.5);
+  // isolate frío + base caída = 2 % del código
+  CFG.reiniciarPausaDescuento();
+  assert.equal(await CFG.pctTransferenciaActual({ obtenerDb: async () => rota, ahora }), 2);
+  CFG.reiniciarPausaDescuento();
+});
+
 // ───────── herramientas ─────────
 const registroMio = () => {
   const r = crearRegistro();

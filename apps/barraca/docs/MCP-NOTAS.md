@@ -521,3 +521,6 @@ No hay campo ni tabla de marca: `lib/marcas.ts` las reconoce por el nombre del p
 - Además `next.config.ts` excluye esas tres rutas de la regla global de encabezados (CSP propia con `frame-ancestors 'none'` y referrer propio). Pruebas en `scripts/mcp-web.test.mjs`.
 - Versión desplegada: `95799db6-bb0a-42a8-bcde-a96bd15c43a0`. Rollback: `d9c253b8-9f14-4367-b7b3-5d85403b39b9`.
 - `tools/list` pesa unos 68 KB (55 herramientas, unos 17.000 tokens de contexto). Los esquemas son válidos; si Claude se pone lento, evaluar acortar descripciones de `editar_slides`, `editar_avisos`, `crear_cupon`.
+
+## Correcciones de la auditoría de etapa 2 (25-11-2026)
+- **Descuento por transferencia con la D1 caída**: `pctTransferenciaActual` guarda el último valor leído con éxito por isolate y lo usa cuando la base falla o está en pausa (si Jorge lo dejó en 0 %, sigue en 0 %). En un isolate frío con la base caída vale el 2 % del código (único valor conocido). Prueba en `scripts/descuento-transferencia.test.mjs`.

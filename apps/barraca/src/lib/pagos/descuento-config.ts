@@ -38,6 +38,12 @@ export async function leerDescuentoTransferencia(db: D1Like): Promise<LecturaDes
 const TIEMPO_MAX_MS = 1200;
 const PAUSA_TRAS_FALLO_MS = 15_000;
 let sinIntentarHasta = 0;
+/**
+ * Último valor leído con éxito de la base, por isolate. Si la base cae después, se sigue usando este
+ * (así un 0 % o un 3 % que Jorge dejó no salta al 2 % del código). En un isolate frío (sin lectura
+ * previa) y con la base caída vale el 2 % del código: es el único valor que se conoce.
+ */
+let ultimoBueno: number | null = null;
 
 function conPlazo<T>(p: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((ok, mal) => {
@@ -46,27 +52,36 @@ function conPlazo<T>(p: Promise<T>, ms: number): Promise<T> {
   });
 }
 
+export interface DepsPctActual {
+  obtenerDb?: () => Promise<D1Like | null>;
+  ahora?: () => number;
+}
+
 /**
  * El porcentaje vigente para la tienda (servidor). Sin binding, en el build o en
  * `next dev` devuelve el respaldo sin tocar nada. Tras un fallo no reintenta por
- * 15 s para no sumar latencia con la base caída.
+ * 15 s para no sumar latencia con la base caída, y mientras tanto (y en cada fallo)
+ * usa el último valor bueno de este isolate; si no hay ninguno, el 2 % del código.
  */
-export async function pctTransferenciaActual(): Promise<number> {
+export async function pctTransferenciaActual(deps: DepsPctActual = {}): Promise<number> {
   if (process.env.NEXT_PHASE === "phase-production-build" || process.env.NODE_ENV === "development") return DESCUENTO_TRANSFERENCIA_PCT;
-  if (Date.now() < sinIntentarHasta) return DESCUENTO_TRANSFERENCIA_PCT;
+  const ahora = deps.ahora ?? Date.now;
+  if (ahora() < sinIntentarHasta) return ultimoBueno ?? DESCUENTO_TRANSFERENCIA_PCT;
   try {
-    const { obtenerGestionDb } = await import("../gestion/d1.ts");
-    const db = await obtenerGestionDb();
+    const db = deps.obtenerDb ? await deps.obtenerDb() : await (await import("../gestion/d1.ts")).obtenerGestionDb();
     if (!db) return DESCUENTO_TRANSFERENCIA_PCT;
     const f = await conPlazo(db.prepare("SELECT valor FROM ajustes WHERE clave = ?").bind(CLAVE_DESCUENTO_TRANSFERENCIA).first<{ valor: string }>(), TIEMPO_MAX_MS);
-    return leerPctGuardado(f?.valor) ?? DESCUENTO_TRANSFERENCIA_PCT;
+    const pct = leerPctGuardado(f?.valor) ?? DESCUENTO_TRANSFERENCIA_PCT;
+    ultimoBueno = pct;
+    return pct;
   } catch {
-    sinIntentarHasta = Date.now() + PAUSA_TRAS_FALLO_MS;
-    return DESCUENTO_TRANSFERENCIA_PCT;
+    sinIntentarHasta = ahora() + PAUSA_TRAS_FALLO_MS;
+    return ultimoBueno ?? DESCUENTO_TRANSFERENCIA_PCT;
   }
 }
 
 /** Solo para pruebas. */
 export function reiniciarPausaDescuento(): void {
   sinIntentarHasta = 0;
+  ultimoBueno = null;
 }
