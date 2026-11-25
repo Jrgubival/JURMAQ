@@ -22,7 +22,14 @@ export const TTL_SOLICITUD_MS = 10 * MIN;
 
 export const SCOPE_LEER = "tienda:leer";
 export const SCOPE_ESCRIBIR = "tienda:escribir";
-export const SCOPES_SOPORTADOS = [SCOPE_LEER, SCOPE_ESCRIBIR] as const;
+/**
+ * Permiso APARTE para dinero y borrado (confirmar transferencias, cancelar con devolución, archivar y borrar).
+ * Nunca se da por defecto ni por pedir «todo»: solo si la persona lo marca en la pantalla de autorización.
+ * Implica escribir y leer. Ver docs/MCP-NOTAS.md, «Parte B, base».
+ */
+export const SCOPE_DINERO = "tienda:dinero";
+export const SCOPES_BASE = [SCOPE_LEER, SCOPE_ESCRIBIR] as const;
+export const SCOPES_SOPORTADOS = [SCOPE_LEER, SCOPE_ESCRIBIR, SCOPE_DINERO] as const;
 
 /** Callbacks oficiales de las apps de Claude (claude.com puede reemplazar a claude.ai). */
 export const REDIRECTS_CLAUDE: readonly string[] = [

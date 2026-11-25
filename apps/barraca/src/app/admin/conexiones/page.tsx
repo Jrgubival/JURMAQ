@@ -3,6 +3,7 @@ import SinPermiso from "@/components/admin/SinPermiso";
 import { listarLotes, obtenerGestionDb } from "@/lib/gestion";
 import { listarConexiones, type Conexion } from "@/lib/mcp/oauth";
 import { loteSePuedeDeshacer } from "@/lib/mcp/deshacer";
+import { etiquetaPermiso } from "@/lib/mcp/permisos-texto";
 import { registro } from "@/lib/mcp/tools";
 import AccionConexion from "./AccionesConexiones";
 
@@ -74,7 +75,8 @@ export default async function ConexionesPage() {
                   <p className="text-sm text-gray-700 break-words">Usuario: {c.usuarioEmail ?? "sin correo"}</p>
                   <p className="text-sm text-gray-600">Conectada: {fecha(c.creadaEn)}</p>
                   <p className="text-sm text-gray-600">Último uso: {hace(c.ultimoUso)}</p>
-                  <p className="text-xs text-gray-500">Permiso: {c.scope.includes("escribir") ? "ver y cambiar" : "solo ver"}</p>
+                  <p className="text-xs text-gray-500">Permiso: {etiquetaPermiso(c.scope)}</p>
+                  {c.scope.includes("tienda:dinero") && <p className="mt-1 inline-block rounded-md bg-red-50 px-2 py-0.5 text-xs font-bold text-red-800">Puede tocar dinero y borrar</p>}
                 </div>
                 <AccionConexion accion="revocar" id={c.familiaId} etiqueta="Revocar" confirmacion="Claude dejará de poder entrar a la tienda. Podrás volver a conectarlo cuando quieras." />
               </li>

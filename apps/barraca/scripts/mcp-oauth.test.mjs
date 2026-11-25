@@ -301,7 +301,7 @@ test("metadata: recurso protegido, servidor de autorización y desafío 401", ()
   const h = encabezadoNoAutenticado(BASE);
   assert.match(h, /^Bearer /);
   assert.ok(h.includes(`resource_metadata="${BASE}/.well-known/oauth-protected-resource/api/mcp"`));
-  assert.match(h, /scope="tienda:leer tienda:escribir"/);
+  assert.match(h, /scope="tienda:leer tienda:escribir tienda:dinero"/);
 });
 
 // ───────── Límite ─────────

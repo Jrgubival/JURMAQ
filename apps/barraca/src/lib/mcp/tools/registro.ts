@@ -15,6 +15,9 @@ import type { CambioAuditado, D1Like, EntradaAuditoria, UsuarioGestion } from ".
 
 export { z };
 
+/** Único permiso extra que una herramienta puede exigir (además de leer/escribir): dinero y borrado. */
+export type ScopeHerramienta = "tienda:dinero";
+
 /** Lo que recibe cada herramienta al ejecutarse. */
 export interface ContextoHerramienta {
   usuario: UsuarioGestion;
@@ -26,6 +29,8 @@ export interface ContextoHerramienta {
   ahora: number;
   /** Registra cambios en la auditoría bajo el lote de esta llamada. Úsalo después de escribir en Supabase. */
   auditar(cambios: Array<Omit<CambioAuditado, "herramienta"> & { herramienta?: string }>): Promise<void>;
+  /** Permisos (scopes) de la conexión que hace esta llamada. Úsalo solo para decidir qué MOSTRAR; el servidor ya bloqueó lo que no corresponde. */
+  scope: string;
   /** Catálogo de herramientas disponibles (para la herramienta `guia`). */
   catalogo: ReadonlyArray<{ nombre: string; titulo: string; descripcion: string; soloLectura: boolean }>;
 }
@@ -72,6 +77,12 @@ export interface Herramienta<E extends z.ZodObject = z.ZodObject> {
   /** Entrada: objeto zod. El servidor lo vuelve estricto. */
   esquema: E;
   anotaciones: AnotacionesHerramienta;
+  /**
+   * Permiso extra que exige la conexión. `"tienda:dinero"` = herramientas de dinero y borrado: sin ese scope en el
+   * token la herramienta NO aparece en `tools/list` y NO se ejecuta aunque se conozca el nombre (403 insufficient_scope).
+   * Sin `scope`, vale el comportamiento de siempre (leer / escribir según `readOnlyHint`).
+   */
+  scope?: ScopeHerramienta;
   ejecutar(args: z.infer<E>, ctx: ContextoHerramienta): Promise<SalidaHerramienta>;
   /** Cómo deshacer lo que esta herramienta audita (si no hay, sus lotes no tienen botón Deshacer). */
   revertidor?: Revertidor;
@@ -96,6 +107,8 @@ export function defineHerramienta<E extends z.ZodObject>(h: Herramienta<E>): Her
   if (typeof a?.readOnlyHint !== "boolean" || typeof a.destructiveHint !== "boolean" || typeof a.idempotentHint !== "boolean") {
     throw new Error(`Faltan anotaciones en ${h.nombre}`);
   }
+  if (h.scope !== undefined && h.scope !== "tienda:dinero") throw new Error(`${h.nombre}: scope desconocido`);
+  if (h.scope === "tienda:dinero" && a.readOnlyHint) throw new Error(`${h.nombre}: una herramienta de dinero y borrado no puede ser de solo lectura`);
   if (a.readOnlyHint && (a.destructiveHint || h.revertidor)) throw new Error(`${h.nombre}: una herramienta de solo lectura no destruye ni se revierte`);
   return h;
 }

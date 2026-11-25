@@ -71,6 +71,10 @@ li{margin:4px 0}
 .dato{background:#f3f4f6;border-radius:10px;padding:10px 12px;margin:10px 0;word-break:break-word}
 .aviso{background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:10px 12px;margin:12px 0;font-size:15px}
 .error{background:#fef2f3;border:1px solid #c90319;border-radius:10px;padding:10px 12px;margin:12px 0}
+.dinero{background:#fef2f3;border:3px solid #c90319;border-radius:12px;padding:6px 14px 14px;margin:18px 0}
+.dinero h2{color:#c90319;margin-top:12px}
+.casilla{display:flex;gap:12px;align-items:flex-start;background:#fff;border:2px solid #c90319;border-radius:10px;padding:12px;margin-top:12px;font-weight:600;cursor:pointer}
+.casilla input{width:26px;height:26px;flex:0 0 26px;margin:0;accent-color:#c90319}
 .botones{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
 button,.boton{flex:1 1 180px;min-height:52px;border:0;border-radius:10px;font:600 17px/1 inherit;cursor:pointer;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:0 18px}
 .primario{background:#081428;color:#fff}

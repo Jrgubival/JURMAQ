@@ -4,7 +4,7 @@ import { abrirSolicitud, urlRetorno } from "@/lib/mcp/autorizar";
 import { MAX_BODY_OAUTH_BYTES, MIN, baseCanonica } from "@/lib/mcp/config";
 import { escapar, leerTextoLimitado, mismoOrigen, paginaError, paginaHtml, respuestaHtml, secretoFirma } from "@/lib/mcp/http";
 import { limitar } from "@/lib/mcp/limites";
-import { emitirCodigo, validarSolicitudAutorizacion } from "@/lib/mcp/oauth";
+import { emitirCodigo, scopeConcedido, validarSolicitudAutorizacion } from "@/lib/mcp/oauth";
 import { verificarUsuarioMcp } from "@/lib/mcp/usuario";
 import { maskEmail } from "@jurmaq/shared/logging";
 
@@ -60,10 +60,12 @@ export async function POST(req: Request) {
     }
     const lim = await limitar(db, `autorizar:${u.usuario.id}`, 10, 10 * MIN);
     if (!lim.permitido) return paginaError("Demasiados intentos", "Espera unos minutos y vuelve a intentar.", 429);
+    // Dinero y borrado solo con la casilla marcada Y pedido por el cliente (la casilla nunca agrega un permiso que no se pidió).
+    const scope = scopeConcedido(s.scope, form.get("dinero") === "si");
     const code = await emitirCodigo(db, {
-      clienteId: s.cliente.id, usuario: u.usuario, redirectUri: s.redirectUri, codeChallenge: s.codeChallenge, scope: s.scope, resource: s.resource,
+      clienteId: s.cliente.id, usuario: u.usuario, redirectUri: s.redirectUri, codeChallenge: s.codeChallenge, scope, resource: s.resource,
     });
-    console.info("[mcp-autorizado]", { usuario: maskEmail(u.usuario.email ?? ""), cliente: s.cliente.id });
+    console.info("[mcp-autorizado]", { usuario: maskEmail(u.usuario.email ?? ""), cliente: s.cliente.id, dinero: scope.includes("tienda:dinero") });
     return volverA(urlRetorno(s.redirectUri, { code, state: s.state }, base));
   } catch (e) {
     console.error("[mcp-decision-fallo]", { tipo: e instanceof Error ? e.name : typeof e });

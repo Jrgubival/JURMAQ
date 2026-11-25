@@ -14,7 +14,7 @@
 import { registrarLote, nuevoLoteId, esGestionNoDisponible, type CambioAuditado, type D1Like } from "../gestion/index.ts";
 import {
   LIMITE_ESCRITURAS_POR_MIN, LIMITE_MCP_POR_MIN, MAX_BODY_MCP_BYTES, MAX_SALIDA_HERRAMIENTA_BYTES, MIN,
-  ORIGENES_MCP_EXTRA, SCOPE_ESCRIBIR, baseCanonica, encabezadoNoAutenticado,
+  ORIGENES_MCP_EXTRA, SCOPE_DINERO, SCOPE_ESCRIBIR, SCOPES_SOPORTADOS, baseCanonica, encabezadoNoAutenticado,
 } from "./config.ts";
 import { consultarLimite, limitar } from "./limites.ts";
 import { sha256Hex } from "./cripto.ts";
@@ -122,8 +122,8 @@ function jsonSchemaDe(h: Herramienta): Record<string, unknown> {
 }
 
 /** Lo que devuelve `tools/list` (también lo mide una prueba: tope de tamaño). */
-export function listarHerramientasMcp(registro: Registro, puedeEscribir: boolean) {
-  return registro.lista().filter((h) => puedeEscribir || !esEscritura(h)).map((h) => ({
+export function listarHerramientasMcp(registro: Registro, puedeEscribir: boolean, puedeDinero = false) {
+  return registro.lista().filter((h) => visibleParaScope(h, puedeEscribir, puedeDinero)).map((h) => ({
     name: h.nombre,
     title: h.titulo,
     description: h.descripcion,
@@ -134,6 +134,11 @@ export function listarHerramientasMcp(registro: Registro, puedeEscribir: boolean
 
 const LIMITE_TOKENS_MALOS_POR_MIN = 30;
 const esEscritura = (h: Herramienta) => !h.anotaciones.readOnlyHint;
+/** ¿Esta herramienta pide el permiso de dinero y borrado? */
+const esDinero = (h: Herramienta) => h.scope === SCOPE_DINERO;
+/** Una herramienta de dinero solo se ve (y se ejecuta) con `tienda:dinero` en el token. Falla cerrado. */
+const visibleParaScope = (h: Herramienta, puedeEscribir: boolean, puedeDinero: boolean) =>
+  (puedeEscribir || !esEscritura(h)) && (!esDinero(h) || (puedeDinero && puedeEscribir));
 
 function origenPermitido(origen: string | null, base: string): boolean {
   if (origen === null) return true; // Claude llama de servidor a servidor, sin Origin.
@@ -218,7 +223,7 @@ export async function manejarSolicitudMcp(p: PeticionMcp, deps: DepsServidor): P
       return ok(m.id, {});
     case "tools/list": {
       const puedeEscribir = scopeIncluye(acceso.scope, SCOPE_ESCRIBIR);
-      return ok(m.id, { tools: listarHerramientasMcp(deps.registro, puedeEscribir) });
+      return ok(m.id, { tools: listarHerramientasMcp(deps.registro, puedeEscribir, scopeIncluye(acceso.scope, SCOPE_DINERO)) });
     }
     case "tools/call":
       return llamarHerramienta(m.id, params, acceso, u.usuario, deps, base, ahora);
@@ -290,6 +295,15 @@ async function llamarHerramienta(
   const h = deps.registro.obtener(llamada.data.name);
   if (!h) return { status: 200, body: jsonrpcError(id, -32602, "Herramienta desconocida.") };
 
+  // Dinero y borrado: se comprueba en CADA llamada, antes que nada (también antes de validar argumentos o límites).
+  if (esDinero(h) && !scopeIncluye(acceso.scope, SCOPE_DINERO)) {
+    const descripcion = "Esta herramienta toca dinero o borra datos y esta conexión no tiene ese permiso. Hay que volver a autorizar la conexión y marcar el permiso de dinero y borrado.";
+    return {
+      status: 403,
+      headers: { "WWW-Authenticate": encabezadoNoAutenticado(base, { codigo: "insufficient_scope", descripcion, scope: SCOPES_SOPORTADOS.join(" ") }) },
+      body: { error: "insufficient_scope", error_description: descripcion },
+    };
+  }
   if (esEscritura(h)) {
     if (!scopeIncluye(acceso.scope, SCOPE_ESCRIBIR)) {
       return {
@@ -310,12 +324,12 @@ async function llamarHerramienta(
 
   const loteId = nuevoLoteId();
   const ctx: ContextoHerramienta = {
-    usuario, clienteId: acceso.clienteId, loteId, db: deps.db, ahora,
+    usuario, clienteId: acceso.clienteId, loteId, db: deps.db, ahora, scope: acceso.scope,
     async auditar(cambios) {
       await registrarLote(deps.db, loteId, usuario, cambios.map((c): CambioAuditado => ({ ...c, herramienta: c.herramienta ?? h.nombre })), ahora);
     },
     catalogo: deps.registro.lista()
-      .filter((x) => scopeIncluye(acceso.scope, SCOPE_ESCRIBIR) || !esEscritura(x))
+      .filter((x) => visibleParaScope(x, scopeIncluye(acceso.scope, SCOPE_ESCRIBIR), scopeIncluye(acceso.scope, SCOPE_DINERO)))
       .map((x) => ({ nombre: x.nombre, titulo: x.titulo, descripcion: x.descripcion, soloLectura: x.anotaciones.readOnlyHint })),
   };
 

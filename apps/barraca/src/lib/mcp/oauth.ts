@@ -21,7 +21,7 @@ import {
   desafioValido, pkceCoincide, secretoAleatorio, sha256Hex, verificadorValido,
 } from "./cripto.ts";
 import {
-  GRACIA_ROTACION_MS, MAX_CLIENTES_SIN_USO, MAX_REDIRECTS_POR_CLIENTE, SCOPE_ESCRIBIR, SCOPE_LEER,
+  GRACIA_ROTACION_MS, MAX_CLIENTES_SIN_USO, MAX_REDIRECTS_POR_CLIENTE, SCOPE_DINERO, SCOPE_ESCRIBIR, SCOPE_LEER,
   TTL_ACCESO_MS, TTL_CODIGO_MS, TTL_FAMILIA_MS, TTL_REFRESCO_MS, baseCanonica, mismoRecurso, urlRecurso,
 } from "./config.ts";
 import { esRedirectPermitida, redirectCoincide } from "./redirects.ts";
@@ -56,18 +56,40 @@ export interface ErrorOauth {
 const err = (error: CodigoErrorOauth, descripcion: string): ErrorOauth => ({ ok: false, error, descripcion });
 
 // ───────── Scopes ─────────
+const ORDEN_SCOPES = [SCOPE_LEER, SCOPE_ESCRIBIR, SCOPE_DINERO] as const;
+
+/**
+ * Normaliza lo que pide el cliente. Sin `scope` (o solo `offline_access`) = el básico (leer + escribir):
+ * NUNCA incluye dinero por omisión. Dinero implica escribir y leer; escribir implica leer.
+ */
 export function normalizarScope(crudo: string | null | undefined): { ok: true; scope: string } | ErrorOauth {
   const pedidos = (crudo ?? "").split(/\s+/).filter(Boolean).filter((s) => s !== "offline_access");
-  if (pedidos.some((s) => s !== SCOPE_LEER && s !== SCOPE_ESCRIBIR)) return err("invalid_scope", "Permiso no reconocido.");
+  if (pedidos.some((s) => !(ORDEN_SCOPES as readonly string[]).includes(s))) return err("invalid_scope", "Permiso no reconocido.");
   const set = new Set(pedidos.length ? pedidos : [SCOPE_LEER, SCOPE_ESCRIBIR]);
+  if (set.has(SCOPE_DINERO)) set.add(SCOPE_ESCRIBIR);
   // Escribir implica leer.
   if (set.has(SCOPE_ESCRIBIR)) set.add(SCOPE_LEER);
-  return { ok: true, scope: [SCOPE_LEER, SCOPE_ESCRIBIR].filter((s) => set.has(s)).join(" ") };
+  return { ok: true, scope: ORDEN_SCOPES.filter((s) => set.has(s)).join(" ") };
 }
 
 export function scopeIncluye(scopeToken: string, requerido: string): boolean {
   const set = new Set(scopeToken.split(" "));
-  return set.has(requerido) || (requerido === SCOPE_LEER && set.has(SCOPE_ESCRIBIR));
+  if (requerido === SCOPE_DINERO) return set.has(SCOPE_DINERO); // solo explícito: nada lo implica
+  if (requerido === SCOPE_ESCRIBIR) return set.has(SCOPE_ESCRIBIR) || set.has(SCOPE_DINERO);
+  return set.has(requerido) || (requerido === SCOPE_LEER && (set.has(SCOPE_ESCRIBIR) || set.has(SCOPE_DINERO)));
+}
+
+/**
+ * Lo que de verdad se concede: lo pedido (ya normalizado y firmado en la pantalla) menos el permiso de dinero y
+ * borrado si la persona NO lo marcó. La casilla jamás agrega algo que el cliente no pidió. Falla cerrado: sin
+ * `consentimientoDinero === true` (solo ese valor exacto) no hay dinero.
+ */
+export function scopeConcedido(scopePedido: string, consentimientoDinero: unknown): string {
+  const n = normalizarScope(scopePedido);
+  if (!n.ok) return [SCOPE_LEER].join(" ");
+  const set = new Set(n.scope.split(" "));
+  if (consentimientoDinero !== true) set.delete(SCOPE_DINERO);
+  return ORDEN_SCOPES.filter((s) => set.has(s)).join(" ");
 }
 
 // ───────── Clientes (registro dinámico, RFC 7591) ─────────
