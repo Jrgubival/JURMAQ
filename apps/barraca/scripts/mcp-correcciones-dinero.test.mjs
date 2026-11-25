@@ -337,6 +337,9 @@ test("el panel (resolver incierta / reintentar) pone al día devoluciones_mcp pa
   await db.prepare("UPDATE devoluciones_mcp SET estado = 'devolucion_incierta' WHERE numero = ?").bind(NUM("B")).run();
   assert.equal(await sincronizarDevolucionPanel(db, NUM("B"), "devolucion_rechazada", TA + 2000), true);
   assert.equal((await leerDevolucion(db, NUM("B"))).estado, "devolucion_rechazada");
+  // «rechazada» = Webpay no devolvió y el cliente sigue cobrado: NO se archiva (antes se permitía)
+  assert.match(motivoNoArchivable(webpayPagado("B", { estado: "cancelado", reembolso: { estado: "error", medio: "webpay", monto: 15000, fecha: "x" } }), "devolucion_rechazada") ?? "", /se le debe plata|rechazó/);
+  assert.ok(motivoNoArchivable(webpayPagado("B", { estado: "entregado" }), "devolucion_rechazada"), "la fila de D1 sola ya bloquea");
   // una fila ya terminada no se pisa
   assert.equal(await sincronizarDevolucionPanel(db, NUM("A"), "devolucion_rechazada", TA + 3000), false);
   assert.equal((await leerDevolucion(db, NUM("A"))).estado, "devolucion_hecha");

@@ -8,11 +8,12 @@
  * (a las personas, solo una referencia corta).
  */
 import { defineHerramienta, ErrorHerramienta, z, type Herramienta } from "./registro.ts";
+import { cobradoSinDevolucion, type PedidoDinero } from "./dinero.ts";
 import { huellaDeDatos } from "../../gestion/index.ts";
 import { PATRON_NUMERO } from "../../pedidos/numero.ts";
 import { ETIQUETA_ESTADO_MCP } from "../../pedidos/vista-mcp.ts";
 import type { EstadoPedido, Reembolso } from "../../pedidos/index.ts";
-import { archivarPedido, desarchivarPedido, estaArchivado } from "../../pedidos/archivados.ts";
+import { ESTADOS_DEVOLUCION_ABIERTA, archivarPedido, desarchivarPedido, estaArchivado } from "../../pedidos/archivados.ts";
 import { ESTADOS_A_MEDIAS, TEXTO_ESTADO_DEVOLUCION, leerDevolucion } from "../../pedidos/devoluciones-d1.ts";
 import { leerPimientaBorrado } from "../../borrado/pimienta.ts";
 import { aplicarBorradoPersona, planificarPersona, datosParaHuella, normalizarCorreo, type PuertoPersonas } from "../../borrado/personas.ts";
@@ -76,10 +77,27 @@ const NO_DESHACE = "NO SE PUEDE DESHACER.";
 
 const unicos = (xs: string[]) => [...new Set(xs)].sort();
 
-/** ¿Se puede archivar? (cualquier estado salvo una devolución en curso, incierta o a medias). */
+/** Estados de la fila de D1 (`devoluciones_mcp`) con los que NO se archiva: a medias, rechazada o transferencia pendiente (al cliente se le debe plata). */
+export const ESTADOS_D1_NO_ARCHIVABLES: readonly string[] = ESTADOS_DEVOLUCION_ABIERTA;
+
+/**
+ * ¿Se puede archivar? Archivar saca el pedido de las listas y de «por atender»: no se hace mientras al cliente se le deba plata o
+ * haya algo por resolver. Se bloquea si:
+ *  - está cobrado sin devolución terminada (`cobradoSinDevolucion`: cancelado y pagado sin devolución, en curso, con error o incierta);
+ *  - el reembolso está en error, pendiente (la transferencia aún no se hace), en curso o incierto;
+ *  - la reserva de D1 está a medias, «rechazada» o en «transferencia pendiente»;
+ *  - el pedido está en `pago_discrepancia` (pago que no calza) o `transferencia_informada` (hay que revisar el comprobante).
+ */
 export function motivoNoArchivable(p: PedidoBorrable, devolucionD1: string | null): string | null {
+  if (p.estado === "pago_discrepancia") return "el pago no calza con el pedido (discrepancia): revísalo y resuélvelo en el panel antes";
+  if (p.estado === "transferencia_informada") return "el cliente informó una transferencia que falta revisar: confírmala o recházala en el panel antes";
   if (p.reembolso?.estado === "en_curso" || p.reembolso?.estado === "incierto") return "tiene una devolución en curso o incierta: resuélvela primero en el panel";
   if (devolucionD1 && (ESTADOS_A_MEDIAS as readonly string[]).includes(devolucionD1)) return "tiene una devolución a medias: resuélvela primero en el panel";
+  if (cobradoSinDevolucion(p as unknown as PedidoDinero, devolucionD1)) return "el cliente pagó y todavía no tiene su devolución terminada: se le debe plata, resuélvelo primero en el panel";
+  if (p.reembolso?.estado === "error") return "la devolución falló (Webpay no devolvió): al cliente se le debe plata, resuélvelo primero en el panel";
+  if (p.reembolso?.estado === "pendiente") return "tiene una devolución pendiente por hacer: al cliente se le debe plata, termínala primero en el panel";
+  if (devolucionD1 === "devolucion_rechazada") return "Webpay rechazó la devolución y el cliente sigue cobrado: se le debe plata, resuélvelo primero en el panel";
+  if (devolucionD1 === "transferencia_pendiente") return "la devolución por transferencia está pendiente: al cliente se le debe plata, termínala primero en el panel";
   return null;
 }
 
@@ -147,17 +165,28 @@ export function crearHerramientasBorrado(deps: DepsBorrado = depsBorradoReales):
       const avisoDeps = await exigirAvisoPosible(deps);
       await gastarVista(ctx, id_vista_previa, T_ARCHIVAR, huella);
       await exigirCupo(ctx, avisoDeps, { herramienta: "archivar_pedido", operacion: "Archivar pedidos", pedidoNumero: ok.length === 1 ? ok[0].numero : null });
+      const omitidosAlAplicar: string[] = [];
       const { resultado, lineaAviso } = await conAvisoDinero(
         ctx, avisoDeps,
         { herramienta: "archivar_pedido", operacion: "Archivar pedidos", pedidoNumero: ok.length === 1 ? ok[0].numero : null, resumen: `Se archivaron ${ok.length} pedido(s): ${ok.map((f) => f.numero).join(", ")}.` },
         async () => {
+          // Se vuelve a comprobar JUSTO antes de cada INSERT: entre la vista previa y ahora el pedido o su devolución pudieron
+          // cambiar (p. ej. una cancelación que quedó a medias). El INSERT de D1 además es condicional a la reserva de D1.
           const hechos: Array<{ numero: string; estado: string }> = [];
-          for (const f of ok) if (await archivarPedido(ctx.db, { numero: f.numero, estado: f.estado!, usuarioId: ctx.usuario.id, ahora: ctx.ahora })) hechos.push({ numero: f.numero, estado: f.estado! });
+          for (const f of ok) {
+            const ahoraP = await puerto.porNumero(f.numero);
+            const dAhora = await leerDevolucion(ctx.db, f.numero);
+            if (!ahoraP || motivoNoArchivable(ahoraP, dAhora?.estado ?? null)) { omitidosAlAplicar.push(f.numero); continue; }
+            const hecho = await archivarPedido(ctx.db, { numero: f.numero, estado: ahoraP.estado, usuarioId: ctx.usuario.id, ahora: ctx.ahora }, { sinDevolucionesAbiertas: true });
+            if (hecho) hechos.push({ numero: f.numero, estado: ahoraP.estado });
+            else if (!(await estaArchivado(ctx.db, f.numero))) omitidosAlAplicar.push(f.numero);
+          }
           return hechos;
         },
       );
       const nota = await auditarSeguro(ctx, resultado.map((h) => ({ entidad: "pedido_archivado", entidadId: h.numero, antes: { archivado: false, estado: h.estado }, despues: { archivado: true } })));
-      return { texto: `Listo: ${resultado.length} pedido(s) archivado(s). Se recuperan con desarchivar_pedido.${nota}\n${lineaAviso}`, datos: { archivados: resultado.map((h) => h.numero), loteId: ctx.loteId, reversible: true } };
+      const omitidos = omitidosAlAplicar.length ? `\nNo se archivó ${omitidosAlAplicar.join(", ")}: cambió justo ahora (al cliente se le debe plata o hay algo por resolver). Previsualiza de nuevo.` : "";
+      return { texto: `Listo: ${resultado.length} pedido(s) archivado(s). Se recuperan con desarchivar_pedido.${omitidos}${nota}\n${lineaAviso}`, datos: { archivados: resultado.map((h) => h.numero), noArchivados: omitidosAlAplicar, loteId: ctx.loteId, reversible: true } };
     },
   });
 

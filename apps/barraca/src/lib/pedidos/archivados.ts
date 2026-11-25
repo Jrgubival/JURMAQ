@@ -15,6 +15,9 @@ import { ESTADOS_VENTA } from "../admin/ventas.ts";
 
 export const LIMITE_ARCHIVADOS = 5000;
 
+/** Estados de `devoluciones_mcp` con los que no se archiva (a medias, rechazada, transferencia pendiente). */
+export const ESTADOS_DEVOLUCION_ABIERTA = ["devolucion_reservada", "devolucion_en_curso", "devolucion_incierta", "devolucion_rechazada", "transferencia_pendiente"] as const;
+
 export interface ConjuntoArchivados {
   numeros: Set<string>;
   /** Había más de LIMITE_ARCHIVADOS: los más antiguos no se excluyen. */
@@ -100,12 +103,25 @@ export async function estaArchivado(db: D1Like, numero: string): Promise<boolean
   return !!(await db.prepare("SELECT 1 AS x FROM pedidos_archivados WHERE numero = ?").bind(numero).first());
 }
 
-/** Archiva (idempotente: si ya estaba, no cambia nada y devuelve false). */
-export async function archivarPedido(db: D1Like, d: { numero: string; estado: string; usuarioId: string; ahora: number }): Promise<boolean> {
-  const r = await db
-    .prepare("INSERT OR IGNORE INTO pedidos_archivados (numero, estado_al_archivar, archivado_en, archivado_por) VALUES (?, ?, ?, ?)")
-    .bind(d.numero, d.estado, d.ahora, d.usuarioId)
-    .run();
+/**
+ * Archiva (idempotente: si ya estaba, no cambia nada y devuelve false). Con `sinDevolucionesAbiertas` el INSERT es condicional
+ * y atómico: no inserta si la reserva de devolución de D1 está a medias, rechazada o con la transferencia pendiente.
+ */
+export async function archivarPedido(
+  db: D1Like, d: { numero: string; estado: string; usuarioId: string; ahora: number }, opciones: { sinDevolucionesAbiertas?: boolean } = {},
+): Promise<boolean> {
+  const r = opciones.sinDevolucionesAbiertas
+    ? await db
+        .prepare(
+          `INSERT OR IGNORE INTO pedidos_archivados (numero, estado_al_archivar, archivado_en, archivado_por)
+           SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM devoluciones_mcp WHERE numero = ? AND estado IN (${ESTADOS_DEVOLUCION_ABIERTA.map(() => "?").join(", ")}))`,
+        )
+        .bind(d.numero, d.estado, d.ahora, d.usuarioId, d.numero, ...ESTADOS_DEVOLUCION_ABIERTA)
+        .run()
+    : await db
+        .prepare("INSERT OR IGNORE INTO pedidos_archivados (numero, estado_al_archivar, archivado_en, archivado_por) VALUES (?, ?, ?, ?)")
+        .bind(d.numero, d.estado, d.ahora, d.usuarioId)
+        .run();
   return (r.meta?.changes ?? 0) > 0;
 }
 
