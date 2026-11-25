@@ -77,7 +77,8 @@ export function encabezadoNoAutenticado(base = baseCanonica(), error?: { codigo:
   const params: string[] = [];
   if (error) {
     params.push(`error="${error.codigo}"`);
-    if (error.descripcion) params.push(`error_description="${error.descripcion.replace(/"/g, "'")}"`);
+    // Un encabezado HTTP solo admite ASCII: con tildes llegaba como "vÃ¡lido" (se vio en producción). Se quitan las tildes.
+    if (error.descripcion) params.push(`error_description="${error.descripcion.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7e]/g, "?").replace(/"/g, "'")}"`);
   }
   params.push(`resource_metadata="${urlMetadataRecurso(base)}"`);
   params.push(`scope="${error?.scope ?? SCOPES_SOPORTADOS.join(" ")}"`);
