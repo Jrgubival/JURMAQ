@@ -8,7 +8,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@jurmaq/shared/supabase";
 import { escapeLikePattern } from "@jurmaq/shared/sanitize";
 import type { D1Like } from "../gestion/tipos.ts";
-import { ESTADOS_CERRADOS_SIN_PAGO, type PuertoPersonas } from "./personas.ts";
+import { ESTADOS_CERRADOS_SIN_PAGO, ESTADOS_COTIZACION_ABIERTA, type PuertoPersonas } from "./personas.ts";
 
 const db = supabaseAdmin as unknown as SupabaseClient;
 const ANON = { nombre: "Anonimizado", telefono: "anonimizado" };
@@ -44,12 +44,13 @@ export function crearPuertoPersonasReal(gestion: D1Like): PuertoPersonas {
       const total = await contar("barraca_cotizaciones", "email", email);
       if (total === null) return null;
       const pagadas = (await contar("barraca_cotizaciones", "email", email, (q) => q.eq("estado", "pagada"))) ?? 0;
-      return { total, pagadas };
+      const abiertas = (await contar("barraca_cotizaciones", "email", email, (q) => q.in("estado", ESTADOS_COTIZACION_ABIERTA))) ?? 0;
+      return { total, pagadas, abiertas };
     },
     async anonimizarCotizacionesNoPagadas(email) {
       const { data, error } = await db.from("barraca_cotizaciones")
         .update({ nombre: ANON.nombre, telefono: ANON.telefono, email: "anonimizado@borrado.invalid", empresa: null, rut: null, notas: null, accept_token: null, payment_url: null })
-        .ilike("email", escapeLikePattern(email)).neq("estado", "pagada").select("id");
+        .ilike("email", escapeLikePattern(email)).not("estado", "in", `(pagada,${ESTADOS_COTIZACION_ABIERTA.join(",")})`).select("id");
       if (error) { if (sinTabla(error)) return 0; throw error; }
       return data?.length ?? 0;
     },

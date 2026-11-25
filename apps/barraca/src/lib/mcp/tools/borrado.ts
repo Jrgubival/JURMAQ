@@ -329,9 +329,7 @@ export function crearHerramientasBorrado(deps: DepsBorrado = depsBorradoReales):
       await gastarVista(ctx, id_vista_previa, T_PERSONA, huella);
       // El cupo se gasta ANTES de decir si la persona existe: probar correos uno por uno choca con el tope de volumen.
       await exigirCupo(ctx, avisoDeps, { herramienta: "borrar_datos_persona", operacion: alcance === "suscriptor" ? "Borrar suscriptor" : "Borrar datos de cliente" });
-      if (plan.pedidosAbiertos.length) {
-        throw new ErrorHerramienta(`Esa persona tiene ${plan.pedidosAbiertos.length} pedido(s) abierto(s) (${plan.pedidosAbiertos.join(", ")}): una compra en curso. Cancélalos o espera a que cierren y vuelve a intentar. No se hizo nada.`);
-      }
+      if (plan.negado) throw new ErrorHerramienta(plan.negado);
       if (plan.vacio) throw new ErrorHerramienta(`No encontré datos de esa persona para ${alcance === "suscriptor" ? "borrar de la lista de suscriptores" : "borrar o anonimizar"} (referencia ${plan.ref}). No se hizo nada.`);
       let r;
       try {

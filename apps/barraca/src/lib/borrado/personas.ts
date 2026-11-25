@@ -40,7 +40,8 @@ export interface PuertoPersonas {
   borrarSuscriptores(email: string): Promise<number>;
   contarCarritos(email: string): Promise<number | null>;
   borrarCarritos(email: string): Promise<number>;
-  cotizaciones(email: string): Promise<{ total: number; pagadas: number } | null>;
+  /** `abiertas` = cotizaciones aprobadas o aceptadas que no se pagaron todavía (pago en curso). */
+  cotizaciones(email: string): Promise<{ total: number; pagadas: number; abiertas?: number } | null>;
   anonimizarCotizacionesNoPagadas(email: string): Promise<number>;
   pedidos(email: string): Promise<Array<{ numero: string; estado: string; pagado: boolean; comprobante_path: string | null }>>;
   anonimizarPedidos(numeros: string[]): Promise<number>;
@@ -55,6 +56,8 @@ export interface PuertoPersonas {
 }
 
 export const ESTADOS_ABIERTOS = ["pendiente_pago", "transferencia_informada"];
+/** Cotización con el cobro en marcha (aprobada con enlace de pago, o contraoferta aceptada): no se anonimiza ni se le quita el enlace de pago. */
+export const ESTADOS_COTIZACION_ABIERTA = ["aprobada", "aceptada"];
 export const ESTADOS_CERRADOS_SIN_PAGO = ["cancelado", "pago_rechazado", "rechazado"];
 
 export function normalizarCorreo(correo: string): string {
@@ -85,6 +88,10 @@ export interface PlanPersona {
   pedidosAnonimizar: string[];
   pedidosConservarPagados: number;
   pedidosAbiertos: string[];
+  /** Cotizaciones aprobadas o aceptadas sin pagar (pago en curso). */
+  cotizacionesAbiertas: number;
+  /** Motivo por el que NO se debe operar (compra o cobro en curso); null = se puede. */
+  negado: string | null;
   comprobantes: number;
   opiniones: number | null;
   cuentasAntiguas: number | null;
@@ -99,7 +106,7 @@ export async function planificarPersona(puerto: PuertoPersonas, correo: string, 
   const suscriptores = await puerto.contarSuscriptores(email);
   const base: PlanPersona = {
     alcance, ref, suscriptores, carritos: 0, cotizacionesAnonimizar: 0, cotizacionesConservar: 0, pedidosAnonimizar: [],
-    pedidosConservarPagados: 0, pedidosAbiertos: [], comprobantes: 0, opiniones: 0, cuentasAntiguas: 0, notasInternas: 0, vacio: false,
+    pedidosConservarPagados: 0, pedidosAbiertos: [], cotizacionesAbiertas: 0, negado: null, comprobantes: 0, opiniones: 0, cuentasAntiguas: 0, notasInternas: 0, vacio: false,
   };
   if (alcance === "suscriptor") return { ...base, vacio: !suscriptores };
   const carritos = await puerto.contarCarritos(email);
@@ -116,8 +123,13 @@ export async function planificarPersona(puerto: PuertoPersonas, correo: string, 
   const plan: PlanPersona = {
     ...base, carritos, cotizacionesAnonimizar: cot ? cot.total - cot.pagadas : null, cotizacionesConservar: cot ? cot.pagadas : null,
     pedidosAnonimizar: anonimizar.map((p) => p.numero), pedidosConservarPagados: pagados.length, pedidosAbiertos: abiertos,
+    cotizacionesAbiertas: cot?.abiertas ?? 0,
     comprobantes: anonimizar.filter((p) => !!p.comprobante_path).length, opiniones, cuentasAntiguas, notasInternas,
   };
+  const partes: string[] = [];
+  if (abiertos.length) partes.push(`${abiertos.length} pedido(s) abierto(s) (${abiertos.join(", ")}): una compra en curso`);
+  if (plan.cotizacionesAbiertas > 0) partes.push(`${plan.cotizacionesAbiertas} cotización(es) abierta(s) (aprobada o aceptada) con el cobro en curso`);
+  plan.negado = partes.length ? `Esa persona tiene ${partes.join(" y ")}. Cancélalos o espera a que cierren y vuelve a intentar. No se hizo nada.` : null;
   plan.vacio = !(suscriptores || carritos || plan.cotizacionesAnonimizar || plan.pedidosAnonimizar.length || opiniones || cuentasAntiguas);
   return plan;
 }
