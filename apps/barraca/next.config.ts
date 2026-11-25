@@ -104,7 +104,10 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/(.*)",
+        // Se excluyen las pantallas del conector (autorizar, decisión y aprobar): son rutas que traen sus
+        // propios encabezados (CSP con frame-ancestors 'none' y Referrer-Policy same-origin, ver
+        // src/lib/mcp/http.ts). Si entraran aquí, estos encabezados globales pisarían a los propios.
+        source: "/((?!aprobar/|oauth/decision|admin/conexiones/autorizar).*)",
         headers: [
           {
             key: "Content-Security-Policy",
