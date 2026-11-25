@@ -15,6 +15,10 @@ test(`tools/list real pesa menos de ${TOPE_BYTES / 1000} KB (con escritura y sol
   const todo = listarHerramientasMcp(registro, true);
   const bytes = Buffer.byteLength(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { tools: todo } }), "utf8");
   assert.ok(bytes <= TOPE_BYTES, `tools/list pesa ${bytes} bytes (${todo.length} herramientas); el tope es ${TOPE_BYTES}. Acorta descripciones o esquemas, o mueve reglas repetidas al tema que corresponda de «guia».`);
+  // También con el permiso de dinero y borrado (las herramientas de la Parte B se suman aquí): el tope es el mismo.
+  const conDinero = listarHerramientasMcp(registro, true, true);
+  const bytesDinero = Buffer.byteLength(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { tools: conDinero } }), "utf8");
+  assert.ok(bytesDinero <= TOPE_BYTES, `tools/list con tienda:dinero pesa ${bytesDinero} bytes (${conDinero.length} herramientas); el tope es ${TOPE_BYTES}.`);
   const lectura = listarHerramientasMcp(registro, false);
   assert.ok(lectura.length > 0 && lectura.length < todo.length);
   assert.ok(lectura.every((t) => t.annotations.readOnlyHint === true));

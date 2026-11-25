@@ -309,3 +309,34 @@ test("el correo de aviso de cambio no lleva datos personales y escapa lo suyo", 
   assert.equal(c.botones[0].href, `${BASE}/admin/conexiones`);
   assert.equal(c.para, APROBADOR);
 });
+
+// ───────── guía ─────────
+test("guía: explica modos, topes duros, scope tienda:dinero y qué se puede y no, sin revelar secretos", async () => {
+  const { SECCIONES, TEMAS } = await import("../src/lib/mcp/tools/guia.ts");
+  for (const tema of ["aprobaciones", "modos_y_topes", "dinero", "reglas", "deshacer", "contenido"]) assert.ok(TEMAS.includes(tema) || tema in SECCIONES, tema);
+  const todo = Object.values(SECCIONES).join("\n");
+  assert.match(SECCIONES.aprobaciones, /Modo EXIGIR/);
+  assert.match(SECCIONES.aprobaciones, /Modo AVISAR/);
+  assert.match(SECCIONES.aprobaciones, /dos llamadas/);
+  assert.match(SECCIONES.modos_y_topes, /TOPES DUROS/);
+  assert.match(SECCIONES.modos_y_topes, /50 % del costo/);
+  assert.match(SECCIONES.modos_y_topes, /enlaces a pasarelas de pago/);
+  assert.match(SECCIONES.dinero, /tienda:dinero/);
+  assert.match(SECCIONES.dinero, /Confirmar una transferencia/);
+  assert.match(SECCIONES.dinero, /Siguen fuera/);
+  assert.match(SECCIONES.dinero, /cuentas bancarias/);
+  assert.match(SECCIONES.reglas, /permiso aparte de dinero y borrado/);
+  assert.match(SECCIONES.contenido, /versión 0/);
+  // Nada de secretos, variables ni correos concretos.
+  assert.doesNotMatch(todo, /BARRACA_[A-Z_]+|process\.env|CRON_SECRET|AUTH_SECRET|CUPONES_PEPPER|BANK_|[\w.+-]+@[\w-]+\.[a-z]{2,}/, "la guía no debe revelar nombres de secretos ni correos");
+  assert.doesNotMatch(todo, /42500240045/);
+  // Ya no promete que nunca se puede tocar dinero.
+  assert.doesNotMatch(SECCIONES.reglas, /3\. FUERA DE ALCANCE[^\n]*marcar pedidos como pagados/);
+});
+
+test("guía: el índice de herramientas del token sin dinero no lista las de dinero", async () => {
+  const { guia } = await import("../src/lib/mcp/tools/guia.ts");
+  const catalogo = [{ nombre: "leer_algo", titulo: "Leer", descripcion: "x", soloLectura: true }];
+  const r = await guia.ejecutar({ tema: "herramientas" }, { catalogo });
+  assert.doesNotMatch(r.texto, /mover_dinero/);
+});
