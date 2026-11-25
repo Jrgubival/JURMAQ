@@ -29,7 +29,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import type { D1Like } from "../gestion/index.ts";
 import { desdeJson, idUuid } from "../gestion/util.ts";
 
-export type TipoAviso = "cambio" | "dinero";
+export type TipoAviso = "cambio" | "dinero" | "oferta";
 export type EstadoAviso = "pendiente" | "enviando" | "enviado" | "fallido" | "cancelado";
 
 /** El correo ya armado como datos (el HTML lo arma aviso-servidor.ts). */
@@ -195,6 +195,31 @@ export async function registrarAvisoCambio(db: D1Like, d: DatosAvisoCambio): Pro
   return id;
 }
 
+/**
+ * Aviso a Jorge de una oferta programada que NO se activó porque con los costos de hoy rompe un tope duro de precios.
+ * Queda `pendiente` (lo envía el cron de mantenimiento al terminar la corrida, y lo reintenta si falla) y se ve en
+ * Conexiones mientras no salga. Nunca lanza: la oferta ya quedó omitida y su motivo se ve en `ver_ofertas`.
+ */
+export async function registrarAvisoOfertaBloqueada(
+  db: D1Like, d: { ofertaId: string; codigo: string; usuario: { id: string; email?: string | null }; motivo: string; ahora?: number },
+): Promise<string | null> {
+  const ahora = d.ahora ?? Date.now();
+  const id = idUuid();
+  try {
+    await db
+      .prepare(
+        `INSERT INTO avisos_operacion (id, tipo, estado, usuario_id, usuario_email, herramienta, operacion, resumen, aprobacion_id, resultado, creado_en, actualizado_en)
+         VALUES (?, 'oferta', 'pendiente', ?, ?, 'oferta_programada', 'Oferta NO activada por un tope de precios', ?, ?, 'bloqueado', ?, ?)`,
+      )
+      .bind(id, d.usuario.id, d.usuario.email ?? null, limpiarTextoAviso(`Producto ${d.codigo}. ${d.motivo}`, 600), `oferta:${d.ofertaId}`.slice(0, 80), ahora, ahora)
+      .run();
+  } catch {
+    return null;
+  }
+  anotarAviso(id);
+  return id;
+}
+
 /** El cambio no se aplicó (la aprobación se devolvió): el aviso pendiente de esa aprobación se cancela, sin correo. */
 export async function cancelarAvisosDeAprobacion(db: D1Like, aprobacionId: string, ahora: number = Date.now()): Promise<void> {
   await db.prepare("UPDATE avisos_operacion SET estado = 'cancelado', actualizado_en = ? WHERE aprobacion_id = ? AND estado = 'pendiente'").bind(ahora, aprobacionId).run();
@@ -214,6 +239,19 @@ export function construirCorreoAviso(f: FilaAviso, para: string, base: string): 
   // Quien pidió es el administrador de la conexión (la cuenta de la tienda, no un cliente): se muestra su correo.
   const quien = String(f.usuario_email ?? "usuario desconocido").replace(/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g, " ").trim().slice(0, 120);
   const panel = { etiqueta: "Ver el historial y deshacer", href: `${base}/admin/conexiones` };
+  if (f.tipo === "oferta") {
+    return {
+      para, asunto: "Aviso: una oferta programada NO se activó (tope de precios)", titulo: "Oferta no activada",
+      intro: "Una oferta que estaba programada y aprobada no se puso en la tienda porque, con el costo de hoy, el precio rompe un tope duro (nada en $0 y nada bajo el 50 % del costo). No se cambió ningún precio.",
+      filas: [
+        { etiqueta: "Qué pasó", valor: f.resumen },
+        { etiqueta: "Quién la programó", valor: quien },
+        { etiqueta: "Cuándo", valor: cuando },
+      ],
+      botones: [panel],
+      pie: "Revisa el costo o el precio de la oferta y vuelve a programarla si corresponde. El motivo también aparece en ver_ofertas.",
+    };
+  }
   if (f.tipo === "cambio") {
     const d = (desdeJson<{ motivos?: string[]; cifras?: Record<string, number>; mayores?: Array<{ codigo: string; antes: number; despues: number; pct: number }> }>(f.detalle) ?? {});
     const filas: CorreoAviso["filas"] = [

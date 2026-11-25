@@ -22,6 +22,7 @@
 import { parseFecha } from "../contenido/fechas.ts";
 import { type D1Like, type EntradaAuditoria, consumirVistaPrevia, crearVistaPrevia, nuevoLoteId, registrarLote } from "../gestion/index.ts";
 import { desdeJson, huellaDeDatos, idUuid } from "../gestion/util.ts";
+import { registrarAvisoOfertaBloqueada } from "../mcp/aviso-operacion.ts";
 import { exigirAprobacion, textoMotivos } from "./aprobacion.ts";
 import type { CtxGestion, DepsGestion } from "./deps.ts";
 import {
@@ -30,6 +31,7 @@ import {
 } from "./modelo.ts";
 import { ErrorGestion, type Salida } from "./precios-masivos.ts";
 import { type CambioEvaluable, evaluarCambioPrecios, registrarCambioAplicado } from "./reglas.ts";
+import { incumplimientosTopes } from "./topes.ts";
 import { MENSAJE_VISTA, mirarVistaPrevia } from "./vistas.ts";
 
 export const TIPO_VISTA_OFERTAS = "ofertas_masivas";
@@ -376,11 +378,21 @@ export async function activarOferta(db: D1Like, deps: DepsGestion, id: string, a
   const row = await reclamar(db, id, "programada", "activando", ahora);
   if (!row) return { accion: "nada" };
 
-  const omitir = async (aviso: string): Promise<ResultadoTransicion> => {
+  const omitir = async (aviso: string, avisarAJorge = false): Promise<ResultadoTransicion> => {
     await cerrar(db, id, "activando", "omitida", ahora, { aviso, terminada: true });
     await auditarAuto(db, row, ahora, [{ entidad: "oferta", entidadId: id, antes: { estado: "programada" }, despues: { estado: "omitida", aviso } }]);
+    if (avisarAJorge) await registrarAvisoOfertaBloqueada(db, { ofertaId: id, codigo: row.codigo, usuario: { id: row.usuario_id, email: row.usuario_email }, motivo: aviso, ahora });
     return { accion: "omitida", aviso };
   };
+
+  /** Topes duros con el costo de HOY (aunque la oferta tenga el OK de Jorge): ningún precio en 0 y ninguno bajo el 50 % del costo. */
+  const sinTope = (fs: FichaProducto[]) => incumplimientosTopes(fs.map((f) => ({ clave: `${row.codigo} (ficha ${f.id})`, precio: row.precio_oferta, costo: f.costo })));
+  const textoTope = (fuera: string[]) =>
+    `No se activó: rompe un tope duro de precios con los costos de hoy (${fuera.slice(0, 3).join("; ")}${fuera.length > 3 ? `; y ${fuera.length - 3} más` : ""}). No se tocó ningún precio. Corrige el costo o el precio y vuelve a programar la oferta.`;
+  // Una oferta de precio 0 o negativo no pasa nunca, tengan o no las fichas costo cargado.
+  if (!Number.isFinite(row.precio_oferta) || row.precio_oferta <= 0) {
+    return omitir(textoTope(incumplimientosTopes([{ clave: row.codigo, precio: row.precio_oferta }])), true);
+  }
 
   if (row.fin_en <= ahora) return omitir("La oferta ya había terminado cuando le tocaba empezar; no se tocó ningún precio.");
 
@@ -393,6 +405,8 @@ export async function activarOferta(db: D1Like, deps: DepsGestion, id: string, a
     if (fichas.length === 0) return omitir("El producto ya no existe en la tienda; no se tocó nada.");
     const elegibles = fichas.filter((f) => precioWebDe(f) > row.precio_oferta);
     if (elegibles.length === 0) return omitir(`El precio web actual ya es igual o menor al de la oferta (${pesos(row.precio_oferta)}); no se tocó nada.`);
+    const fueraDeTope = sinTope(elegibles);
+    if (fueraDeTope.length) return omitir(textoTope(fueraDeTope), true);
     if (!row.aprobada && elegibles.some((f) => ["bajo_costo", "menos_15"].includes(clasificarMargen(row.precio_oferta, f.costo)))) {
       return omitir(`No se activó: con los costos de hoy el precio de oferta (${pesos(row.precio_oferta)}) queda bajo el costo o con menos de 15 % sobre el costo y no tenía el OK de Jorge.`);
     }
@@ -418,13 +432,15 @@ export async function activarOferta(db: D1Like, deps: DepsGestion, id: string, a
     if (!b || !cur) { noHechas.push(`${a.id} (ya no existe)`); continue; }
     if (mismoEstado(estadoDe(cur), a)) { hechos.push(a); continue; } // ya estaba puesta (reintento)
     if (!mismoEstado(estadoDe(cur), b)) { noHechas.push(`${a.id} (alguien cambió su precio)`); continue; }
+    // Defensa extra (p. ej. una activación que se retomó con la foto vieja): con el costo de hoy, esta ficha no puede entrar.
+    if (sinTope([cur]).length) { noHechas.push(`${a.id} (rompe un tope duro de precios con su costo de hoy)`); continue; }
     const ok = await deps.productos.actualizar(a.id, { precio: a.precio, precio_original: a.precio_original, en_oferta: a.en_oferta }, { precio: b.precio, precio_original: b.precio_original });
     if (ok) {
       hechos.push(a);
       auditoria.push({ entidad: "producto", entidadId: a.id, antes: { codigo: row.codigo, ...estadoDe(b) }, despues: { codigo: row.codigo, ...estadoDe(a) } });
     } else noHechas.push(`${a.id} (alguien cambió su precio)`);
   }
-  if (hechos.length === 0) return omitir(`No se pudo poner la oferta: ${noHechas.join(", ")}. No se tocó ningún precio.`);
+  if (hechos.length === 0) return omitir(`No se pudo poner la oferta: ${noHechas.join(", ")}. No se tocó ningún precio.`, noHechas.some((x) => x.includes("tope duro")));
   const aviso = [avisoBase, noHechas.length ? `Fichas que no entraron a la oferta: ${noHechas.join(", ")}.` : null].filter(Boolean).join(" ") || null;
   const ok = await cerrar(db, id, "activando", "activa", ahora, { aviso, aplicado: JSON.stringify(hechos), activada: true });
   if (!ok) return { accion: "nada" };

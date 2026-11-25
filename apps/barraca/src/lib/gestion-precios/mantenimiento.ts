@@ -9,7 +9,7 @@
 import type { D1Like } from "../gestion/index.ts";
 import { limpiarVistasPrevias } from "../gestion/index.ts";
 import { limpiarAprobaciones } from "../mcp/aprobaciones.ts";
-import { reintentarAvisos, type DepsAviso } from "../mcp/aviso-operacion.ts";
+import { conSeguimientoDeAvisos, enviarAvisosDeLlamada, reintentarAvisos, type DepsAviso } from "../mcp/aviso-operacion.ts";
 import { limpiarLimites } from "../mcp/limites.ts";
 import { limpiarOauth } from "../mcp/oauth.ts";
 import type { DepsGestion } from "./deps.ts";
@@ -40,7 +40,11 @@ export async function limpiarAvisos(db: D1Like, ahora: number = Date.now()): Pro
 export async function ejecutarMantenimiento(db: D1Like, deps: DepsGestion, ahora: number = Date.now(), avisos?: DepsAviso): Promise<ResumenMantenimiento> {
   let ofertas: ResumenOfertas | null = null;
   try {
-    ofertas = await procesarOfertas(db, deps, ahora);
+    // Los avisos que registre esta corrida (p. ej. una oferta que no se activó por un tope de precios) salen al terminar,
+    // sin esperar a la corrida siguiente; si el correo falla, quedan registrados y se reintentan.
+    const { valor, ids } = await conSeguimientoDeAvisos(() => procesarOfertas(db, deps, ahora));
+    ofertas = valor;
+    if (ids.length) await enviarAvisosDeLlamada(db, avisos ?? null, ids, ahora).catch(() => undefined);
   } catch {
     ofertas = null;
   }

@@ -334,3 +334,80 @@ test("el mantenimiento no se cae si la base de ofertas falla en una tarea", asyn
   assert.equal(r.limpieza.fallidas.length, 6);
   assert.ok(db);
 });
+
+// ───────── topes duros al ACTIVAR (con el costo de hoy), aunque la oferta tenga el OK de Jorge ─────────
+const avisosDeps = () => {
+  const enviados = [];
+  return { enviados, deps: { aprobadorEmail: "jorge.personal@example.com", base: "https://barraca.jurmaq.cl", enviar: async (c) => { enviados.push(c); return true; } } };
+};
+
+test("activar: oferta aprobada que con el costo de hoy queda bajo el 50 % del costo NO se activa, queda visible y avisa a Jorge por correo", async () => {
+  const db = nuevaDb();
+  const T = tienda();
+  await programar(T, db, { productos: [{ codigo: "O1", precio_oferta: 300 }] });
+  await aprobarUltimoCorreo(db, T.correos, resolverAprobacion);
+  await programar(T, db, { productos: [{ codigo: "O1", precio_oferta: 300 }] });
+  assert.equal((await filaOferta(db, "O1")).aprobada, 1);
+  // el costo subió: 50 % de 700 = 350 > 300
+  T.filas[0].costo = 700; T.filas[1].costo = 700;
+  const av = avisosDeps();
+  const r = await Mant.ejecutarMantenimiento(db, T.deps, T0 + DIA + MIN, av.deps);
+  assert.equal(r.ofertas.activadas, 0);
+  assert.equal(r.ofertas.omitidas, 1);
+  assert.deepEqual(T.filas.slice(0, 2).map(estado), [[1000, 1500, true], [1000, 1500, true]], "no se tocó ningún precio");
+  assert.equal(T.contadores.escrituras, 0);
+  const fila = await filaOferta(db, "O1");
+  assert.equal(fila.estado, "omitida");
+  assert.match(fila.aviso, /tope duro[^]*50 % de su costo/);
+  assert.match((await O.verOfertas(db, { estado: "todas" })).texto, /AVISO: No se activó: rompe un tope duro/, "registro visible en ver_ofertas");
+  // aviso por correo a Jorge, enviado en la misma corrida
+  assert.equal(av.enviados.length, 1);
+  assert.equal(av.enviados[0].para, "jorge.personal@example.com");
+  assert.match(JSON.stringify(av.enviados[0]), /NO se activó|no se activó/i);
+  assert.match(JSON.stringify(av.enviados[0]), /O1/);
+  const f = await db.prepare("SELECT tipo, estado, resultado FROM avisos_operacion").first();
+  assert.deepEqual({ ...f }, { tipo: "oferta", estado: "enviado", resultado: "bloqueado" });
+});
+
+test("activar: sin OK de Jorge y con costo cargado, el tope duro manda sobre la regla de margen; sin costo cargado no hay tope", async () => {
+  const db = nuevaDb();
+  const T = tienda();
+  await programar(T, db, { productos: [{ codigo: "O1", precio_oferta: 800 }] });
+  T.filas[0].costo = 2000;
+  const r = await O.procesarOfertas(db, T.deps, T0 + DIA + MIN);
+  assert.equal(r.omitidas, 1);
+  assert.match((await filaOferta(db, "O1")).aviso, /tope duro/);
+  // sin costo cargado en las fichas: no hay tope que aplicar (solo la regla de siempre)
+  const db2 = nuevaDb();
+  const T2 = tienda();
+  await programar(T2, db2, { productos: [{ codigo: "O1", precio_oferta: 800 }] });
+  T2.filas[0].costo = null; T2.filas[1].costo = null;
+  assert.equal((await O.procesarOfertas(db2, T2.deps, T0 + DIA + MIN)).activadas, 1);
+});
+
+test("activar: si el costo sube y solo una de las fichas rompe el tope, la oferta completa no se activa", async () => {
+  const db = nuevaDb();
+  const T = tienda();
+  await programar(T, db, { productos: [{ codigo: "O1", precio_oferta: 800 }] });
+  T.filas[1].costo = 2000; // la ficha 2 sube; la 1 sigue en 400
+  const r = await O.procesarOfertas(db, T.deps, T0 + DIA + MIN);
+  assert.equal(r.omitidas, 1);
+  assert.deepEqual(T.filas.slice(0, 2).map(estado), [[1000, 1500, true], [1000, 1500, true]]);
+  assert.match((await filaOferta(db, "O1")).aviso, /ficha 2/);
+});
+
+test("activar: una activación que se retoma con la foto vieja también respeta el tope con el costo de hoy", async () => {
+  const db = nuevaDb();
+  const T = tienda();
+  await programar(T, db, { productos: [{ codigo: "O1", precio_oferta: 800 }] });
+  const fila = await filaOferta(db, "O1");
+  const antes = [{ id: 1, precio: 1000, precio_original: 1500, en_oferta: true }, { id: 2, precio: 1000, precio_original: 1500, en_oferta: true }];
+  const aplicado = antes.map((a) => ({ ...a, precio: 800 }));
+  const t = T0 + DIA + MIN;
+  await db.prepare("UPDATE ofertas SET estado='activando', reclamada_en=?, antes=?, aplicado=? WHERE id=?").bind(t, JSON.stringify(antes), JSON.stringify(aplicado), fila.id).run();
+  T.filas[0].costo = 2000; T.filas[1].costo = 2000;
+  const r = await O.procesarOfertas(db, T.deps, t + 11 * MIN);
+  assert.equal(r.omitidas, 1);
+  assert.equal(T.contadores.escrituras, 0);
+  assert.match((await filaOferta(db, "O1")).aviso, /tope duro/);
+});
