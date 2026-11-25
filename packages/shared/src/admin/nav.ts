@@ -141,6 +141,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
   { label: 'Cola de emails', path: '/admin/email-queue', app: 'constructora', module: 'usuarios', group: 'Sistema', keywords: ['correo', 'envios'], avanzado: true },
   { label: 'Notificaciones', path: '/admin/notificaciones', app: 'constructora', module: 'dashboard', group: 'Sistema', avanzado: true },
   { label: 'Diagnóstico OTP', path: '/admin/sistema/otp', app: 'constructora', module: 'usuarios', group: 'Sistema', keywords: ['sms', 'verificacion'], avanzado: true },
+  { label: 'Conexiones de Claude', path: '/admin/conexiones', app: 'barraca', module: 'usuarios', group: 'Sistema', keywords: ['claude', 'mcp', 'historial', 'deshacer', 'revocar'], avanzado: true },
 ];
 
 /**

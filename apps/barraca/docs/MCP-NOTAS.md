@@ -86,3 +86,64 @@ Rama `claude/mcp-tienda` (base 7a4923b). Este archivo lo amplían todas las piez
 ## 4. Pendientes y riesgos de esta pieza
 - Crear la D1 real, poner el `database_id` y aplicar migraciones: lo hace Jorge al publicar.
 - `next build` pelado devuelve exit 1 por el aviso `SecurityFatalError` (versión de Next afectada por una vulnerabilidad conocida, Next 16.4.3 fijado en el `package.json` raíz) después de compilar y generar todas las rutas; `opennextjs-cloudflare build` termina bien. Actualizar Next es decisión de Jorge.
+
+## 5. Conexión de Claude: servidor MCP, OAuth, aprobaciones, /admin/conexiones (pieza A)
+
+### Fuentes leídas (25-11-2026)
+- MCP, autorización, revisión 2026-07-28: modelcontextprotocol.io/specification/latest/basic/authorization (+ `authorization/authorization-server-discovery`, `authorization/client-registration`).
+- MCP, transporte Streamable HTTP, revisión 2026-07-28 y notas de compatibilidad con 2025-03-26 a 2025-11-25: modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http.
+- Claude, conectores personalizados: claude.com/docs/connectors/building/authentication, `.../building/lazy-authentication`, `.../building/mcp`, `.../custom` (la página de support.claude.com/articles/11503834 ya no existe; la reemplazó claude.com/docs).
+- Qué exige Claude (resumen): `401` real con `WWW-Authenticate: Bearer resource_metadata=...` (ignora el header en un 200); `resource` de la metadata = URL exacta del conector; solo usa el primer `authorization_servers`; PKCE S256 siempre; `Content-Type: application/x-www-form-urlencoded` en `/token`; 10 s de plazo en discovery/registro/token (30 s en refresh); `invalid_grant` al fallar un refresh; rotar refresh de clientes públicos; DCR o CIMD. Callback de las apps de Claude: `https://claude.ai/api/mcp/auth_callback` (puede pasar a claude.com: se aceptan ambas). Claude Code: loopback `http://localhost/callback` y `http://127.0.0.1/callback` con cualquier puerto. Salida de Anthropic: `160.79.104.0/21` (no hay WAF en este sitio que la bloquee).
+- Decisión de versión de MCP: el servidor habla 2024-11-05 a 2025-11-25 (`initialize` + `tools/*`, sin sesiones, solo POST con respuesta JSON; GET/DELETE dan 405). La revisión 2026-07-28 (sin `initialize`, DCR deprecada) se rechaza con 400 y la lista `supported`, que es lo que su spec pide a un servidor que no la implementa. Revisar cuando Claude la use.
+
+### Librerías evaluadas y por qué no
+- `@cloudflare/workers-oauth-provider`: envuelve TODO el worker (aquí es el de OpenNext con cron propio en `custom-worker.ts`), exige un KV nuevo (recurso de producción, el brief lo prohíbe) y el login real es NextAuth + Supabase, no calza.
+- `@modelcontextprotocol/sdk`: trae transportes de Node/Express, suma peso al bundle del worker y su soporte de la spec 2026-07-28 es incierto. El protocolo que se necesita (initialize, ping, tools/list, tools/call) son ~150 líneas.
+- Cripto propia: ninguna. Solo WebCrypto (SHA-256, HMAC-SHA-256, números al azar) en `src/lib/mcp/cripto.ts`; PKCE verificado contra el vector oficial del RFC 7636.
+- CIMD: no se anuncia (`client_id_metadata_document_supported` ausente): Claude cae a DCR, que es lo que acepta la lista blanca. Si algún día se quiere, habría que bajar el documento del cliente (SSRF: solo hosts claude.ai/claude.com).
+
+### URLs (todas bajo https://barraca.jurmaq.cl)
+- Conector a pegar en Claude: `/api/mcp`.
+- Metadata de recurso protegido (RFC 9728): `/.well-known/oauth-protected-resource/api/mcp` y `/.well-known/oauth-protected-resource`. Servidor de autorización (RFC 8414): `/.well-known/oauth-authorization-server` (issuer = el origen).
+- `/oauth/register` (DCR), `/oauth/token`, `/oauth/revoke` (RFC 7009), `/oauth/decision` (botón Autorizar/Cancelar), `/admin/conexiones/autorizar` (pantalla de autorización; vive bajo /admin para reutilizar el login con código por correo: el middleware manda a /login y vuelve; `safeCallback` del login solo acepta rutas /admin).
+- `/admin/conexiones` (panel, solo admin), `/api/mcp/admin` (revocar/deshacer), `/aprobar/<token>` (pública).
+- Origen canónico: `NEXT_PUBLIC_BARRACA_URL` o `https://barraca.jurmaq.cl` (`baseCanonica()` en `lib/mcp/config.ts`). El `resource` es `<origen>/api/mcp`; un token emitido para otro recurso se rechaza.
+
+### OAuth: reglas implementadas (`src/lib/mcp/oauth.ts`, `redirects.ts`, `autorizar.ts`)
+- PKCE S256 obligatorio; clientes públicos (`token_endpoint_auth_method: none`); `iss` en la respuesta (RFC 9207).
+- Lista blanca de redirect_uri: las dos URLs oficiales de Claude (exactas) y loopback `http://127.0.0.1|localhost|[::1]:<puerto>/callback` (puerto libre, solo esa ruta, sin query/fragmento/usuario). Se valida al registrar y otra vez al autorizar; si no coincide NO se redirige (pantalla de error).
+- Código: 60 s, un solo uso (UPDATE atómico); reusarlo revoca los tokens que ya salieron de él. Acceso 1 h. Refresco 30 días deslizante con tope absoluto de 90 días por conexión; rotación atómica y detección de reuso (se revoca la familia). Un acceso ya rotado aguanta 60 s (peticiones en vuelo).
+- Tokens opacos con prefijo (`mcpa_`, `mcpr_`, `mcpc_`, `mcpv_`), guardados solo como SHA-256. Nada de claves en URL (el Bearer va en el header; en la URL solo viaja el `code` de un solo uso que exige el estándar y el enlace de aprobación que pidió Jorge).
+- Scopes: `tienda:leer` y `tienda:escribir` (escribir implica leer); `offline_access` se acepta y se ignora. Las herramientas con `readOnlyHint: false` exigen `escribir` (403 `insufficient_scope`); con solo `leer` no aparecen en `tools/list`.
+- Cada llamada al MCP: Origin (solo sin Origin, el propio sitio o claude.ai/claude.com) → token (hash, vigencia, audiencia) → **usuario revalidado en Supabase** (`users`: rol `admin`, scope `barraca` o `both`, correo en `LOGIN_BARRACA_PERMITIDOS`; no usa el rol del JWT, que tarda hasta 24 h) → límite de uso → tamaño (128 KB) y JSON → método. Si el usuario deja de calificar: 401 y se revoca toda la conexión. Si Supabase no responde: 503 sin revocar.
+- Límites en D1 (`mcp_limites`, ventana fija, UPSERT atómico; D1 y no KV porque ya está enlazada y KV es eventualmente consistente): 120 llamadas/min por conexión, 30 escrituras/min, 20 registros/h por IP (hash), 30 tokens/min por IP, 10 autorizaciones/10 min por usuario, 40 vistas de aprobación/min por IP. Tope de 500 clientes registrados sin uso; los de más de 7 días sin tokens se pueden limpiar con `limpiarOauth`.
+- Errores: las herramientas solo muestran `ErrorHerramienta`; cualquier otra falla sale como mensaje genérico y el log lleva solo el nombre del tipo de error (sin mensaje, sin datos).
+
+### Pantalla de autorización y aprobación (anti clickjacking y CSRF)
+- Son rutas (no páginas) para controlar encabezados: `X-Frame-Options: DENY`, CSP `frame-ancestors 'none'`, `no-store`, `no-referrer`, `noindex`. El CSP global de `next.config.ts` (`frame-ancestors 'self'`) se suma; el más estricto gana.
+- Autorizar: el paquete firmado (HMAC con subclave de `AUTH_SECRET`, atado al usuario, 10 min) viaja en un campo oculto; POST exige mismo origen, sesión viva, usuario revalidado y vuelve a validar la solicitud contra la base. El retorno al cliente es una página con `meta refresh` + enlace, no un 302: Chrome aplica `form-action` del CSP global a las redirecciones de un formulario y bloquearía `claude.ai`.
+- Texto de lo que Claude puede/no puede hacer: `src/lib/mcp/permisos-texto.ts` (las piezas de herramientas deben mantenerlo fiel).
+
+### Cómo agregar una herramienta (interfaz estable)
+1. Crea `src/lib/mcp/tools/<nombre>.ts` con `defineHerramienta({ nombre (snake_case), titulo, descripcion (español), esquema: z.object({...}), anotaciones: { readOnlyHint, destructiveHint, idempotentHint }, ejecutar(args, ctx), revertidor? })` (importa `defineHerramienta`, `z`, `ErrorHerramienta` de `./registro.ts`).
+2. Agrégala en `tools/index.ts` con `registro.agregar(...)`. No se toca el servidor ni el OAuth.
+3. El servidor vuelve estricto el esquema (campos extra = error) y lo expone como JSON Schema. `ctx` trae `usuario`, `clienteId`, `loteId` (un lote de auditoría por llamada), `db` (GESTION_DB), `ahora`, `auditar([{ entidad, entidadId, antes, despues }])` y `catalogo`. Primero escribe en Supabase y después `auditar` con `antes`/`despues` mínimos.
+4. Deshacer: el `revertidor({ db, usuario, ahora, entradas })` debe reescribir `antes` sin pisar cambios posteriores (comparar con `despues`), ser repetible y devolver `{ ok, mensaje }`. `deshacerLote` es todo o nada: marca el lote como deshecho solo si todos los revertidores salieron bien. Un lote cuya herramienta no tiene revertidor no muestra el botón Deshacer.
+5. Herramienta `guia` base en `tools/guia.ts` (temas general, aprobaciones, deshacer, herramientas); las demás piezas la completan.
+
+### Aprobaciones (`src/lib/mcp/aprobaciones.ts`; cableado real en `aprobaciones-servidor.ts`)
+- `requiereAprobacion({ acumulado?, productos?, precios?, banderas? })` (pura): más de 300 productos distintos o un precio con variación acumulada > 30 % en 24 h; precio < costo (`precio_bajo_costo`) o < costo × 1,15 (`margen_menor_15`); más las `banderas` que la herramienta ya sabe: `descuento_transferencia`, `despacho`, `envio_gratis`, `texto_legal`, `cupones_interruptor`, `correo_cliente`. Devuelve `{ requiere, motivos }`.
+- Acumulado: antes de decidir, `leerAcumulado(db, usuarioId)`; después de aplicar, `registrarAcumulado(db, usuarioId, items, { aprobado })`. `clave` = código del producto (las 274 fichas duplicadas cuentan como uno). Lo aprobado por Jorge no cuenta. Dividir un cambio grande en varios chicos no evade el umbral (probado).
+- Flujo: `solicitarAprobacionReal(db, { usuario, herramienta, motivos, resumen, detalle, huella })` (con `huella = huellaDeDatos(<contenido exacto del cambio>)`) → correo a `BARRACA_APROBADOR_EMAIL` con enlace `/aprobar/<token>` (un solo uso, 4 h, solo hash en la base) → Jorge abre (GET solo muestra, no cambia nada) y toca Aprobar/Rechazar (POST + CSRF + mismo origen). La herramienta, al repetirse, calcula la huella ACTUAL y llama `estadoAprobacion(db, id, { usuarioId, huellaActual })`: `aprobada` → `consumirAprobacion` (una vez) y recién ahí aplica; `datos_cambiaron`, `vencida`, `rechazada`, `usada`, `pendiente`, `no_existe` → no aplica y se lo dice a Jorge.
+- **Sin el secreto `BARRACA_APROBADOR_EMAIL` (o con correo inválido) la acción queda BLOQUEADA** (`{ ok:false, estado:'bloqueada', motivo:'sin_aprobador' }`), también si el correo no sale (`correo_fallo`) o hay más de 10 solicitudes/hora (`limite`). Se lee de `process.env` (secreto de Cloudflare: `wrangler secret put BARRACA_APROBADOR_EMAIL`); no se tocó `packages/shared/src/env.ts`. El correo va sin copia oculta (`skipAdminBcc`) por Resend, igual que el código de login.
+
+### Usuarios con acceso (comprobado por REST de solo lectura, 25-11-2026)
+- La tabla `users` tiene 5 filas; solo 2 tienen scope `barraca` o `both`: `contacto@jurmaq.cl` (rol admin, scope both) y un vendedor (scope barraca). Es decir, el único admin que cubre la barraca es la cuenta compartida contacto@jurmaq.cl; el MCP queda atado a esa cuenta (y a cualquier admin futuro que esté en `LOGIN_BARRACA_PERMITIDOS`). No hay columna de "activo": una baja es borrar la fila o bajar rol/scope, y eso corta el MCP en la siguiente llamada.
+- Consecuencia: la auditoría registra `contacto@jurmaq.cl`, no a una persona. Si Claudia y Jorge usan la misma cuenta, el historial no distingue quién fue.
+
+### Pendientes de esta pieza (antes de publicar)
+- Crear la D1 real y aplicar las migraciones (ver sección 1); la `0002_oauth.sql` agrega `oauth_clientes`, `oauth_codigos`, `oauth_tokens`, `mcp_limites`, `aprobaciones` y `cambios_acumulados`.
+- Poner el secreto `BARRACA_APROBADOR_EMAIL` en el worker (sin él, todo lo que pida aprobación queda bloqueado).
+- Probar el flujo con un cliente real (Claude o Claude Code) una vez publicado: no se pudo probar contra el worker, porque no hay D1 ni servidor local (regla de Jorge). Lo cubierto por pruebas automáticas es la lógica (`scripts/mcp-oauth.test.mjs`, `mcp-aprobaciones.test.mjs`, `mcp-web.test.mjs`), no el cableado de Next/OpenNext.
+- Programar `limpiarOauth`, `limpiarLimites`, `limpiarAprobaciones` (por ejemplo desde el cron existente); hoy nadie las llama.
+- La pantalla de autorización y `/aprobar` no se vieron en un navegador (no se prende el servidor local).
