@@ -85,7 +85,7 @@ export default async function ConexionesPage() {
             {avisosFallidos.map((a) => (
               <li key={a.id} className="bg-red-50 border border-red-200 rounded-2xl p-3 sm:p-4">
                 <p className="font-semibold text-gray-900 break-words">{a.operacion}{a.pedidoNumero ? ` (pedido N° ${a.pedidoNumero})` : ""}</p>
-                <p className="text-sm text-gray-700">{a.tipo === "dinero" ? "Operación de dinero o borrado" : "Cambio en modo avisar"} · {fecha(a.creadoEn)} · {a.intentos} {a.intentos === 1 ? "intento" : "intentos"}</p>
+                <p className="text-sm text-gray-700">{a.tipo === "dinero" ? "Operación de dinero o borrado" : a.tipo === "oferta" ? "Oferta activada tras aprobación" : "Cambio en modo avisar"} · {fecha(a.creadoEn)} · {a.intentos} {a.intentos === 1 ? "intento" : "intentos"}</p>
                 {a.ultimoError && <p className="text-xs text-gray-500">Motivo: {a.ultimoError === "sin_aprobador" ? "falta el correo del aprobador" : "el correo no salió"}</p>}
               </li>
             ))}
