@@ -8,7 +8,8 @@ import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
 import { trackEvents } from "@/lib/analytics";
 import { useCarrito } from "@/lib/useCarrito";
 import { totalLinea } from "@/lib/combos";
-import { descuentoTransferencia, DESCUENTO_TRANSFERENCIA_PCT } from "@/lib/pagos/descuento-transferencia";
+import { DESCUENTO_TRANSFERENCIA_PCT } from "@/lib/pagos/descuento-transferencia";
+import { totalesPedido } from "@/lib/cupones/totales";
 import LineaCombo from "@/components/barraca/LineaCombo";
 import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carrito";
 import { rutValido } from "@/lib/rut";
@@ -225,7 +226,7 @@ function Seccion({ n, titulo, children }: { n: number; titulo: string; children:
   );
 }
 
-export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }) {
+export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false }: { pagoEnLinea: boolean; cuponesActivos?: boolean }) {
   const router = useRouter();
   const { items, total, ahorro, cantidad, cargando, hayProblemas } = useCarrito({ revisar: true });
   const [datos, setDatos] = useState<Datos>(VACIO);
@@ -239,6 +240,11 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
   const [aceptaTerminos, setAceptaTerminos] = useState(false);
   const [errorTerminos, setErrorTerminos] = useState(false);
   const [aceptaOfertas, setAceptaOfertas] = useState(false);
+  // Cupón: solo existe en pantalla si el interruptor de cupones está encendido (lo decide el servidor).
+  const [cuponCodigo, setCuponCodigo] = useState("");
+  const [cuponAplicado, setCuponAplicado] = useState<{ codigo: string; descuento: number; sinCupon: number; requiereRut: boolean } | null>(null);
+  const [cuponMensaje, setCuponMensaje] = useState<string | null>(null);
+  const [cuponCargando, setCuponCargando] = useState(false);
   const iniciado = useRef(false);
 
   // Datos del comprador recordados en este navegador (no el RUT ni notas).
@@ -299,8 +305,58 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
 
   const costoDespacho = despacho && cotizacion?.estado === "ok" ? cotizacion.costo : null;
   // Vista previa: el descuento que vale es el que calcula el servidor al crear el pedido.
-  const descuento = metodo === "transferencia" ? descuentoTransferencia(total) : 0;
-  const totalPedido = total - descuento + (costoDespacho ?? 0);
+  const descuentoCupon = cuponesActivos && cuponAplicado ? cuponAplicado.descuento : 0;
+  const totales = totalesPedido({ subtotal: total, descuentoCupon, metodoPago: metodo, costoDespacho });
+  const descuento = totales.descuentoTransferencia;
+  const totalPedido = totales.total;
+
+  // Si cambia el carrito, el correo, el RUT o el método de pago, el cupón hay que revisarlo de nuevo.
+  const huellaCupon = `${total}|${datos.email}|${datos.rut}|${items.map((i) => `${i.productoId}x${i.cantidad}`).join(",")}`;
+  const huellaAplicada = useRef<string | null>(null);
+  useEffect(() => {
+    if (cuponAplicado && huellaAplicada.current !== huellaCupon) {
+      setCuponAplicado(null);
+      setCuponMensaje("Cambió tu carrito o tus datos: vuelve a aplicar el cupón.");
+    }
+  }, [huellaCupon, cuponAplicado]);
+
+  async function aplicarCupon() {
+    const codigo = cuponCodigo.trim().toUpperCase();
+    if (!codigo) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(datos.email.trim())) {
+      setCuponMensaje("Ingresa tu correo arriba antes de aplicar el cupón.");
+      return;
+    }
+    setCuponCargando(true);
+    setCuponMensaje(null);
+    try {
+      const res = await fetch("/api/checkout/cupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          codigo,
+          items: items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })),
+          email: datos.email.trim(),
+          rut: datos.rut,
+          metodoPago: metodo,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        setCuponAplicado(null);
+        setCuponMensaje(data.error || "No pudimos aplicar el cupón. Puedes seguir sin cupón.");
+        return;
+      }
+      huellaAplicada.current = huellaCupon;
+      setCuponAplicado({ codigo: data.codigo, descuento: data.descuento, sinCupon: data.sinCupon ?? 0, requiereRut: !!data.requiereRut });
+      setCuponMensaje(null);
+    } catch {
+      setCuponAplicado(null);
+      setCuponMensaje("No pudimos revisar el cupón. Puedes seguir sin cupón o intentar de nuevo.");
+    } finally {
+      setCuponCargando(false);
+    }
+  }
   const despachoListo = !despacho || cotizacion?.estado === "ok";
 
   const set = (c: keyof Datos) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -384,10 +440,22 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
             : {}),
           aceptaTerminos,
           aceptaOfertas,
+          ...(cuponesActivos && cuponAplicado ? { cupon: cuponAplicado.codigo, cuponDescuentoVisto: cuponAplicado.descuento } : {}),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 409 && data.cupon) {
+          // El cupón no se pudo aplicar (agotado, ya usado, cambió el descuento...): no se cobró nada.
+          if (data.cupon.motivo === "cambio" && typeof data.cupon.descuento === "number" && cuponAplicado) {
+            setCuponAplicado({ ...cuponAplicado, descuento: data.cupon.descuento });
+          } else {
+            setCuponAplicado(null);
+          }
+          setCuponMensaje(data.error || null);
+          setErrorEnvio(data.error || "No pudimos aplicar el cupón.");
+          return;
+        }
         if (res.status === 409 && Array.isArray(data.items)) {
           // El stock o el precio cambió: se actualiza el carrito y se vuelve a él.
           reemplazarCarrito((data.items as ItemRevisado[]).map(({ problema: _p, ...r }) => r));
@@ -582,6 +650,44 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 </li>
               ))}
             </ul>
+            {cuponesActivos && (
+              <div className="mb-4">
+                {cuponAplicado ? (
+                  <div className="flex items-center justify-between gap-3 rounded-lg bg-[#EEF6F0] px-3 py-2 text-sm">
+                    <span className="text-[#2F7F4E]">
+                      Cupón <strong className="font-semibold">{cuponAplicado.codigo}</strong> aplicado
+                      {cuponAplicado.sinCupon > 0 && <span className="block text-xs text-[#5A5A57]">No se suma a los productos que ya tienen oferta o están fuera del cupón.</span>}
+                    </span>
+                    <button type="button" onClick={() => { setCuponAplicado(null); setCuponCodigo(""); setCuponMensaje(null); }} className="text-xs underline underline-offset-2 text-[#3F3F3D] shrink-0">Quitar</button>
+                  </div>
+                ) : (
+                  <div>
+                    <label htmlFor="co-cupon" className="block text-[13px] text-[#5A5A57] mb-1.5">¿Tienes un cupón?</label>
+                    <div className="flex gap-2">
+                      <input
+                        id="co-cupon"
+                        value={cuponCodigo}
+                        onChange={(e) => setCuponCodigo(e.target.value.toUpperCase())}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void aplicarCupon(); } }}
+                        maxLength={30}
+                        autoComplete="off"
+                        placeholder="Código"
+                        className="min-w-0 flex-1 rounded-lg border border-[#DADAD6] px-3 py-2.5 text-sm uppercase tracking-wide"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void aplicarCupon()}
+                        disabled={cuponCargando || !cuponCodigo.trim()}
+                        className="px-4 py-2.5 rounded-lg border border-navy-950 text-navy-950 text-sm font-medium disabled:opacity-50"
+                      >
+                        {cuponCargando ? "Revisando…" : "Aplicar"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {cuponMensaje && <p role="status" className="mt-1.5 text-[13px] text-red-700">{cuponMensaje}</p>}
+              </div>
+            )}
             <div className="space-y-1.5 text-sm border-t border-gray-200 pt-3 mb-5">
               <div className="flex justify-between"><span className="text-[#5A5A57]">Productos</span><span className="tabular-nums">{formatCLP(total + ahorro)}</span></div>
               {ahorro > 0 && (
@@ -591,6 +697,9 @@ export default function CheckoutClient({ pagoEnLinea }: { pagoEnLinea: boolean }
                 <span className="text-[#5A5A57]">{despacho ? `Despacho${cotizacion && "comuna" in cotizacion ? ` a ${cotizacion.comuna}` : ""}` : "Retiro en Molina"}</span>
                 <span className={`tabular-nums shrink-0 ${costoDespacho ? "text-[#111111]" : "text-[#5A5A57]"}`}>{montoFila}</span>
               </div>
+              {descuentoCupon > 0 && cuponAplicado && (
+                <div className="flex justify-between text-[#2F7F4E]"><span>Cupón {cuponAplicado.codigo}</span><span className="tabular-nums">−{formatCLP(descuentoCupon)}</span></div>
+              )}
               {descuento > 0 && (
                 <div className="flex justify-between text-[#2F7F4E]"><span>Descuento transferencia</span><span className="tabular-nums">−{formatCLP(descuento)}</span></div>
               )}

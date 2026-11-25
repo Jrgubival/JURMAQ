@@ -51,6 +51,8 @@ export async function GET(request: NextRequest) {
       'Entrega / zona': celda(textoEntrega(p)),
       'Medio de pago': medioPago(p.metodo_pago),
       Subtotal: p.subtotal,
+      'Cupón': celda(p.cupon_codigo ?? ''),
+      'Descuento cupón': p.cupon_descuento ?? 0,
       'Descuento transferencia': p.descuento_transferencia ?? 0,
       Despacho: p.entrega === 'despacho' ? (p.costo_despacho ?? 'A coordinar') : 0,
       Total: p.total,

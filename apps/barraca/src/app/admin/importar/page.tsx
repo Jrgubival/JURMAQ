@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react';
-import type { MatchResult } from '@/lib/import-barraca-smart';
 
 const STEP_LABELS = ['Subir Archivo', 'Mapear Columnas', 'Configurar', 'Vista Previa', 'Ejecutar'];
 
@@ -35,14 +34,14 @@ export default function BarracaImportarPage() {
   const [columnMapping, setColumnMapping] = useState<Record<string, string | null>>({});
 
   // Step 3
-  const [matchBy, setMatchBy] = useState<'id' | 'codigo' | 'nombre'>('id');
+  const [matchBy, setMatchBy] = useState<'auto' | 'id' | 'codigo' | 'nombre'>('auto');
   const [fieldsToUpdate, setFieldsToUpdate] = useState<string[]>(['precio', 'costo', 'stock']);
   const [createNew, setCreateNew] = useState(false);
   const [createPromotionalPrices, setCreatePromotionalPrices] = useState(false);
 
   // Step 4
   const [previewResult, setPreviewResult] = useState<any>(null);
-  const [previewFilter, setPreviewFilter] = useState<'all' | 'update' | 'create' | 'skip'>('all');
+  const [previewFilter, setPreviewFilter] = useState<'all' | 'update' | 'notfound' | 'invalid' | 'create' | 'skip'>('all');
 
   // Step 5
   const [importResult, setImportResult] = useState<any>(null);
@@ -60,7 +59,7 @@ export default function BarracaImportarPage() {
     setError('');
     setParseResult(null);
     setColumnMapping({});
-    setMatchBy('codigo');
+    setMatchBy('auto');
     setFieldsToUpdate(['precio', 'costo', 'stock']);
     setCreateNew(false);
     setCreatePromotionalPrices(false);
@@ -219,24 +218,21 @@ export default function BarracaImportarPage() {
   // Flatten matches into displayable rows (one row per change)
   function getFilteredRows() {
     if (!previewResult?.matches) return [];
-    const matches = previewResult.matches as MatchResult[];
+    const matches = previewResult.matches as any[];
+    const filtered = previewFilter === 'all' ? matches : matches.filter((m) => m.status === previewFilter);
 
-    // Filter by status
-    const filtered = previewFilter === 'all'
-      ? matches
-      : matches.filter((m) => m.status === previewFilter);
-
-    // Flatten: each match can have multiple changes
     const rows: any[] = [];
     for (const m of filtered) {
-      const codigo = m.matchedProduct?.codigo || m.excelRow?.Codigo || m.excelRow?.codigo || '—';
-      const nombre = m.matchedProduct?.nombre || m.excelRow?.Nombre || m.excelRow?.nombre || '—';
+      const codigo = m.codigo || '—';
+      const nombre = m.nombre || '—';
+      const alertas = (m.alertas || []).join(' ');
       if (m.changes && m.changes.length > 0) {
         for (const c of m.changes) {
-          rows.push({ codigo, nombre, field: c.field, oldValue: c.oldValue, newValue: c.newValue, status: m.status });
+          rows.push({ fila: m.fila, codigo, nombre, field: c.field, oldValue: c.oldValue, newValue: c.newValue, status: m.status, alertas, fichas: m.fichas, bajo: m.bajoCosto, margen: m.margenBajo });
         }
       } else {
-        rows.push({ codigo, nombre, field: m.status === 'skip' ? 'sin cambios' : '—', oldValue: null, newValue: null, status: m.status });
+        const etiqueta = m.status === 'notfound' ? 'no encontrado' : m.status === 'invalid' ? 'no válido' : m.status === 'create' ? 'producto nuevo' : 'sin cambios';
+        rows.push({ fila: m.fila, codigo, nombre, field: etiqueta, oldValue: null, newValue: null, status: m.status, alertas: m.motivo || alertas, fichas: m.fichas, bajo: m.bajoCosto, margen: m.margenBajo });
       }
     }
     return rows;
@@ -516,7 +512,20 @@ export default function BarracaImportarPage() {
           {/* Match By */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Buscar por</label>
-            <div className="flex gap-4">
+            <p className="text-xs text-gray-500 mb-2">
+              Automático usa el Id si coincide con el código y, si no, busca por código. Un cambio por código se aplica a todas las fichas que tengan ese código.
+            </p>
+            <div className="flex gap-4 flex-wrap">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="matchBy"
+                  checked={matchBy === 'auto'}
+                  onChange={() => setMatchBy('auto')}
+                  className="w-4 h-4 accent-yellow-500"
+                />
+                <span className="text-sm text-gray-700">Automático (recomendado)</span>
+              </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
@@ -525,7 +534,7 @@ export default function BarracaImportarPage() {
                   onChange={() => setMatchBy('id')}
                   className="w-4 h-4 accent-yellow-500"
                 />
-                <span className="text-sm text-gray-700">Id (recomendado)</span>
+                <span className="text-sm text-gray-700">Solo Id</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -642,20 +651,78 @@ export default function BarracaImportarPage() {
       {step === 4 && previewResult && (
         <div className="space-y-5">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             <div className="bg-white rounded-xl border border-blue-200 p-5 text-center">
-              <p className="text-3xl font-bold text-blue-600">{previewResult.summary?.toUpdate ?? 0}</p>
+              <p className="text-3xl font-bold text-blue-600">{previewResult.summary?.aActualizar ?? 0}</p>
               <p className="text-sm text-gray-600 mt-1">a actualizar</p>
+              <p className="text-xs text-gray-500">{previewResult.summary?.fichasAfectadas ?? 0} fichas</p>
             </div>
-            <div className="bg-white rounded-xl border border-green-200 p-5 text-center">
-              <p className="text-3xl font-bold text-green-600">{previewResult.summary?.toCreate ?? 0}</p>
-              <p className="text-sm text-gray-600 mt-1">a crear</p>
+            <div className="bg-white rounded-xl border border-amber-200 p-5 text-center">
+              <p className="text-3xl font-bold text-amber-600">{previewResult.summary?.noEncontradas ?? 0}</p>
+              <p className="text-sm text-gray-600 mt-1">no encontradas</p>
             </div>
             <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
-              <p className="text-3xl font-bold text-gray-500">{previewResult.summary?.toSkip ?? 0}</p>
+              <p className="text-3xl font-bold text-gray-500">{previewResult.summary?.sinCambios ?? 0}</p>
               <p className="text-sm text-gray-600 mt-1">sin cambios</p>
             </div>
+            <div className="bg-white rounded-xl border border-red-200 p-5 text-center">
+              <p className="text-3xl font-bold text-red-600">{previewResult.summary?.invalidas ?? 0}</p>
+              <p className="text-sm text-gray-600 mt-1">con datos no válidos</p>
+            </div>
+            <div className="bg-white rounded-xl border border-green-200 p-5 text-center">
+              <p className="text-3xl font-bold text-green-600">{previewResult.summary?.aCrear ?? 0}</p>
+              <p className="text-sm text-gray-600 mt-1">a crear</p>
+            </div>
           </div>
+
+          {(previewResult.summary?.noEncontradas ?? 0) > 0 && (previewResult.summary?.aActualizar ?? 0) === 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+              Ninguna fila coincidió con un producto de la tienda. Revisa que el archivo tenga el código (o el Id) tal como está en la tienda, o prueba otra forma de buscar en el paso anterior.
+            </div>
+          )}
+
+          {(previewResult.summary?.bajoCosto?.length ?? 0) > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
+              <p className="font-semibold mb-1">{previewResult.summary.bajoCosto.length} producto(s) quedarían bajo el costo</p>
+              <ul className="text-xs space-y-0.5 max-h-32 overflow-y-auto">
+                {previewResult.summary.bajoCosto.slice(0, 30).map((x: any, i: number) => (
+                  <li key={i}>Fila {x.fila} · {x.codigo ?? '—'} · {x.nombre ?? '—'}: precio {x.precio} / costo {x.costo}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {(previewResult.summary?.margenBajo?.length ?? 0) > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+              <p className="font-semibold mb-1">{previewResult.summary.margenBajo.length} producto(s) quedarían con menos de 15% sobre el costo</p>
+              <ul className="text-xs space-y-0.5 max-h-32 overflow-y-auto">
+                {previewResult.summary.margenBajo.slice(0, 30).map((x: any, i: number) => (
+                  <li key={i}>Fila {x.fila} · {x.codigo ?? '—'} · {x.nombre ?? '—'}: precio {x.precio} / costo {x.costo}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {((previewResult.summary?.mayoresSubidas?.length ?? 0) > 0 || (previewResult.summary?.mayoresBajadas?.length ?? 0) > 0) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { titulo: 'Mayores subidas', lista: previewResult.summary.mayoresSubidas, color: 'text-red-600' },
+                { titulo: 'Mayores bajadas', lista: previewResult.summary.mayoresBajadas, color: 'text-green-600' },
+              ].map((bloque) => (
+                <div key={bloque.titulo} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <p className="text-sm font-semibold text-gray-800 mb-2">{bloque.titulo}</p>
+                  <ul className="text-xs text-gray-700 space-y-1">
+                    {(bloque.lista || []).map((x: any, i: number) => (
+                      <li key={i} className="flex justify-between gap-2">
+                        <span className="truncate">{x.codigo ?? '—'} · {x.nombre ?? '—'}</span>
+                        <span className={`shrink-0 font-medium ${bloque.color}`}>{x.antes} → {x.despues} ({x.porcentaje > 0 ? '+' : ''}{x.porcentaje}%)</span>
+                      </li>
+                    ))}
+                    {(bloque.lista || []).length === 0 && <li className="text-gray-400">Sin movimientos</li>}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Filter Tabs */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
@@ -663,6 +730,8 @@ export default function BarracaImportarPage() {
               {[
                 { key: 'all' as const, label: 'Todos' },
                 { key: 'update' as const, label: 'A actualizar' },
+                { key: 'notfound' as const, label: 'No encontradas' },
+                { key: 'invalid' as const, label: 'No válidas' },
                 { key: 'create' as const, label: 'A crear' },
                 { key: 'skip' as const, label: 'Sin cambios' },
               ].map((tab) => (
@@ -686,6 +755,7 @@ export default function BarracaImportarPage() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">Fila</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Codigo</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Nombre</th>
                     <th className="text-left px-4 py-3 font-medium text-gray-600">Campo</th>
@@ -696,16 +766,17 @@ export default function BarracaImportarPage() {
                 <tbody className="divide-y divide-gray-100">
                   {getFilteredRows().length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                      <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                         No hay registros para este filtro.
                       </td>
                     </tr>
                   ) : (
                     getFilteredRows().map((row: any, idx: number) => (
                       <tr key={idx} className="hover:bg-gray-50/50">
-                        <td className="px-4 py-2 font-mono text-gray-800">{row.codigo ?? '—'}</td>
+                        <td className="px-4 py-2 text-gray-500">{row.fila}</td>
+                        <td className="px-4 py-2 font-mono text-gray-800">{row.codigo ?? '—'}{row.fichas > 1 ? <span className="ml-1 text-xs text-gray-500">({row.fichas} fichas)</span> : null}</td>
                         <td className="px-4 py-2 text-gray-700">{row.nombre ?? '—'}</td>
-                        <td className="px-4 py-2 text-gray-600">{row.field ?? '—'}</td>
+                        <td className="px-4 py-2 text-gray-600">{row.field ?? '—'}{row.alertas ? <span className={`block text-xs ${row.bajo ? 'text-red-600' : 'text-amber-700'}`}>{row.alertas}</span> : null}</td>
                         <td className="px-4 py-2">
                           {row.oldValue != null ? (
                             <span className="text-red-600 line-through">{String(row.oldValue)}</span>
@@ -769,10 +840,10 @@ export default function BarracaImportarPage() {
                 <h2 className="text-xl font-bold text-gray-900">Importacion Completada</h2>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 <div className="bg-blue-50 rounded-xl p-4 text-center">
                   <p className="text-2xl font-bold text-blue-600">{importResult.updated ?? 0}</p>
-                  <p className="text-xs text-gray-600 mt-1">productos actualizados</p>
+                  <p className="text-xs text-gray-600 mt-1">filas actualizadas ({importResult.fichasActualizadas ?? 0} fichas)</p>
                 </div>
                 <div className="bg-green-50 rounded-xl p-4 text-center">
                   <p className="text-2xl font-bold text-green-600">{importResult.created ?? 0}</p>
@@ -781,6 +852,14 @@ export default function BarracaImportarPage() {
                 <div className="bg-gray-50 rounded-xl p-4 text-center">
                   <p className="text-2xl font-bold text-gray-500">{importResult.skipped ?? 0}</p>
                   <p className="text-xs text-gray-600 mt-1">sin cambios</p>
+                </div>
+                <div className="bg-amber-50 rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-amber-600">{importResult.notFound ?? 0}</p>
+                  <p className="text-xs text-gray-600 mt-1">no encontradas</p>
+                </div>
+                <div className="bg-red-50 rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-red-600">{importResult.invalid ?? 0}</p>
+                  <p className="text-xs text-gray-600 mt-1">no válidas</p>
                 </div>
                 <div className="bg-red-50 rounded-xl p-4 text-center">
                   <p className="text-2xl font-bold text-red-600">{importResult.errors?.length ?? 0}</p>

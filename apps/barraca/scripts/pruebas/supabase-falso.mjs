@@ -15,7 +15,9 @@ function consulta(tabla) {
     eq(_col, valor) { estado.filtroId = valor; return api; },
     then(resolver, rechazar) {
       let resultado;
-      if (estado.accion === "select") {
+      if (estado.accion === "select" && globalThis.__FALLA_SELECT__) {
+        resultado = { data: null, error: { message: "falla simulada" } };
+      } else if (estado.accion === "select") {
         const filas = globalThis.__PRODUCTOS_FALSOS__.slice(estado.desde, estado.hasta + 1);
         resultado = { data: filas, error: null };
       } else {

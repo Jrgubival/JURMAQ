@@ -167,6 +167,8 @@ export interface PedidoVenta {
   email: string;
   subtotal: number;
   descuento_transferencia?: number;
+  cupon_codigo?: string | null;
+  cupon_descuento?: number;
   costo_despacho: number | null;
   total: number;
   cancelacion_motivo?: MotivoCancelacion | null;

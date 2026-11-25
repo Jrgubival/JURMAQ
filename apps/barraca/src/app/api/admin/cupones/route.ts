@@ -1,75 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
-import { isValidOrigin, sanitizeString } from '@jurmaq/shared/sanitize';
+import { isValidOrigin } from '@jurmaq/shared/sanitize';
+import { parseBody } from '@jurmaq/shared/validation';
+import { logSafeError } from '@jurmaq/shared/logging';
+import { obtenerGestionDb, usarGestion } from '@/lib/gestion';
+import { listarCuponesAdmin, crearCupon } from '@/lib/cupones/admin';
+import { leerInterruptorCupones } from '@/lib/cupones/interruptor';
+import { repoAdminSupabase } from '@/lib/cupones/repo-supabase';
+import { crearSchema, respuestaGestionNoDisponible, esNoDisponible } from '@/lib/cupones/servidor-admin';
 
 /**
- * GET  /api/admin/cupones — lista
- * POST /api/admin/cupones — crea
+ * GET  /api/admin/cupones — lista con reglas, usos, estado del interruptor y categorías
+ * POST /api/admin/cupones — crea un cupón con sus reglas (auditado)
+ *
+ * El interruptor de cupones NO se enciende desde acá: requiere la aprobación de
+ * Jorge (lib/cupones/interruptor.ts, encenderInterruptorCupones).
  */
 
 export const runtime = 'nodejs';
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   const session = await requirePermission('barraca_promociones', 'read');
   if (!session) return forbiddenResponse('No tienes permiso');
-
-  const { data, error } = await supabaseAdmin
-    .from('barraca_cupones')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(200);
-
-  if (error) return NextResponse.json({ error: 'Error listando cupones' }, { status: 500 });
-  return NextResponse.json({ items: data ?? [] });
+  try {
+    const db = await obtenerGestionDb();
+    const { items, gestionDisponible } = await listarCuponesAdmin(db, repoAdminSupabase);
+    let interruptor = false;
+    if (db) interruptor = await leerInterruptorCupones(db).catch(() => false);
+    const { data: cats } = await supabaseAdmin.from('barraca_categorias').select('id, nombre, padre_id, activa').order('nombre');
+    return NextResponse.json({ items, gestionDisponible, interruptor, categorias: cats ?? [] });
+  } catch (error) {
+    logSafeError('admin-cupones-list', { error: String(error) });
+    return NextResponse.json({ error: 'Error listando cupones' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
-  if (!isValidOrigin(request)) {
-    return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
-  }
+  if (!isValidOrigin(request)) return NextResponse.json({ error: 'Origen no autorizado' }, { status: 403 });
   const session = await requirePermission('barraca_promociones', 'create');
   if (!session) return forbiddenResponse('No tienes permiso');
 
-  const body = await request.json().catch(() => ({}));
-  const codigo = sanitizeString(body?.codigo)?.toUpperCase().trim() || '';
-  if (!/^[A-Z0-9_-]{3,30}$/.test(codigo)) {
-    return NextResponse.json({ error: 'Código inválido (3-30 chars: A-Z, 0-9, _, -)' }, { status: 400 });
-  }
-  const tipo = body?.tipo === 'porcentaje' || body?.tipo === 'monto_fijo' ? body.tipo : null;
-  if (!tipo) return NextResponse.json({ error: 'tipo debe ser porcentaje o monto_fijo' }, { status: 400 });
-  const valor = Number(body?.valor);
-  if (!Number.isFinite(valor) || valor <= 0) {
-    return NextResponse.json({ error: 'valor debe ser > 0' }, { status: 400 });
-  }
-  if (tipo === 'porcentaje' && valor > 100) {
-    return NextResponse.json({ error: 'porcentaje no puede exceder 100' }, { status: 400 });
-  }
+  const parsed = parseBody(crearSchema, await request.json().catch(() => null));
+  if (!parsed.ok) return NextResponse.json({ error: 'Revisa los datos del cupón.' }, { status: 400 });
 
-  const { data, error } = await supabaseAdmin
-    .from('barraca_cupones')
-    .insert({
-      codigo,
-      descripcion: sanitizeString(body?.descripcion) || null,
-      tipo,
-      valor,
-      monto_minimo_compra: Number(body?.monto_minimo_compra) || 0,
-      max_usos_total: body?.max_usos_total ? Number(body.max_usos_total) : null,
-      max_usos_por_usuario: Number(body?.max_usos_por_usuario) || 1,
-      valido_desde: body?.valido_desde || new Date().toISOString(),
-      valido_hasta: body?.valido_hasta || null,
-      activo: body?.activo !== false,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    if (error.code === '23505') {
-      return NextResponse.json({ error: 'Ya existe un cupón con ese código' }, { status: 409 });
+  try {
+    const r = await usarGestion((db) =>
+      crearCupon(db, repoAdminSupabase, { id: String(session.user?.id ?? ''), email: session.user?.email ?? null }, parsed.data),
+    );
+    if (!r.ok) {
+      const status = r.codigo === 'codigo_repetido' ? 409 : r.codigo === 'no_disponible' ? 503 : 400;
+      return NextResponse.json({ error: r.error }, { status });
     }
-    console.error('[cupones-create-fail]', error);
+    return NextResponse.json({ ok: true, cupon: r.valor.cupon, reglas: r.valor.reglas });
+  } catch (error) {
+    if (esNoDisponible(error)) return respuestaGestionNoDisponible();
+    logSafeError('admin-cupones-create', { error: String(error) });
     return NextResponse.json({ error: 'Error creando cupón' }, { status: 500 });
   }
-
-  return NextResponse.json({ ok: true, cupon: data });
 }

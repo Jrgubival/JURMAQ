@@ -5,7 +5,11 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafe, logSafeError, maskEmail } from '@jurmaq/shared/logging';
 import { revisarLineas, MAX_LINEAS } from '@/lib/tienda';
-import { descuentoTransferencia } from '@/lib/pagos/descuento-transferencia';
+import { totalesPedido } from '@/lib/cupones/totales';
+import { usarGestion } from '@/lib/gestion';
+import { evaluarCuponCheckout, reservarCuponParaPedido, MENSAJES_CUPON, type ResultadoCupon } from '@/lib/cupones/servicio';
+import { asignarPedido, liberarReserva } from '@/lib/cupones/reservas';
+import { repoSupabase } from '@/lib/cupones/repo-supabase';
 import {
   pedidos, nuevoNumeroPedido, nuevoTokenAcceso, cookiePedido, type ItemPedido, type Pedido,
 } from '@/lib/pedidos';
@@ -44,6 +48,10 @@ const schema = z
     comuna: z.string().trim().regex(/^(?:[A-Z0-9]{2,4}|[a-z][a-z-]{1,29})$/).optional().or(z.literal('')).default(''),
     metodoPago: z.enum(['webpay', 'transferencia']),
     notas: texto(500).optional().default(''),
+    // Código de cupón. Solo cuenta si el interruptor de cupones está encendido; el descuento lo calcula el servidor.
+    cupon: texto(40).optional().default(''),
+    // Descuento del cupón que vio el cliente; si el servidor calcula otro, se le avisa antes de cobrar.
+    cuponDescuentoVisto: z.number().int().nonnegative().max(1_000_000_000).optional(),
     // Fail-closed: sin la casilla marcada no hay pedido (Ley 19.496, art. 12 A).
     aceptaTerminos: z.literal(true),
     aceptaOfertas: z.boolean().optional().default(false),
@@ -93,6 +101,10 @@ export async function POST(request: NextRequest) {
   if (d.metodoPago === 'webpay' && !pagoEnLineaDisponible()) {
     return NextResponse.json({ error: 'El pago en línea no está disponible. Elige transferencia.' }, { status: 409 });
   }
+
+  // Reserva del cupón (si se usa uno): se suelta si el pedido no llega a crearse.
+  let reservaCupon: string | null = null;
+  let pedidoCreado = false;
 
   try {
     // Un pedido por transferencia reserva stock: tope de pedidos sin pagar por
@@ -160,12 +172,38 @@ export async function POST(request: NextRequest) {
       if (despacho.estado !== 'ok') return NextResponse.json({ error: despacho.motivo }, { status: 409 });
     }
     const costoDespacho = despacho?.estado === 'ok' ? despacho.costo : null;
-    // 2% por transferencia, sólo sobre los productos (lib/pagos/descuento-transferencia.ts).
-    const descuento = d.metodoPago === 'transferencia' ? descuentoTransferencia(subtotal) : 0;
-    const porCourier = despacho?.estado === 'ok' && despacho.tipo === 'courier' ? despacho : null;
     if (costoDespacho != null && (!Number.isInteger(costoDespacho) || costoDespacho < 0)) {
       return NextResponse.json({ error: 'No pudimos calcular el despacho. Intenta de nuevo.' }, { status: 409 });
     }
+
+    // Cupón (solo con el interruptor encendido): el servidor calcula el descuento y reserva el uso
+    // de forma atómica ANTES de crear el pedido. Falla cerrado: si no se puede aplicar, no se
+    // crea el pedido con un total distinto al que esperaba el cliente; se le dice y puede seguir sin cupón.
+    let cuponAplicado: Extract<ResultadoCupon, { ok: true }> | null = null;
+    if (d.cupon) {
+      const lineasCupon = lineas.map((l) => ({ productoId: l.productoId, categoriaId: l.categoriaId, subtotal: l.subtotal, conDescuento: l.conDescuento }));
+      let ev: ResultadoCupon;
+      try {
+        ev = await usarGestion((db) => evaluarCuponCheckout(db, repoSupabase, { codigo: d.cupon, lineas: lineasCupon, email: d.email, rut: d.rut }));
+      } catch {
+        ev = { ok: false, motivo: 'no_disponible', mensaje: MENSAJES_CUPON.no_disponible };
+      }
+      if (!ev.ok) return NextResponse.json({ error: ev.mensaje, cupon: { motivo: ev.motivo } }, { status: 409 });
+      if (d.cuponDescuentoVisto !== undefined && d.cuponDescuentoVisto !== ev.descuento) {
+        return NextResponse.json({ error: 'El descuento del cupón cambió. Revisa tu total antes de pagar.', cupon: { motivo: 'cambio', descuento: ev.descuento } }, { status: 409 });
+      }
+      const reserva = await usarGestion((db) => reservarCuponParaPedido(db, ev, d.metodoPago)).catch(
+        () => ({ ok: false as const, motivo: 'no_disponible' as const, mensaje: MENSAJES_CUPON.no_disponible }),
+      );
+      if (!reserva.ok) return NextResponse.json({ error: reserva.mensaje, cupon: { motivo: reserva.motivo } }, { status: 409 });
+      reservaCupon = reserva.reservaId;
+      cuponAplicado = ev;
+    }
+    // 2% por transferencia, sólo sobre los productos (menos el cupón); sin cupón es idéntico a antes
+    // (lib/cupones/totales.ts, lib/pagos/descuento-transferencia.ts).
+    const totales = totalesPedido({ subtotal, descuentoCupon: cuponAplicado?.descuento ?? 0, metodoPago: d.metodoPago, costoDespacho });
+    const descuento = totales.descuentoTransferencia;
+    const porCourier = despacho?.estado === 'ok' && despacho.tipo === 'courier' ? despacho : null;
 
     const { token, hash } = nuevoTokenAcceso();
     const store = pedidos();
@@ -196,7 +234,11 @@ export async function POST(request: NextRequest) {
           acepta_ofertas: d.aceptaOfertas,
           costo_despacho: costoDespacho, // null = a coordinar
           ...(descuento > 0 ? { descuento_transferencia: descuento } : {}),
-          total: subtotal - descuento + (costoDespacho ?? 0),
+          // Las columnas del cupón solo se envían cuando hay cupón (la migración se aplica antes de encender el interruptor).
+          ...(cuponAplicado
+            ? { cupon_id: cuponAplicado.cupon.id, cupon_codigo: cuponAplicado.cupon.codigo, cupon_descuento: totales.descuentoCupon }
+            : {}),
+          total: totales.total,
           // Sólo se mandan las columnas de factura cuando la piden: un pedido
           // con boleta usa el default de la base ('boleta').
           ...(d.documento === 'factura'
@@ -214,6 +256,17 @@ export async function POST(request: NextRequest) {
       }
     }
     if (!pedido) throw new Error('No se pudo generar un número de pedido');
+    pedidoCreado = true;
+    if (reservaCupon) {
+      // Une la reserva con el número del pedido (para confirmarla al pagar o liberarla al cancelar/vencer).
+      const numeroPedido = pedido.numero;
+      const idReserva = reservaCupon;
+      let unida = false;
+      for (let i = 0; i < 3 && !unida; i++) {
+        unida = await usarGestion((db) => asignarPedido(db, idReserva, numeroPedido, d.metodoPago)).catch(() => false);
+      }
+      if (!unida) logSafeError('pedido-cupon-asignar-error', { numero: numeroPedido });
+    }
 
     logSafe('pedido-creado', { numero: pedido.numero, metodo: d.metodoPago, total: pedido.total, documento: d.documento, email: maskEmail(d.email) });
 
@@ -257,6 +310,10 @@ export async function POST(request: NextRequest) {
     });
     return res;
   } catch (error) {
+    if (reservaCupon && !pedidoCreado) {
+      const idReserva = reservaCupon;
+      await usarGestion((db) => liberarReserva(db, idReserva, 'pedido_no_creado')).catch(() => undefined);
+    }
     logSafeError('pedido-crear-error', { error: String(error) });
     return NextResponse.json({ error: 'No pudimos registrar tu pedido. Intenta de nuevo.' }, { status: 500 });
   }

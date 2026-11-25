@@ -5,6 +5,7 @@ import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard'
 import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { parseExcelFile, matchProducts, executeImport } from '@/lib/import-barraca-smart';
+import { leerConfigImportacion, MAX_FILAS_IMPORTACION } from '@/lib/import-barraca/config';
 
 import { conRevalidacion } from '@/lib/revalidar';
 async function manejarPOST(request: NextRequest) {
@@ -22,35 +23,33 @@ async function manejarPOST(request: NextRequest) {
   }
 
   const formData = await request.formData();
-  const file = formData.get('file') as File;
-  const configJson = formData.get('config') as string;
+  const file = formData.get('file');
+  const config = leerConfigImportacion(formData.get('config'));
+  if (!(file instanceof File) || !config) {
+    return NextResponse.json({ error: 'Archivo y configuracion requeridos' }, { status: 400 });
+  }
 
-  if (!file || !configJson) return NextResponse.json({ error: 'Archivo y configuracion requeridos' }, { status: 400 });
-
-  const config = JSON.parse(configJson);
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const parsed = parseExcelFile(buffer);
-
-  const matches = await matchProducts(
-    parsed.rows,
-    config.columnMapping,
-    config.matchBy || 'codigo',
-    config.fieldsToUpdate || ['precio', 'stock', 'costo'],
-    config.createPromotionalPrices || false,
-  );
-
-  // Filter: skip creates if not enabled
-  const toProcess = matches.map(m => {
-    if (m.status === 'create' && !config.createNew) {
-      return { ...m, status: 'skip' as const };
+  let result;
+  try {
+    const parsed = parseExcelFile(Buffer.from(await file.arrayBuffer()));
+    if (parsed.totalRows > MAX_FILAS_IMPORTACION) {
+      return NextResponse.json({ error: 'El archivo tiene demasiadas filas. Divídelo en partes.' }, { status: 400 });
     }
-    return m;
-  });
-
-  const result = await executeImport(toProcess, {
-    createNew: config.createNew || false,
-    createPromotionalPrices: config.createPromotionalPrices || false,
-  });
+    const matches = await matchProducts(
+      parsed.rows,
+      config.columnMapping,
+      config.matchBy,
+      config.fieldsToUpdate,
+      config.createPromotionalPrices,
+      { createNew: config.createNew },
+    );
+    result = await executeImport(matches, {
+      createNew: config.createNew,
+      createPromotionalPrices: config.createPromotionalPrices,
+    });
+  } catch {
+    return NextResponse.json({ error: 'No se pudo importar. Intenta de nuevo.' }, { status: 500 });
+  }
 
   return NextResponse.json(result);
 }

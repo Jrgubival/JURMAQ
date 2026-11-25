@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { env } from '@jurmaq/shared/env';
 import { crearStoreArchivo } from './archivo';
 import type { EnvioEmitido, Paquete } from '@/lib/despacho/courier/tipos';
+import { cuponPedidoPagado, cuponPedidoCerrado } from '@/lib/cupones/pedidos';
 
 /**
  * Pedidos de la tienda (tabla `barraca_pedidos`, ver
@@ -116,6 +117,10 @@ export interface Pedido {
   subtotal: number;
   /** Descuento por pagar con transferencia (2% de los productos); ya restado del total. */
   descuento_transferencia?: number;
+  /** Cupón aplicado en el checkout (solo con el interruptor de cupones encendido); ya restado del total. */
+  cupon_id?: string | null;
+  cupon_codigo?: string | null;
+  cupon_descuento?: number;
   costo_despacho: number | null;
   /** Cómo viaja el despacho: camión propio o courier. null en retiro. */
   despacho_tipo: TipoDespacho | null;
@@ -284,6 +289,8 @@ const storeSupabase: PedidosStore = {
       p_pasarela: pasarela,
     });
     if (error) throw error;
+    // Cupón: el uso queda firme (mejor esfuerzo; ver lib/cupones/pedidos.ts).
+    if (data === 'pagado') await cuponPedidoPagado(numero);
     return data as ResultadoPago;
   },
   async marcarRechazado(numero, pagoId) {
@@ -306,11 +313,13 @@ const storeSupabase: PedidosStore = {
   async cerrar(numero, estado, motivo, nota) {
     const { data, error } = await db.rpc('barraca_pedido_cerrar', { p_numero: numero, p_estado: estado, p_motivo: motivo, p_nota: nota });
     if (error) throw error;
+    if (data === 'ok') await cuponPedidoCerrado(numero, estado);
     return data as 'ok' | 'no_encontrado' | 'estado_invalido';
   },
   async cancelar(numero, motivo, permitePagado) {
     const { data, error } = await db.rpc('barraca_pedido_cancelar', { p_numero: numero, p_motivo: motivo, p_permite_pagado: permitePagado });
     if (error) throw error;
+    if (data === 'ok') await cuponPedidoCerrado(numero, 'cancelado');
     return data as 'ok' | 'no_encontrado' | 'estado_invalido' | 'requiere_permiso' | 'motivo_invalido';
   },
   async transferenciasPorVencer(antesDe, limite) {
@@ -340,6 +349,7 @@ const storeSupabase: PedidosStore = {
   async vencer(numero, horas) {
     const { data, error } = await db.rpc('barraca_pedido_vencer', { p_numero: numero, p_horas: horas });
     if (error) throw error;
+    if (data === 'vencido') await cuponPedidoCerrado(numero, 'vencido');
     return data as 'vencido' | 'no_corresponde' | 'no_encontrado';
   },
   async guardarReembolso(numero, r) {

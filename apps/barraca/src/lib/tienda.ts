@@ -35,6 +35,8 @@ export interface LineaRevisada {
   subtotal: number;
   /** Lo que el combo descuenta de precio × cantidad. */
   ahorro: number;
+  /** El precio ya viene rebajado: oferta real (precio web con tachado), promoción de categoría o combo. Lo usan los cupones "no acumulables". */
+  conDescuento: boolean;
   imagen: string | null;
   slug: string | null;
   medida: string | null;
@@ -117,7 +119,7 @@ export async function revisarLineas(lineas: LineaPedido[]): Promise<LineaRevisad
     const p = productos.get(id);
     if (!p) continue; // borrado de la base: se cae del carrito
     const promo = p.categoria_id != null ? promoMap.get(p.categoria_id) ?? null : null;
-    const precio = resolvePrice(
+    const resuelto = resolvePrice(
       {
         precio: p.precio,
         precio_original: p.precio_original,
@@ -125,7 +127,8 @@ export async function revisarLineas(lineas: LineaPedido[]): Promise<LineaRevisad
         solo_cotizar: p.solo_cotizar ?? undefined,
       },
       promo,
-    ).precioFinal;
+    );
+    const precio = resuelto.precioFinal;
     const stock = unidadesDisponibles(p.stock);
     const problema = motivoNoComprable({ precio, stock, solo_cotizar: p.solo_cotizar, activo: p.activo });
     const pedida = porId.get(id) ?? 1;
@@ -144,6 +147,7 @@ export async function revisarLineas(lineas: LineaPedido[]): Promise<LineaRevisad
       combo,
       subtotal: total,
       ahorro,
+      conDescuento: resuelto.tipo === 'oferta_real' || resuelto.tipo === 'promo_dia' || ahorro > 0,
       imagen: p.imagen,
       slug: p.slug,
       medida: p.medida,

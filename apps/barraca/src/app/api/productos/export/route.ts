@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { requirePermission, forbiddenResponse } from '@jurmaq/shared/auth/guard';
 import { NextResponse } from 'next/server';
 import XLSX from 'xlsx';
+import { estadoPrecio } from '@/lib/import-barraca-smart';
 import type { Database } from '@jurmaq/shared/db-types';
 
 type BarracaProductoRow = Database['public']['Tables']['barraca_productos']['Row'];
@@ -49,10 +50,11 @@ export async function GET() {
       Nombre: p.nombre || '',
       Medida: p.medida || '',
       Categoria: p.barraca_categorias?.nombre || '',
-      // "Precio" = lo que se cobra (mapea al campo `precio` al re-importar).
-      // "Precio Tachado" = el precio "antes" (solo si está en oferta real).
-      Precio: p.en_oferta && p.precio_original ? p.precio_original : p.precio,
-      'Precio Tachado': p.en_oferta ? p.precio : '',
+      // "Precio" = lo que se cobra (va a `precio` al re-importar).
+      // "Precio Tachado" = el precio de antes, solo en oferta real (va a `precio_original`).
+      // Se resuelve por valor, igual que pricing.ts, porque hay fichas viejas guardadas al revés.
+      Precio: estadoPrecio(p).cobrado,
+      'Precio Tachado': p.en_oferta ? (estadoPrecio(p).tachado ?? '') : '',
       'En Oferta': p.en_oferta ? 'Si' : 'No',
       Costo: p.costo || '',
       Stock: p.stock || 0,
