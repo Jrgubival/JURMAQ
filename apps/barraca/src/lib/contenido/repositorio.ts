@@ -19,6 +19,11 @@ import { desdeJson } from "../gestion/util.ts";
 import { validarContenido } from "./esquemas.ts";
 import { sanearTextoPlano } from "./markdown.ts";
 import { respaldoDe } from "./respaldo.ts";
+
+/** El texto original que trae el código (a lo que vuelve «versión 0»). */
+export function textoOriginalDelCodigo<K extends ClaveContenido>(clave: K): ValoresContenido[K] {
+  return respaldoDe(clave);
+}
 import {
   CLAVES_CONTENIDO,
   META_CONTENIDO,

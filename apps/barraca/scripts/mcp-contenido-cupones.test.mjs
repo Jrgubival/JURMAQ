@@ -1265,3 +1265,84 @@ test("restaurar versión 0 funciona también sin que haya nada publicado, y con 
   assert.equal(r.datos.cambio, false);
   assert.equal((await m.llamar("restaurar_version_contenido", { clave: "cinta", version: 7 })).error?.includes("No encontré la versión 7"), true);
 });
+
+// ───────── restaurar versión 0 (volver al código) por el mismo camino que publicar ─────────
+async function publicarDirecto(db, clave, valor, ahora) {
+  const g = await Repo.guardarBorrador(db, { clave, valor, usuario: JEFE, ahora });
+  assert.ok(g.ok, JSON.stringify(g));
+  const r = await Repo.publicar(db, { clave, usuario: JEFE, ahora, aprobacion: { aprobadoPor: "prueba", referencia: "x" } });
+  assert.ok(r.ok, JSON.stringify(r));
+}
+
+test("restaurar versión 0 de términos en modo exigir NO vuelve al código: deja el original como borrador para publicar con aprobación", async () => {
+  await conModo("exigir", async () => {
+    const m = montar();
+    const original = (await Repo.obtenerEstado(m.db, "terminos")).efectivo.texto;
+    await publicarDirecto(m.db, "terminos", { texto: `${original}\n\n17. Cláusula publicada.` }, T0);
+    const r = await m.llamar("restaurar_version_contenido", { clave: "terminos", version: 0 }, { ahora: T0 + MIN });
+    assert.ok(!r.error, r.error);
+    assert.equal(r.datos.cambio, false);
+    assert.equal(r.datos.requiereAprobacion, true);
+    const est = await Repo.obtenerEstado(m.db, "terminos");
+    assert.equal(est.origen, "d1", "la tienda sigue mostrando lo publicado");
+    assert.ok(est.publicado.texto.includes("Cláusula publicada"));
+    assert.equal(est.borrador.texto, original, "el texto original del código quedó como borrador");
+    assert.equal(m.revalidadas.length, 0);
+    assert.equal(m.correos.length, 0);
+    // El camino normal lo deja pendiente y le pide el OK a Jorge.
+    const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "terminos" }, { ahora: T0 + 2 * MIN });
+    const c = await m.llamar("confirmar_publicacion_contenido", { clave: "terminos", vista_previa_id: p.datos.vistaPreviaId }, { ahora: T0 + 2 * MIN + 20_000 });
+    assert.equal(c.datos.estado, "pendiente");
+    assert.equal(m.correos.length, 1);
+    // Con un borrador distinto sin publicar, no lo pisa.
+    const m2 = montar();
+    await publicarDirecto(m2.db, "terminos", { texto: `${original}\n\n17. Otra.` }, T0);
+    await m2.llamar("guardar_borrador_contenido", { clave: "terminos", valor: { texto: `${original}\n\n18. Borrador mío.` } }, { ahora: T0 + MIN });
+    const r2 = await m2.llamar("restaurar_version_contenido", { clave: "terminos", version: 0 }, { ahora: T0 + 2 * MIN });
+    assert.match(r2.error, /necesita el OK de Jorge[^]*borrador distinto/);
+    assert.ok((await Repo.obtenerEstado(m2.db, "terminos")).borrador.texto.includes("Borrador mío"));
+  });
+});
+
+test("restaurar versión 0 de términos o datos del local en modo avisar vuelve al código, queda auditado y avisa a Jorge", async () => {
+  const { reintentarAvisos } = await import("../src/lib/mcp/aviso-operacion.ts");
+  await conModo("avisar", async () => {
+    const m = montar();
+    const original = (await Repo.obtenerEstado(m.db, "terminos")).efectivo.texto;
+    await publicarDirecto(m.db, "terminos", { texto: `${original}\n\n17. Cláusula publicada.` }, T0);
+    const r = await m.llamar("restaurar_version_contenido", { clave: "terminos", version: 0 }, { ahora: T0 + MIN });
+    assert.ok(!r.error, r.error);
+    assert.equal(r.datos.cambio, true);
+    assert.equal(r.datos.modo, "avisar");
+    assert.equal((await Repo.obtenerEstado(m.db, "terminos")).origen, "codigo");
+    assert.equal(m.correos.length, 0, "no pide el OK por correo");
+    assert.deepEqual(m.revalidadas, ["terminos"]);
+    const fila = await m.db.prepare("SELECT tipo, estado, herramienta FROM avisos_operacion").first();
+    assert.deepEqual({ ...fila }, { tipo: "cambio", estado: "pendiente", herramienta: "restaurar_version_contenido" });
+    const enviados = [];
+    const env = await reintentarAvisos(m.db, { aprobadorEmail: "aprobador@example.com", base: "https://barraca.jurmaq.cl", enviar: async (x) => { enviados.push(x); return true; } }, T0 + 5 * MIN);
+    assert.equal(env.enviados, 1);
+    assert.match(JSON.stringify(enviados[0]), /Términos/i);
+    const aud = await m.db.prepare("SELECT herramienta, despues FROM auditoria WHERE herramienta = 'restaurar_version_contenido'").all();
+    assert.equal(aud.results.length, 1, "queda en la auditoría");
+    assert.match(aud.results[0].despues, /"modo":"avisar"/);
+    // datos_local: cambiar un campo sensible y volver al código también avisa
+    const local = (await Repo.obtenerEstado(m.db, "datos_local")).efectivo;
+    await publicarDirecto(m.db, "datos_local", { ...local, telefonoDisplay: "+56 9 1111 2222" }, T0 + 10 * MIN);
+    const r2 = await m.llamar("restaurar_version_contenido", { clave: "datos_local", version: 0 }, { ahora: T0 + 11 * MIN });
+    assert.equal(r2.datos.modo, "avisar");
+    assert.equal((await Repo.obtenerEstado(m.db, "datos_local")).origen, "codigo");
+  });
+});
+
+test("restaurar versión 0 de una clave que no exige aprobación sigue siendo directo (también en exigir)", async () => {
+  await conModo("exigir", async () => {
+    const m = montar();
+    await publicarPopup(m, "Titular nuevo", T0);
+    const r = await m.llamar("restaurar_version_contenido", { clave: "popup", version: 0 }, { ahora: T0 + MIN });
+    assert.ok(!r.error, r.error);
+    assert.equal(r.datos.cambio, true);
+    assert.equal(r.datos.modo, undefined);
+    assert.equal((await Repo.obtenerEstado(m.db, "popup")).origen, "codigo");
+  });
+});

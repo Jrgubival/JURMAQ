@@ -607,20 +607,52 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "restaurar_version_contenido",
     titulo: "Volver a una versión anterior",
     descripcion:
-    "Con version N (ver_historial_contenido) pone esa versión como BORRADOR; el historial se conserva y para verla en la tienda hay que publicarla. Con version 0 la tienda vuelve AL INSTANTE al texto original del código (queda sin versión publicada; el historial se conserva y no hace falta aprobación).",
+    "Con version N (ver_historial_contenido) pone esa versión como BORRADOR; el historial se conserva y para verla en la tienda hay que publicarla. Con version 0 la tienda vuelve AL INSTANTE al texto original del código (queda sin versión publicada; el historial se conserva). Si publicar ese texto necesitaría el OK de Jorge (términos, privacidad, datos del local sensibles), sigue la misma regla: en modo exigir queda como borrador para publicar con aprobación; en modo avisar se aplica y se le avisa.",
     esquema: z.object({ clave: claveSchema, version: z.number().int().min(0).max(100000).describe("0 = volver al texto original del código.") }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     async ejecutar({ clave, version }, ctx) {
       if (version === 0) {
         const estado = await conGestion(() => repo.obtenerEstado(ctx.db, clave));
         if (estado.versionPublicada === null) return { texto: `${etiqueta(clave)} ya muestra el texto original del código; no hay nada que quitar.`, datos: { clave, version: 0, cambio: false } };
-        const r = await repo.volverAlCodigo(ctx.db, { clave, usuario: usuarioDe(ctx), esperada: estado.versionPublicada, ahora: ctx.ahora });
-        if (!r.ok) throw new ErrorHerramienta(`${etiqueta(clave)} cambió justo ahora; vuelve a intentar.`);
-        await ctx.auditar([{ entidad: "contenido", entidadId: clave, antes: { version: estado.versionPublicada }, despues: { version: null, estado: "codigo" } }]);
+        const usuario = usuarioDe(ctx);
+        // Volver al código ES publicar el texto original: si publicarlo pediría el OK de Jorge (legal, datos del local sensibles o
+        // desvío), esto pasa por el MISMO camino (exigir / avisar). Así no es una puerta lateral para saltarse la aprobación.
+        let auto: Awaited<ReturnType<typeof aprobarEnModoAvisar>> = null;
+        if (publicacionRequiereAprobacion(clave, estado.efectivo, await repo.textoOriginalDelCodigo(clave))) {
+          const codigo = await repo.textoOriginalDelCodigo(clave);
+          const decision = requiereAprobacion({ banderas: motivosPublicacion(clave, estado.efectivo, codigo) });
+          const resumen = resumirCambio(clave, estado.efectivo, codigo);
+          auto = await aprobarEnModoAvisar(ctx.db, {
+            usuario, herramienta: "restaurar_version_contenido", motivos: decision.motivos,
+            resumen: `Volver ${etiqueta(clave)} al texto original del código (hoy: versión ${estado.versionPublicada}). ${resumen.lineas[0] ?? ""}`,
+            detalle: { clave, version: 0, versionAnterior: estado.versionPublicada, ...resumen.detalle },
+            huella: await huellaDeDatos({ clave, valor: codigo, v: "avisar", volverAlCodigo: estado.versionPublicada }),
+          }, ctx.ahora);
+          if (!auto) {
+            // Modo exigir (o sin correo de Jorge válido): no se aplica. El texto original queda como BORRADOR y se publica por
+            // el camino normal (vista previa + confirmar), que pide el OK de Jorge y lo deja pendiente.
+            const { base, esBorrador } = await conGestion(() => baseDeEdicion(ctx.db, clave));
+            if (esBorrador && !igual(base, codigo)) {
+              throw new ErrorHerramienta(`Volver ${etiqueta(clave)} al texto original necesita el OK de Jorge, y ya hay un borrador distinto sin publicar. Publícalo o descártalo (descartar_borrador_contenido) y vuelve a pedirlo. No se cambió nada.`);
+            }
+            if (!(esBorrador && igual(base, codigo))) await guardarBorradorAuditado(ctx, clave, codigo, base, esBorrador);
+            return {
+              texto: `${etiqueta(clave)} NO volvió al código todavía: ${decision.motivos.map((m) => TEXTO_MOTIVO[m]).join("; ")}, así que necesita el OK de Jorge. Dejé el texto original del código como BORRADOR; para publicarlo usa previsualizar_publicacion_contenido y confirmar_publicacion_contenido (ahí se le pide la aprobación). La tienda sigue mostrando la versión ${estado.versionPublicada}.`,
+              datos: { clave, version: 0, cambio: false, requiereAprobacion: true, estado: "borrador", motivos: decision.motivos.map((m) => TEXTO_MOTIVO[m]) },
+            };
+          }
+          if (!(await auto.gastar())) throw new ErrorHerramienta("No pude registrar el aviso a Jorge. No se cambió nada; intenta de nuevo.");
+        }
+        const r = await repo.volverAlCodigo(ctx.db, { clave, usuario, esperada: estado.versionPublicada, ahora: ctx.ahora });
+        if (!r.ok) {
+          if (auto) await auto.devolver();
+          throw new ErrorHerramienta(`${etiqueta(clave)} cambió justo ahora; vuelve a intentar.`);
+        }
+        await ctx.auditar([{ entidad: "contenido", entidadId: clave, antes: { version: estado.versionPublicada }, despues: { version: null, estado: "codigo", ...(auto ? { modo: "avisar", aprobacionId: auto.id } : {}) } }]);
         await deps().revalidar(clave);
         return {
-          texto: `${etiqueta(clave)} volvió al texto original del código (la versión ${estado.versionPublicada} quedó en el historial, que se conserva). Las páginas se regeneran en unos minutos. Se puede deshacer.`,
-          datos: { clave, version: 0, cambio: true, versionAnterior: estado.versionPublicada, origen: "codigo" },
+          texto: `${etiqueta(clave)} volvió al texto original del código (la versión ${estado.versionPublicada} quedó en el historial, que se conserva)${auto ? ", sin esperar el OK de Jorge (modo avisar): se le avisa por correo" : ""}. Las páginas se regeneran en unos minutos. Se puede deshacer.`,
+          datos: { clave, version: 0, cambio: true, versionAnterior: estado.versionPublicada, origen: "codigo", ...(auto ? { modo: "avisar" } : {}) },
         };
       }
       const { base, esBorrador } = await conGestion(() => baseDeEdicion(ctx.db, clave));
