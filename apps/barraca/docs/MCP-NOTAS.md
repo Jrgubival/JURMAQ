@@ -6,7 +6,9 @@ Rama `claude/mcp-tienda` (base 7a4923b). Este archivo lo amplían todas las piez
 
 ### Base y binding
 - Base D1 nueva `jurmaq-barraca-gestion`, binding **`GESTION_DB`**, declarada en `wrangler.jsonc` junto a la D1 de caché (`NEXT_TAG_CACHE_D1`).
-- El `database_id` de `wrangler.jsonc` es un **marcador** (`00000000-0000-0000-0000-000000000000`). Al publicar: `wrangler d1 create jurmaq-barraca-gestion`, pegar el id real y correr `wrangler d1 migrations apply jurmaq-barraca-gestion --remote`. Nada de eso se hizo: no existe nada en producción.
+- **Publicado el 25-11-2026.** D1 creada con id `321c8265-8ba3-4eaf-b7a5-ee83071ae95f` (ya está en `wrangler.jsonc`; el id no es secreto) y migraciones 0001 a 0007 aplicadas en remoto. Versión desplegada del worker `jurmaq-barraca`: `d9c253b8-9f14-4367-b7b3-5d85403b39b9`. Versión para volver atrás (código anterior a esta etapa): `3f359271-9ea1-43b8-81d0-d1bedd83f873` (`npx wrangler rollback 3f359271-9ea1-43b8-81d0-d1bedd83f873 --name jurmaq-barraca`). Secreto `BARRACA_APROBADOR_EMAIL` puesto; `CUPONES_PEPPER` NO puesto a propósito (cupones apagados).
+- Tras cada deploy hay que llamar `POST /api/contenido/revalidar?ambito=toda` (Bearer `CRON_SECRET`) y recorrer el sitemap dos veces: el build no ve los secretos de Webpay y hornea las páginas sin la línea de cuotas del pie; la regeneración en runtime la deja consistente.
+- Dato aparte (previo a esta etapa): 11 fichas activas con slug repetido (p. ej. `abraz-crem-3-4-3`, ids 3 y 1629) salen en el sitemap pero dan 404 porque la ficha busca con `.single()`.
 - Mientras la base no exista o no esté migrada, el código responde "no disponible" y no rompe la tienda (ver "Acceso" abajo).
 - Verificado: `opennextjs-cloudflare build` pasa con el binding y con el helper incluido en el bundle, y `wrangler deploy --dry-run` lista `env.GESTION_DB (jurmaq-barraca-gestion)`. (El `next build` pelado termina con exit 1 por un aviso de seguridad de la versión de Next, después de compilar y listar todas las rutas; no es del binding. Ver riesgos del informe.)
 
