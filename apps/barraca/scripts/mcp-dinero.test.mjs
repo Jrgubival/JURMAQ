@@ -365,7 +365,7 @@ test("Transbank rechaza claro (4xx): queda rechazada y se reintenta SOLO desde e
   const v = await m.llamar("previsualizar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente" });
   const r = await m.llamar("confirmar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente", monto: 15000, id_vista_previa: v.datos.idVistaPrevia });
   assert.match(r.texto, /RESPONDIÓ QUE NO/);
-  assert.match(r.texto, /Reintentar devolución/);
+  assert.match(r.texto, /Comprobar en Transbank y reintentar/);
   assert.equal(m.store.mapa.get(NUM("A")).reembolso.estado, "error", "el panel puede reintentar (tomarReembolso acepta error)");
   await m.falla("previsualizar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente" }, /NO devolvió|ya está cancelado|devolución registrada/);
 });

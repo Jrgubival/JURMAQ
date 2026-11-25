@@ -11,7 +11,8 @@ import { ESTADOS_VENTA, ETIQUETA_ESTADO, fechaCorta, medioPago } from "@/lib/adm
 import { MOTIVOS_CANCELACION, MOTIVOS_RECHAZO, type MotivoCancelacion, type MotivoRechazo } from "@/lib/pedidos/motivos";
 import { montoDespacho, nombreCourier } from "@/lib/despacho/texto";
 import { linkWhatsappPedido } from "@/lib/admin/whatsapp";
-import { MINUTOS_EN_CURSO_VIEJO, reembolsoEnCursoViejo } from "@/lib/pedidos/devolucion-webpay";
+import { MINUTOS_EN_CURSO_VIEJO } from "@/lib/pedidos/devolucion-webpay";
+import { salidaDevolucion } from "@/lib/pedidos/devolucion-panel";
 import EstadoChip from "@/components/admin/ventas/EstadoChip";
 
 /**
@@ -164,9 +165,13 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
   const pagado = ESTADOS_VENTA.includes(p.estado);
   const factura = p.documento_solicitado === "factura";
   // Devoluciones de Webpay que quedaron a medias (el proceso se cortó): se ofrece un reintento SEGURO con confirmación.
-  const webpayCobrado = p.pasarela === "webpay" && !!p.pagado_at && !!p.pasarela_referencia;
-  const cerradoSinDevolucion = webpayCobrado && (p.estado === "cancelado" || p.estado === "rechazado") && !p.reembolso;
-  const devolucionColgada = webpayCobrado && reembolsoEnCursoViejo(p.reembolso, ahoraMs);
+  // Un solo criterio (el mismo del servidor): el botón que se muestra es el que la ruta acepta.
+  const salida = salidaDevolucion(p, ahoraMs);
+  const cerradoSinDevolucion = salida === "reintentar" && !p.reembolso;
+  const devolucionColgada = salida === "reintentar" && p.reembolso?.estado === "en_curso";
+  const devolucionConError = salida === "reintentar" && p.reembolso?.estado === "error";
+  const transferenciaSinDevolucion = salida === "registrar_transferencia";
+  const devolucionReciente = salida === "esperar";
   const detallePago = (p.pago_detalle ?? null) as null | {
     ordenCompra?: unknown; autorizacion?: unknown; tarjeta?: unknown; tipoPago?: unknown; cuotas?: unknown; fecha?: unknown; monto?: unknown;
   };
@@ -208,7 +213,7 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ estado: "cancelado", motivoCancelacion: cancelacion.motivo }),
     }, "Pedido cancelado. Se avisó al cliente.");
-    if (data?.reembolso === "error") setAviso({ tipo: "error", texto: "Quedó cancelado, pero Webpay no confirmó la anulación. Usa «Reintentar devolución» o revisa el portal de Transbank." });
+    if (data?.reembolso === "error") setAviso({ tipo: "error", texto: "Quedó cancelado, pero Webpay no confirmó la anulación. Usa «Comprobar en Transbank y reintentar» o revisa el portal de Transbank." });
     if (data?.reembolso === "incierto") setAviso({ tipo: "error", texto: "Quedó cancelado, pero NO se sabe si Webpay devolvió el dinero (falló la conexión). No la repitas: revisa el pago en el portal de Transbank y ciérrala aquí con «Ya se devolvió» o «No se devolvió»." });
     if (data) setCancelacion(null);
   }
@@ -239,7 +244,7 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accion: "rechazar", motivo: rechazo.motivo, nota: rechazo.nota.trim() || undefined }),
     }, "Pedido no aprobado. Se avisó al cliente.");
-    if (data?.reembolso === "error") setAviso({ tipo: "error", texto: "Quedó no aprobado, pero Webpay no confirmó la anulación. Usa «Reintentar devolución» o revisa el portal de Transbank." });
+    if (data?.reembolso === "error") setAviso({ tipo: "error", texto: "Quedó no aprobado, pero Webpay no confirmó la anulación. Usa «Comprobar en Transbank y reintentar» o revisa el portal de Transbank." });
     if (data?.reembolso === "incierto") setAviso({ tipo: "error", texto: "Quedó no aprobado, pero NO se sabe si Webpay devolvió el dinero (falló la conexión). No la repitas: revisa el pago en el portal de Transbank y ciérrala aquí con «Ya se devolvió» o «No se devolvió»." });
     if (data) setRechazo(null);
   }
@@ -248,12 +253,19 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
     const pregunta = devolucionColgada
       ? `La devolución de ${formatCLP(p.total)} del pedido ${p.numero} quedó a medias hace más de ${MINUTOS_EN_CURSO_VIEJO} minutos.\n\nPrimero se consulta en Transbank si el pago sigue cobrado: si ya aparece devuelto, se marca como hecha y NO se devuelve otra vez. Si sigue cobrado, se pide la devolución.\n\n¿Continuar?`
       : cerradoSinDevolucion
-        ? `El pedido ${p.numero} está ${p.estado === "cancelado" ? "cancelado" : "no aprobado"} y pagado, pero NO tiene devolución registrada (el proceso se cortó). El cliente sigue cobrado.\n\n¿Anular en Webpay el pago de ${formatCLP(p.total)}? Solo vuelve a la tarjeta original.`
-        : `¿Anular en Webpay el pago de ${formatCLP(p.total)} del pedido ${p.numero}?`;
+        ? `El pedido ${p.numero} está ${p.estado === "cancelado" ? "cancelado" : "no aprobado"} y pagado, pero NO tiene devolución registrada (el proceso se cortó). El cliente sigue cobrado.\n\nPrimero se consulta en Transbank el estado del pago; solo si sigue cobrado se anula por ${formatCLP(p.total)} (vuelve a la tarjeta original). Si no se puede confirmar, queda «incierta» para resolverla a mano.\n\n¿Continuar?`
+        : `Antes de reintentar se consulta en Transbank si el pago ya aparece devuelto (por si la devolución sí salió pero no se alcanzó a guardar). Solo si sigue cobrado se anula por ${formatCLP(p.total)} del pedido ${p.numero}. Si no se puede confirmar, queda «incierta» para resolverla a mano.\n\n¿Continuar?`;
     if (!confirm(pregunta)) return;
     await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}/rechazar`, {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "reembolsar" }),
     }, "Devolución hecha en Webpay.");
+  }
+
+  async function registrarPendienteTransferencia() {
+    if (!confirm(`El pedido ${p.numero} está ${p.estado === "cancelado" ? "cancelado" : "no aprobado"} y pagado por transferencia, pero no quedó con la devolución registrada.\n\n¿Registrar la devolución pendiente de ${formatCLP(p.total)}? No mueve plata ni envía correos: después anotas la cuenta del cliente (si no lo sabe, pídesela por correo o WhatsApp) y marcas «Devolución hecha» cuando transfieras.`)) return;
+    await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}/devolucion`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accion: "registrar_pendiente" }),
+    }, "Devolución pendiente registrada. Ahora anota la cuenta del cliente.");
   }
 
   async function resolverIncierta(resultado: "hecha" | "no_hecha") {
@@ -554,11 +566,22 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
             )}
             {cerradoSinDevolucion && (
               <div className="mt-2 space-y-2 rounded-lg ring-1 ring-inset ring-[#EBD39A] bg-[#FFFaF0] px-3 py-3">
-                <p className="text-[13.5px] text-[#7A4E00]">Este pedido está {p.estado === "cancelado" ? "cancelado" : "no aprobado"} y pagado con Webpay, pero <strong>no tiene devolución registrada</strong>: el cliente sigue cobrado. Suele pasar si se cortó el proceso justo después de cancelar. Se puede reintentar sin riesgo (nunca se intentó con Transbank).</p>
+                <p className="text-[13.5px] text-[#7A4E00]">Este pedido está {p.estado === "cancelado" ? "cancelado" : "no aprobado"} y pagado con Webpay, pero <strong>no tiene devolución registrada</strong>: el cliente sigue cobrado. Suele pasar si se cortó el proceso justo después de cancelar. Al reintentar, primero se consulta en Transbank el estado del pago (no se devuelve dos veces).</p>
                 <button type="button" disabled={ocupado || !puedeReembolsar} onClick={reintentarReembolso} className={`${btn} w-full bg-marca-600 text-white hover:bg-marca-700`}>
-                  {puedeReembolsar ? "Reintentar devolución en Webpay" : "Reintentar devolución · solo administrador"}
+                  {puedeReembolsar ? "Comprobar en Transbank y reintentar" : "Reintentar devolución · solo administrador"}
                 </button>
               </div>
+            )}
+            {transferenciaSinDevolucion && (
+              <div className="mt-2 space-y-2 rounded-lg ring-1 ring-inset ring-[#EBD39A] bg-[#FFFaF0] px-3 py-3">
+                <p className="text-[13.5px] text-[#7A4E00]">Este pedido está {p.estado === "cancelado" ? "cancelado" : "no aprobado"} y se pagó por transferencia, pero <strong>no quedó registrada la devolución</strong> (se cortó el proceso). Regístrala para anotar la cuenta del cliente y marcarla hecha.</p>
+                <button type="button" disabled={ocupado || !puedeReembolsar} onClick={registrarPendienteTransferencia} className={`${btn} w-full bg-marca-600 text-white hover:bg-marca-700`}>
+                  {puedeReembolsar ? "Registrar devolución pendiente por transferencia" : "Registrar devolución · solo administrador"}
+                </button>
+              </div>
+            )}
+            {devolucionReciente && (
+              <p className="mt-2 text-[13.5px] text-[#7A4E00] rounded-lg bg-[#FFFaF0] px-3 py-2">La devolución en Webpay está en curso desde hace menos de {MINUTOS_EN_CURSO_VIEJO} minutos. Espera y recarga la página.</p>
             )}
             {devolucionColgada && (
               <div className="mt-2 space-y-2 rounded-lg ring-1 ring-inset ring-[#EBD39A] bg-[#FFFaF0] px-3 py-3">
@@ -568,9 +591,9 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
                 </button>
               </div>
             )}
-            {p.reembolso?.medio === "webpay" && p.reembolso.estado === "error" && (
+            {devolucionConError && (
               <button type="button" disabled={ocupado || !puedeReembolsar} onClick={reintentarReembolso} className={`${btn} mt-2 w-full bg-marca-600 text-white hover:bg-marca-700`}>
-                {puedeReembolsar ? "Reintentar devolución en Webpay" : "Reintentar devolución · solo administrador"}
+                {puedeReembolsar ? "Comprobar en Transbank y reintentar" : "Reintentar devolución · solo administrador"}
               </button>
             )}
           </Seccion>

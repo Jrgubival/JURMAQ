@@ -3,7 +3,8 @@ import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { estadoTransaccionWebpay, reembolsarWebpay } from '@/lib/pagos/webpay';
 import { pedidos, type MotivoRechazo, type Pedido } from './index';
 import { correoRechazoComprador } from './correos';
-import { ejecutarDevolucionWebpay, reembolsoEnCursoViejo, retomarDevolucionEnCurso, MINUTOS_EN_CURSO_VIEJO } from './devolucion-webpay';
+import { ejecutarDevolucionWebpay, reintentarDevolucionConsultando, MINUTOS_EN_CURSO_VIEJO } from './devolucion-webpay';
+import { salidaDevolucion, pedidoTransferenciaPagadoSinDevolucion } from './devolucion-panel';
 import { sincronizarDevolucionPanel } from './devoluciones-d1';
 
 /**
@@ -69,7 +70,7 @@ export async function rechazarPedido(numero: string, motivo: MotivoRechazo, nota
  * Pone al día `devoluciones_mcp` (D1) cuando el panel cambia el resultado de una devolución. Mejor esfuerzo: si no hay D1 o
  * la tabla, no pasa nada (el panel manda; la fila solo guía al MCP). Nunca lanza.
  */
-async function sincronizarConMcp(numero: string, hacia: 'devolucion_hecha' | 'devolucion_rechazada' | 'devolucion_incierta') {
+async function sincronizarConMcp(numero: string, hacia: 'devolucion_hecha' | 'devolucion_rechazada' | 'devolucion_incierta' | 'transferencia_pendiente') {
   try {
     const { usarGestion } = await import('../gestion/d1');
     await usarGestion((db) => sincronizarDevolucionPanel(db, numero, hacia, Date.now()));
@@ -79,48 +80,67 @@ async function sincronizarConMcp(numero: string, hacia: 'devolucion_hecha' | 'de
 }
 
 /**
- * Reintenta la devolución de Webpay desde el panel. Casos seguros:
- *  - sin devolución registrada (reembolso nulo) en un pedido cancelado o no aprobado que sigue cobrado: el proceso murió justo
- *    después de cancelar, antes de pedir la devolución (no hubo ningún intento con Transbank);
- *  - devolución en «error» (Transbank dijo que no);
- *  - devolución «en curso» de hace más de MINUTOS_EN_CURSO_VIEJO minutos (colgada): antes de pedir nada se consulta el estado
- *    real en Transbank (solo lectura) y no se devuelve dos veces. Va con el mismo candado atómico de siempre.
+ * Reintenta la devolución de Webpay desde el panel (la misma decisión que muestra la pantalla: `salidaDevolucion`). Casos:
+ *  - sin devolución registrada en un pedido cancelado o no aprobado que sigue cobrado;
+ *  - devolución en «error» (puede ser un timeout que quedó guardado como error: Transbank pudo haber devuelto);
+ *  - devolución «en curso» de hace más de MINUTOS_EN_CURSO_VIEJO minutos (colgada);
+ *  - pago tardío (sin `pagado_at`) con una devolución de Webpay abierta.
+ * En TODOS se consulta primero el estado real en Transbank (solo lectura): solo se pide la devolución si sigue cobrado y
+ * entero; si ya aparece devuelto se marca hecha; si no se puede confirmar queda «incierta». Candado atómico en cada caso.
  * Una devolución «incierta» NO se reintenta: se resuelve a mano.
  */
 export async function reintentarDevolucion(numero: string): Promise<{ ok: boolean | null; status: number; error?: string; reembolso?: 'hecho' | 'error' | 'incierto' }> {
   const store = pedidos();
   const pedido = await store.porNumero(numero);
   if (!pedido) return { ok: false, status: 404, error: 'Pedido no encontrado' };
-  if (pedido.reembolso?.estado === 'incierto') {
+  const salida = salidaDevolucion(pedido, Date.now());
+  if (salida === 'resolver') {
     return { ok: false, status: 409, error: 'Webpay no confirmó si devolvió el dinero. No se reintenta sola: revisa el pago en el portal de Transbank y resuélvela con «Ya se devolvió» o «No se devolvió».' };
   }
-  if (!['rechazado', 'cancelado'].includes(pedido.estado) || !pagadoConWebpay(pedido) || pedido.reembolso?.estado === 'hecho') {
+  if (salida === 'esperar') {
+    return { ok: null, status: 409, error: `La devolución está en curso desde hace menos de ${MINUTOS_EN_CURSO_VIEJO} minutos. Espera un poco y revisa de nuevo.` };
+  }
+  if (salida !== 'reintentar') {
     return { ok: false, status: 409, error: 'Este pedido no tiene un reembolso de Webpay pendiente' };
   }
   const log = (evento: string, datos: Record<string, unknown>) => (datos.error ? logSafeError(evento, datos) : logSafe(evento, datos));
-  let d: Awaited<ReturnType<typeof ejecutarDevolucionWebpay>>;
-  if (pedido.reembolso?.estado === 'en_curso') {
-    if (!reembolsoEnCursoViejo(pedido.reembolso, Date.now())) {
-      return { ok: null, status: 409, error: `La devolución está en curso desde hace menos de ${MINUTOS_EN_CURSO_VIEJO} minutos. Espera un poco y revisa de nuevo.` };
-    }
-    d = await retomarDevolucionEnCurso(
-      {
-        tomarReembolso: (n, r) => store.tomarReembolso(n, r),
-        guardarReembolso: (n, r) => store.guardarReembolso(n, r),
-        reembolsar: reembolsarWebpay,
-        retomarReembolso: (n, f, r) => store.retomarReembolsoEnCurso(n, f, r),
-        estadoTransaccion: estadoTransaccionWebpay,
-        log,
-      },
-      { numero: pedido.numero, total: pedido.total, pasarela_referencia: pedido.pasarela_referencia!, fechaEnCurso: pedido.reembolso.fecha },
-    );
-  } else {
-    d = await devolverWebpayDetallado(pedido);
-  }
+  const r = pedido.reembolso;
+  // Siempre se consulta a Transbank antes de pedir nada (un «error» o «en curso» guardado no prueba que no se devolvió).
+  const d = await reintentarDevolucionConsultando(
+    {
+      tomarReembolso: (n, rb) => store.tomarReembolso(n, rb),
+      guardarReembolso: (n, rb) => store.guardarReembolso(n, rb),
+      reembolsar: reembolsarWebpay,
+      retomarReembolso: (n, f, rb) => store.retomarReembolsoEnCurso(n, f, rb),
+      estadoTransaccion: estadoTransaccionWebpay,
+      log,
+    },
+    { numero: pedido.numero, total: pedido.total, pasarela_referencia: pedido.pasarela_referencia! },
+    r?.estado === 'en_curso' ? { tipo: 'en_curso', fecha: r.fecha } : r ? { tipo: 'error' } : { tipo: 'sin_registro' },
+  );
   if (d.resultado === 'ocupada') return { ok: null, status: 409, error: 'La devolución ya está en curso o hecha' };
   await sincronizarConMcp(numero, d.resultado === 'hecho' ? 'devolucion_hecha' : d.resultado === 'incierta' ? 'devolucion_incierta' : 'devolucion_rechazada');
   if (d.resultado === 'incierta') return { ok: false, status: 502, reembolso: 'incierto' };
   return { ok: d.resultado === 'hecho', status: d.resultado === 'hecho' ? 200 : 502, reembolso: d.resultado === 'hecho' ? 'hecho' : 'error' };
+}
+
+/**
+ * Pedido cancelado/no aprobado, pagado por TRANSFERENCIA y sin devolución registrada (el proceso se cortó justo después de
+ * cancelar): registra la devolución pendiente (monto = total del pedido) para que el panel pida la cuenta y se marque hecha
+ * como siempre. Update condicional en la base (solo si sigue sin reembolso): dos clics = uno. No envía correos ni mueve plata.
+ */
+export async function registrarDevolucionTransferenciaPendiente(numero: string, actorEmail: string | null): Promise<{ ok: boolean; status: number; error?: string }> {
+  const store = pedidos();
+  const pedido = await store.porNumero(numero);
+  if (!pedido) return { ok: false, status: 404, error: 'Pedido no encontrado' };
+  if (!pedidoTransferenciaPagadoSinDevolucion(pedido)) {
+    return { ok: false, status: 409, error: 'Este pedido no está pagado por transferencia sin devolución registrada' };
+  }
+  const ok = await store.registrarDevolucionTransferencia(numero, { estado: 'pendiente', medio: 'transferencia', monto: pedido.total, fecha: new Date().toISOString() });
+  if (!ok) return { ok: false, status: 409, error: 'El pedido cambió: revisa la devolución e intenta de nuevo' };
+  await sincronizarConMcp(numero, 'transferencia_pendiente');
+  await store.registrarEvento(numero, pedido.estado, actorEmail, 'Devolución por transferencia registrada como pendiente (faltaba)').catch(() => undefined);
+  return { ok: true, status: 200 };
 }
 
 /**

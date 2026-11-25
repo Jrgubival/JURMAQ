@@ -242,6 +242,11 @@ export interface PedidosStore {
    */
   retomarReembolsoEnCurso(numero: string, fechaVieja: string, nuevo: Reembolso): Promise<boolean>;
   /**
+   * Registra la devolución por transferencia pendiente de un pedido cancelado/no aprobado, pagado por transferencia, que
+   * quedó SIN devolución (el proceso se cortó). Update condicional: solo si sigue sin reembolso. false = cambió en medio.
+   */
+  registrarDevolucionTransferencia(numero: string, r: Reembolso): Promise<boolean>;
+  /**
    * Borra DEFINITIVAMENTE un pedido (herramienta MCP de borrado), en un solo delete condicional: solo si es 'cancelado',
    * nunca se pagó (`pagado_at` vacío), no tiene documento tributario ni devolución. Los registros hijos (historial)
    * se borran por la cascada de la base. Devuelve false si algo no calzó (nada se borra).
@@ -424,6 +429,20 @@ const storeSupabase: PedidosStore = {
       .eq('reembolso->>medio', 'webpay')
       .eq('reembolso->>estado', 'en_curso')
       .eq('reembolso->>fecha', fechaVieja)
+      .select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
+  },
+  async registrarDevolucionTransferencia(numero, r) {
+    const { data, error } = await db
+      .from('barraca_pedidos')
+      .update({ reembolso: r })
+      .eq('numero', numero)
+      .is('reembolso', null)
+      .in('estado', ['cancelado', 'rechazado'])
+      .not('pagado_at', 'is', null)
+      .eq('metodo_pago', 'transferencia')
+      .or('pasarela.is.null,pasarela.neq.webpay')
       .select('numero');
     if (error) throw error;
     return (data ?? []).length > 0;

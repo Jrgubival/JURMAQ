@@ -126,7 +126,9 @@ export function evaluarTransferencia(p: PedidoDinero): { ok: true } | { ok: fals
 
 export type EvaluacionCancelacion = { ok: true; medio: "webpay" | "transferencia" } | { ok: false; motivo: string; cobradoSinDevolucion?: boolean };
 
-const PANEL_REINTENTO = "En el panel, abre el pedido y usa «Reintentar devolución» (si estaba «en curso», el panel antes consulta a Transbank para no devolver dos veces).";
+const PANEL_REINTENTO = "En el panel, abre el pedido y usa «Comprobar en Transbank y reintentar» (el panel siempre consulta antes a Transbank para no devolver dos veces; si no puede confirmarlo, queda «incierta» y se cierra a mano con «Ya se devolvió» / «No se devolvió»).";
+const PANEL_TRANSFERENCIA = "En el panel, abre el pedido y usa «Registrar devolución pendiente por transferencia»; después anota la cuenta del cliente y marca «Devolución hecha» cuando transfieras.";
+const esTransferenciaPagada = (p: PedidoDinero) => p.metodo_pago === "transferencia" && p.pasarela !== "webpay";
 
 /**
  * ¿El pedido está CERRADO pero el cliente sigue cobrado y la devolución no terminó? (cancelado o no aprobado, con pago, y sin
@@ -149,7 +151,7 @@ export function evaluarCancelacion(p: PedidoDinero, extra: { archivado: boolean 
   }
   if (p.estado === "cancelado" || p.estado === "rechazado") {
     if (cobradoSinDevolucion(p)) {
-      return { ok: false, cobradoSinDevolucion: true, motivo: `Este pedido ya está cancelado y PAGADO, pero SIN devolución registrada: quedó a medias y el cliente sigue cobrado. Desde Claude no se completa (la reserva de devolución es una sola por pedido). ${PANEL_REINTENTO}` };
+      return { ok: false, cobradoSinDevolucion: true, motivo: `Este pedido ya está cancelado y PAGADO, pero SIN devolución registrada: quedó a medias y el cliente sigue cobrado. Desde Claude no se completa (la reserva de devolución es una sola por pedido). ${esTransferenciaPagada(p) ? PANEL_TRANSFERENCIA : PANEL_REINTENTO}` };
     }
     return { ok: false, motivo: "Este pedido ya está cancelado o no aprobado." };
   }
@@ -186,7 +188,7 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
       const enc = await encolarAvisoDinero(ctx.db, d, {
         usuario: ctx.usuario, herramienta: "previsualizar_cancelar_pedido_pagado", operacion: "Pedido cobrado sin devolución terminada", pedidoNumero: numero,
         clienteNombre: p.nombre, monto: p.total, medio: medioTexto(p), loteId: ctx.loteId, ahora: ctx.ahora,
-        resumen: "El pedido está cancelado o no aprobado, el cliente pagó y la devolución no terminó (o no existe). Hay que revisarlo en el panel («Reintentar devolución» o resolverla a mano).",
+        resumen: "El pedido está cancelado o no aprobado, el cliente pagó y la devolución no terminó (o no existe). Hay que revisarlo en el panel («Comprobar en Transbank y reintentar», «Registrar devolución pendiente por transferencia» o resolverla a mano).",
       });
       if (!enc.ok) return `ATENCIÓN: no pude registrar el aviso a Jorge. Avísale tú: este pedido tiene al cliente cobrado sin devolución.`;
       return textoAviso(await despacharAvisoDinero(ctx.db, d, enc.id, "error", ctx.ahora));
@@ -385,10 +387,10 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
         case "reserva_ocupada":
           throw new ErrorHerramienta("Ya hay otra devolución de este pedido en marcha o registrada (reserva exclusiva). No se hizo nada. Revisa el pedido en el panel.");
         case "cancelar_incierto":
-          throw new ErrorHerramienta(`No pude confirmar si el pedido llegó a cancelarse (falló la conexión). NO repitas la operación: la devolución quedó reservada para evitar duplicados. Revisa el pedido en el panel: si quedó cancelado y pagado sin devolución, el panel ofrece «Reintentar devolución». ${lineaAviso}`);
+          throw new ErrorHerramienta(`No pude confirmar si el pedido llegó a cancelarse (falló la conexión). NO repitas la operación: la devolución quedó reservada para evitar duplicados. Revisa el pedido en el panel: si quedó cancelado y pagado sin devolución, el panel ofrece «Comprobar en Transbank y reintentar» (Webpay) o «Registrar devolución pendiente por transferencia» (transferencia). ${lineaAviso}`);
         case "cortado": {
           const nota = await auditarSeguro(ctx, [{ entidad: "pedido", entidadId: numero, antes: { estado: p.estado }, despues: { estado: "cancelado", monto: p.total, medio: ev.medio, devolucion: "cortada_a_medias" } }]);
-          throw new ErrorHerramienta(`El proceso se CORTÓ después de cancelar el pedido ${numero}: quedó CANCELADO y el cliente puede seguir cobrado, sin devolución confirmada. NO repitas la operación (no se puede desde Claude). En el panel, abre el pedido y usa «Reintentar devolución» (antes consulta a Transbank para no devolver dos veces). ${lineaAviso}${nota}`);
+          throw new ErrorHerramienta(`El proceso se CORTÓ después de cancelar el pedido ${numero}: quedó CANCELADO y el cliente puede seguir cobrado, sin devolución confirmada. NO repitas la operación (no se puede desde Claude). ${ev.medio === "transferencia" ? PANEL_TRANSFERENCIA : PANEL_REINTENTO} ${lineaAviso}${nota}`);
         }
         case "no_cancelado":
           throw new ErrorHerramienta("El pedido cambió justo ahora (otro cambio se adelantó o ya salió) y no se canceló ni se devolvió nada. Míralo con ver_pedido y previsualiza de nuevo.");
@@ -399,7 +401,7 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
       const porEstado: Record<string, string> = {
         devolucion_hecha: `Pedido ${numero} cancelado y devolución HECHA por Webpay (${cl(p.total)}, a la tarjeta original).`,
         transferencia_pendiente: `Pedido ${numero} cancelado. La devolución por transferencia (${cl(p.total)}) quedó PENDIENTE en el panel: el cliente recibió el correo pidiéndole su cuenta; se anota y se marca hecha en el panel (o con devolucion_transferencia_hecha).`,
-        devolucion_rechazada: `Pedido ${numero} cancelado, pero Webpay RESPONDIÓ QUE NO devolvió el dinero. No se perdió nada: la devolución se reintenta SOLO desde el panel («Reintentar devolución»). No la repitas por aquí.`,
+        devolucion_rechazada: `Pedido ${numero} cancelado, pero Webpay RESPONDIÓ QUE NO devolvió el dinero. No se perdió nada: la devolución se reintenta SOLO desde el panel («Comprobar en Transbank y reintentar»: consulta antes a Transbank). No la repitas por aquí.`,
         devolucion_incierta: `Pedido ${numero} cancelado, pero NO SE SABE si Webpay devolvió el dinero (falló la conexión o el tiempo). NO la repitas ni por aquí ni en el panel: revisa el pago en el portal de Transbank y ciérrala en el panel («Ya se devolvió» / «No se devolvió»). Queda bloqueado todo reintento automático para no devolver dos veces.`,
         devolucion_en_curso: `Pedido ${numero} cancelado; la devolución ya estaba en curso desde el panel. Revísala allí. No la repitas.`,
       };

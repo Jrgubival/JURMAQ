@@ -4,6 +4,7 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { z, parseBody } from '@jurmaq/shared/validation';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { pedidos, PATRON_NUMERO } from '@/lib/pedidos';
+import { registrarDevolucionTransferenciaPendiente } from '@/lib/pedidos/rechazo';
 import { correoDevolucionHecha } from '@/lib/pedidos/correos';
 import { rutValido, formatearRut } from '@/lib/rut';
 
@@ -12,6 +13,8 @@ import { rutValido, formatearRut } from '@/lib/rut';
  * de un pedido cancelado o no aprobado que estaba pagado.
  *   { accion: 'cuenta', banco, tipo, numero, rut, titular } → anota la cuenta
  *     que mandó el cliente (por correo o WhatsApp).
+ *   { accion: 'registrar_pendiente' } → deja registrada la devolución pendiente de un
+ *     pedido pagado por transferencia que se canceló sin quedar con devolución.
  *   { accion: 'hecha' } → la barraca ya transfirió: queda "hecha" y se le
  *     avisa al cliente por correo.
  * El panel sólo registra: la transferencia la hace la barraca en su banco.
@@ -28,6 +31,8 @@ const schema = z.discriminatedUnion('accion', [
     titular: texto(120),
   }),
   z.object({ accion: z.literal('hecha') }),
+  // Pagado por transferencia, cancelado y sin devolución registrada (el proceso se cortó): deja la devolución pendiente.
+  z.object({ accion: z.literal('registrar_pendiente') }),
 ]);
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ numero: string }> }) {
@@ -43,6 +48,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!parsed.ok) return NextResponse.json({ error: 'Revisa los datos de la cuenta' }, { status: 400 });
 
   try {
+    if (parsed.data.accion === 'registrar_pendiente') {
+      const reg = await registrarDevolucionTransferenciaPendiente(numero, session.user?.email ?? null);
+      if (!reg.ok) return NextResponse.json({ error: reg.error }, { status: reg.status });
+      logSafe('admin-devolucion-registrada-pendiente', { numero, por: session.user?.id ?? null });
+      return NextResponse.json({ ok: true });
+    }
     const store = pedidos();
     const pedido = await store.porNumero(numero);
     if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });

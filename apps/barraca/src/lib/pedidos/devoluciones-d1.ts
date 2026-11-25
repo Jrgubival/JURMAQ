@@ -80,9 +80,11 @@ export const TEXTO_ESTADO_DEVOLUCION: Record<EstadoDevolucion, string> = {
  * que seguían a medias; una fila ya terminada no se toca. Devuelve true si cambió algo.
  */
 export async function sincronizarDevolucionPanel(
-  db: D1Like, numero: string, hacia: "devolucion_hecha" | "devolucion_rechazada" | "devolucion_incierta" | "devolucion_en_curso", ahora: number, detalle = "resuelta desde el panel",
+  db: D1Like, numero: string, hacia: "devolucion_hecha" | "devolucion_rechazada" | "devolucion_incierta" | "devolucion_en_curso" | "transferencia_pendiente", ahora: number, detalle = "resuelta desde el panel",
 ): Promise<boolean> {
-  const desde: EstadoDevolucion[] = hacia === "devolucion_en_curso"
+  const desde: EstadoDevolucion[] = hacia === "transferencia_pendiente"
+    ? ["devolucion_reservada", "devolucion_en_curso"]
+    : hacia === "devolucion_en_curso"
     ? ["devolucion_reservada"]
     : hacia === "devolucion_incierta" ? ["devolucion_reservada", "devolucion_en_curso"] : [...ESTADOS_A_MEDIAS];
   return pasarDevolucion(db, numero, desde, hacia, ahora, detalle);

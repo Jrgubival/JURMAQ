@@ -101,39 +101,55 @@ export interface DepsRetomarDevolucion extends DepsDevolucionWebpay {
   estadoTransaccion(token: string): Promise<{ estado: string | null; monto: number | null; saldo: number | null }>;
 }
 
+export type DesdeDevolucion = { tipo: "sin_registro" } | { tipo: "error" } | { tipo: "en_curso"; fecha: string };
+
 /**
- * Reintento SEGURO de una devolución que quedó «en curso» y ya es vieja. No se sabe si el proceso murió antes o después de
- * hablar con Transbank, así que ANTES de pedir nada se consulta el estado real (solo lectura):
+ * Reintento SEGURO de una devolución (sin registro, en «error» o «en curso» vieja). Un `error` guardado puede ser mentira
+ * (el código anterior guardaba `error` ante cualquier excepción, timeouts incluidos: Transbank pudo haber devuelto), y un
+ * «en curso» no dice si el proceso murió antes o después de hablar con Transbank. Por eso en TODOS los casos, ANTES de pedir
+ * nada, se consulta el estado real de la transacción (solo lectura):
  *  - REVERSED o NULLIFIED  → ya se devolvió: se deja «hecho» sin pedir otra.
- *  - AUTHORIZED            → sigue cobrada, sin devolución: se pide una (con el candado tomado de forma atómica).
- *  - cualquier otra cosa, o no se pudo consultar → «incierto» (se resuelve a mano; nunca se pide a ciegas).
- * El candado es un update condicional contra la misma fecha: dos clics a la vez = uno solo avanza.
+ *  - AUTHORIZED con el monto y el saldo íntegros → sigue cobrada, sin devolución: se pide una (candado ya tomado).
+ *  - cualquier otra cosa (parcial, monto raro, no se pudo consultar) → «incierto» (se resuelve a mano; nunca a ciegas).
+ * El candado es atómico: sin registro/error con `tomarReembolso` (solo si no hay reembolso o falló); «en curso» con un update
+ * condicional contra la misma fecha. Dos clics a la vez = uno solo avanza.
  */
-export async function retomarDevolucionEnCurso(
-  deps: DepsRetomarDevolucion, p: PedidoParaDevolver & { fechaEnCurso: string },
+export async function reintentarDevolucionConsultando(
+  deps: DepsRetomarDevolucion, p: PedidoParaDevolver, desde: DesdeDevolucion,
 ): Promise<{ resultado: ResultadoDevolucionWebpay; sinRegistro?: boolean }> {
   const ahora = deps.ahora ?? (() => new Date().toISOString());
   const base = { medio: "webpay" as const, monto: p.total };
-  if (!(await deps.retomarReembolso(p.numero, p.fechaEnCurso, { ...base, estado: "en_curso", fecha: ahora() }))) return { resultado: "ocupada" };
+  const candado: Reembolso = { ...base, estado: "en_curso", fecha: ahora() };
+  const tomado = desde.tipo === "en_curso" ? await deps.retomarReembolso(p.numero, desde.fecha, candado) : await deps.tomarReembolso(p.numero, candado);
+  if (!tomado) return { resultado: "ocupada" };
   const guardar = async (r: Reembolso): Promise<boolean> => {
     for (let i = 0; i < 2; i++) {
       try { await deps.guardarReembolso(p.numero, r); return true; } catch { /* reintento */ }
     }
     return false;
   };
+  const incierta = async () => {
+    const sinRegistro = !(await guardar({ ...base, estado: "incierto", fecha: ahora() }));
+    return { resultado: "incierta" as const, ...(sinRegistro ? { sinRegistro } : {}) };
+  };
   let t: { estado: string | null; monto: number | null; saldo: number | null };
   try {
     t = await deps.estadoTransaccion(p.pasarela_referencia);
   } catch (error) {
     deps.log?.("admin-pedido-reembolso-estado-error", { numero: p.numero, error: String(error).slice(0, 200) });
-    const sinRegistro = !(await guardar({ ...base, estado: "incierto", fecha: ahora() }));
-    return { resultado: "incierta", ...(sinRegistro ? { sinRegistro } : {}) };
+    return incierta();
   }
   if (t.estado === "REVERSED" || t.estado === "NULLIFIED") {
     const sinRegistro = !(await guardar({ ...base, estado: "hecho", tipo: t.estado, autorizacion: null, fecha: ahora(), hecho_at: ahora(), hecho_por: "comprobado en Transbank" }));
     return { resultado: "hecho", ...(sinRegistro ? { sinRegistro } : {}) };
   }
-  if (t.estado === "AUTHORIZED") return pedirYGuardarReembolso(deps, p);
-  const sinRegistro = !(await guardar({ ...base, estado: "incierto", fecha: ahora() }));
-  return { resultado: "incierta", ...(sinRegistro ? { sinRegistro } : {}) };
+  if (t.estado === "AUTHORIZED" && t.monto === p.total && (t.saldo === null || t.saldo === t.monto)) return pedirYGuardarReembolso(deps, p);
+  return incierta();
+}
+
+/** Reintento de una devolución «en curso» colgada (compatibilidad: ver `reintentarDevolucionConsultando`). */
+export async function retomarDevolucionEnCurso(
+  deps: DepsRetomarDevolucion, p: PedidoParaDevolver & { fechaEnCurso: string },
+): Promise<{ resultado: ResultadoDevolucionWebpay; sinRegistro?: boolean }> {
+  return reintentarDevolucionConsultando(deps, p, { tipo: "en_curso", fecha: p.fechaEnCurso });
 }

@@ -186,6 +186,13 @@ export function crearStoreArchivo(): PedidosStore {
       editar(numero, (p) => { if (p.reembolso?.medio === 'webpay' && p.reembolso.estado === 'en_curso' && p.reembolso.fecha === fechaVieja) { p.reembolso = nuevo; ok = true; } });
       return ok;
     },
+    async registrarDevolucionTransferencia(numero, r) {
+      let ok = false;
+      editar(numero, (p) => {
+        if (!p.reembolso && ['cancelado', 'rechazado'].includes(p.estado) && p.pagado_at && p.metodo_pago === 'transferencia' && p.pasarela !== 'webpay') { p.reembolso = r; ok = true; }
+      });
+      return ok;
+    },
     async borrarPedidoNuncaPagado(numero) {
       const p = leer().find((x) => x.numero === numero);
       if (!p || p.estado !== 'cancelado' || p.pagado_at || p.documento_path || p.documento_subido_at || p.documento_enviado_at || p.reembolso

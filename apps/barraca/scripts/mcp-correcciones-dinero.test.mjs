@@ -253,7 +253,7 @@ test("muere el proceso DESPUÉS de cancelar: queda cancelado y cobrado, se avisa
   const m = await montar({ pedidos: [webpayPagado("A")] });
   m.deps.devolverWebpay = async () => { throw new Error("worker muerto"); };
   const v = await m.llamar("previsualizar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente" });
-  await m.falla("confirmar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente", monto: 15000, id_vista_previa: v.datos.idVistaPrevia }, /se CORTÓ después de cancelar[^]*NO repitas[^]*Reintentar devolución/);
+  await m.falla("confirmar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente", monto: 15000, id_vista_previa: v.datos.idVistaPrevia }, /se CORTÓ después de cancelar[^]*NO repitas[^]*Comprobar en Transbank y reintentar/);
   const p = m.store.mapa.get(NUM("A"));
   assert.equal(p.estado, "cancelado");
   assert.equal(p.reembolso, null, "el cliente sigue cobrado y sin devolución registrada");
@@ -261,7 +261,7 @@ test("muere el proceso DESPUÉS de cancelar: queda cancelado y cobrado, se avisa
   assert.ok(m.correos.some((c) => /Cancelar pedido pagado/.test(c.asunto) && c.filas.some((f) => /falló|no se pudo confirmar/i.test(f.valor))), "aviso a Jorge con resultado de error");
   // la vista previa siguiente explica la situación y avisa a Jorge (una sola vez)
   const antes = m.correos.length;
-  await m.falla("previsualizar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente" }, /ya está cancelado y PAGADO, pero SIN devolución[^]*Reintentar devolución/);
+  await m.falla("previsualizar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente" }, /ya está cancelado y PAGADO, pero SIN devolución[^]*Comprobar en Transbank y reintentar/);
   assert.equal(m.correos.length, antes + 1);
   assert.match(m.correos.at(-1).asunto, /Pedido cobrado sin devolución terminada/);
   await m.falla("previsualizar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente" }, /SIN devolución/);
@@ -348,7 +348,7 @@ test("el panel ofrece el reintento seguro en los tres estados colgados (revisió
   assert.match(ui, /devolucionColgada/);
   assert.match(ui, /MINUTOS_EN_CURSO_VIEJO/);
   const rechazo = readFileSync(new URL("../src/lib/pedidos/rechazo.ts", import.meta.url), "utf8");
-  assert.match(rechazo, /retomarDevolucionEnCurso/);
+  assert.match(rechazo, /reintentarDevolucionConsultando/);
   assert.match(rechazo, /sincronizarConMcp\(numero, resultado === 'hecha'/);
 });
 
