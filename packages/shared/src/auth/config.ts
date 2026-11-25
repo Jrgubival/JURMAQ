@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
 import { env } from '@jurmaq/shared/env';
+import { esEntornoProduccion } from './entorno-cookies';
 
 /**
  * Aislamiento de sesión entre barraca y constructora:
@@ -20,7 +21,12 @@ import { env } from '@jurmaq/shared/env';
  *   ese prefijo requiere HTTPS. El aislamiento por scope sigue activo a
  *   nivel JWT.
  */
-const IS_PROD = env.NODE_ENV === 'production';
+// Ver entorno-cookies.ts: el middleware y la ruta de login deben coincidir en el nombre de la cookie.
+const IS_PROD = esEntornoProduccion({
+  nodeEnv: process.env.NODE_ENV,
+  despliegue: process.env.DESPLIEGUE,
+  authUrl: process.env.AUTH_URL ?? process.env.NEXTAUTH_URL,
+});
 
 function getAuthScope(): 'barraca' | 'constructora' | 'rental' | 'app' {
   const s = env.AUTH_SCOPE?.trim().toLowerCase();
