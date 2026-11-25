@@ -87,7 +87,7 @@ Rama `claude/mcp-tienda` (base 7a4923b). Este archivo lo amplían todas las piez
 
 ## 4. Pendientes y riesgos de esta pieza
 - Crear la D1 real, poner el `database_id` y aplicar migraciones: lo hace Jorge al publicar.
-- `next build` pelado devuelve exit 1 por el aviso `SecurityFatalError` (versión de Next afectada por una vulnerabilidad conocida, Next 16.4.3 fijado en el `package.json` raíz) después de compilar y generar todas las rutas; `opennextjs-cloudflare build` termina bien. Actualizar Next es decisión de Jorge.
+- Resuelto (25-11-2026): Next actualizado de 16.4.3 a 16.4.6 en todo el monorepo (overrides de `package.json` raíz y `pnpm-workspace.yaml`, más las 4 apps y `packages/shared`). Con 16.4.6 `next build` y `opennextjs-cloudflare build` terminan con exit 0 y ya no sale el `SecurityFatalError`. `@opennextjs/cloudflare` sigue en 1.20.15 (su peer acepta `>=16.4.1`; existe 1.20.18, que exige `>=16.4.5`, sin actualizar porque 1.20.15 compila y la tabla de rutas quedó idéntica).
 
 ## 5. Conexión de Claude: servidor MCP, OAuth, aprobaciones, /admin/conexiones (pieza A)
 
