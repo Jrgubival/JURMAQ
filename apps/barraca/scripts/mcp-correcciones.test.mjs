@@ -45,10 +45,9 @@ test("combo: el precio unitario implícito cuenta como variación y como precio 
   // combo que baja el precio unitario más de 30 %: 3 por 1800 (600 c/u, 40 %)
   const fuerte = await ev(db, [{ ...base, precioComboUnitario: 600 }]);
   assert.ok(fuerte.motivos.includes("variacion_precio"));
-  // combo_precio = 1: precio unitario ridículo, pide aprobación (variación y bajo costo)
-  const uno = await ev(db, [{ ...base, precioComboUnitario: 1 }]);
-  assert.ok(uno.motivos.includes("variacion_precio") && uno.motivos.includes("precio_bajo_costo"));
-  // combo bajo el costo
+  // combo_precio = 1: precio unitario ridículo, es un TOPE DURO (bajo el 50 % del costo): error, no aprobación
+  await assert.rejects(ev(db, [{ ...base, precioComboUnitario: 1 }]), /tope duro/);
+  // combo bajo el costo (pero sobre el 50 %): pide aprobación
   assert.ok((await ev(db, [{ ...base, precioComboUnitario: 150 }])).motivos.includes("precio_bajo_costo"));
   // combo que mejora el anterior (sube el unitario) no es una baja
   const sube = await ev(db, [{ ...base, costo: null, precioComboUnitario: 950, comboUnitarioAntes: 900 }]);
@@ -68,11 +67,11 @@ test("sin costo cargado: una baja de precio no se puede medir y queda pendiente 
   assert.equal((await ev(db, [{ clave: "S", precioAntes: 1000, precioDespues: 990, costo: 100 }])).requiere, false);
 });
 
-test("editar_producto: combo_precio = 1 y bajar el precio de un producto sin costo quedan pendientes y no se aplican", async () => {
+test("editar_producto: un combo muy barato y bajar el precio de un producto sin costo quedan pendientes y no se aplican", async () => {
   const db = nuevaDb();
   const T = crearTienda([ficha({ id: 1, codigo: "A", precio: 1000, costo: 100 }), ficha({ id: 2, codigo: "S", precio: 1000, costo: null })]);
   const ctx = (t) => crearCtx(db, JORGE, t, "editar_producto");
-  const c1 = await Prod.editarProducto(T.deps, ctx(T0), { codigo: "A", combo_cantidad: 2, combo_precio: 1 });
+  const c1 = await Prod.editarProducto(T.deps, ctx(T0), { codigo: "A", combo_cantidad: 2, combo_precio: 120 });
   assert.match(c1.texto, /necesita el OK de Jorge/);
   assert.equal(T.filas[0].combo_precio, null, "no se escribió");
   assert.ok(T.correos[0].motivos.includes("variacion_precio"));
@@ -88,9 +87,9 @@ test("editar_producto: combo_precio = 1 y bajar el precio de un producto sin cos
   assert.equal(c3.datos.aplicado, true);
   // tras el OK de Jorge se aplica el combo
   await aprobarUltimoCorreo(db, [T.correos[0]], A.resolverAprobacion);
-  const c4 = await Prod.editarProducto(T.deps, ctx(T0 + 3), { codigo: "A", combo_cantidad: 2, combo_precio: 1 });
+  const c4 = await Prod.editarProducto(T.deps, ctx(T0 + 3), { codigo: "A", combo_cantidad: 2, combo_precio: 120 });
   assert.equal(c4.datos.aplicado, true);
-  assert.equal(T.filas[0].combo_precio, 1);
+  assert.equal(T.filas[0].combo_precio, 120);
 });
 
 // ───────── 6. Deshacer con las mismas reglas ─────────

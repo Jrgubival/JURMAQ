@@ -265,14 +265,14 @@ export async function crearProducto(deps: DepsGestion, ctx: CtxGestion, e: Entra
 
   const local = e.precio_local ?? e.precio_web;
   const precios = { precio: e.precio_web, precio_original: local > e.precio_web ? local : null, en_oferta: local > e.precio_web };
-  const ev = await evaluarCambioPrecios(ctx.db, { usuarioId: ctx.usuario.id, cambios: [{ clave: codigo, precioAntes: e.precio_web, precioDespues: e.precio_web, costo: e.costo ?? null }], ahora: ctx.ahora });
+  const ev = await evaluarCambioPrecios(ctx.db, { usuarioId: ctx.usuario.id, cambios: [{ clave: codigo, precioAntes: e.precio_web, precioDespues: e.precio_web, costo: e.costo ?? null, nuevo: true }], ahora: ctx.ahora });
   if (ev.requiere) {
     const huella = await huellaDeDatos({ v: 1, h: "crear_producto", codigo, nombre, precios, costo: e.costo ?? null });
     const r = await exigirAprobacion(ctx.db, deps.aprobacion, {
       usuario: ctx.usuario, herramienta: "crear_producto", motivos: ev.motivos, huella,
       resumen: `Crear el producto ${codigo} (${nombre}) a ${pesos(e.precio_web)}.`,
       detalle: { codigo, nombre, precio_web: e.precio_web, costo: e.costo ?? null, motivos: ev.motivosTexto },
-      cambios: [{ clave: codigo, precioAntes: e.precio_web, precioDespues: e.precio_web, costo: e.costo ?? null }],
+      cambios: [{ clave: codigo, precioAntes: e.precio_web, precioDespues: e.precio_web, costo: e.costo ?? null, nuevo: true }],
     }, ctx.ahora);
     if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, motivos: ev.motivosTexto } };
     if (!(await r.gastar())) throw new ErrorGestion("La aprobación de Jorge ya se había usado. No se creó nada; vuelve a pedirlo.");

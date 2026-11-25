@@ -23,6 +23,7 @@ import {
   type Acumulado24h, type MotivoAprobacion,
 } from "../mcp/aprobaciones.ts";
 import { variacionPct } from "./modelo.ts";
+import { exigirTopesDuros, type PrecioARevisar } from "./topes.ts";
 
 /** Un cambio de precio de un producto (una ficha). `clave` = código: las fichas repetidas cuentan como uno. */
 export interface CambioEvaluable {
@@ -34,6 +35,8 @@ export interface CambioEvaluable {
   localAntes?: number | null;
   localDespues?: number | null;
   costo?: number | null;
+  /** Producto nuevo (crear_producto): su precio se revisa contra los topes duros aunque «antes» y «después» sean iguales. */
+  nuevo?: boolean;
   /** Precio unitario de combo (combo_precio / combo_cantidad), si el cambio lo toca. */
   precioComboUnitario?: number | null;
   /** Precio unitario implícito del combo que tenía antes (si tenía). */
@@ -71,6 +74,13 @@ export async function evaluarCambioPrecios(
   db: D1Like,
   e: { usuarioId: string; cambios: CambioEvaluable[]; banderas?: MotivoAprobacion[]; ahora?: number },
 ): Promise<EvaluacionCambio> {
+  // Topes duros, en ambos modos y antes que nada: precio 0 o negativo, o venta bajo el 50 % del costo. Lanza ErrorTopeDuro.
+  const topes: PrecioARevisar[] = [];
+  for (const c of e.cambios) {
+    topes.push({ clave: c.clave, precio: c.precioDespues, costo: c.costo, sinCambio: !c.nuevo && c.precioDespues === c.precioAntes });
+    if (c.precioComboUnitario) topes.push({ clave: `${c.clave} (combo)`, precio: c.precioComboUnitario, costo: c.costo });
+  }
+  exigirTopesDuros(topes);
   const acumulado: Acumulado24h = await leerAcumulado(db, e.usuarioId, e.ahora);
   const productos = resumirPorProducto(e.cambios);
   const precios: Array<{ precio: number; costo?: number | null; baja?: boolean }> = [];

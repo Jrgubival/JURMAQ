@@ -21,6 +21,7 @@ import type { D1Like, EntradaAuditoria, UsuarioGestion } from "../gestion/index.
 import { huellaDeDatos } from "../gestion/util.ts";
 import type { MotivoAprobacion } from "../mcp/aprobaciones.ts";
 import { exigirAprobacion } from "./aprobacion.ts";
+import { ErrorTopeDuro } from "./topes.ts";
 import type { DepsGestion } from "./deps.ts";
 import { precioLocalDe, precioWebDe } from "./modelo.ts";
 import { type CambioEvaluable, evaluarCambioPrecios, registrarCambioAplicado } from "./reglas.ts";
@@ -153,7 +154,14 @@ export async function revertirEntradas(deps: DepsGestion, ctx: CtxRevertir, entr
     const motivos: MotivoAprobacion[] = [];
     let textoMotivos: string[] = [];
     if (evaluables.length) {
-      const ev = await evaluarCambioPrecios(ctx.db, { usuarioId, cambios: evaluables, ahora: ctx.ahora });
+      let ev;
+      try {
+        ev = await evaluarCambioPrecios(ctx.db, { usuarioId, cambios: evaluables, ahora: ctx.ahora });
+      } catch (e) {
+        // Tope duro (precio 0 o bajo el 50 % del costo de hoy): restaurar ese valor no se puede ni con el OK de Jorge.
+        if (e instanceof ErrorTopeDuro) return { ok: false, mensaje: `No se puede deshacer: ${e.message}` };
+        throw e;
+      }
       if (ev.requiere) { requiere = true; motivos.push(...ev.motivos); textoMotivos = ev.motivosTexto; }
     }
     const zonasARestaurar = accZona.filter((z) => z.tipo === "restaurar");

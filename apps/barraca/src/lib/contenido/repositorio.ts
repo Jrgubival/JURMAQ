@@ -12,6 +12,7 @@
  *     que el servicio de aprobaciones llame a `aprobarPendiente`.
  *   - Cada acción queda en la auditoría de gestión (lib/gestion).
  */
+import { agregaDatosDePago, MENSAJE_DATOS_DE_PAGO } from "./datos-pago.ts";
 import { registrarCambio } from "../gestion/auditoria.ts";
 import { GestionEntradaError, type D1Like } from "../gestion/tipos.ts";
 import { desdeJson } from "../gestion/util.ts";
@@ -313,6 +314,8 @@ export async function publicar(
   }
 
   const efectivoHoy = leerValor(clave, actual?.publicado ?? null) ?? respaldoDe(clave);
+  // Tope duro (ambos modos de aprobación): no se agregan ni cambian datos bancarios ni enlaces de pago, aunque Jorge quisiera aprobarlos.
+  if (agregaDatosDePago(JSON.stringify(efectivoHoy), json)) return { ok: false, motivo: "invalido", errores: [MENSAJE_DATOS_DE_PAGO] };
   const pideAprobacion = publicacionRequiereAprobacion(clave, efectivoHoy, v.valor) && !args.aprobacion;
   const nota = notaLimpia(args.nota);
   const aprobadoPor = args.aprobacion?.aprobadoPor ?? null;

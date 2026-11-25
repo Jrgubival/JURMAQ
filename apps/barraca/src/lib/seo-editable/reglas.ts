@@ -14,6 +14,7 @@
  *   - nada inventado: ni reseñas o estrellas, ni precios en pesos, ni plazos de
  *     entrega prometidos. Los precios cambian y Google los compara con la ficha.
  */
+import { contieneDatosDePago, MENSAJE_DATOS_DE_PAGO } from "../contenido/datos-pago.ts";
 import { limpiarCaracteres } from "../contenido/markdown.ts";
 
 export const TITULO_IDEAL = 60;
@@ -93,6 +94,8 @@ export function validarSeo(e: EntradaSeo): ResultadoSeo {
   const ot = validarCampo("Título para redes", e.ogTitulo, TITULO_IDEAL, TITULO_MAX, TITULO_MIN_SUGERIDO);
   const od = validarCampo("Descripción para redes", e.ogDescripcion, DESCRIPCION_IDEAL, DESCRIPCION_MAX, DESCRIPCION_MIN_SUGERIDA);
   const errores = [...t.errores, ...d.errores, ...ot.errores, ...od.errores];
+  // Tope duro (ambos modos de aprobación): ni datos bancarios ni enlaces de pago.
+  if (contieneDatosDePago([e.titulo, e.descripcion, e.ogTitulo, e.ogDescripcion].filter((x) => typeof x === "string").join("\n"))) errores.push(MENSAJE_DATOS_DE_PAGO);
   const advertencias = [...t.advertencias, ...d.advertencias, ...ot.advertencias, ...od.advertencias];
   const valor: CamposSeo = { titulo: t.valor, descripcion: d.valor, ogTitulo: ot.valor, ogDescripcion: od.valor };
   if (valor.titulo === null && valor.descripcion === null && valor.ogTitulo === null && valor.ogDescripcion === null && errores.length === 0) {

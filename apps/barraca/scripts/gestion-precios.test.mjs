@@ -490,7 +490,7 @@ test("crear producto: queda oculto, no repite códigos, slug único y aprobació
   assert.equal(T.filas.at(-1).activo, false);
   await assert.rejects(Prod.crearProducto(T.deps, ctx(), { codigo: "N-1", nombre: "Otro", precio_web: 100 }), /Ya existe/);
   await assert.rejects(Prod.crearProducto(T.deps, ctx(), { codigo: "N-2", nombre: "X", precio_web: 0 }), /entero de pesos/);
-  const pend = await Prod.crearProducto(T.deps, ctx(), { codigo: "N-3", nombre: "Barato", precio_web: 100, costo: 500 });
+  const pend = await Prod.crearProducto(T.deps, ctx(), { codigo: "N-3", nombre: "Barato", precio_web: 100, costo: 150 });
   assert.equal(pend.datos.aplicado, false);
   assert.equal(T.filas.some((f) => f.codigo === "N-3"), false);
   // deshacer = ocultar, nunca borrar

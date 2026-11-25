@@ -1050,7 +1050,7 @@ test("moderar_opinion «mostrar»: tampoco si lo último en la auditoría de esa
 test("textos libres con desvío necesitan a Jorge: popup con teléfono, cinta con enlace ajeno, envíos con correo; jurmaq.cl y lo ya presente, no", async () => {
   const casos = [
     ["popup", { titular: "Escríbenos al +56 9 1111 2222" }],
-    ["cinta", { texto: "Oferta", enlace: { texto: "Ver", enlace: "https://pagos.example/cobro" } }],
+    ["cinta", { texto: "Oferta", enlace: { texto: "Ver", enlace: "https://ofertas.example/cobro" } }],
     ["contacto", { nota: "Pagos a pagos@gmail.com" }],
   ];
   for (const [clave, cambios] of casos) {

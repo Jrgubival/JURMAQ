@@ -10,6 +10,7 @@
  * y todo se escapa al convertir, así que lo que llega a la página nunca trae
  * etiquetas que no sean p, ul, ol, li, h3, strong y a.
  */
+import { contieneDatosDePago, MENSAJE_DATOS_DE_PAGO } from "../contenido/datos-pago.ts";
 import { enlaceSeguro, sanearMarkdown, sanearTextoPlano } from "../contenido/markdown.ts";
 import { limpiarTextoSeo } from "./reglas.ts";
 import type { GuiaSEO } from "../guias-seo-data.ts";
@@ -218,6 +219,8 @@ export function validarGuia(entrada: unknown): ResultadoGuia {
       else if (!relacionadas.includes(s)) relacionadas.push(s);
     }
   }
+  // Tope duro (ambos modos de aprobación): ni datos bancarios ni enlaces de pago.
+  if (contieneDatosDePago(JSON.stringify([titulo, h1, descripcionMeta, intro, secciones, faq]))) errores.push(MENSAJE_DATOS_DE_PAGO);
   if (errores.length > 0) return { ok: false, errores };
   const valor: GuiaEditable = { slug, titulo, descripcionMeta, h1, intro, secciones, faq, categoriaSlugRelacionada, categoriaNombre, guiasRelacionadas: relacionadas };
   if (JSON.stringify(valor).length > MAX_JSON_GUIA) return { ok: false, errores: [`La guía completa es demasiado larga (máximo ${MAX_JSON_GUIA} caracteres en total).`] };
