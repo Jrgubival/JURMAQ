@@ -139,6 +139,8 @@ export interface Filtros {
   medio: Medio;
   zona: ZonaFiltro;
   q: string;
+  /** Pedidos archivados (herramientas MCP): excluidos por defecto; `solo` los muestra, `incluir` los mezcla. */
+  archivados: 'excluir' | 'incluir' | 'solo';
 }
 
 export function leerFiltros(sp: { get(k: string): string | null }): Filtros {
@@ -150,6 +152,7 @@ export function leerFiltros(sp: { get(k: string): string | null }): Filtros {
     medio: medio === 'webpay' || medio === 'transferencia' ? medio : 'todos',
     zona: OPCIONES_ZONA.some((z) => z.id === zona) ? (zona as string) : 'todas',
     q: (sp.get('q') ?? '').trim().slice(0, 80),
+    archivados: sp.get('archivados') === 'solo' || sp.get('archivados') === 'incluir' ? (sp.get('archivados') as 'solo' | 'incluir') : 'excluir',
   };
 }
 

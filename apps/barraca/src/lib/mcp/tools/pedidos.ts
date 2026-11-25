@@ -19,6 +19,7 @@ import {
 import { detallePedido, filaListado, ETIQUETA_ESTADO_MCP, type PedidoCrudo } from "../../pedidos/vista-mcp.ts";
 import { agregarNota, borrarNota, notasDePedido, MAX_NOTA } from "../../pedidos/notas.ts";
 import { PATRON_NUMERO } from "../../pedidos/numero.ts";
+import { cargarArchivados, estaArchivado, filtrarArchivados } from "../../pedidos/archivados.ts";
 import { limitesPeriodo, resolverPeriodo, diaValido, sumarDias, diaChile } from "../../admin/ventas.ts";
 import type { EstadoPedido } from "../../pedidos/index.ts";
 
@@ -75,6 +76,7 @@ export function crearHerramientasPedidos(deps: DepsPedidos = depsPedidosReales):
       estado: z.enum(ESTADOS).optional().describe("Solo pedidos en este estado."),
       desde: zDia.optional().describe("AAAA-MM-DD; por defecto hace 30 días."),
       hasta: zDia.optional().describe("AAAA-MM-DD, incluido; por defecto hoy."),
+      archivados: z.enum(["solo", "incluir"]).optional().describe("Los archivados no salen por defecto: «solo» los muestra, «incluir» los mezcla."),
       pagina: z.number().int().min(1).max(200).optional().describe("Página, desde 1."),
       por_pagina: z.number().int().min(1).max(POR_PAGINA_MAX).optional().describe("Pedidos por página (máximo 25)."),
     }),
@@ -89,7 +91,9 @@ export function crearHerramientasPedidos(deps: DepsPedidos = depsPedidosReales):
       const lim = limitesPeriodo(periodo);
       const puerto = await deps.puerto();
       const todos = await puerto.listarRango({ desde: lim.desde, hasta: lim.hasta, limite: LIMITE_LISTADO });
-      const filtrados = a.estado ? todos.filter((p) => p.estado === a.estado) : todos;
+      let sinArch = todos;
+      try { sinArch = filtrarArchivados(todos, await cargarArchivados(ctx.db), a.archivados ?? "excluir"); } catch { /* sin la tabla de archivados: lista completa */ }
+      const filtrados = a.estado ? sinArch.filter((p) => p.estado === a.estado) : sinArch;
       const porPagina = a.por_pagina ?? 20;
       const total = filtrados.length;
       const paginas = Math.max(1, Math.ceil(total / porPagina));
@@ -121,7 +125,7 @@ export function crearHerramientasPedidos(deps: DepsPedidos = depsPedidosReales):
       const p = await puerto.porNumero(numero);
       if (!p) throw new ErrorHerramienta("No encontré ese pedido.");
       const notas = await notasDePedido(ctx.db, numero).catch(() => []);
-      const d = detallePedido(p, notas);
+      const d = { ...detallePedido(p, notas), archivado: await estaArchivado(ctx.db, numero).catch(() => false) };
       const items = d.items.map((i) => `- ${i.cantidad} x ${i.nombre}${i.medida ? ` (${i.medida})` : ""}${i.codigo ? ` [${i.codigo}]` : ""}: ${cl(i.subtotal)}`).join("\n");
       const t = d.totales;
       const partes = [

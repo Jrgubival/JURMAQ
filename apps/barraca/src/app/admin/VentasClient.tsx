@@ -27,7 +27,7 @@ interface Props {
   puedeExportar: boolean;
 }
 
-type Cambios = Partial<{ periodo: string; desde: string; hasta: string; estado: string; medio: string; zona: string; q: string }>;
+type Cambios = Partial<{ periodo: string; desde: string; hasta: string; estado: string; medio: string; zona: string; q: string; archivados: string }>;
 
 function armarQuery(periodo: Periodo, f: Filtros, cambios: Cambios): string {
   const v = {
@@ -38,6 +38,7 @@ function armarQuery(periodo: Periodo, f: Filtros, cambios: Cambios): string {
     medio: f.medio as string,
     zona: f.zona,
     q: f.q,
+    archivados: f.archivados as string,
     ...cambios,
   };
   const sp = new URLSearchParams();
@@ -47,6 +48,7 @@ function armarQuery(periodo: Periodo, f: Filtros, cambios: Cambios): string {
   if (v.medio !== "todos") sp.set("medio", v.medio);
   if (v.zona !== "todas") sp.set("zona", v.zona);
   if (v.q.trim()) sp.set("q", v.q.trim());
+  if (v.archivados !== "excluir") sp.set("archivados", v.archivados);
   return sp.toString();
 }
 
@@ -98,7 +100,7 @@ export default function VentasClient({ periodo, filtros, filas, totales, conteos
   const verPendientes = (estado: GrupoEstado) =>
     ir({ estado, periodo: "rango", desde: sumarDias(hoy, -89), hasta: hoy });
 
-  const hayFiltros = filtros.estado !== "todos" || filtros.medio !== "todos" || filtros.zona !== "todas" || !!filtros.q;
+  const hayFiltros = filtros.archivados !== "excluir" || filtros.estado !== "todos" || filtros.medio !== "todos" || filtros.zona !== "todas" || !!filtros.q;
   const qsExport = armarQuery(periodo, filtros, {});
 
   const avisos = [
@@ -253,6 +255,14 @@ export default function VentasClient({ periodo, filtros, filas, totales, conteos
             </select>
           </label>
           <label>
+            <span className="sr-only">Pedidos archivados</span>
+            <select value={filtros.archivados} onChange={(e) => ir({ archivados: e.target.value })} className={claseSelect}>
+              <option value="excluir">Sin archivados</option>
+              <option value="solo">Solo archivados</option>
+              <option value="incluir">Con archivados</option>
+            </select>
+          </label>
+          <label>
             <span className="sr-only">Entrega o zona de despacho</span>
             <select value={filtros.zona} onChange={(e) => ir({ zona: e.target.value })} className={claseSelect}>
               {OPCIONES_ZONA.map((z) => <option key={z.id} value={z.id}>{z.label}</option>)}
@@ -269,7 +279,7 @@ export default function VentasClient({ periodo, filtros, filas, totales, conteos
             {pendiente && <span className="ml-2 text-[13px] font-normal text-[#8A8884]">actualizando…</span>}
           </h2>
           {hayFiltros && (
-            <button type="button" onClick={() => { setQ(""); ir({ estado: "todos", medio: "todos", zona: "todas", q: "" }); }}
+            <button type="button" onClick={() => { setQ(""); ir({ estado: "todos", medio: "todos", zona: "todas", q: "", archivados: "excluir" }); }}
               className="min-h-[44px] text-[14px] font-semibold text-marca-700 hover:text-marca-800">
               Quitar filtros
             </button>

@@ -9,16 +9,20 @@ const { registro } = await import("../src/lib/mcp/tools/index.ts");
 const { listarHerramientasMcp, compactarEsquema } = await import("../src/lib/mcp/servidor.ts");
 const { SECCIONES, TEMAS, guia } = await import("../src/lib/mcp/tools/guia.ts");
 
-const TOPE_BYTES = 85_000;
+const TOPE_BYTES = 85_000; // listado BASE (sin el permiso de dinero y borrado)
+const TOPE_BYTES_COMPLETO = 95_000; // listado COMPLETO (con tienda:dinero): solo lo ve quien dio ese permiso
 
-test(`tools/list real pesa menos de ${TOPE_BYTES / 1000} KB (con escritura y solo lectura)`, () => {
+test(`tools/list BASE pesa menos de ${TOPE_BYTES / 1000} KB y el COMPLETO menos de ${TOPE_BYTES_COMPLETO / 1000} KB`, () => {
   const todo = listarHerramientasMcp(registro, true);
+  const nombresDinero = new Set(registro.lista().filter((h) => h.scope === "tienda:dinero").map((h) => h.nombre));
+  assert.ok(nombresDinero.size >= 9 && todo.every((t) => !nombresDinero.has(t.name)), "el listado BASE no trae herramientas de dinero");
   const bytes = Buffer.byteLength(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { tools: todo } }), "utf8");
   assert.ok(bytes <= TOPE_BYTES, `tools/list pesa ${bytes} bytes (${todo.length} herramientas); el tope es ${TOPE_BYTES}. Acorta descripciones o esquemas, o mueve reglas repetidas al tema que corresponda de «guia».`);
   // También con el permiso de dinero y borrado (las herramientas de la Parte B se suman aquí): el tope es el mismo.
   const conDinero = listarHerramientasMcp(registro, true, true);
   const bytesDinero = Buffer.byteLength(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { tools: conDinero } }), "utf8");
-  assert.ok(bytesDinero <= TOPE_BYTES, `tools/list con tienda:dinero pesa ${bytesDinero} bytes (${conDinero.length} herramientas); el tope es ${TOPE_BYTES}.`);
+  assert.ok(bytesDinero <= TOPE_BYTES_COMPLETO, `tools/list con tienda:dinero pesa ${bytesDinero} bytes (${conDinero.length} herramientas); el tope es ${TOPE_BYTES_COMPLETO}.`);
+  assert.ok(conDinero.length > todo.length, "con el permiso de dinero se suman herramientas");
   const lectura = listarHerramientasMcp(registro, false);
   assert.ok(lectura.length > 0 && lectura.length < todo.length);
   assert.ok(lectura.every((t) => t.annotations.readOnlyHint === true));

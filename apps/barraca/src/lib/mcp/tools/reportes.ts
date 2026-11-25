@@ -13,9 +13,19 @@ import type { D1Like } from "../../gestion/index.ts";
 import { diaValido, limitesPeriodo, resolverPeriodo, textoPeriodo, type Periodo } from "../../admin/ventas.ts";
 import { masVendidos, resumenVentas, type PedidoReporte } from "../../reportes/ventas.ts";
 import { reporteCatalogo, TIPOS_REPORTE_CATALOGO, type FilaProducto } from "../../reportes/catalogo.ts";
+import { cargarArchivados, filtrarArchivados } from "../../pedidos/archivados.ts";
 import { AVISO_DATO_DE_CLIENTE, datoDeCliente } from "./contenido-comun.ts";
 import { resumenCarritos, type CarritoAbandonadoFila } from "../../reportes/carritos.ts";
 import { usosDeCuponesConCodigo, type UsosCupon } from "../../cupones/reportes.ts";
+
+/** Los reportes excluyen los pedidos ARCHIVADOS (una consulta acotada a D1). Sin la tabla o sin D1: no se excluye nada. */
+async function sinArchivados<T extends { numero: string }>(db: D1Like, lista: T[]): Promise<T[]> {
+  try {
+    return filtrarArchivados(lista, await cargarArchivados(db), "excluir");
+  } catch {
+    return lista;
+  }
+}
 
 /** Mismo tope de pedidos por período que el panel de Ventas. */
 export const LIMITE_PERIODO = 3000;
@@ -107,9 +117,10 @@ export function crearHerramientasReportes(deps: DepsReportes = depsReportesReale
     async ejecutar(a, ctx) {
       const periodo = periodoDe(a, ctx.ahora);
       const lim = limitesPeriodo(periodo);
-      const lista = await deps.pedidosRango(lim.desde, lim.hasta, LIMITE_PERIODO);
+      const todos = await deps.pedidosRango(lim.desde, lim.hasta, LIMITE_PERIODO);
+      const lista = await sinArchivados(ctx.db, todos);
       const r = resumenVentas(lista);
-      const truncado = lista.length >= LIMITE_PERIODO;
+      const truncado = todos.length >= LIMITE_PERIODO;
       const texto = [
         `Ventas ${textoPeriodo(periodo)}: ${cl(r.total)} en ${r.pedidos} pedido${r.pedidos === 1 ? "" : "s"}, ticket medio ${cl(r.ticketMedio)}.`,
         r.porFormaDePago.length ? `Por forma de pago: ${r.porFormaDePago.map((f) => `${f.formaPago} ${cl(f.total)} (${f.pedidos})`).join(" · ")}.` : "No hubo ventas en el período.",
@@ -134,9 +145,10 @@ export function crearHerramientasReportes(deps: DepsReportes = depsReportesReale
     async ejecutar(a, ctx) {
       const periodo = periodoDe(a, ctx.ahora);
       const lim = limitesPeriodo(periodo);
-      const lista = await deps.pedidosRango(lim.desde, lim.hasta, LIMITE_PERIODO);
+      const todos = await deps.pedidosRango(lim.desde, lim.hasta, LIMITE_PERIODO);
+      const lista = await sinArchivados(ctx.db, todos);
       const top = masVendidos(lista, a.limite ?? 10, a.orden ?? "unidades");
-      const truncado = lista.length >= LIMITE_PERIODO;
+      const truncado = todos.length >= LIMITE_PERIODO;
       const lineas = top.map((p, i) => `${i + 1}. ${p.nombre}${p.codigo ? ` [${p.codigo}]` : ""}: ${p.unidades} un. · ${cl(p.ingresos)} · ${p.pedidos} pedido${p.pedidos === 1 ? "" : "s"}`);
       return {
         texto: `Más vendidos ${textoPeriodo(periodo)}:\n${lineas.length ? lineas.join("\n") : "No hubo ventas en el período."}${truncado ? "\nAviso: período muy grande, puede estar incompleto." : ""}`,

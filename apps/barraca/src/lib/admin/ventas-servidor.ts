@@ -1,5 +1,6 @@
 import 'server-only';
 import { pedidos, type Pedido } from '@/lib/pedidos';
+import { archivadosDeServidor, filtrarArchivados } from '@/lib/pedidos/archivados';
 import {
   resolverPeriodo, limitesPeriodo, leerFiltros, calzaMedio, calzaZona, calzaBusqueda, calzaEstado,
   ordenarVentas, calcularTotales, contarAtender, GRUPOS_ESTADO, inicioDiaChile, sumarDias, diaChile,
@@ -48,10 +49,14 @@ export async function consultarVentas(sp: URLSearchParams): Promise<ResultadoVen
   const store = pedidos();
 
   const desde90 = inicioDiaChile(sumarDias(diaChile(new Date()), -89));
-  const [enPeriodo, recientes] = await Promise.all([
+  // Una sola consulta (acotada) a D1 por los archivados; el filtro se aplica en memoria (ver lib/pedidos/archivados.ts).
+  const [enPeriodoTodos, recientesTodos, archivados] = await Promise.all([
     store.listarRango({ desde: lim.desde, hasta: lim.hasta, limite: LIMITE_PERIODO }),
     store.listarRango({ desde: desde90, hasta: new Date(Date.now() + 60_000).toISOString(), limite: LIMITE_PERIODO }),
+    archivadosDeServidor(),
   ]);
+  const enPeriodo = filtrarArchivados(enPeriodoTodos, archivados, filtros.archivados);
+  const recientes = filtrarArchivados(recientesTodos, archivados, filtros.archivados === 'solo' ? 'solo' : 'excluir');
 
   // Medio, entrega y búsqueda mandan en los totales; el estado sólo en la lista
   // (si no, "Por pagar" mostraría $0 vendido).
@@ -67,6 +72,6 @@ export async function consultarVentas(sp: URLSearchParams): Promise<ResultadoVen
     totales: calcularTotales(base),
     conteos,
     atender: contarAtender(recientes),
-    truncado: enPeriodo.length >= LIMITE_PERIODO,
+    truncado: enPeriodoTodos.length >= LIMITE_PERIODO,
   };
 }

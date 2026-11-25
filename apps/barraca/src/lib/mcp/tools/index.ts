@@ -25,6 +25,8 @@ import {
 } from "./guias-contenido.ts";
 import { verMarcasHerramienta } from "./marcas.ts";
 import { editarBorradorCorreo, listarPlantillasCorreo, previsualizarCorreo, publicarCorreo, restaurarCorreo, verPlantillaCorreo } from "./correos.ts";
+import { herramientasDinero } from "./dinero.ts";
+import { herramientasBorrado } from "./borrado.ts";
 import { borrarCampanaBorrador, guardarCampanaBorrador, restaurarCampanaVersion, verCampanas } from "./campanas.ts";
 
 export const registro = crearRegistro();
@@ -84,3 +86,6 @@ registro.agregar(verCampanas);
 registro.agregar(guardarCampanaBorrador);
 registro.agregar(restaurarCampanaVersion);
 registro.agregar(borrarCampanaBorrador);
+// Parte B: dinero y borrado (scope tienda:dinero: sin ese permiso no se ven ni se ejecutan). Dos pasos, aviso a Jorge.
+registro.agregar(...herramientasDinero);
+registro.agregar(...herramientasBorrado);
