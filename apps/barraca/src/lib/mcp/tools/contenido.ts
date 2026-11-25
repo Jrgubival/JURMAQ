@@ -135,7 +135,8 @@ function mostrarValor(clave: ClaveContenido, valor: unknown, parte: number): str
  */
 export function detalleCompleto(clave: ClaveContenido, antes: unknown, despues: unknown): Record<string, unknown> {
   const texto = (despues as { texto?: unknown } | null)?.texto;
-  if (typeof texto === "string") return { textoCompleto: texto };
+  const esDocumento = clave === "terminos" || clave === "privacidad" || clave === "envios" || clave === "nosotros";
+  if (esDocumento && typeof texto === "string") return { textoCompleto: texto };
   const cambios: Array<{ campo: string; antes: unknown; despues: unknown }> = [];
   const recorrer = (a: unknown, d: unknown, ruta: string) => {
     if (esObjeto(a) && esObjeto(d)) {
@@ -434,7 +435,20 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
         } else { valor = estado.efectivo; origen = estado.origen === "d1" ? `lo que ve la tienda (v${estado.versionPublicada})` : "lo que ve la tienda (texto original del código)"; }
       }
       const cabecera = `${etiqueta(clave)} — ${origen}. ${estado.borrador ? "Hay un borrador guardado." : "No hay borrador."} ${estado.pendiente ? `Hay una publicación esperando aprobación (v${estado.pendiente.version}).` : ""}`.trim();
-      return { texto: `${cabecera}\n\n${mostrarValor(clave, valor, parte ?? 1)}`, datos: { clave, tieneBorrador: !!estado.borrador, versionPublicada: estado.versionPublicada, pendiente: estado.pendiente?.version ?? null } };
+      const partes = Math.max(1, Math.ceil((clave === "terminos" || clave === "privacidad" || clave === "envios" || clave === "nosotros" ? String((valor as { texto: string }).texto) : JSON.stringify(valor, null, 1)).length / PARTE_CHARS));
+      return {
+        texto: `${cabecera}\n\n${mostrarValor(clave, valor, parte ?? 1)}`,
+        datos: {
+          clave, etiqueta: etiqueta(clave), fuenteMostrada: origen,
+          // El contenido ENTERO (Claude solo lee los datos estructurados): es el punto de partida para editar; `partes` solo aplica al texto de arriba.
+          valor, partes,
+          // Versión actual: la que ve la tienda hoy (null = el texto del código) y, si se pidió, la versión mostrada.
+          origen: estado.origen, versionPublicada: estado.versionPublicada, ...(version !== undefined ? { versionMostrada: version } : {}),
+          tieneBorrador: !!estado.borrador, borradorPor: estado.borradorPor, borradorEn: estado.borradorEn,
+          pendiente: estado.pendiente?.version ?? null,
+          requiereAprobacion: estado.meta.requiereAprobacion,
+        },
+      };
     },
   });
 
@@ -623,7 +637,16 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
           : "No necesita aprobación: al confirmar se publica y se regeneran las páginas.",
         `Id de vista previa: ${vp.id} (un solo uso, vence en 15 minutos). Para aplicar: confirmar_publicacion_contenido con clave ${clave} y ese id, solo cuando el usuario lo apruebe.`,
       ];
-      return { texto: lineas.join("\n"), datos: { vistaPreviaId: vp.id, expiraEn: vp.expiraEn, clave, requiereAprobacion: decision.requiere, ...resumen.detalle } };
+      return {
+        texto: lineas.join("\n"),
+        datos: {
+          vistaPreviaId: vp.id, expiraEn: vp.expiraEn, clave, requiereAprobacion: decision.requiere,
+          motivos: decision.motivos.map((m) => TEXTO_MOTIVO[m]),
+          versionActual: estado.versionPublicada, origenActual: estado.origen,
+          // Diff antes/después: líneas agregadas y quitadas (textos) o cada campo con su valor de antes y de después, completos.
+          ...resumen.detalle, ...detalleCompleto(clave, estado.efectivo, v.valor),
+        },
+      };
     },
   });
 

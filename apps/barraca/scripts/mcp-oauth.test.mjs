@@ -387,7 +387,7 @@ test("MCP: initialize, ping, tools/list y tools/call de punta a punta", async ()
   assert.equal(cambiar.inputSchema.$schema, undefined);
   const c = await llamar(db, peticion(rpc("tools/call", { name: "leer_algo", arguments: { n: 5 } }), { token: t }));
   assert.equal(c.body.result.content[0].text, "leído 5");
-  assert.deepEqual(c.body.result.structuredContent, { n: 5 });
+  assert.deepEqual(c.body.result.structuredContent, { n: 5, texto: "leído 5" });
   assert.equal(c.body.result.isError, undefined);
   assert.equal((await llamar(db, peticion(rpc("cosa/rara"), { token: t }))).body.error.code, -32601);
 });

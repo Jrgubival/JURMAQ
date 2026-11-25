@@ -23,7 +23,7 @@ import { huellaDeDatos } from "../gestion/util.ts";
 import { exigirAprobacion } from "../gestion-precios/aprobacion.ts";
 import type { DatosSolicitud, ResultadoSolicitud } from "./aprobaciones.ts";
 import { autenticarAcceso, revocarFamilia, scopeIncluye, type AccesoValido, type ResultadoUsuario } from "./oauth.ts";
-import { ErrorHerramienta, z, type ContextoHerramienta, type Herramienta, type Registro } from "./tools/registro.ts";
+import { ErrorHerramienta, z, type ContextoHerramienta, type Herramienta, type Registro, type SalidaHerramienta } from "./tools/registro.ts";
 
 export const VERSIONES_SOPORTADAS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"] as const;
 
@@ -240,8 +240,45 @@ const limitado = (seg: number): RespuestaMcp => ({
   body: jsonrpcError(null, -32000, "Demasiadas llamadas seguidas. Espera un momento."),
 });
 
+/**
+ * ÚNICO lugar donde se arma el resultado de una herramienta (ninguna herramienta puede escaparse).
+ * Claude lee SOLO `structuredContent` y descarta `content`; otros clientes leen solo el texto. Regla:
+ *  - `structuredContent` = los `datos` de la herramienta + `texto` (el relato completo en español: guía,
+ *    contenido, diff de la vista previa, líneas del deshacer, etc.). Nada útil queda solo en `content`.
+ *  - `content` = ese mismo `texto`, sin nada más. Por construcción no tiene información ausente en `structuredContent`.
+ * Si una herramienta ya usaba la clave `texto` en sus datos, esa pasa a `texto_dato`.
+ */
+export function armarResultadoHerramienta(salida: SalidaHerramienta, extra: { isError?: boolean } = {}) {
+  const texto = typeof salida === "string" ? salida : salida.texto;
+  const datos = (typeof salida === "string" ? {} : salida.datos) ?? {};
+  const { texto: previo, ...resto } = datos as Record<string, unknown>;
+  return {
+    ...(extra.isError ? { isError: true } : {}),
+    content: [{ type: "text" as const, text: texto }],
+    structuredContent: { ...resto, ...(previo !== undefined ? { texto_dato: previo } : {}), texto },
+  };
+}
+
+/**
+ * Comprueba la regla de `armarResultadoHerramienta` en cualquier resultado: todo texto de `content` debe estar entero en
+ * `structuredContent.texto` o ser el mismo objeto serializado como JSON. Devuelve el problema, o null si está bien.
+ */
+export function contenidoSinInformacionExtra(r: { content?: Array<{ type: string; text?: string }>; structuredContent?: Record<string, unknown> }): string | null {
+  if (!r.structuredContent || typeof r.structuredContent !== "object") return "falta structuredContent";
+  if (!Array.isArray(r.content) || r.content.length === 0) return "falta content";
+  for (const c of r.content) {
+    if (c.type !== "text" || typeof c.text !== "string") return "content solo puede llevar texto";
+    if (c.text === r.structuredContent.texto) continue;
+    try {
+      if (JSON.stringify(JSON.parse(c.text)) === JSON.stringify(r.structuredContent)) continue;
+    } catch { /* no era JSON */ }
+    return "el texto de content tiene información que structuredContent no tiene";
+  }
+  return null;
+}
+
 function resultadoError(id: unknown, texto: string): RespuestaMcp {
-  return ok(id, { isError: true, content: [{ type: "text", text: texto }] });
+  return ok(id, armarResultadoHerramienta(texto, { isError: true }));
 }
 
 async function llamarHerramienta(
@@ -294,7 +331,7 @@ async function llamarHerramienta(
         detalle: { argumentos: resumenArgs },
         huella: await huellaDeDatos({ v: 1, h: h.nombre, a: args.data }),
       }, ahora);
-      if (r.tipo !== "aprobada") return ok(id, { content: [{ type: "text", text: r.mensaje }], structuredContent: { aplicado: false, estado: r.tipo } });
+      if (r.tipo !== "aprobada") return ok(id, armarResultadoHerramienta({ texto: r.mensaje, datos: { aplicado: false, estado: r.tipo } }));
       if (!(await r.gastar())) return resultadoError(id, "La aprobación de Jorge ya se había usado. No se cambió nada; vuelve a pedirlo.");
       devolverOk = r.devolver;
     } catch (e) {
@@ -315,9 +352,7 @@ async function llamarHerramienta(
     console.error("[mcp-herramienta-fallo]", { herramienta: h.nombre, tipo: e instanceof Error ? e.name : typeof e });
     return resultadoError(id, "No pude completar la acción. No se confirmó ningún cambio; revisa el historial antes de repetir.");
   }
-  const texto = typeof salida === "string" ? salida : salida.texto;
-  const datos = typeof salida === "string" ? undefined : salida.datos;
-  const resultado = { content: [{ type: "text", text: texto }], ...(datos ? { structuredContent: datos } : {}) };
+  const resultado = armarResultadoHerramienta(salida);
   if (new TextEncoder().encode(JSON.stringify(resultado)).length > MAX_SALIDA_HERRAMIENTA_BYTES) {
     return resultadoError(id, "La respuesta es demasiado grande. Pide menos datos o filtra más.");
   }

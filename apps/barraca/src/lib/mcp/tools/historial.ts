@@ -139,7 +139,7 @@ export function crearHerramientasHistorial(obtenerRegistro: () => Registro): Her
       if ((c.payload as { loteId?: string } | null)?.loteId !== lote_id) throw new ErrorHerramienta("Esa vista previa era de otro lote. No se deshizo nada.");
       const r = await deshacerLote(ctx.db, obtenerRegistro(), lote_id, usuarioDe(ctx), ctx.ahora);
       if (!r.ok) throw new ErrorHerramienta(r.mensaje);
-      return { texto: `Listo: se deshicieron ${r.revertidos} cambio(s) del lote ${lote_id}. ${r.mensajes.join(" ")}`.trim(), datos: { revertidos: r.revertidos } };
+      return { texto: `Listo: se deshicieron ${r.revertidos} cambio(s) del lote ${lote_id}. ${r.mensajes.join(" ")}`.trim(), datos: { loteId: lote_id, revertidos: r.revertidos, mensajes: r.mensajes } };
     },
   });
 
