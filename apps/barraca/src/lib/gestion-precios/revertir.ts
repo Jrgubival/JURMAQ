@@ -144,8 +144,8 @@ export async function revertirEntradas(deps: DepsGestion, ctx: CtxRevertir, entr
       evaluables.push({
         clave: String(f.codigo ?? a.id), precioAntes: precioWebDe(ap), precioDespues: precioWebDe(dp), localAntes: precioLocalDe(ap), localDespues: precioLocalDe(dp),
         costo: (f.costo as number | null) ?? null,
-        precioComboUnitario: tocaCombo && cant && pc ? Math.ceil(pc / cant) : null,
-        comboUnitarioAntes: cantAntes && pcAntes ? Math.ceil(pcAntes / cantAntes) : null,
+        precioComboUnitario: tocaCombo && cant && pc ? pc / cant : null,
+        comboUnitarioAntes: cantAntes && pcAntes ? pcAntes / cantAntes : null,
       });
       idsEvaluables.push(a.id);
     }

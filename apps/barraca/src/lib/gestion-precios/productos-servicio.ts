@@ -9,6 +9,8 @@
 import { esUrlImagenPermitida, sanearTextoMultilinea, sanearTextoPlano } from "../contenido/markdown.ts";
 import { parseFecha } from "../contenido/fechas.ts";
 import { huellaDeDatos } from "../gestion/util.ts";
+import { TEXTO_MOTIVO, type MotivoAprobacion } from "../mcp/aprobaciones.ts";
+import { camposDeProductoPidenOk } from "../mcp/escrituras-libres.ts";
 import { exigirAprobacion } from "./aprobacion.ts";
 import { ofertaFinVencida } from "./aplicar.ts";
 import type { CtxGestion, DepsGestion } from "./deps.ts";
@@ -156,24 +158,28 @@ export async function editarProducto(deps: DepsGestion, ctx: CtxGestion, e: Entr
     const pc = campos.combo_precio !== undefined ? campos.combo_precio : f.combo_precio;
     return {
       clave: codigo, precioAntes: precioWebDe(f), precioDespues: precioWebDe(despues), localAntes: precioLocalDe(f), localDespues: precioLocalDe(despues),
-      costo: f.costo, precioComboUnitario: cantidad && pc && (campos.combo_precio !== undefined || campos.combo_cantidad !== undefined) ? Math.ceil(pc / cantidad) : null,
-      comboUnitarioAntes: f.combo_cantidad && f.combo_precio ? Math.ceil(f.combo_precio / f.combo_cantidad) : null,
+      costo: f.costo, precioComboUnitario: cantidad && pc && (campos.combo_precio !== undefined || campos.combo_cantidad !== undefined) ? pc / cantidad : null,
+      comboUnitarioAntes: f.combo_cantidad && f.combo_precio ? f.combo_precio / f.combo_cantidad : null,
     };
   });
   let requiere = false;
   let gastar: (() => Promise<boolean>) | null = null;
-  if (evaluables.length > 0) {
-    const ev = await evaluarCambioPrecios(ctx.db, { usuarioId: ctx.usuario.id, cambios: evaluables, ahora: ctx.ahora });
-    requiere = ev.requiere;
-    if (ev.requiere) {
+  // Stock y visibilidad son libres salvo que el interruptor de escrituras libres diga lo contrario.
+  const pideLibre = camposDeProductoPidenOk(planes.flatMap((p) => Object.keys(p.campos)));
+  if (evaluables.length > 0 || pideLibre) {
+    const ev = evaluables.length > 0 ? await evaluarCambioPrecios(ctx.db, { usuarioId: ctx.usuario.id, cambios: evaluables, ahora: ctx.ahora }) : null;
+    const motivos: MotivoAprobacion[] = [...(ev?.requiere ? ev.motivos : []), ...(pideLibre ? ["escritura_libre" as const] : [])];
+    const motivosTexto = motivos.map((m) => TEXTO_MOTIVO[m]);
+    requiere = motivos.length > 0;
+    if (requiere) {
       const huella = await huellaDeDatos({ v: 1, h: herramienta, codigo, c: planes.map((p) => [p.f.id, resumenFicha(p.f, Object.keys(p.campos)), p.campos]) });
       const r = await exigirAprobacion(ctx.db, deps.aprobacion, {
-        usuario: ctx.usuario, herramienta, motivos: ev.motivos, huella,
+        usuario: ctx.usuario, herramienta, motivos, huella,
         resumen: `Cambiar el producto ${codigo} (${planes[0].f.nombre}): ${describir(planes[0].campos)}.`,
-        detalle: { codigo, fichas: planes.length, antes: resumenFicha(planes[0].f, Object.keys(planes[0].campos)), despues: planes[0].campos, motivos: ev.motivosTexto },
+        detalle: { codigo, fichas: planes.length, antes: resumenFicha(planes[0].f, Object.keys(planes[0].campos)), despues: planes[0].campos, motivos: motivosTexto },
         cambios: evaluables,
       }, ctx.ahora);
-      if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, motivos: ev.motivosTexto, codigo } };
+      if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, motivos: motivosTexto, codigo } };
       gastar = r.gastar;
     }
   }

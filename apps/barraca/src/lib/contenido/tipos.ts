@@ -10,6 +10,8 @@
  *     scripts, enlaces solo https o rutas internas, imágenes solo nuestras.
  */
 
+import { agregaDesvio } from "./desvio.ts";
+
 export const CLAVES_CONTENIDO = [
   "terminos",
   "privacidad",
@@ -218,20 +220,39 @@ export const META_CONTENIDO: Record<ClaveContenido, MetaContenido> = {
 
 /**
  * Campos de datos_local que mandan al cliente a hablar o pagar a otro lado: cambiarlos
- * necesita la aprobación de Jorge (WhatsApp, teléfono, correo, dirección y RUT). Nombre,
- * Instagram y horario son libres.
+ * necesita la aprobación de Jorge (WhatsApp, teléfono, correo, dirección, RUT e Instagram,
+ * que es un enlace). Nombre y horario son libres (aun así pasan por la regla de desvío).
  */
 export const CAMPOS_LOCAL_SENSIBLES = [
-  "rut", "razonSocial", "direccion", "calle", "comuna", "region", "codigoPostal", "telefono", "telefonoDisplay", "whatsapp", "email", "geo",
+  "rut", "razonSocial", "direccion", "calle", "comuna", "region", "codigoPostal", "telefono", "telefonoDisplay", "whatsapp", "email", "geo", "instagram",
 ] as const;
+
+/** Por qué una publicación necesita la aprobación de Jorge (vacío = no la necesita). */
+export type RazonPublicacion = "legal" | "datos_local" | "desvio";
+
+export function razonesPublicacion(clave: ClaveContenido, actual: unknown, nuevo: unknown): RazonPublicacion[] {
+  const razones: RazonPublicacion[] = [];
+  if (META_CONTENIDO[clave].requiereAprobacion) razones.push("legal");
+  if (clave === "datos_local") {
+    const a = (actual ?? {}) as Record<string, unknown>;
+    const n = (nuevo ?? {}) as Record<string, unknown>;
+    if (CAMPOS_LOCAL_SENSIBLES.some((k) => JSON.stringify(a[k] ?? null) !== JSON.stringify(n[k] ?? null))) razones.push("datos_local");
+  }
+  // Cualquier texto libre: si el cambio agrega un teléfono, un correo o un enlace a otro sitio, lo ve Jorge.
+  // En datos_local los campos sensibles ya piden aprobación por sí solos: no se cuentan dos veces.
+  const sinSensibles = (v: unknown) => {
+    if (clave !== "datos_local" || !v || typeof v !== "object") return v;
+    const copia = { ...(v as Record<string, unknown>) };
+    for (const k of CAMPOS_LOCAL_SENSIBLES) delete copia[k];
+    return copia;
+  };
+  if (agregaDesvio(sinSensibles(actual), sinSensibles(nuevo))) razones.push("desvio");
+  return razones;
+}
 
 /** ¿Publicar este valor (frente a lo que se ve hoy) necesita la aprobación de Jorge? */
 export function publicacionRequiereAprobacion(clave: ClaveContenido, actual: unknown, nuevo: unknown): boolean {
-  if (META_CONTENIDO[clave].requiereAprobacion) return true;
-  if (clave !== "datos_local") return false;
-  const a = (actual ?? {}) as Record<string, unknown>;
-  const n = (nuevo ?? {}) as Record<string, unknown>;
-  return CAMPOS_LOCAL_SENSIBLES.some((k) => JSON.stringify(a[k] ?? null) !== JSON.stringify(n[k] ?? null));
+  return razonesPublicacion(clave, actual, nuevo).length > 0;
 }
 
 /** Quien hace el cambio (viene de la sesión validada, nunca del texto del usuario). */

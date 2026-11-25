@@ -16,7 +16,7 @@ export function construirCorreoAprobacion(a: AvisoAprobacion): { asunto: string;
   };
   const filas = Object.entries(a.cifras ?? {}).map(([k, v]) => `<tr><td style="padding:3px 12px 3px 0;color:#6b7280;">${escapeHtml(ETIQUETAS[k] ?? k)}</td><td style="padding:3px 0;font-weight:700;">${escapeHtml(String(v))}</td></tr>`).join("");
   const cifras = filas ? `<p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">Datos clave</p><table style="margin:0 0 18px;font-size:15px;border-collapse:collapse;">${filas}</table>` : "";
-  const incompleto = a.detalleIncompleto ? `<p style="margin:0 0 14px;padding:10px 12px;background:#fef3c7;color:#92400e;font-size:14px;line-height:1.5;"><b>Ojo:</b> el detalle completo era demasiado grande y no se guardó. No apruebes sin revisar el cambio completo con Claude.</p>` : "";
+  const incompleto = a.detalleIncompleto ? `<p style="margin:0 0 14px;padding:10px 12px;background:#fef3c7;color:#92400e;font-size:14px;line-height:1.5;"><b>Ojo:</b> el detalle completo era demasiado grande y no se guardó, así que este cambio NO se puede aprobar (solo rechazar). Pídele a Claude que lo prepare en partes más chicas.</p>` : "";
   const bodyHtml = `
 <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#0c1d3a;">Claude quiere hacer un cambio en la tienda y necesita tu OK.</p>
 <p style="margin:0 0 12px;font-size:15px;line-height:1.5;">${escapeHtml(a.resumen)}</p>

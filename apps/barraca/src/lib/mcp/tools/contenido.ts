@@ -19,7 +19,7 @@ import { consumirVistaPrevia, crearVistaPrevia } from "../../gestion/vistas-prev
 import type { D1Like } from "../../gestion/tipos.ts";
 import type * as RepoTipos from "../../contenido/repositorio.ts";
 import { validarContenido } from "../../contenido/esquemas.ts";
-import { CLAVES_CONTENIDO, META_CONTENIDO, publicacionRequiereAprobacion, type ClaveContenido, type ValoresContenido } from "../../contenido/tipos.ts";
+import { CLAVES_CONTENIDO, META_CONTENIDO, publicacionRequiereAprobacion, razonesPublicacion, type ClaveContenido, type ValoresContenido } from "../../contenido/tipos.ts";
 import {
   consumirAprobacion,
   estadoAprobacion,
@@ -245,7 +245,7 @@ function crearRevertidorPublicacion(deps: () => DepsContenido): Revertidor {
       }
       const anterior = await repo.obtenerVersion(db, clave, antes.version);
       if (publicacionRequiereAprobacion(clave, estado.efectivo, anterior?.valor ?? null)) {
-        return { ok: false, mensaje: `${etiqueta(clave)} es un texto legal o trae datos de contacto del local: para volver atrás usa restaurar_version_contenido y publícalo con la aprobación de Jorge.` };
+        return { ok: false, mensaje: `${etiqueta(clave)} es un texto legal, trae datos de contacto del local o enlaces, teléfonos o correos distintos: para volver atrás usa restaurar_version_contenido y publícalo con la aprobación de Jorge.` };
       }
       const r = await repo.restaurarVersion(db, { clave, version: antes.version, usuario, destino: "publicado", nota: `Deshacer la versión ${despues.version}`, ahora });
       if (!r.ok || r.estado !== "publicada") return { ok: false, mensaje: `No pude volver a la versión ${antes.version} de ${etiqueta(clave)}.` };
@@ -382,7 +382,9 @@ function aplicarOperaciones(lista: Elemento[], ops: Array<Record<string, unknown
 // ───────── Fábrica de herramientas ─────────
 
 export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenido>): Herramienta[] {
-  const motivoPublicacion = (clave: ClaveContenido): MotivoAprobacion => (clave === "datos_local" ? "datos_local" : "texto_legal");
+  /** Motivos que Jorge ve: texto legal, datos del local (incluye Instagram) y/o un desvío (teléfono, correo, enlace nuevo). */
+  const motivosPublicacion = (clave: ClaveContenido, actual: unknown, nuevo: unknown): MotivoAprobacion[] =>
+    razonesPublicacion(clave, actual, nuevo).map((r): MotivoAprobacion => (r === "legal" ? "texto_legal" : r === "datos_local" ? "datos_local" : "texto_desvio"));
   const reales = () => depsContenidoReales();
   const deps = (): DepsContenido => ({ ...reales(), ...depsInyectadas });
   const revertirPublicacion = crearRevertidorPublicacion(deps);
@@ -590,7 +592,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "previsualizar_publicacion_contenido",
     titulo: "Previsualizar la publicación de un borrador",
     descripcion:
-      "Paso 1 de 2 para publicar. No cambia nada: compara el borrador con lo que ve la tienda hoy, resume qué cambia (líneas agregadas y quitadas, campos modificados), avisa si necesita aprobación de Jorge (términos y privacidad) y entrega un id corto de un solo uso (15 minutos). Muéstrale el resumen al usuario y espera su OK antes de llamar a confirmar_publicacion_contenido.",
+      "Paso 1 de 2 para publicar. No cambia nada: compara el borrador con lo que ve la tienda hoy, resume qué cambia (líneas agregadas y quitadas, campos modificados), avisa si necesita aprobación de Jorge (términos y privacidad, datos del local, o textos que agreguen un teléfono, un correo o un enlace a otro sitio) y entrega un id corto de un solo uso (15 minutos). Muéstrale el resumen al usuario y espera su OK antes de llamar a confirmar_publicacion_contenido.",
     esquema: z.object({ clave: claveSchema, nota: z.string().max(200).optional().describe("Nota corta para el historial.") }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ clave, nota }, ctx) {
@@ -604,7 +606,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
         if (!r.ok) throw new ErrorHerramienta(`La portada tiene referencias que no existen: ${r.errores.slice(0, 8).join(" | ")}`);
       }
       const resumen = resumirCambio(clave, estado.efectivo, v.valor);
-      const decision = requiereAprobacion({ banderas: publicacionRequiereAprobacion(clave, estado.efectivo, v.valor) ? [motivoPublicacion(clave)] : [] });
+      const decision = requiereAprobacion({ banderas: motivosPublicacion(clave, estado.efectivo, v.valor) });
       const vp = await crearVistaPrevia(ctx.db, { usuarioId: ctx.usuario.id, tipo: "contenido_publicar", payload: { clave, nota: nota ?? null }, huella }, ctx.ahora);
       const lineas = [
         `Vista previa de publicar ${etiqueta(clave)}:`,
@@ -622,7 +624,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "confirmar_publicacion_contenido",
     titulo: "Confirmar la publicación (paso 2)",
     descripcion:
-      "Paso 2 de 2: publica el borrador con el id que dio previsualizar_publicacion_contenido. Se rechaza si el id es de otro usuario, ya se usó, venció o si el borrador o lo publicado cambió desde la vista previa. Términos y privacidad NO se publican: quedan pendientes y se pide la aprobación de Jorge por correo (si su correo no está configurado, queda bloqueado). Úsala solo con el OK del usuario.",
+      "Paso 2 de 2: publica el borrador con el id que dio previsualizar_publicacion_contenido. Se rechaza si el id es de otro usuario, ya se usó, venció o si el borrador o lo publicado cambió desde la vista previa. Lo que necesita aprobación (términos, privacidad, datos del local y textos con teléfonos, correos o enlaces nuevos) NO se publica: queda pendiente y se pide la aprobación de Jorge por correo (si su correo no está configurado, queda bloqueado). Úsala solo con el OK del usuario.",
     esquema: z.object({ clave: claveSchema, vista_previa_id: z.string().min(8).max(20) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ clave, vista_previa_id }, ctx) {
@@ -640,7 +642,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
       const nota = p.nota ?? undefined;
 
       if (publicacionRequiereAprobacion(clave, estado.efectivo, estado.borrador)) {
-        const decision = requiereAprobacion({ banderas: [motivoPublicacion(clave)] });
+        const decision = requiereAprobacion({ banderas: motivosPublicacion(clave, estado.efectivo, estado.borrador) });
         const r = await repo.publicar(ctx.db, { clave, usuario, nota, ahora: ctx.ahora });
         if (!r.ok || r.estado !== "pendiente") throw new ErrorHerramienta(r.ok ? "No se pudo dejar la publicación pendiente." : `No se pudo publicar: ${r.motivo}.`);
         const pendiente = await repo.obtenerVersion(ctx.db, clave, r.version);
@@ -653,7 +655,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
         });
         if (!sol.ok) {
           await repo.rechazarPendiente(ctx.db, { clave, version: r.version, rechazadoPor: usuario.id, ahora: ctx.ahora });
-          const porque = sol.motivo === "mismo_usuario" ? "el correo del aprobador es el mismo del usuario que pide (nadie puede aprobar; hay que configurar otro correo en BARRACA_APROBADOR_EMAIL)" : sol.motivo === "sin_aprobador" ? "el correo de aprobación de Jorge no está configurado" : sol.motivo === "limite" ? "se pidieron demasiadas aprobaciones en la última hora" : "no pude enviar el correo a Jorge";
+          const porque = sol.motivo === "mismo_usuario" ? "el correo del aprobador es el mismo del usuario que pide (nadie puede aprobar; hay que configurar otro correo en BARRACA_APROBADOR_EMAIL)" : sol.motivo === "usuario_sin_correo" ? "tu usuario no tiene correo registrado y no se puede comprobar que quien pide sea otra persona que quien aprueba" : sol.motivo === "sin_aprobador" ? "el correo de aprobación de Jorge no está configurado" : sol.motivo === "limite" ? "se pidieron demasiadas aprobaciones en la última hora" : "no pude enviar el correo a Jorge";
           return { texto: `BLOQUEADO: ${porque}. No se publicó nada y la solicitud quedó descartada. Avísale a Jorge.`, datos: { estado: "bloqueada", motivo: sol.motivo } };
         }
         await ctx.auditar([{ entidad: "contenido", entidadId: clave, antes: { version: estado.versionPublicada }, despues: { version: r.version, estado: "pendiente", aprobacionId: sol.id } }]);
@@ -676,8 +678,8 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     nombre: "aplicar_aprobacion_contenido",
     titulo: "Aplicar una publicación ya aprobada por Jorge",
     descripcion:
-      "Después de que Jorge aprobó por correo la publicación de términos, privacidad o de datos de contacto del local (WhatsApp, teléfono, correo, dirección, RUT), publica esa versión pendiente. Si todavía no aprobó, solo informa el estado y no cambia nada. Si el texto cambió después de pedir la aprobación, o venció, hay que pedirla de nuevo (previsualizar y confirmar otra vez). La aprobación sirve una sola vez.",
-    esquema: z.object({ clave: z.enum(["terminos", "privacidad", "datos_local"]), aprobacion_id: z.string().min(8).max(64) }),
+      "Después de que Jorge aprobó por correo una publicación que lo necesitaba (términos, privacidad, datos del local como WhatsApp, teléfono, correo, dirección, RUT o Instagram, o cualquier texto que agregue un teléfono, un correo o un enlace a otro sitio), publica esa versión pendiente. Si todavía no aprobó, solo informa el estado y no cambia nada. Si el texto cambió después de pedir la aprobación, o venció, hay que pedirla de nuevo (previsualizar y confirmar otra vez). La aprobación sirve una sola vez.",
+    esquema: z.object({ clave: claveSchema, aprobacion_id: z.string().min(8).max(64) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ clave, aprobacion_id }, ctx) {
       const estado = await conGestion(() => repo.obtenerEstado(ctx.db, clave));

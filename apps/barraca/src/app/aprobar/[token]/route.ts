@@ -29,11 +29,12 @@ const ESTADOS: Record<string, string> = {
 function pagina(v: VistaAprobacion, token: string, csrf: string | null, mensaje?: { tipo: "ok" | "info"; texto: string }): Response {
   const motivos = v.motivos.map((m) => `<li>${escapar(TEXTO_MOTIVO[m])}</li>`).join("");
   const detalleHtml = htmlDetalleAprobacion(v.detalle, escapar);
+  const soloRechazar = v.estado === "pendiente" && v.detalleIncompleto;
   const formulario = v.estado === "pendiente" && csrf
-    ? `<form method="post" action="/aprobar/${escapar(token)}" autocomplete="off">
+    ? `${soloRechazar ? `<div class="aviso"><b>No se puede aprobar:</b> el detalle de este cambio era demasiado grande y no se guardó completo, así que no puedes revisarlo todo aquí. Solo puedes rechazarlo; pídele a Claude que lo haga en partes más chicas.</div>` : ""}<form method="post" action="/aprobar/${escapar(token)}" autocomplete="off">
 <input type="hidden" name="csrf" value="${escapar(csrf)}">
 <div class="botones">
-<button class="primario" type="submit" name="decision" value="aprobar">Aprobar</button>
+${soloRechazar ? "" : `<button class="primario" type="submit" name="decision" value="aprobar">Aprobar</button>`}
 <button class="peligro" type="submit" name="decision" value="rechazar">Rechazar</button>
 </div></form>`
     : `<div class="aviso">${escapar(ESTADOS[v.estado] ?? "Esta solicitud ya no se puede decidir.")}</div>`;
@@ -103,7 +104,10 @@ export async function POST(req: Request, { params }: Ctx) {
         texto: r.estado === "aprobada" ? "Aprobado. Vuelve a Claude y pídele que continúe." : "Rechazado. No se hará el cambio.",
       });
     }
-    return pagina(v, token, null, { tipo: "info", texto: "Este enlace ya no se puede usar para decidir." });
+    return pagina(v, token, null, {
+      tipo: "info",
+      texto: r.motivo === "detalle_incompleto" ? "No se puede aprobar un cambio cuyo detalle no se guardó completo. Pídele a Claude que lo prepare en partes más chicas." : "Este enlace ya no se puede usar para decidir.",
+    });
   } catch (e) {
     console.error("[mcp-aprobar-fallo]", { tipo: e instanceof Error ? e.name : typeof e });
     return paginaError("No disponible", "No pude guardar tu decisión. Vuelve a abrir el enlace e intenta de nuevo.", 503);

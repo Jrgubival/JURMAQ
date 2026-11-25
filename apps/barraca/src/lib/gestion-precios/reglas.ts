@@ -136,10 +136,13 @@ export function cifrasDeCambios(cambios: CambioEvaluable[]): CifrasAprobacion {
   return { productos: claves.size, fichas: cambios.length, mayorVariacionPct: mayor, bajoCosto: bajo.size, menos15: menos.size, sinCosto: sin.size };
 }
 
+/** Precio unitario de combo sin redondear hacia arriba: solo se recorta a 2 decimales para mostrarlo. */
+const redondear2 = (n: number) => Math.round(n * 100) / 100;
+
 /** Una línea por ficha, completa (nada se recorta: es lo que Jorge revisa antes de aprobar). */
 export function lineasDeCambios(cambios: CambioEvaluable[]): Array<Record<string, number | string | null>> {
   return cambios.map((c) => ({
     codigo: c.clave, antes: c.precioAntes, despues: c.precioDespues, costo: c.costo ?? null,
-    ...(c.precioComboUnitario ? { combo_unitario: c.precioComboUnitario, combo_unitario_antes: c.comboUnitarioAntes ?? null } : {}),
+    ...(c.precioComboUnitario ? { combo_unitario: redondear2(c.precioComboUnitario), combo_unitario_antes: c.comboUnitarioAntes == null ? null : redondear2(c.comboUnitarioAntes) } : {}),
   }));
 }

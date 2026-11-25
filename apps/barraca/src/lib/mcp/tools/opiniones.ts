@@ -25,18 +25,20 @@ export interface FilaOpinion {
   autor_publico: string | null;
   compra_verificada: boolean;
   created_at: string;
+  /** Cuándo se moderó por última vez (lo escribe la herramienta y también el panel). */
+  moderado_at?: string | null;
 }
 
 export interface DepsOpiniones {
   listar(f: { estado?: EstadoOpinion; productoIds?: number[]; limite: number; antesDe?: string }): Promise<FilaOpinion[]>;
   porIds(ids: string[]): Promise<FilaOpinion[]>;
-  /** Cambia el estado. Devuelve cuántas filas cambió. */
-  cambiarEstado(ids: string[], estado: EstadoOpinion): Promise<number>;
+  /** Cambia el estado y deja `moderadoAt` como marca de moderación. Devuelve cuántas filas cambió. */
+  cambiarEstado(ids: string[], estado: EstadoOpinion, moderadoAt?: string): Promise<number>;
   productoIdsPorCodigo(codigo: string): Promise<number[]>;
   revalidarFichas(productoIds: number[]): Promise<void>;
 }
 
-const COLUMNAS = "id, producto_id, rating, titulo, comentario, estado, autor_publico, compra_verificada, created_at, barraca_productos:producto_id ( codigo, nombre )";
+const COLUMNAS = "id, producto_id, rating, titulo, comentario, estado, autor_publico, compra_verificada, created_at, moderado_at, barraca_productos:producto_id ( codigo, nombre )";
 
 export function depsOpinionesReales(): DepsOpiniones {
   type Cliente = { from: (t: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -47,7 +49,7 @@ export function depsOpinionesReales(): DepsOpiniones {
       id: String(r.id), producto_id: Number(r.producto_id), producto_codigo: p?.codigo ?? null, producto_nombre: p?.nombre ?? null,
       rating: Number(r.rating), titulo: (r.titulo as string | null) ?? null, comentario: (r.comentario as string | null) ?? null,
       estado: r.estado as EstadoOpinion, autor_publico: (r.autor_publico as string | null) ?? null,
-      compra_verificada: Boolean(r.compra_verificada), created_at: String(r.created_at),
+      compra_verificada: Boolean(r.compra_verificada), created_at: String(r.created_at), moderado_at: (r.moderado_at as string | null | undefined) ?? null,
     };
   };
   return {
@@ -65,8 +67,8 @@ export function depsOpinionesReales(): DepsOpiniones {
       if (error) throw new Error("opiniones");
       return ((data ?? []) as Record<string, unknown>[]).map(aFila);
     },
-    async cambiarEstado(ids, estado) {
-      const { data, error } = await (await db()).from("barraca_reviews").update({ estado, moderado_at: new Date().toISOString() }).in("id", ids).select("id");
+    async cambiarEstado(ids, estado, moderadoAt) {
+      const { data, error } = await (await db()).from("barraca_reviews").update({ estado, moderado_at: moderadoAt ?? new Date().toISOString() }).in("id", ids).select("id");
       if (error) throw new Error("opiniones");
       return (data ?? []).length;
     },
@@ -140,7 +142,7 @@ export function crearHerramientasOpiniones(depsInyectadas?: Partial<DepsOpinione
       if (o.estado !== despues.estado) return { ok: false, mensaje: "Una opinión cambió de estado después; no la piso. Revísala antes de deshacer." };
       porEstado.set(antes.estado, [...(porEstado.get(antes.estado) ?? []), o.id]);
     }
-    for (const [estado, lista] of porEstado) await deps().cambiarEstado(lista, estado);
+    for (const [estado, lista] of porEstado) await deps().cambiarEstado(lista, estado, new Date().toISOString());
     await deps().revalidarFichas([...new Set(actuales.map((o) => o.producto_id))]);
     return { ok: true, mensaje: `${entradas.length} opinión(es) vuelta(s) a como estaban.` };
   };
@@ -164,9 +166,16 @@ export function crearHerramientasOpiniones(depsInyectadas?: Partial<DepsOpinione
         for (const f of filas) {
           if (f.estado === "aprobada") continue;
           if (f.estado === "pendiente") { noAptas.push(f.id); continue; }
-          const hist = await historialDeEntidad(ctx.db, "opinion", f.id, 20);
-          const ocultada = hist.find((h) => h.deshechoEn === null && (h.antes as { estado?: string } | null)?.estado === "aprobada" && (h.despues as { estado?: string } | null)?.estado === "rechazada");
-          if (!ocultada) noAptas.push(f.id);
+          // Debe ser lo ÚLTIMO que se hizo con esa opinión, hecho por esta herramienta, aún vigente, y el estado
+          // actual debe ser el que ella dejó: si después el panel la tocó (o se rechazó allí), no se revive.
+          const hist = await historialDeEntidad(ctx.db, "opinion", f.id, 5);
+          const ultima = hist[0];
+          const antes = (ultima?.antes as { estado?: string } | null)?.estado;
+          const despues = (ultima?.despues as { estado?: string; moderadoAt?: string } | null) ?? null;
+          const ok = !!ultima && ultima.herramienta === "moderar_opinion" && ultima.deshechoEn === null
+            && antes === "aprobada" && despues?.estado === "rechazada" && f.estado === despues.estado
+            && (despues.moderadoAt === undefined || despues.moderadoAt === f.moderado_at);
+          if (!ok) noAptas.push(f.id);
         }
         if (noAptas.length) {
           throw new ErrorHerramienta(`No puedo mostrar estas opiniones: ${noAptas.join(", ")}. Solo se vuelve a mostrar lo que antes estaba visible y se ocultó desde aquí; las pendientes de revisión (o rechazadas en el panel) se aprueban en el panel de administración. No cambié nada.`);
@@ -175,8 +184,9 @@ export function crearHerramientasOpiniones(depsInyectadas?: Partial<DepsOpinione
       const cambian = filas.filter((f) => f.estado !== nuevo);
       if (cambian.length === 0) return `Esas opiniones ya estaban ${accion === "ocultar" ? "ocultas" : "visibles"}.`;
       const previas = cambian.map((f) => ({ id: f.id, productoId: f.producto_id, estado: f.estado }));
-      const n = await deps().cambiarEstado(previas.map((f) => f.id), nuevo);
-      await ctx.auditar(previas.map((f) => ({ entidad: "opinion", entidadId: f.id, antes: { estado: f.estado }, despues: { estado: nuevo } })));
+      const marca = new Date(ctx.ahora ?? Date.now()).toISOString();
+      const n = await deps().cambiarEstado(previas.map((f) => f.id), nuevo, marca);
+      await ctx.auditar(previas.map((f) => ({ entidad: "opinion", entidadId: f.id, antes: { estado: f.estado }, despues: { estado: nuevo, moderadoAt: marca } })));
       await deps().revalidarFichas([...new Set(previas.map((f) => f.productoId))]);
       return { texto: `${n} opinión(es) ${accion === "ocultar" ? "ocultada(s)" : "visible(s) otra vez"}. Las fichas se actualizan en unos minutos. Se puede deshacer.`, datos: { cambiadas: n } };
     },

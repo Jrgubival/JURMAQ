@@ -572,3 +572,47 @@ test("registro: nombres, anotaciones y herramientas repetidas", () => {
   r.agregar(h);
   assert.throws(() => r.agregar(h));
 });
+
+// ───────── Interruptor de escrituras libres (mcp/escrituras-libres.ts) ─────────
+test("escrituras libres: por defecto se aplican sin OK; con el interruptor encendido piden el OK de Jorge una sola vez", async () => {
+  const { ESCRITURAS_LIBRES_CON_APROBACION: I } = await import("../src/lib/mcp/escrituras-libres.ts");
+  const { solicitarAprobacion, resolverAprobacion } = await import("../src/lib/mcp/aprobaciones.ts");
+  const db = nuevaDb();
+  const { tokens } = await conectar(db);
+  const t = tokens.access_token;
+  let aplicadas = 0;
+  const registro = crearRegistro();
+  registro.agregar(defineHerramienta({
+    nombre: "subir_imagen", titulo: "Subir imagen", descripcion: "Sube una imagen.", esquema: z.object({ url: z.string().max(300) }),
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    async ejecutar({ url }) { aplicadas++; return `subida ${url}`; },
+  }));
+  const correos = [];
+  const d = deps();
+  const llamarImg = (args) => manejarSolicitudMcp(peticion(rpc("tools/call", { name: "subir_imagen", arguments: args }), { token: t }), {
+    db, registro, base: BASE, ahora: T0 + 1000, verificarUsuario: d.verificarUsuario,
+    solicitarAprobacion: (dbx, datos) => solicitarAprobacion(dbx, datos, { aprobadorEmail: "aprobador@example.com", base: BASE, enviar: async (a) => { correos.push(a); return true; } }, T0 + 1000),
+  });
+  try {
+    assert.ok(Object.values(I).every((v) => v === false), "todo libre por defecto");
+    assert.match((await llamarImg({ url: "https://x/a.jpg" })).body.result.content[0].text, /subida/);
+    assert.equal(aplicadas, 1);
+
+    I.subir_imagen = true;
+    const p = await llamarImg({ url: "https://x/b.jpg" });
+    assert.equal(p.body.result.structuredContent.estado, "pendiente");
+    assert.equal(aplicadas, 1, "no se aplicó");
+    assert.equal(correos.length, 1);
+    assert.deepEqual(correos[0].motivos, ["escritura_libre"]);
+    // otra imagen distinta no usa esa aprobación
+    assert.equal((await llamarImg({ url: "https://x/c.jpg" })).body.result.structuredContent.estado, "pendiente");
+    await resolverAprobacion(db, correos[0].enlace.split("/aprobar/")[1], "aprobar", T0 + 2000);
+    assert.match((await llamarImg({ url: "https://x/b.jpg" })).body.result.content[0].text, /subida/);
+    assert.equal(aplicadas, 2);
+    // la aprobación sirvió una sola vez
+    assert.equal((await llamarImg({ url: "https://x/b.jpg" })).body.result.structuredContent.estado, "pendiente");
+    assert.equal(aplicadas, 2);
+  } finally {
+    I.subir_imagen = false;
+  }
+});

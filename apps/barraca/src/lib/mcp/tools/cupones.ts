@@ -339,20 +339,36 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
     };
   }
 
+  /** Aprobación ya gastada de un cambio que se está aplicando: si el cambio falla, se devuelve. */
+  interface OkCupon { devolver(): Promise<void> }
+
   /**
-   * Un cupón que queda activo necesita el OK de Jorge. Devuelve la respuesta «pendiente / bloqueada»
-   * (y no se cambia nada) o null cuando ya hay una aprobación vigente, que se gasta aquí.
+   * Un cupón que queda activo necesita el OK de Jorge. Devuelve `{ pendiente }` (respuesta «pendiente / bloqueada»; no se
+   * cambia nada) o `{ ok }` cuando ya hay una aprobación vigente, que se gasta aquí. Si el cambio después falla, quien llama
+   * debe usar `aplicarConOk` para devolver la aprobación (Jorge no tiene que aprobar dos veces por un error nuestro).
    */
-  async function pedirOkCupon(ctx: ContextoHerramienta, herramienta: string, codigo: string, resumen: string, datos: unknown): Promise<SalidaHerramienta | null> {
+  async function pedirOkCupon(ctx: ContextoHerramienta, herramienta: string, codigo: string, resumen: string, datos: unknown): Promise<{ pendiente: SalidaHerramienta } | { ok: OkCupon }> {
     const huella = await huellaDeDatos({ v: 1, h: herramienta, codigo, datos });
     const r = await exigirAprobacion(
       ctx.db, { solicitar: (db, d) => deps().solicitarAprobacion(db, d) },
       { usuario: usuarioDe(ctx), herramienta, motivos: ["cupon_activo"], resumen, detalle: { codigo, datos }, huella },
       ctx.ahora,
     );
-    if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, codigo } };
+    if (r.tipo !== "aprobada") return { pendiente: { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, codigo } } };
     if (!(await r.gastar())) throw new ErrorHerramienta("La aprobación de Jorge ya se había usado. No se cambió nada; vuelve a pedirlo.");
-    return null;
+    return { ok: { devolver: async () => { await r.devolver().catch(() => false); } } };
+  }
+
+  /** Ejecuta el cambio; si falla (error o resultado no ok) devuelve la aprobación que se había gastado. */
+  async function aplicarConOk<R extends { ok: boolean }>(ok: OkCupon | null, aplicar: () => Promise<R>): Promise<R> {
+    try {
+      const r = await aplicar();
+      if (!r.ok) await ok?.devolver();
+      return r;
+    } catch (e) {
+      await ok?.devolver();
+      throw e;
+    }
   }
 
   async function buscarPorCodigo(codigoCrudo: string): Promise<CuponRegistro> {
@@ -423,13 +439,15 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
         tipo: a.tipo, valor: a.valor, compraMinima: a.compra_minima ?? 0, maxUsosTotal: a.max_usos_total ?? null,
         maxUsosPorCliente: a.max_usos_por_cliente ?? 0, unUsoPorCliente: reglas?.unUsoPorCliente ?? false,
       });
+      let ok: OkCupon | null = null;
       if (a.activo !== false) {
-        const pendiente = await pedirOkCupon(ctx, "crear_cupon", a.codigo.trim().toUpperCase(), `Crear el cupón ${a.codigo.trim().toUpperCase()} ACTIVO: ${a.tipo === "porcentaje" ? `${a.valor} %` : clp(a.valor)}, compra mínima ${clp(a.compra_minima ?? 0)}.`, { entrada: { ...a }, reglas });
-        if (pendiente) return pendiente;
+        const res = await pedirOkCupon(ctx, "crear_cupon", a.codigo.trim().toUpperCase(), `Crear el cupón ${a.codigo.trim().toUpperCase()} ACTIVO: ${a.tipo === "porcentaje" ? `${a.valor} %` : clp(a.valor)}, compra mínima ${clp(a.compra_minima ?? 0)}.`, { entrada: { ...a }, reglas });
+        if ("pendiente" in res) return res.pendiente;
+        ok = res.ok;
       }
-      const r = await crearCupon(ctx.db, deps().repo, usuarioDe(ctx), {
+      const r = await aplicarConOk(ok, () => crearCupon(ctx.db, deps().repo, usuarioDe(ctx), {
         codigo: a.codigo, activo: a.activo, tipo: a.tipo, valor: a.valor, ...aCambiosLib(a), reglas,
-      } as never, ctx.ahora);
+      } as never, ctx.ahora));
       if (!r.ok) throw new ErrorHerramienta(r.error);
       const c = r.valor.cupon as unknown as Record<string, unknown>;
       await ctx.auditar([{
@@ -463,16 +481,18 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
         maxUsosTotal: a.max_usos_total !== undefined ? a.max_usos_total : (cupon.max_usos_total ?? null),
         maxUsosPorCliente: a.max_usos_por_cliente ?? (Number(cupon.max_usos_por_usuario) || 0), unUsoPorCliente: regFinal.unUsoPorCliente,
       });
+      let ok: OkCupon | null = null;
       if (cupon.activo) {
-        const pendiente = await pedirOkCupon(ctx, "editar_cupon", cupon.codigo, `Cambiar el cupón ACTIVO ${cupon.codigo}: ${Object.keys(a).filter((k) => k !== "codigo").join(", ")}.`, {
+        const res = await pedirOkCupon(ctx, "editar_cupon", cupon.codigo, `Cambiar el cupón ACTIVO ${cupon.codigo}: ${Object.keys(a).filter((k) => k !== "codigo").join(", ")}.`, {
           cambios: { ...a, codigo: undefined }, reglasNuevas: reglas ?? null,
           actual: { tipo: cupon.tipo, valor: Number(cupon.valor), min: Number(cupon.monto_minimo_compra), maxTotal: cupon.max_usos_total ?? null, porCliente: cupon.max_usos_por_usuario, desde: cupon.valido_desde, hasta: cupon.valido_hasta, reglas: reglasAntes },
         });
-        if (pendiente) return pendiente;
+        if ("pendiente" in res) return res.pendiente;
+        ok = res.ok;
       }
       const snake = Object.keys(cambios).filter((k) => k !== "reglas").map((k) => CAMPOS_SNAKE[k as keyof typeof CAMPOS_SNAKE]).filter(Boolean) as string[];
       const antesC = pick(cupon as unknown as Record<string, unknown>, snake);
-      const r = await editarCupon(ctx.db, deps().repo, usuarioDe(ctx), cupon.id, cambios, ctx.ahora);
+      const r = await aplicarConOk(ok, () => editarCupon(ctx.db, deps().repo, usuarioDe(ctx), cupon.id, cambios, ctx.ahora));
       if (!r.ok) throw new ErrorHerramienta(r.error);
       await ctx.auditar([{
         entidad: "cupon", entidadId: cupon.id,
@@ -492,18 +512,20 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
       async ejecutar({ codigo }, ctx) {
         const cupon = await buscarPorCodigo(codigo);
         if (Boolean(cupon.activo) === activo) return `El cupón ${cupon.codigo} ya estaba ${activo ? "activo" : "apagado"}.`;
+        let ok: OkCupon | null = null;
         if (activo) {
           const reglas = await leerReglas(ctx.db, cupon.id);
           validarCuponMcp({
             tipo: cupon.tipo, valor: Number(cupon.valor), compraMinima: Number(cupon.monto_minimo_compra) || 0, maxUsosTotal: cupon.max_usos_total ?? null,
             maxUsosPorCliente: Number(cupon.max_usos_por_usuario) || 0, unUsoPorCliente: reglas.unUsoPorCliente,
           });
-          const pendiente = await pedirOkCupon(ctx, "activar_cupon", cupon.codigo, `Activar el cupón ${cupon.codigo}: ${cupon.tipo === "porcentaje" ? `${Number(cupon.valor)} %` : clp(Number(cupon.valor))}, compra mínima ${clp(Number(cupon.monto_minimo_compra) || 0)}.`, {
+          const res = await pedirOkCupon(ctx, "activar_cupon", cupon.codigo, `Activar el cupón ${cupon.codigo}: ${cupon.tipo === "porcentaje" ? `${Number(cupon.valor)} %` : clp(Number(cupon.valor))}, compra mínima ${clp(Number(cupon.monto_minimo_compra) || 0)}.`, {
             tipo: cupon.tipo, valor: Number(cupon.valor), min: Number(cupon.monto_minimo_compra), maxTotal: cupon.max_usos_total ?? null, porCliente: cupon.max_usos_por_usuario, desde: cupon.valido_desde, hasta: cupon.valido_hasta, reglas,
           });
-          if (pendiente) return pendiente;
+          if ("pendiente" in res) return res.pendiente;
+          ok = res.ok;
         }
-        const r = await (activo ? activarCupon : desactivarCupon)(ctx.db, deps().repo, usuarioDe(ctx), cupon.id, ctx.ahora);
+        const r = await aplicarConOk(ok, () => (activo ? activarCupon : desactivarCupon)(ctx.db, deps().repo, usuarioDe(ctx), cupon.id, ctx.ahora));
         if (!r.ok) throw new ErrorHerramienta(r.error);
         await ctx.auditar([{ entidad: "cupon", entidadId: cupon.id, antes: { cupon: { activo: !activo } }, despues: { cupon: { activo } } }]);
         const encendido = await leerInterruptorCupones(ctx.db);
@@ -583,7 +605,7 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
         huella,
       });
       if (!sol.ok) {
-        const porque = sol.motivo === "mismo_usuario" ? "el correo del aprobador es el mismo del usuario que pide (nadie puede aprobar; hay que configurar otro correo en BARRACA_APROBADOR_EMAIL)" : sol.motivo === "sin_aprobador" ? "el correo de aprobación de Jorge no está configurado" : sol.motivo === "limite" ? "se pidieron demasiadas aprobaciones en la última hora" : "no pude enviar el correo a Jorge";
+        const porque = sol.motivo === "mismo_usuario" ? "el correo del aprobador es el mismo del usuario que pide (nadie puede aprobar; hay que configurar otro correo en BARRACA_APROBADOR_EMAIL)" : sol.motivo === "usuario_sin_correo" ? "tu usuario no tiene correo registrado y no se puede comprobar que quien pide sea otra persona que quien aprueba" : sol.motivo === "sin_aprobador" ? "el correo de aprobación de Jorge no está configurado" : sol.motivo === "limite" ? "se pidieron demasiadas aprobaciones en la última hora" : "no pude enviar el correo a Jorge";
         return { texto: `BLOQUEADO: ${porque}. Los cupones siguen apagados. Avísale a Jorge.`, datos: { solicitada: false, estado: "bloqueada", motivo: sol.motivo } };
       }
       await ctx.auditar([{ entidad: "ajuste", entidadId: "cupones_checkout", antes: { encendido: false }, despues: { solicitud: sol.id, estado: "pendiente" } }]);

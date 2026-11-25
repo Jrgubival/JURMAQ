@@ -17,7 +17,7 @@
 import type { D1Like, UsuarioGestion } from "../gestion/index.ts";
 import { type CambioEvaluable, cifrasDeCambios, lineasDeCambios } from "./reglas.ts";
 import {
-  TEXTO_MOTIVO, TTL_APROBACION_MS, consumirAprobacion, estadoAprobacion,
+  TEXTO_MOTIVO, TTL_APROBACION_MS, consumirAprobacion, devolverAprobacion, estadoAprobacion,
   type DatosSolicitud, type MotivoAprobacion, type ResultadoSolicitud,
 } from "../mcp/aprobaciones.ts";
 
@@ -26,7 +26,7 @@ export interface DepsAprobacionGestion {
 }
 
 export type ResultadoExigir =
-  | { tipo: "aprobada"; id: string; gastar(): Promise<boolean> }
+  | { tipo: "aprobada"; id: string; gastar(): Promise<boolean>; /** Devuelve la aprobación gastada si el cambio no se pudo aplicar. */ devolver(): Promise<boolean> }
   | { tipo: "pendiente"; id: string; mensaje: string }
   | { tipo: "rechazada"; mensaje: string }
   | { tipo: "bloqueada"; mensaje: string };
@@ -53,7 +53,12 @@ export async function exigirAprobacion(
   if (previa) {
     const estado = await estadoAprobacion(db, previa.id, { usuarioId: p.usuario.id, huellaActual: p.huella }, ahora);
     if (estado === "aprobada") {
-      return { tipo: "aprobada", id: previa.id, gastar: () => consumirAprobacion(db, previa.id, { usuarioId: p.usuario.id, huellaActual: p.huella }, ahora) };
+      const llave = { usuarioId: p.usuario.id, huellaActual: p.huella };
+      return {
+        tipo: "aprobada", id: previa.id,
+        gastar: () => consumirAprobacion(db, previa.id, llave, ahora),
+        devolver: () => devolverAprobacion(db, previa.id, llave, ahora),
+      };
     }
     if (estado === "rechazada" && previa.creado_en > ahora - TTL_APROBACION_MS) {
       return { tipo: "rechazada", mensaje: "Jorge rechazó este cambio, así que no se aplicó. Si quiere intentarlo de nuevo, hay que cambiar algo del pedido." };
@@ -82,6 +87,7 @@ export async function exigirAprobacion(
     sin_aprobador: "Este cambio necesita el OK de Jorge, pero falta configurar el correo del aprobador, así que queda bloqueado. No se cambió nada. Avísale a Jorge.",
     limite: "Hay demasiadas solicitudes de aprobación en la última hora. No se cambió nada; espera un rato y vuelve a intentar.",
     mismo_usuario: "Este cambio necesita el OK de Jorge, pero el correo del aprobador es el mismo del usuario que lo pide, así que nadie puede aprobarlo (quien pide no aprueba). Hay que configurar BARRACA_APROBADOR_EMAIL con otro correo. No se cambió nada. Avísale a Jorge.",
+    usuario_sin_correo: "Este cambio necesita el OK de Jorge, pero tu usuario no tiene correo registrado, así que no se puede comprobar que quien pide sea otra persona que quien aprueba. No se cambió nada. Avísale a Jorge.",
     correo_fallo: "Este cambio necesita el OK de Jorge, pero no pude mandarle el correo. No se cambió nada; intenta de nuevo en unos minutos.",
   };
   return { tipo: "bloqueada", mensaje: razon[r.motivo] };

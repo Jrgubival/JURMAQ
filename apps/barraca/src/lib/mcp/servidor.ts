@@ -18,6 +18,10 @@ import {
 } from "./config.ts";
 import { consultarLimite, limitar } from "./limites.ts";
 import { sha256Hex } from "./cripto.ts";
+import { herramientaPideOk } from "./escrituras-libres.ts";
+import { huellaDeDatos } from "../gestion/util.ts";
+import { exigirAprobacion } from "../gestion-precios/aprobacion.ts";
+import type { DatosSolicitud, ResultadoSolicitud } from "./aprobaciones.ts";
 import { autenticarAcceso, revocarFamilia, scopeIncluye, type AccesoValido, type ResultadoUsuario } from "./oauth.ts";
 import { ErrorHerramienta, z, type ContextoHerramienta, type Herramienta, type Registro } from "./tools/registro.ts";
 
@@ -29,6 +33,8 @@ export interface DepsServidor {
   verificarUsuario: (usuarioId: string) => Promise<ResultadoUsuario>;
   base?: string;
   ahora?: number;
+  /** Pide el OK de Jorge (correo). Solo se usa si el interruptor de escrituras libres lo exige; por defecto, el real. */
+  solicitarAprobacion?: (db: D1Like, datos: DatosSolicitud) => Promise<ResultadoSolicitud>;
 }
 
 export interface PeticionMcp {
@@ -237,10 +243,33 @@ async function llamarHerramienta(
       .map((x) => ({ nombre: x.nombre, titulo: x.titulo, descripcion: x.descripcion, soloLectura: x.anotaciones.readOnlyHint })),
   };
 
+  // Escrituras libres que Jorge pidió aprobar (mcp/escrituras-libres.ts): primero el OK, después se aplica una sola vez.
+  let devolverOk: (() => Promise<boolean>) | null = null;
+  if (herramientaPideOk(h.nombre)) {
+    try {
+      const solicitar = deps.solicitarAprobacion ?? ((db: D1Like, d: DatosSolicitud) => import("./aprobaciones-servidor.ts").then((m) => m.solicitarAprobacionReal(db, d)));
+      const resumenArgs = JSON.parse(JSON.stringify(args.data, (_k, v) => (typeof v === "string" && v.length > 300 ? `${v.slice(0, 300)}… [${v.length} caracteres]` : v)));
+      const r = await exigirAprobacion(deps.db, { solicitar }, {
+        usuario, herramienta: h.nombre, motivos: ["escritura_libre"],
+        resumen: `${h.titulo}: ${JSON.stringify(resumenArgs).slice(0, 400)}`,
+        detalle: { argumentos: resumenArgs },
+        huella: await huellaDeDatos({ v: 1, h: h.nombre, a: args.data }),
+      }, ahora);
+      if (r.tipo !== "aprobada") return ok(id, { content: [{ type: "text", text: r.mensaje }], structuredContent: { aplicado: false, estado: r.tipo } });
+      if (!(await r.gastar())) return resultadoError(id, "La aprobación de Jorge ya se había usado. No se cambió nada; vuelve a pedirlo.");
+      devolverOk = r.devolver;
+    } catch (e) {
+      if (esGestionNoDisponible(e)) return resultadoError(id, "La base de gestión todavía no está disponible. Avísale a Jorge.");
+      console.error("[mcp-aprobacion-fallo]", { herramienta: h.nombre, tipo: e instanceof Error ? e.name : typeof e });
+      return resultadoError(id, "No pude pedir la aprobación de Jorge. No se cambió nada.");
+    }
+  }
+
   let salida;
   try {
     salida = await h.ejecutar(args.data, ctx);
   } catch (e) {
+    if (devolverOk) await devolverOk().catch(() => false);
     if (e instanceof ErrorHerramienta) return resultadoError(id, e.message);
     if (esGestionNoDisponible(e)) return resultadoError(id, "La base de gestión todavía no está disponible. Avísale a Jorge.");
     // Sin mensaje ni detalles: podrían traer datos personales o internos.

@@ -18,6 +18,7 @@ import type { D1Like } from "../gestion/index.ts";
 import { desdeJson, huellaDeDatos, idUuid } from "../gestion/util.ts";
 import { secretoAleatorio, sha256Hex } from "./cripto.ts";
 import { HORA, DIA } from "./config.ts";
+import { normalizarEmail } from "../cupones/normalizar.ts";
 
 export const UMBRAL_PRODUCTOS_24H = 300;
 export const UMBRAL_VARIACION_PCT = 30;
@@ -42,7 +43,9 @@ export type MotivoAprobacion =
   | "correo_cliente"          // textos de correos al cliente
   | "cupon_activo"            // cupón creado, editado o activado por la IA que queda activo
   | "datos_local"             // WhatsApp, teléfono, correo, dirección o RUT del local
-  | "sin_costo_baja";         // baja de precio de un producto sin costo cargado (no se puede medir el margen)
+  | "sin_costo_baja"         // baja de precio de un producto sin costo cargado (no se puede medir el margen)
+  | "texto_desvio"
+  | "escritura_libre";       // cambio que normalmente es libre, pero Jorge pidió aprobarlo (mcp/escrituras-libres.ts)          // un texto de la tienda agrega un teléfono, un correo o un enlace a otro sitio
 
 export const TEXTO_MOTIVO: Record<MotivoAprobacion, string> = {
   masivo_cantidad: "Cambia más de 300 productos en 24 horas",
@@ -56,8 +59,10 @@ export const TEXTO_MOTIVO: Record<MotivoAprobacion, string> = {
   cupones_interruptor: "Enciende los cupones",
   correo_cliente: "Cambia un correo que reciben los clientes",
   cupon_activo: "Deja un cupón activo (puede dar descuentos a los clientes)",
-  datos_local: "Cambia datos de contacto del local (WhatsApp, teléfono, correo, dirección o RUT)",
+  datos_local: "Cambia datos de contacto del local (WhatsApp, teléfono, correo, dirección, RUT o Instagram)",
   sin_costo_baja: "Baja el precio de un producto sin costo cargado (no se puede medir el margen)",
+  escritura_libre: "Es un cambio que Jorge pidió aprobar siempre (stock, visibilidad, categoría, estado de pedido o imagen)",
+  texto_desvio: "Agrega un teléfono, un correo o un enlace a otro sitio en un texto de la tienda",
 };
 
 // ───────── Reglas (puras) ─────────
@@ -169,20 +174,17 @@ export interface DepsAprobacion {
 
 export type ResultadoSolicitud =
   | { ok: true; id: string; estado: "pendiente"; venceEn: number; nueva: boolean }
-  | { ok: false; estado: "bloqueada"; motivo: "sin_aprobador" | "limite" | "correo_fallo" | "mismo_usuario" };
+  | { ok: false; estado: "bloqueada"; motivo: "sin_aprobador" | "limite" | "correo_fallo" | "mismo_usuario" | "usuario_sin_correo" };
 
-/** Compara correos sin importar mayúsculas, espacios ni "+etiqueta". */
+/**
+ * Compara correos igual que el control de un uso por cliente (`normalizarEmail`): sin mayúsculas ni
+ * espacios, sin «+etiqueta», con los puntos de Gmail ignorados y googlemail.com = gmail.com.
+ * Un correo vacío nunca es «el mismo».
+ */
 export function mismoCorreo(a: string | null | undefined, b: string | null | undefined): boolean {
-  const n = (x: string | null | undefined) => {
-    const e = String(x ?? "").trim().toLowerCase();
-    const i = e.lastIndexOf("@");
-    if (i < 1) return e;
-    const local = e.slice(0, i);
-    const mas = local.indexOf("+");
-    return `${mas > 0 ? local.slice(0, mas) : local}@${e.slice(i + 1)}`;
-  };
-  const x = n(a);
-  return x !== "" && x === n(b);
+  const x = normalizarEmail(String(a ?? ""));
+  const y = normalizarEmail(String(b ?? ""));
+  return x !== "" && x === y;
 }
 
 const EMAIL_RE = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
@@ -193,6 +195,8 @@ export async function solicitarAprobacion(
   const para = deps.aprobadorEmail?.trim().toLowerCase();
   if (!para || para.length > 254 || !EMAIL_RE.test(para)) return { ok: false, estado: "bloqueada", motivo: "sin_aprobador" };
   // Quien pide no puede ser quien aprueba: si el correo del aprobador es el del usuario que solicita, no es aprobable.
+  // Sin el correo de quien pide no se puede comprobar que sea otra persona: bloqueado.
+  if (!String(d.usuario.email ?? "").trim()) return { ok: false, estado: "bloqueada", motivo: "usuario_sin_correo" };
   if (mismoCorreo(para, d.usuario.email)) return { ok: false, estado: "bloqueada", motivo: "mismo_usuario" };
 
   // Misma solicitud todavía pendiente: no se manda otro correo.
@@ -282,6 +286,20 @@ export async function consumirAprobacion(
   return !!f;
 }
 
+/**
+ * Devuelve una aprobación recién gastada cuando el cambio que la usaba NO se aplicó (falló después de gastarla):
+ * vuelve a 'aprobada' mientras no haya vencido. Solo la puede devolver su dueño y solo si está 'usada'.
+ */
+export async function devolverAprobacion(
+  db: D1Like, id: string, o: { usuarioId: string; huellaActual: string }, ahora: number = Date.now(),
+): Promise<boolean> {
+  const f = await db
+    .prepare("UPDATE aprobaciones SET estado = 'aprobada', usada_en = NULL WHERE id = ? AND usuario_id = ? AND estado = 'usada' AND expira_en > ? AND huella = ? RETURNING id")
+    .bind(id, o.usuarioId, ahora, o.huellaActual)
+    .first<{ id: string }>();
+  return !!f;
+}
+
 // ───────── Página pública /aprobar/[token] ─────────
 export interface VistaAprobacion {
   id: string;
@@ -295,11 +313,20 @@ export interface VistaAprobacion {
   venceEn: number;
   /** Huella del cambio (primeros caracteres sirven para cotejar con lo que mostró Claude). */
   huella: string;
+  /** El detalle completo no cupo y no se guardó: este cambio NO se puede aprobar (solo rechazar). */
+  detalleIncompleto: boolean;
 }
 
 const TOKEN_RE = /^mcpv_[A-Za-z0-9_-]{43}$/;
 
 /** Solo lectura: lo que muestra el GET. No cambia nada. */
+/** Marca con la que `solicitarAprobacion` guarda un detalle que no cupo (siempre va primero en el JSON). */
+const PREFIJO_DETALLE_INCOMPLETO = '{"detalleIncompleto":true';
+
+function detalleEsIncompleto(detalleJson: string | null): boolean {
+  return !!detalleJson && detalleJson.startsWith(PREFIJO_DETALLE_INCOMPLETO);
+}
+
 export async function verAprobacionPorToken(db: D1Like, token: string, ahora: number = Date.now()): Promise<VistaAprobacion | null> {
   if (!TOKEN_RE.test(token)) return null;
   const f = await db.prepare("SELECT * FROM aprobaciones WHERE token_hash = ?").bind(await sha256Hex(token)).first<FilaAprobacion>();
@@ -307,25 +334,31 @@ export async function verAprobacionPorToken(db: D1Like, token: string, ahora: nu
   return {
     id: f.id, herramienta: f.herramienta, motivos: (desdeJson<MotivoAprobacion[]>(f.motivos) ?? []).filter((m: string) => m in TEXTO_MOTIVO),
     resumen: f.resumen, detalle: desdeJson(f.detalle), solicitante: f.usuario_email, estado: estadoEfectivo(f, ahora),
-    creadoEn: f.creado_en, venceEn: f.expira_en, huella: f.huella,
+    creadoEn: f.creado_en, venceEn: f.expira_en, huella: f.huella, detalleIncompleto: detalleEsIncompleto(f.detalle),
   };
 }
 
 /** Decide (POST). Atómico y de un solo uso: solo funciona sobre 'pendiente' sin vencer. */
 export async function resolverAprobacion(
   db: D1Like, token: string, decision: "aprobar" | "rechazar", ahora: number = Date.now(),
-): Promise<{ ok: true; estado: "aprobada" | "rechazada" } | { ok: false; motivo: "no_existe" | "ya_resuelta" | "vencida" }> {
+): Promise<{ ok: true; estado: "aprobada" | "rechazada" } | { ok: false; motivo: "no_existe" | "ya_resuelta" | "vencida" | "detalle_incompleto" }> {
   if (!TOKEN_RE.test(token)) return { ok: false, motivo: "no_existe" };
   const hash = await sha256Hex(token);
   const nuevo = decision === "aprobar" ? "aprobada" : "rechazada";
+  // Con detalle incompleto (no cupo y Jorge no vio todo) solo se puede rechazar: aprobar se niega aquí, no solo en la página.
+  const sinDetalleCompleto = decision === "aprobar" ? ` AND (detalle IS NULL OR substr(detalle, 1, ${PREFIJO_DETALLE_INCOMPLETO.length}) <> ?)` : "";
+  const args: unknown[] = [nuevo, ahora, hash, ahora];
+  if (decision === "aprobar") args.push(PREFIJO_DETALLE_INCOMPLETO);
   const gano = await db
-    .prepare("UPDATE aprobaciones SET estado = ?, resuelto_en = ? WHERE token_hash = ? AND estado = 'pendiente' AND expira_en > ? RETURNING id")
-    .bind(nuevo, ahora, hash, ahora)
+    .prepare(`UPDATE aprobaciones SET estado = ?, resuelto_en = ? WHERE token_hash = ? AND estado = 'pendiente' AND expira_en > ?${sinDetalleCompleto} RETURNING id`)
+    .bind(...args)
     .first<{ id: string }>();
   if (gano) return { ok: true, estado: nuevo };
-  const f = await db.prepare("SELECT estado, expira_en FROM aprobaciones WHERE token_hash = ?").bind(hash).first<{ estado: string; expira_en: number }>();
+  const f = await db.prepare("SELECT estado, expira_en, detalle FROM aprobaciones WHERE token_hash = ?").bind(hash).first<{ estado: string; expira_en: number; detalle: string | null }>();
   if (!f) return { ok: false, motivo: "no_existe" };
-  return { ok: false, motivo: f.estado === "pendiente" ? "vencida" : "ya_resuelta" };
+  if (f.estado !== "pendiente") return { ok: false, motivo: "ya_resuelta" };
+  if (f.expira_en <= ahora) return { ok: false, motivo: "vencida" };
+  return { ok: false, motivo: decision === "aprobar" && detalleEsIncompleto(f.detalle) ? "detalle_incompleto" : "vencida" };
 }
 
 /** Borra solicitudes viejas y acumulados de más de 2 días. */

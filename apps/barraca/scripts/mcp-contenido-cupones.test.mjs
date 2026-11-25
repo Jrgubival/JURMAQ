@@ -57,7 +57,7 @@ function opinionesFalsas(inicial = []) {
         return [...filas.values()].filter((o) => (!estado || o.estado === estado) && (!productoIds || productoIds.includes(o.producto_id))).slice(0, limite);
       },
       async porIds(ids) { return ids.map((i) => filas.get(i)).filter(Boolean); },
-      async cambiarEstado(ids, estado) { let n = 0; for (const i of ids) if (filas.has(i)) { filas.get(i).estado = estado; n++; } return n; },
+      async cambiarEstado(ids, estado, moderadoAt) { let n = 0; for (const i of ids) if (filas.has(i)) { filas.get(i).estado = estado; filas.get(i).moderado_at = moderadoAt ?? "panel"; n++; } return n; },
       async productoIdsPorCodigo(c) { return c === "TUBO-1" ? [7] : []; },
       async revalidarFichas(ids) { revalidadas.push(...ids); },
     },
@@ -958,4 +958,97 @@ test("moderar_opinion «mostrar» no publica pendientes ni lo que se rechazó en
   const ok = await m.llamar("moderar_opinion", { ids: [U3], accion: "mostrar" });
   assert.ok(!ok.error, ok.error);
   assert.equal(m.op.filas.get(U3).estado, "aprobada");
+});
+
+// ───────── Re-auditoría ─────────
+
+test("moderar_opinion «mostrar»: no revive una opinión que el panel volvió a rechazar después de que la herramienta la ocultó", async () => {
+  const U3 = "33333333-3333-4333-8333-333333333333";
+  const m = montar({ opiniones: [OP(U3), OP(U1)] });
+  await m.llamar("moderar_opinion", { ids: [U3, U1], accion: "ocultar" }, { ahora: T0 });
+  // el panel la aprueba y luego la rechaza otra vez (el estado vuelve a ser «rechazada», pero ya no es lo que dejó la herramienta)
+  m.op.filas.get(U3).estado = "aprobada";
+  m.op.filas.get(U3).estado = "rechazada";
+  m.op.filas.get(U3).moderado_at = "2026-11-25T13:00:00.000Z";
+  const r = await m.llamar("moderar_opinion", { ids: [U3], accion: "mostrar" }, { ahora: T0 + MIN });
+  assert.match(r.error, /No puedo mostrar/);
+  assert.equal(m.op.filas.get(U3).estado, "rechazada");
+  // la otra, que nadie tocó, sí se puede volver a mostrar
+  assert.ok(!(await m.llamar("moderar_opinion", { ids: [U1], accion: "mostrar" }, { ahora: T0 + MIN })).error);
+});
+
+test("moderar_opinion «mostrar»: tampoco si lo último en la auditoría de esa opinión no es el ocultar de la herramienta", async () => {
+  const m = montar({ opiniones: [OP(U1)] });
+  await m.llamar("moderar_opinion", { ids: [U1], accion: "ocultar" }, { ahora: T0 });
+  // otra entrada posterior de esa opinión (p. ej. otra herramienta o un cambio manual auditado)
+  const lote = nuevoLoteId();
+  await registrarLote(m.db, lote, JEFE, [{ herramienta: "otra_herramienta", entidad: "opinion", entidadId: U1, antes: { estado: "rechazada" }, despues: { estado: "rechazada" } }], T0 + 5000);
+  const r = await m.llamar("moderar_opinion", { ids: [U1], accion: "mostrar" }, { ahora: T0 + MIN });
+  assert.match(r.error, /No puedo mostrar/);
+  assert.equal(m.op.filas.get(U1).estado, "rechazada");
+});
+
+test("textos libres con desvío necesitan a Jorge: popup con teléfono, cinta con enlace ajeno, envíos con correo; jurmaq.cl y lo ya presente, no", async () => {
+  const casos = [
+    ["popup", { titular: "Escríbenos al +56 9 1111 2222" }],
+    ["cinta", { texto: "Oferta", enlace: { texto: "Ver", enlace: "https://pagos.example/cobro" } }],
+    ["contacto", { nota: "Pagos a pagos@gmail.com" }],
+  ];
+  for (const [clave, cambios] of casos) {
+    const m = montar();
+    const e = await m.llamar("editar_campos_contenido", { clave, cambios });
+    assert.ok(!e.error, `${clave}: ${e.error}`);
+    const p = await m.llamar("previsualizar_publicacion_contenido", { clave });
+    assert.match(p.texto, /teléfono, un correo o un enlace|Agrega un teléfono/, clave);
+    const c = await m.llamar("confirmar_publicacion_contenido", { clave, vista_previa_id: p.datos.vistaPreviaId });
+    assert.equal(c.datos?.estado, "pendiente", `${clave}: ${c.texto ?? c.error}`);
+    assert.equal((await Repo.obtenerEstado(m.db, clave)).publicado, null, `${clave}: la tienda no cambió`);
+    assert.deepEqual(m.correos[0].motivos, ["texto_desvio"]);
+    await resolverAprobacion(m.db, tokenDe(m.correos), "aprobar", T0 + MIN);
+    const a = await m.llamar("aplicar_aprobacion_contenido", { clave, aprobacion_id: c.datos.aprobacionId }, { ahora: T0 + 2 * MIN });
+    assert.match(a.texto, /publicado con la aprobación de Jorge/, `${clave}: ${a.error ?? a.texto}`);
+    assert.ok((await Repo.obtenerEstado(m.db, clave)).publicado);
+  }
+  // libres: enlace a jurmaq.cl y texto sin datos nuevos
+  const m = montar();
+  await m.llamar("editar_campos_contenido", { clave: "cinta", cambios: { texto: "Mira https://jurmaq.cl/ofertas", enlace: { texto: "Ver", enlace: "https://barraca.jurmaq.cl/categorias" } } });
+  const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "cinta" });
+  const c = await m.llamar("confirmar_publicacion_contenido", { clave: "cinta", vista_previa_id: p.datos.vistaPreviaId });
+  assert.match(c.texto, /publicado/);
+  assert.equal(m.correos.length, 0);
+  // envíos (markdown): un enlace nuevo a otro dominio pide OK
+  const e = await montar();
+  const base = (await Repo.obtenerEstado(e.db, "envios")).efectivo.texto;
+  await e.llamar("guardar_borrador_contenido", { clave: "envios", valor: { texto: `${base}\n\nPaga por [aquí](https://wa.me/56911112222).` } });
+  const pe = await e.llamar("previsualizar_publicacion_contenido", { clave: "envios" });
+  assert.equal((await e.llamar("confirmar_publicacion_contenido", { clave: "envios", vista_previa_id: pe.datos.vistaPreviaId })).datos?.estado, "pendiente");
+});
+
+test("Instagram del local: cambiarlo pide el OK de Jorge", async () => {
+  const m = montar();
+  await m.llamar("editar_campos_contenido", { clave: "datos_local", cambios: { instagram: "https://instagram.com/otra_cuenta" } });
+  const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "datos_local" });
+  const c = await m.llamar("confirmar_publicacion_contenido", { clave: "datos_local", vista_previa_id: p.datos.vistaPreviaId });
+  assert.equal(c.datos?.estado, "pendiente", c.texto ?? c.error);
+  assert.deepEqual(m.correos[0].motivos, ["datos_local"]);
+});
+
+test("cupón: si crearlo falla después de gastar la aprobación, esta se devuelve y sirve al repetir", async () => {
+  const m = montar();
+  const p = await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 });
+  assert.equal(p.datos.estado, "pendiente");
+  await resolverAprobacion(m.db, tokenDe(m.correos), "aprobar", T0 + MIN);
+  const original = m.repoCupones.insertar;
+  m.repoCupones.insertar = async () => ({ ok: false, codigoRepetido: true });
+  const falla = await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 + 2 * MIN });
+  assert.ok(falla.error, "falló");
+  assert.equal((await m.db.prepare("SELECT estado FROM aprobaciones").first()).estado, "aprobada", "la aprobación no se perdió");
+  m.repoCupones.insertar = async () => { throw new Error("se cayó"); };
+  try { assert.ok((await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 + 3 * MIN })).error); } catch { /* si el error sube, también cuenta como falla */ }
+  assert.equal((await m.db.prepare("SELECT estado FROM aprobaciones").first()).estado, "aprobada");
+  m.repoCupones.insertar = original;
+  const ok = await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 + 4 * MIN });
+  assert.match(ok.texto, /NUEVO10 creado/);
+  assert.equal(m.correos.length, 1, "no hizo falta pedir otra aprobación");
+  assert.equal((await m.db.prepare("SELECT estado FROM aprobaciones").first()).estado, "usada");
 });
