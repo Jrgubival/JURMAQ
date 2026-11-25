@@ -216,6 +216,24 @@ export const META_CONTENIDO: Record<ClaveContenido, MetaContenido> = {
   textos: { etiqueta: "Textos destacados de la portada y el pie", requiereAprobacion: false, paginas: [{ ruta: "/", tipo: "layout" }] },
 };
 
+/**
+ * Campos de datos_local que mandan al cliente a hablar o pagar a otro lado: cambiarlos
+ * necesita la aprobación de Jorge (WhatsApp, teléfono, correo, dirección y RUT). Nombre,
+ * Instagram y horario son libres.
+ */
+export const CAMPOS_LOCAL_SENSIBLES = [
+  "rut", "razonSocial", "direccion", "calle", "comuna", "region", "codigoPostal", "telefono", "telefonoDisplay", "whatsapp", "email", "geo",
+] as const;
+
+/** ¿Publicar este valor (frente a lo que se ve hoy) necesita la aprobación de Jorge? */
+export function publicacionRequiereAprobacion(clave: ClaveContenido, actual: unknown, nuevo: unknown): boolean {
+  if (META_CONTENIDO[clave].requiereAprobacion) return true;
+  if (clave !== "datos_local") return false;
+  const a = (actual ?? {}) as Record<string, unknown>;
+  const n = (nuevo ?? {}) as Record<string, unknown>;
+  return CAMPOS_LOCAL_SENSIBLES.some((k) => JSON.stringify(a[k] ?? null) !== JSON.stringify(n[k] ?? null));
+}
+
 /** Quien hace el cambio (viene de la sesión validada, nunca del texto del usuario). */
 export interface UsuarioContenido {
   id: string;

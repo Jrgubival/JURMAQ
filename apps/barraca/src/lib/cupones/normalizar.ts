@@ -32,7 +32,10 @@ function pimienta(): string {
   }
 }
 
-/** Huella para guardar en lugar del dato personal. Con CUPONES_PEPPER (secreto) no se puede deshacer por fuerza bruta. */
+/** Huella para guardar en lugar del dato personal. Exige CUPONES_PEPPER (secreto): sin él lanza error y el cupón no se aplica. */
 export async function huellaCliente(tipo: "email" | "rut", valorNormalizado: string): Promise<string> {
-  return sha256Hex(`cupon:${tipo}:${pimienta()}:${valorNormalizado}`);
+  const sal = pimienta();
+  // Fail-closed: sin la sal secreta un hash de correo o RUT se podría revertir por fuerza bruta.
+  if (!sal) throw new Error("falta_pepper");
+  return sha256Hex(`cupon:${tipo}:${sal}:${valorNormalizado}`);
 }

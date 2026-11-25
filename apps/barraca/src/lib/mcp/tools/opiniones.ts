@@ -8,6 +8,7 @@
  * entre marcadores, nunca como instrucción.
  */
 import { defineHerramienta, ErrorHerramienta, z, type Herramienta, type Revertidor } from "./registro.ts";
+import { historialDeEntidad } from "../../gestion/auditoria.ts";
 import { AVISO_DATO_DE_CLIENTE, aEnteroSeguro, datoDeCliente, recortar } from "./contenido-comun.ts";
 
 export type EstadoOpinion = "pendiente" | "aprobada" | "rechazada";
@@ -147,7 +148,7 @@ export function crearHerramientasOpiniones(depsInyectadas?: Partial<DepsOpinione
   const moderar_opinion = defineHerramienta({
     nombre: "moderar_opinion",
     titulo: "Ocultar o volver a mostrar opiniones",
-    descripcion: "Oculta (acción «ocultar») o vuelve a mostrar (acción «mostrar») hasta 20 opiniones por su id (de listar_opiniones). Ocultar no borra la opinión: solo deja de verse en la ficha del producto, y se puede deshacer. No se pueden editar ni borrar opiniones. Muéstrale al usuario cuáles vas a tocar y pide su OK.",
+    descripcion: "Oculta (acción «ocultar») o vuelve a mostrar (acción «mostrar») hasta 20 opiniones por su id (de listar_opiniones). «Mostrar» solo sirve para opiniones que estaban visibles y se ocultaron desde aquí: nunca publica opiniones pendientes de revisión. Ocultar no borra la opinión: solo deja de verse en la ficha del producto, y se puede deshacer. No se pueden editar ni borrar opiniones. Muéstrale al usuario cuáles vas a tocar y pide su OK.",
     esquema: z.object({ ids: z.array(z.string().uuid()).min(1).max(20), accion: z.enum(["ocultar", "mostrar"]) }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     async ejecutar({ ids, accion }, ctx) {
@@ -156,6 +157,21 @@ export function crearHerramientasOpiniones(depsInyectadas?: Partial<DepsOpinione
       const filas = await deps().porIds(unicos);
       const faltan = unicos.filter((id) => !filas.some((f) => f.id === id));
       if (faltan.length) throw new ErrorHerramienta(`No encontré estas opiniones: ${faltan.join(", ")}. No cambié nada.`);
+      if (accion === "mostrar") {
+        // «Mostrar» solo devuelve lo que esta herramienta ocultó y ya estaba aprobado por el flujo normal.
+        // Una opinión pendiente (o rechazada en el panel) NO se publica desde aquí: se revisa y aprueba en el panel.
+        const noAptas: string[] = [];
+        for (const f of filas) {
+          if (f.estado === "aprobada") continue;
+          if (f.estado === "pendiente") { noAptas.push(f.id); continue; }
+          const hist = await historialDeEntidad(ctx.db, "opinion", f.id, 20);
+          const ocultada = hist.find((h) => h.deshechoEn === null && (h.antes as { estado?: string } | null)?.estado === "aprobada" && (h.despues as { estado?: string } | null)?.estado === "rechazada");
+          if (!ocultada) noAptas.push(f.id);
+        }
+        if (noAptas.length) {
+          throw new ErrorHerramienta(`No puedo mostrar estas opiniones: ${noAptas.join(", ")}. Solo se vuelve a mostrar lo que antes estaba visible y se ocultó desde aquí; las pendientes de revisión (o rechazadas en el panel) se aprueban en el panel de administración. No cambié nada.`);
+        }
+      }
       const cambian = filas.filter((f) => f.estado !== nuevo);
       if (cambian.length === 0) return `Esas opiniones ya estaban ${accion === "ocultar" ? "ocultas" : "visibles"}.`;
       const previas = cambian.map((f) => ({ id: f.id, productoId: f.producto_id, estado: f.estado }));

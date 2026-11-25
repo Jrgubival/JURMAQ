@@ -21,6 +21,7 @@ import { respaldoDe } from "./respaldo.ts";
 import {
   CLAVES_CONTENIDO,
   META_CONTENIDO,
+  publicacionRequiereAprobacion,
   type ClaveContenido,
   type MetaContenido,
   type UsuarioContenido,
@@ -311,7 +312,8 @@ export async function publicar(
     return { ok: false, motivo: "sin_cambios" };
   }
 
-  const pideAprobacion = META_CONTENIDO[clave].requiereAprobacion && !args.aprobacion;
+  const efectivoHoy = leerValor(clave, actual?.publicado ?? null) ?? respaldoDe(clave);
+  const pideAprobacion = publicacionRequiereAprobacion(clave, efectivoHoy, v.valor) && !args.aprobacion;
   const nota = notaLimpia(args.nota);
   const aprobadoPor = args.aprobacion?.aprobadoPor ?? null;
   const previa = await versionActual(db, clave);

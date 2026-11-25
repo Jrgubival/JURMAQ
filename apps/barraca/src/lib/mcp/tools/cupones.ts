@@ -15,6 +15,12 @@
  *    términos (hoy dicen que no hay cupones). Esto se avisa en cada respuesta.
  *  - Topes de la herramienta (una IA no debe poder regalar la tienda): porcentaje
  *    hasta 50 % y monto fijo hasta $200.000. Más que eso se crea desde el panel.
+ *  - Un cupón que queda ACTIVO por esta vía (crear activo, editar uno activo o activar)
+ *    queda pendiente de la aprobación de Jorge (motivo cupon_activo): se repite la misma
+ *    llamada cuando él aprueba. Apagar es siempre libre.
+ *  - Validación dura: todo cupón por MCP exige tope de usos (total o por cliente) y, si es
+ *    de monto fijo, una compra mínima de al menos el valor + el piso cobrable ($1.000).
+ *    Además el checkout nunca deja los productos bajo el piso cobrable (lib/cupones/totales.ts).
  *  - Solo cifras: nunca se entregan correos, RUT ni huellas de clientes.
  */
 import type { D1Like } from "../../gestion/tipos.ts";
@@ -42,7 +48,9 @@ import {
   type EstadoAprobacion,
   type ResultadoSolicitud,
 } from "../aprobaciones.ts";
-import { defineHerramienta, ErrorHerramienta, z, type Herramienta, type Revertidor } from "./registro.ts";
+import { exigirAprobacion } from "../../gestion-precios/aprobacion.ts";
+import { PISO_COBRABLE_MINIMO } from "../../cupones/totales.ts";
+import { defineHerramienta, ErrorHerramienta, z, type ContextoHerramienta, type Herramienta, type Revertidor, type SalidaHerramienta } from "./registro.ts";
 import { aEnteroSeguro, fechaChileAMs, recortar, usuarioDe } from "./contenido-comun.ts";
 
 export const MAX_PORCENTAJE_HERRAMIENTA = 50;
@@ -178,6 +186,24 @@ function topes(tipo: string | undefined, valor: number | undefined) {
   }
 }
 
+/**
+ * Reglas duras de un cupón armado por la IA (valen aunque Jorge apruebe, para que
+ * un error de cálculo no regale la tienda): hace falta un tope de usos y el monto
+ * fijo no puede igualar o superar lo que se compra.
+ */
+export function validarCuponMcp(c: { tipo: string; valor: number; compraMinima: number; maxUsosTotal: number | null; maxUsosPorCliente: number; unUsoPorCliente: boolean }): void {
+  if (!(c.maxUsosTotal && c.maxUsosTotal > 0) && !c.unUsoPorCliente && !(c.maxUsosPorCliente > 0)) {
+    throw new ErrorHerramienta("Todo cupón creado desde aquí necesita un tope de usos: indica max_usos_total o un_uso_por_cliente (o max_usos_por_cliente). Sin tope, un solo cliente podría usarlo sin límite.");
+  }
+  if (c.unUsoPorCliente && c.maxUsosTotal) {
+    // El checkout ignora el tope total cuando es «un uso por cliente»: se avisa para no dejar un falso tope.
+    throw new ErrorHerramienta("«un_uso_por_cliente» y «max_usos_total» no van juntos: con un uso por cliente el tope total no se aplica. Elige uno.");
+  }
+  if (c.tipo === "monto_fijo" && c.compraMinima < c.valor + PISO_COBRABLE_MINIMO) {
+    throw new ErrorHerramienta(`Un cupón de monto fijo de ${clp(c.valor)} necesita una compra mínima de al menos ${clp(c.valor + PISO_COBRABLE_MINIMO)} (el descuento más ${clp(PISO_COBRABLE_MINIMO)} que siempre se cobran). Indica compra_minima.`);
+  }
+}
+
 const CAMPOS_SNAKE = {
   descripcion: "descripcion", tipo: "tipo", valor: "valor", montoMinimoCompra: "monto_minimo_compra", maxUsosTotal: "max_usos_total",
   maxUsosPorUsuario: "max_usos_por_usuario", validoDesde: "valido_desde", validoHasta: "valido_hasta",
@@ -221,6 +247,17 @@ function crearRevertidorCupones(deps: () => DepsCupones): Revertidor {
         if (!r.ok) return { ok: false, mensaje: r.error };
         mensajes.push(`El cupón ${actual.codigo} quedó apagado (no se borra porque podría tener historial).`);
         continue;
+      }
+      // Deshacer no es una puerta trasera: si el cupón quedaría ACTIVO con esos valores, pasa por el mismo OK de Jorge.
+      const quedaActivo = antes.cupon?.activo === undefined ? Boolean(actual.activo) : Boolean(antes.cupon.activo);
+      if (quedaActivo) {
+        const huella = await huellaDeDatos({ v: 1, h: "deshacer_cupon", id, antes, actual: pick(act, ["tipo", "valor", "monto_minimo_compra", "max_usos_total", "max_usos_por_usuario", "valido_hasta", "activo"]) });
+        const r = await exigirAprobacion(db, { solicitar: (d, x) => deps().solicitarAprobacion(d, x) }, {
+          usuario, herramienta: "deshacer_cupon", motivos: ["cupon_activo"], huella,
+          resumen: `Deshacer un cambio del cupón ${actual.codigo}: queda ACTIVO con los valores de antes.`, detalle: { codigo: actual.codigo, restaurar: antes },
+        }, ahora);
+        if (r.tipo !== "aprobada") return { ok: false, mensaje: `Deshacer deja el cupón ${actual.codigo} activo, así que queda pendiente de Jorge: ${r.mensaje} Nada se restauró. Cuando apruebe, vuelve a previsualizar y a deshacer.` };
+        if (!(await r.gastar())) return { ok: false, mensaje: "La aprobación de Jorge ya se había usado. Nada se restauró." };
       }
       const cambios: CambiosCupon = {};
       for (const [k, v] of Object.entries(antes.cupon ?? {})) {
@@ -302,6 +339,22 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
     };
   }
 
+  /**
+   * Un cupón que queda activo necesita el OK de Jorge. Devuelve la respuesta «pendiente / bloqueada»
+   * (y no se cambia nada) o null cuando ya hay una aprobación vigente, que se gasta aquí.
+   */
+  async function pedirOkCupon(ctx: ContextoHerramienta, herramienta: string, codigo: string, resumen: string, datos: unknown): Promise<SalidaHerramienta | null> {
+    const huella = await huellaDeDatos({ v: 1, h: herramienta, codigo, datos });
+    const r = await exigirAprobacion(
+      ctx.db, { solicitar: (db, d) => deps().solicitarAprobacion(db, d) },
+      { usuario: usuarioDe(ctx), herramienta, motivos: ["cupon_activo"], resumen, detalle: { codigo, datos }, huella },
+      ctx.ahora,
+    );
+    if (r.tipo !== "aprobada") return { texto: r.mensaje, datos: { aplicado: false, estado: r.tipo, codigo } };
+    if (!(await r.gastar())) throw new ErrorHerramienta("La aprobación de Jorge ya se había usado. No se cambió nada; vuelve a pedirlo.");
+    return null;
+  }
+
   async function buscarPorCodigo(codigoCrudo: string): Promise<CuponRegistro> {
     const codigo = codigoCrudo.trim().toUpperCase();
     const lista = await deps().repo.listar(500);
@@ -366,6 +419,14 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
     async ejecutar(a, ctx) {
       topes(a.tipo, a.valor);
       const reglas = await reglasDeEntrada(a, null);
+      validarCuponMcp({
+        tipo: a.tipo, valor: a.valor, compraMinima: a.compra_minima ?? 0, maxUsosTotal: a.max_usos_total ?? null,
+        maxUsosPorCliente: a.max_usos_por_cliente ?? 0, unUsoPorCliente: reglas?.unUsoPorCliente ?? false,
+      });
+      if (a.activo !== false) {
+        const pendiente = await pedirOkCupon(ctx, "crear_cupon", a.codigo.trim().toUpperCase(), `Crear el cupón ${a.codigo.trim().toUpperCase()} ACTIVO: ${a.tipo === "porcentaje" ? `${a.valor} %` : clp(a.valor)}, compra mínima ${clp(a.compra_minima ?? 0)}.`, { entrada: { ...a }, reglas });
+        if (pendiente) return pendiente;
+      }
       const r = await crearCupon(ctx.db, deps().repo, usuarioDe(ctx), {
         codigo: a.codigo, activo: a.activo, tipo: a.tipo, valor: a.valor, ...aCambiosLib(a), reglas,
       } as never, ctx.ahora);
@@ -396,6 +457,19 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
       const reglas = await reglasDeEntrada(a, reglasAntes);
       if (reglas) cambios.reglas = reglas;
       if (Object.keys(cambios).length === 0) throw new ErrorHerramienta("No indicaste nada que cambiar.");
+      const regFinal = reglas ?? reglasAntes;
+      validarCuponMcp({
+        tipo: a.tipo ?? cupon.tipo, valor: a.valor ?? Number(cupon.valor), compraMinima: a.compra_minima ?? (Number(cupon.monto_minimo_compra) || 0),
+        maxUsosTotal: a.max_usos_total !== undefined ? a.max_usos_total : (cupon.max_usos_total ?? null),
+        maxUsosPorCliente: a.max_usos_por_cliente ?? (Number(cupon.max_usos_por_usuario) || 0), unUsoPorCliente: regFinal.unUsoPorCliente,
+      });
+      if (cupon.activo) {
+        const pendiente = await pedirOkCupon(ctx, "editar_cupon", cupon.codigo, `Cambiar el cupón ACTIVO ${cupon.codigo}: ${Object.keys(a).filter((k) => k !== "codigo").join(", ")}.`, {
+          cambios: { ...a, codigo: undefined }, reglasNuevas: reglas ?? null,
+          actual: { tipo: cupon.tipo, valor: Number(cupon.valor), min: Number(cupon.monto_minimo_compra), maxTotal: cupon.max_usos_total ?? null, porCliente: cupon.max_usos_por_usuario, desde: cupon.valido_desde, hasta: cupon.valido_hasta, reglas: reglasAntes },
+        });
+        if (pendiente) return pendiente;
+      }
       const snake = Object.keys(cambios).filter((k) => k !== "reglas").map((k) => CAMPOS_SNAKE[k as keyof typeof CAMPOS_SNAKE]).filter(Boolean) as string[];
       const antesC = pick(cupon as unknown as Record<string, unknown>, snake);
       const r = await editarCupon(ctx.db, deps().repo, usuarioDe(ctx), cupon.id, cambios, ctx.ahora);
@@ -418,6 +492,17 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
       async ejecutar({ codigo }, ctx) {
         const cupon = await buscarPorCodigo(codigo);
         if (Boolean(cupon.activo) === activo) return `El cupón ${cupon.codigo} ya estaba ${activo ? "activo" : "apagado"}.`;
+        if (activo) {
+          const reglas = await leerReglas(ctx.db, cupon.id);
+          validarCuponMcp({
+            tipo: cupon.tipo, valor: Number(cupon.valor), compraMinima: Number(cupon.monto_minimo_compra) || 0, maxUsosTotal: cupon.max_usos_total ?? null,
+            maxUsosPorCliente: Number(cupon.max_usos_por_usuario) || 0, unUsoPorCliente: reglas.unUsoPorCliente,
+          });
+          const pendiente = await pedirOkCupon(ctx, "activar_cupon", cupon.codigo, `Activar el cupón ${cupon.codigo}: ${cupon.tipo === "porcentaje" ? `${Number(cupon.valor)} %` : clp(Number(cupon.valor))}, compra mínima ${clp(Number(cupon.monto_minimo_compra) || 0)}.`, {
+            tipo: cupon.tipo, valor: Number(cupon.valor), min: Number(cupon.monto_minimo_compra), maxTotal: cupon.max_usos_total ?? null, porCliente: cupon.max_usos_por_usuario, desde: cupon.valido_desde, hasta: cupon.valido_hasta, reglas,
+          });
+          if (pendiente) return pendiente;
+        }
         const r = await (activo ? activarCupon : desactivarCupon)(ctx.db, deps().repo, usuarioDe(ctx), cupon.id, ctx.ahora);
         if (!r.ok) throw new ErrorHerramienta(r.error);
         await ctx.auditar([{ entidad: "cupon", entidadId: cupon.id, antes: { cupon: { activo: !activo } }, despues: { cupon: { activo } } }]);
@@ -498,7 +583,7 @@ export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>):
         huella,
       });
       if (!sol.ok) {
-        const porque = sol.motivo === "sin_aprobador" ? "el correo de aprobación de Jorge no está configurado" : sol.motivo === "limite" ? "se pidieron demasiadas aprobaciones en la última hora" : "no pude enviar el correo a Jorge";
+        const porque = sol.motivo === "mismo_usuario" ? "el correo del aprobador es el mismo del usuario que pide (nadie puede aprobar; hay que configurar otro correo en BARRACA_APROBADOR_EMAIL)" : sol.motivo === "sin_aprobador" ? "el correo de aprobación de Jorge no está configurado" : sol.motivo === "limite" ? "se pidieron demasiadas aprobaciones en la última hora" : "no pude enviar el correo a Jorge";
         return { texto: `BLOQUEADO: ${porque}. Los cupones siguen apagados. Avísale a Jorge.`, datos: { solicitada: false, estado: "bloqueada", motivo: sol.motivo } };
       }
       await ctx.auditar([{ entidad: "ajuste", entidadId: "cupones_checkout", antes: { encendido: false }, despues: { solicitud: sol.id, estado: "pendiente" } }]);

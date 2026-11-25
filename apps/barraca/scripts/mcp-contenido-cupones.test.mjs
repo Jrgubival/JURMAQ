@@ -3,6 +3,7 @@
 // restaurar, deshacer sin pisar cambios ajenos, cupones sin forma de encender sin aprobación y guía completa.
 // Correr: node --test scripts/mcp-contenido-cupones.test.mjs   (D1 simulada con node:sqlite, sin red)
 import "./pruebas/cargar-alias.mjs";
+process.env.CUPONES_PEPPER = "sal-de-prueba-no-es-un-secreto";
 import "./pruebas/cargar-shared.mjs";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -521,8 +522,20 @@ test("subir_imagen: exactamente una fuente, tope de base64 y URL", async () => {
 
 // ───────── Cupones ─────────
 
+/** Una herramienta que deja un cupón ACTIVO queda pendiente de Jorge; esto imita su OK y repite la misma llamada. */
+let relojOk = T0;
+async function llamarConOk(m, nombre, args = {}, opciones = {}) {
+  const primera = await m.llamar(nombre, args, { ahora: relojOk, ...opciones });
+  if (primera.error || primera.datos?.estado !== "pendiente") return primera;
+  relojOk += MIN;
+  await resolverAprobacion(m.db, tokenDe(m.correos), "aprobar", relojOk);
+  relojOk += MIN;
+  return m.llamar(nombre, args, { ahora: relojOk, ...opciones });
+}
+
 async function crearCuponBase(m, extra = {}) {
-  return m.llamar("crear_cupon", { codigo: "verano15", tipo: "porcentaje", valor: 15, compra_minima: 30000, valido_hasta: "2027-02-28", ...extra });
+  const tope = extra.un_uso_por_cliente ? {} : { max_usos_total: 100 };
+  return llamarConOk(m, "crear_cupon", { codigo: "verano15", tipo: "porcentaje", valor: 15, compra_minima: 30000, valido_hasta: "2027-02-28", ...tope, ...extra });
 }
 
 test("cupones: crear con reglas, topes de seguridad, editar, apagar y deshacer", async () => {
@@ -533,12 +546,13 @@ test("cupones: crear con reglas, topes de seguridad, editar, apagar y deshacer",
   assert.match(r.texto, /interruptor|migración/i, "avisa lo que falta para encender");
   const alto = await m.llamar("crear_cupon", { codigo: "REGALO", tipo: "porcentaje", valor: 100 });
   assert.match(alto.error, /50 %/);
-  const altoMonto = await m.llamar("crear_cupon", { codigo: "REGALO2", tipo: "monto_fijo", valor: 200_000 });
+  const altoMonto = await m.llamar("crear_cupon", { codigo: "REGALO2", tipo: "monto_fijo", valor: 200_000, compra_minima: 300_000, max_usos_total: 5 });
   assert.ok(!altoMonto.error, "justo en el tope");
+  assert.equal(altoMonto.datos.estado, "pendiente", "activo: espera a Jorge");
   assert.ok((await m.llamar("crear_cupon", { codigo: "REGALO3", tipo: "monto_fijo", valor: 200_001 })).invalida);
   assert.ok((await m.llamar("crear_cupon", { codigo: "a b", tipo: "monto_fijo", valor: 100 })).error, "código inválido");
   assert.match((await crearCuponBase(m)).error, /Ya existe/);
-  const mal = await m.llamar("crear_cupon", { codigo: "MALO", tipo: "monto_fijo", valor: 5000, categorias_slugs: ["no-existe"] });
+  const mal = await m.llamar("crear_cupon", { codigo: "MALO", tipo: "monto_fijo", valor: 5000, compra_minima: 20000, max_usos_total: 5, categorias_slugs: ["no-existe"] });
   assert.match(mal.error, /no-existe/);
   const conTope = await m.llamar("crear_cupon", { codigo: "TOPE", tipo: "monto_fijo", valor: 5000, un_uso_por_cliente: true, max_usos_total: 10 });
   assert.match(conTope.error, /un uso por cliente/i);
@@ -549,7 +563,7 @@ test("cupones: crear con reglas, topes de seguridad, editar, apagar y deshacer",
   assert.match(lista.texto, /excepto en categorías: Fierro/);
   assert.match(lista.texto, /un uso por cliente/);
 
-  const e = await m.llamar("editar_cupon", { codigo: "verano15", valor: 20, compra_minima: 50000 });
+  const e = await llamarConOk(m, "editar_cupon", { codigo: "verano15", valor: 20, compra_minima: 50000 });
   assert.ok(!e.error, e.error);
   assert.match((await m.llamar("ver_cupon", { codigo: "VERANO15" })).texto, /20 %/);
   assert.match((await m.llamar("editar_cupon", { codigo: "VERANO15", valor: 90 })).error, /50 %/);
@@ -557,9 +571,14 @@ test("cupones: crear con reglas, topes de seguridad, editar, apagar y deshacer",
   assert.match((await m.llamar("ver_cupon", { codigo: "NOEXISTE" })).error, /No existe/);
 
   // deshacer la edición: vuelve a 15 %
+  // (el cupón está activo: deshacer lo deja activo con valores de antes, así que también pasa por el OK de Jorge)
   const p = await m.llamar("previsualizar_deshacer_lote", { lote_id: e.loteId });
   assert.ok(!p.error, p.error);
-  const u = await m.llamar("deshacer_lote", { lote_id: e.loteId, vista_previa_id: p.datos.vistaPreviaId });
+  const u0 = await m.llamar("deshacer_lote", { lote_id: e.loteId, vista_previa_id: p.datos.vistaPreviaId });
+  assert.match(u0.error, /pendiente de Jorge/);
+  await resolverAprobacion(m.db, tokenDe(m.correos), "aprobar", T0 + 30 * MIN);
+  const p1 = await m.llamar("previsualizar_deshacer_lote", { lote_id: e.loteId }, { ahora: T0 + 31 * MIN });
+  const u = await m.llamar("deshacer_lote", { lote_id: e.loteId, vista_previa_id: p1.datos.vistaPreviaId }, { ahora: T0 + 31 * MIN });
   assert.ok(!u.error, u.error);
   assert.match((await m.llamar("ver_cupon", { codigo: "VERANO15" })).texto, /15 %/);
 
@@ -567,11 +586,11 @@ test("cupones: crear con reglas, topes de seguridad, editar, apagar y deshacer",
   const off = await m.llamar("desactivar_cupon", { codigo: "VERANO15" });
   assert.match(off.texto, /apagado/);
   assert.match((await m.llamar("desactivar_cupon", { codigo: "VERANO15" })).texto, /ya estaba apagado/);
-  const on = await m.llamar("activar_cupon", { codigo: "VERANO15" });
+  const on = await llamarConOk(m, "activar_cupon", { codigo: "VERANO15" });
   assert.match(on.texto, /interruptor general de cupones está apagado/);
 
   // deshacer una creación apaga el cupón (no se borra)
-  const c = await m.llamar("crear_cupon", { codigo: "TEMPORAL", tipo: "monto_fijo", valor: 3000 });
+  const c = await llamarConOk(m, "crear_cupon", { codigo: "TEMPORAL", tipo: "monto_fijo", valor: 3000, compra_minima: 10000, max_usos_total: 5 });
   const pc = await m.llamar("previsualizar_deshacer_lote", { lote_id: c.loteId });
   await m.llamar("deshacer_lote", { lote_id: c.loteId, vista_previa_id: pc.datos.vistaPreviaId });
   assert.equal([...m.repoCupones.filas.values()].find((x) => x.codigo === "TEMPORAL").activo, false);
@@ -580,8 +599,8 @@ test("cupones: crear con reglas, topes de seguridad, editar, apagar y deshacer",
 test("cupones: no se deshace encima de un cambio posterior", async () => {
   const m = montar();
   await crearCuponBase(m);
-  const e = await m.llamar("editar_cupon", { codigo: "VERANO15", valor: 20 });
-  await m.llamar("editar_cupon", { codigo: "VERANO15", valor: 25 }); // "otra persona" después
+  const e = await llamarConOk(m, "editar_cupon", { codigo: "VERANO15", valor: 20 });
+  await llamarConOk(m, "editar_cupon", { codigo: "VERANO15", valor: 25 }); // "otra persona" después
   const p = await m.llamar("previsualizar_deshacer_lote", { lote_id: e.loteId });
   const u = await m.llamar("deshacer_lote", { lote_id: e.loteId, vista_previa_id: p.datos.vistaPreviaId });
   assert.match(u.error, /cambió después/);
@@ -611,6 +630,7 @@ test("cupones: usos por período sin datos personales", async () => {
 test("interruptor de cupones: ningún camino enciende sin la aprobación de Jorge", async () => {
   const m = montar({ esquema: false });
   await crearCuponBase(m);
+  m.correos.length = 0; // (el correo de «cupón activo» de arriba no es del interruptor)
   const apagado = async () => assert.equal(await leerInterruptorCupones(m.db), false);
 
   // 1. sin la migración de Supabase: ni siquiera se pide
@@ -635,6 +655,7 @@ test("interruptor de cupones: ningún camino enciende sin la aprobación de Jorg
   await m.llamar("activar_cupon", { codigo: "VERANO15" });
   await m.llamar("editar_cupon", { codigo: "VERANO15", valor: 10 });
   await apagado();
+  m.correos.length = 0; // (esas llamadas dejaron solicitudes de OK de cupón activo: no son del interruptor)
 
   // 4. con aprobador: queda pendiente, y aplicar antes de aprobar no enciende
   m.estado.aprobadorEmail = "aprobador@example.com";
@@ -656,7 +677,10 @@ test("interruptor de cupones: ningún camino enciende sin la aprobación de Jorg
   m.estado.esquema = true;
 
   // 7. aprobada, pero cambiaron los cupones activos: no sirve
-  await m.llamar("crear_cupon", { codigo: "OTRO5", tipo: "monto_fijo", valor: 5000 }, { ahora: T0 + 3 * MIN });
+  await m.llamar("crear_cupon", { codigo: "OTRO5", tipo: "monto_fijo", valor: 5000, compra_minima: 10000, max_usos_total: 5, activo: false }, { ahora: T0 + 3 * MIN });
+  await m.llamar("activar_cupon", { codigo: "OTRO5" }, { ahora: T0 + 3 * MIN });
+  await resolverAprobacion(m.db, tokenDe(m.correos), "aprobar", T0 + 3 * MIN + 1000);
+  await m.llamar("activar_cupon", { codigo: "OTRO5" }, { ahora: T0 + 3 * MIN + 2000 });
   const a3 = await m.llamar("aplicar_encendido_cupones", { aprobacion_id: aid }, { ahora: T0 + 4 * MIN });
   assert.match(a3.texto, /cambiaron/);
   await apagado();
@@ -773,4 +797,165 @@ test("opiniones: ocultar y mostrar con deshacer que no pisa cambios posteriores"
   const u2 = await m.llamar("deshacer_lote", { lote_id: r2.loteId, vista_previa_id: p2.datos.vistaPreviaId });
   assert.match(u2.error, /cambió de estado/);
   assert.equal(m.op.filas.get(U2).estado, "pendiente");
+});
+
+// ───────── Correcciones de la auditoría: cupones activos, datos del local y opiniones ─────────
+
+const CUPON_OK = { codigo: "NUEVO10", tipo: "porcentaje", valor: 10, compra_minima: 20000, max_usos_total: 50 };
+
+test("cupón creado por MCP queda PENDIENTE de Jorge: no se crea hasta que apruebe, y la aprobación es de ese cupón exacto", async () => {
+  const m = montar();
+  const p = await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 });
+  assert.ok(!p.error, p.error);
+  assert.equal(p.datos.estado, "pendiente");
+  assert.equal(m.repoCupones.filas.size, 0, "no se creó nada");
+  assert.equal(m.correos.length, 1);
+  assert.deepEqual(m.correos[0].motivos, ["cupon_activo"]);
+  // repetir sin aprobar: sigue pendiente y no manda otro correo
+  assert.equal((await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 + 1000 })).datos.estado, "pendiente");
+  assert.equal(m.correos.length, 1);
+  // aprobar OTRO cupón (distinto valor) no sirve para este
+  await resolverAprobacion(m.db, tokenDe(m.correos), "aprobar", T0 + MIN);
+  const otro = await m.llamar("crear_cupon", { ...CUPON_OK, valor: 50 }, { ahora: T0 + 2 * MIN });
+  assert.equal(otro.datos.estado, "pendiente");
+  assert.equal(m.repoCupones.filas.size, 0);
+  // el aprobado sí se crea, una sola vez
+  const ok = await m.llamar("crear_cupon", CUPON_OK, { ahora: T0 + 3 * MIN });
+  assert.match(ok.texto, /NUEVO10 creado \(activo\)/);
+  assert.equal(m.repoCupones.filas.size, 1);
+  await m.llamar("desactivar_cupon", { codigo: "NUEVO10" }, { ahora: T0 + 4 * MIN });
+  assert.match((await m.llamar("crear_cupon", { ...CUPON_OK, codigo: "NUEVO10B" }, { ahora: T0 + 5 * MIN })).datos.estado, /pendiente/);
+});
+
+test("cupón por MCP: crear apagado, desactivar y editar uno apagado son libres; activar y editar uno activo piden OK", async () => {
+  const m = montar();
+  const libre = await m.llamar("crear_cupon", { ...CUPON_OK, activo: false });
+  assert.match(libre.texto, /creado \(apagado\)/);
+  assert.equal(m.correos.length, 0);
+  assert.ok(!(await m.llamar("editar_cupon", { codigo: "NUEVO10", valor: 15 })).error);
+  assert.equal(m.correos.length, 0, "apagado: editar es libre");
+  const act = await m.llamar("activar_cupon", { codigo: "NUEVO10" });
+  assert.equal(act.datos.estado, "pendiente");
+  assert.equal(m.repoCupones.filas.values().next().value.activo, false);
+  await resolverAprobacion(m.db, tokenDe(m.correos), "aprobar", T0 + MIN);
+  assert.match((await m.llamar("activar_cupon", { codigo: "NUEVO10" }, { ahora: T0 + 2 * MIN })).texto, /activado/);
+  // ahora está activo: editarlo pide OK de nuevo
+  const ed = await m.llamar("editar_cupon", { codigo: "NUEVO10", valor: 40 }, { ahora: T0 + 3 * MIN });
+  assert.equal(ed.datos.estado, "pendiente");
+  assert.equal(Number(m.repoCupones.filas.values().next().value.valor), 15);
+  // apagar siempre es libre (no crea solicitudes)
+  const antes = m.correos.length;
+  assert.match((await m.llamar("desactivar_cupon", { codigo: "NUEVO10" }, { ahora: T0 + 4 * MIN })).texto, /apagado/);
+  assert.equal(m.correos.length, antes);
+});
+
+test("cupón por MCP: sin aprobador configurado, o con el aprobador igual al usuario, queda BLOQUEADO", async () => {
+  const sin = montar({ aprobadorEmail: null });
+  const r = await sin.llamar("crear_cupon", CUPON_OK);
+  assert.equal(r.datos.estado, "bloqueada");
+  assert.equal(sin.repoCupones.filas.size, 0);
+  const igual = montar({ aprobadorEmail: "Contacto@Jurmaq.cl " });
+  const r2 = await igual.llamar("crear_cupon", CUPON_OK);
+  assert.equal(r2.datos.estado, "bloqueada");
+  assert.match(r2.texto, /mismo del usuario|nadie puede aprobar/);
+  assert.equal(igual.repoCupones.filas.size, 0);
+  assert.equal(igual.correos.length, 0);
+});
+
+test("cupón por MCP: exige tope de usos y un monto fijo que deje algo por cobrar", async () => {
+  const m = montar();
+  const sinTope = await m.llamar("crear_cupon", { codigo: "SINTOPE", tipo: "porcentaje", valor: 10 });
+  assert.match(sinTope.error, /tope de usos/);
+  const regalo = await m.llamar("crear_cupon", { codigo: "REGALO", tipo: "monto_fijo", valor: 200_000, max_usos_total: 10 });
+  assert.match(regalo.error, /compra mínima/);
+  const justo = await m.llamar("crear_cupon", { codigo: "JUSTO", tipo: "monto_fijo", valor: 5000, compra_minima: 5999, max_usos_total: 10 });
+  assert.match(justo.error, /compra mínima de al menos \$6\.000/);
+  assert.ok(!(await m.llamar("crear_cupon", { codigo: "JUSTO", tipo: "monto_fijo", valor: 5000, compra_minima: 6000, max_usos_total: 10, activo: false })).error);
+  // activar uno antiguo sin tope (creado desde el panel) tampoco pasa
+  m.repoCupones.filas.set("viejo", { id: "viejo", codigo: "VIEJO", tipo: "monto_fijo", valor: 200000, monto_minimo_compra: 0, max_usos_total: null, max_usos_por_usuario: 0, usos_actuales: 0, valido_desde: null, valido_hasta: null, activo: false, descripcion: null });
+  assert.match((await m.llamar("activar_cupon", { codigo: "VIEJO" })).error, /tope de usos|compra mínima/);
+  assert.equal(m.correos.length, 0, "ni siquiera se molesta a Jorge con algo inválido");
+});
+
+test("deshacer un cupón no es puerta trasera: dejarlo activo con valores de antes pide el OK de Jorge", async () => {
+  const m = montar();
+  await crearCuponBase(m);
+  const off = await m.llamar("desactivar_cupon", { codigo: "VERANO15" }, { ahora: relojOk + MIN });
+  const p = await m.llamar("previsualizar_deshacer_lote", { lote_id: off.loteId }, { ahora: relojOk + MIN });
+  const u = await m.llamar("deshacer_lote", { lote_id: off.loteId, vista_previa_id: p.datos.vistaPreviaId }, { ahora: relojOk + MIN });
+  assert.match(u.error, /pendiente de Jorge/);
+  assert.equal([...m.repoCupones.filas.values()][0].activo, false);
+});
+
+test("datos del local: cambiar WhatsApp, teléfono, correo, dirección o RUT queda PENDIENTE de Jorge; el horario es libre", async () => {
+  const m = montar();
+  // horario: libre
+  await m.llamar("editar_campos_contenido", { clave: "datos_local", cambios: { horario: { lunes: [{ abre: "09:00", cierra: "13:00" }] } } });
+  const ph = await m.llamar("previsualizar_publicacion_contenido", { clave: "datos_local" });
+  assert.match(ph.texto, /No necesita aprobación/);
+  const ch = await m.llamar("confirmar_publicacion_contenido", { clave: "datos_local", vista_previa_id: ph.datos.vistaPreviaId });
+  assert.match(ch.texto, /publicado/);
+  assert.equal(m.correos.length, 0);
+
+  // WhatsApp: pendiente
+  for (const [campo, valor] of [["whatsapp", "56911112222"], ["telefono", "+56911112222"], ["email", "otro@ejemplo.cl"], ["direccion", "Calle Falsa 123, Molina, Maule"], ["rut", "76.111.222-3"]]) {
+    const dl = montar();
+    const e = await dl.llamar("editar_campos_contenido", { clave: "datos_local", cambios: { [campo]: valor } });
+    assert.ok(!e.error, `${campo}: ${e.error}`);
+    const p = await dl.llamar("previsualizar_publicacion_contenido", { clave: "datos_local" });
+    assert.match(p.texto, /Datos de contacto|contacto del local/i, campo);
+    const c = await dl.llamar("confirmar_publicacion_contenido", { clave: "datos_local", vista_previa_id: p.datos.vistaPreviaId });
+    assert.equal(c.datos?.estado, "pendiente", `${campo}: ${c.texto ?? c.error}`);
+    assert.equal((await Repo.obtenerEstado(dl.db, "datos_local")).publicado, null, `${campo}: la tienda no cambió`);
+    assert.deepEqual(dl.correos[0].motivos, ["datos_local"]);
+    assert.ok(JSON.stringify(dl.correos[0].resumen).length > 0);
+    // Jorge aprueba y recién ahí se publica
+    await resolverAprobacion(dl.db, tokenDe(dl.correos), "aprobar", T0 + MIN);
+    const a = await dl.llamar("aplicar_aprobacion_contenido", { clave: "datos_local", aprobacion_id: c.datos.aprobacionId }, { ahora: T0 + 2 * MIN });
+    assert.match(a.texto, /publicado con la aprobación de Jorge/, `${campo}: ${a.error ?? a.texto}`);
+    assert.ok((await Repo.obtenerEstado(dl.db, "datos_local")).publicado, `${campo}: ya está publicado`);
+  }
+});
+
+test("datos del local: el detalle de la aprobación trae cada campo con su valor de antes y de después, completo", async () => {
+  const m = montar();
+  await m.llamar("editar_campos_contenido", { clave: "datos_local", cambios: { whatsapp: "56911112222" } });
+  const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "datos_local" });
+  await m.llamar("confirmar_publicacion_contenido", { clave: "datos_local", vista_previa_id: p.datos.vistaPreviaId });
+  const fila = await m.db.prepare("SELECT detalle FROM aprobaciones").first();
+  const d = JSON.parse(fila.detalle);
+  assert.deepEqual(d.cambiosCompletos.map((c) => c.campo), ["whatsapp"]);
+  assert.equal(d.cambiosCompletos[0].despues, "56911112222");
+});
+
+test("términos: el detalle de la aprobación trae el texto completo, sin recortar", async () => {
+  const m = montar();
+  const base = (await Repo.obtenerEstado(m.db, "terminos")).efectivo.texto;
+  const largo = `${base}\n\n${"Cláusula nueva con un cambio importante al final. ".repeat(400)}\nFIN-DEL-TEXTO-LEGAL`;
+  await m.llamar("guardar_borrador_contenido", { clave: "terminos", valor: { texto: largo } });
+  const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "terminos" });
+  await m.llamar("confirmar_publicacion_contenido", { clave: "terminos", vista_previa_id: p.datos.vistaPreviaId });
+  const d = JSON.parse((await m.db.prepare("SELECT detalle FROM aprobaciones").first()).detalle);
+  assert.ok(d.textoCompleto.endsWith("FIN-DEL-TEXTO-LEGAL"));
+  assert.ok(d.textoCompleto.length > 50_000, "el texto va entero, no un extracto");
+});
+
+test("moderar_opinion «mostrar» no publica pendientes ni lo que se rechazó en el panel; sí lo que se ocultó desde aquí", async () => {
+  const U3 = "33333333-3333-4333-8333-333333333333";
+  const m = montar({ opiniones: [OP(U1, { estado: "pendiente" }), OP(U2, { estado: "rechazada" }), OP(U3)] });
+  const pend = await m.llamar("moderar_opinion", { ids: [U1], accion: "mostrar" });
+  assert.match(pend.error, /No puedo mostrar/);
+  assert.equal(m.op.filas.get(U1).estado, "pendiente");
+  const panel = await m.llamar("moderar_opinion", { ids: [U2], accion: "mostrar" });
+  assert.match(panel.error, /No puedo mostrar/);
+  assert.equal(m.op.filas.get(U2).estado, "rechazada");
+  // mezcla: una mala frena todo (todo o nada)
+  const mezcla = await m.llamar("moderar_opinion", { ids: [U3, U1], accion: "mostrar" });
+  assert.ok(mezcla.error);
+  // ocultar desde aquí y volver a mostrar: sí
+  await m.llamar("moderar_opinion", { ids: [U3], accion: "ocultar" });
+  assert.equal(m.op.filas.get(U3).estado, "rechazada");
+  const ok = await m.llamar("moderar_opinion", { ids: [U3], accion: "mostrar" });
+  assert.ok(!ok.error, ok.error);
+  assert.equal(m.op.filas.get(U3).estado, "aprobada");
 });

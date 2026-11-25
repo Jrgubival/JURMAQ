@@ -1,4 +1,5 @@
 import type { D1Like } from "../gestion/tipos.ts";
+import { descuentoMaximoCupon } from "./totales.ts";
 import { calcularCupon, type LineaCupon, type ResultadoCalculo } from "./calculo.ts";
 import { leerInterruptorCupones } from "./interruptor.ts";
 import { huellaCliente, normalizarEmail, normalizarRut } from "./normalizar.ts";
@@ -129,8 +130,12 @@ export async function evaluarCuponCheckout(db: D1Like, repo: RepoCupones, e: Ent
     if (!calculo.ok) {
       return { ok: false, motivo: calculo.codigo === "minimo" ? "minimo" : "no_aplica", mensaje: calculo.error };
     }
+    // Piso cobrable: el descuento se limita para que los productos nunca queden bajo el piso (ver totales.ts).
+    const subtotalCarrito = e.lineas.reduce((t, l) => t + (Number.isInteger(l.subtotal) && l.subtotal > 0 ? l.subtotal : 0), 0);
+    const descuento = Math.min(calculo.descuento, descuentoMaximoCupon(subtotalCarrito));
+    if (descuento <= 0) return { ok: false, motivo: "no_aplica", mensaje: "Este cupón no da descuento en una compra tan baja." };
     return {
-      ok: true, cupon, reglas, descuento: calculo.descuento, base: calculo.base, excluidas: calculo.excluidas,
+      ok: true, cupon, reglas, descuento, base: calculo.base, excluidas: calculo.excluidas,
       cliente, maxTotal, maxPorCliente,
     };
   } catch {

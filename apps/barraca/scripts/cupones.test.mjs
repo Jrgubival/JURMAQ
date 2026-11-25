@@ -2,6 +2,7 @@
 // D1 caída, totales con transferencia, administración y reportes.
 // Correr: node --test scripts/cupones.test.mjs   (D1 simulada con node:sqlite, sin red)
 import "./pruebas/cargar-alias.mjs";
+process.env.CUPONES_PEPPER = "sal-de-prueba-no-es-un-secreto"; // sin ella, el control por cliente falla cerrado
 import test from "node:test";
 import assert from "node:assert/strict";
 import { crearD1Simulada } from "./pruebas/d1-simulada.mjs";
@@ -13,7 +14,8 @@ const I = await import("../src/lib/cupones/interruptor.ts");
 const S = await import("../src/lib/cupones/servicio.ts");
 const A = await import("../src/lib/cupones/admin.ts");
 const Rep = await import("../src/lib/cupones/reportes.ts");
-const { totalesPedido } = await import("../src/lib/cupones/totales.ts");
+const TOT = await import("../src/lib/cupones/totales.ts");
+const { totalesPedido } = TOT;
 const { REGLAS_POR_DEFECTO, validarReglas, leerReglas } = await import("../src/lib/cupones/reglas.ts");
 const { cuponPedidoPagado, cuponPedidoCerrado, cuponesActivosEnCheckout } = await import("../src/lib/cupones/pedidos.ts");
 const { descuentoTransferencia } = await import("../src/lib/pagos/descuento-transferencia.ts");
@@ -373,8 +375,65 @@ test("transferencia 2% + cupón: el 2% se calcula sobre los productos menos el c
   assert.equal(t.total, 50000 - 5000 - 900 + 8000);
   // con webpay no hay 2%
   assert.equal(totalesPedido({ subtotal: 50000, descuentoCupon: 5000, metodoPago: "webpay", costoDespacho: 8000 }).total, 53000);
-  // el cupón nunca deja el total negativo ni pasa del subtotal
-  assert.equal(totalesPedido({ subtotal: 1000, descuentoCupon: 99999, metodoPago: "webpay", costoDespacho: 0 }).total, 0);
+  // el cupón nunca deja el total negativo ni pasa del subtotal; con subtotal bajo el piso no hay descuento
+  assert.equal(totalesPedido({ subtotal: 1000, descuentoCupon: 99999, metodoPago: "webpay", costoDespacho: 0 }).total, 1000);
+});
+
+// ───────── piso cobrable (retiro en tienda no puede quedar en $0) ─────────
+
+test("piso cobrable: el descuento se limita y los productos nunca bajan de $1.000 ni del 1 % (Webpay y transferencia)", () => {
+  const { pisoCobrable, descuentoMaximoCupon } = TOT;
+  assert.equal(pisoCobrable(50000), 1000);
+  assert.equal(pisoCobrable(500000), 5000); // 1 % pesa más que $1.000
+  assert.equal(pisoCobrable(800), 800);
+  assert.equal(descuentoMaximoCupon(800), 0);
+  for (const subtotal of [1500, 20000, 200000, 999999, 5_000_000]) {
+    for (const metodoPago of ["webpay", "transferencia"]) {
+      const t = totalesPedido({ subtotal, descuentoCupon: subtotal * 10, metodoPago, costoDespacho: null });
+      assert.ok(t.total >= pisoCobrable(subtotal), `${metodoPago} ${subtotal}: total ${t.total}`);
+      assert.ok(t.total > 0);
+      assert.equal(t.total, subtotal - t.descuentoCupon - t.descuentoTransferencia);
+    }
+  }
+  // Retiro en tienda, cupón de $200.000 sobre una compra de $200.000: no queda gratis.
+  const retiro = totalesPedido({ subtotal: 200000, descuentoCupon: 200000, metodoPago: "webpay", costoDespacho: null });
+  assert.ok(retiro.total >= 2000 && retiro.total < 2100);
+  const retiroTransf = totalesPedido({ subtotal: 200000, descuentoCupon: 200000, metodoPago: "transferencia", costoDespacho: null });
+  assert.ok(retiroTransf.total >= 2000);
+});
+
+test("piso cobrable en el checkout: el descuento que ve el cliente ya viene limitado (mismo valor con Webpay o transferencia)", async () => {
+  const db = await dbEncendida();
+  const monto = { ...CUPON, id: "c9", codigo: "REGALO", tipo: "monto_fijo", valor: 200000, max_usos_por_usuario: 0 };
+  const r = await S.evaluarCuponCheckout(db, repoFalso({ cupon: monto }), entrada({ codigo: "regalo", lineas: [linea(1, 10, 200000)] }));
+  assert.equal(r.ok, true);
+  assert.ok(r.descuento < 200000);
+  assert.equal(r.descuento, TOT.descuentoMaximoCupon(200000));
+  for (const metodoPago of ["webpay", "transferencia"]) {
+    const t = totalesPedido({ subtotal: 200000, descuentoCupon: r.descuento, metodoPago, costoDespacho: null });
+    assert.equal(t.descuentoCupon, r.descuento); // los totales no recortan de nuevo: es coherente con lo reservado
+    assert.ok(t.total >= 2000);
+  }
+  // Carrito de $900: el cupón no da descuento (queda bajo el piso)
+  const chico = await S.evaluarCuponCheckout(db, repoFalso({ cupon: CUPON }), entrada({ lineas: [linea(1, 10, 900)] }));
+  assert.equal(chico.ok, false);
+});
+
+// ───────── sin CUPONES_PEPPER falla cerrado ─────────
+
+test("sin CUPONES_PEPPER el cupón no se aplica y avisa (no hay hash sin sal)", async () => {
+  const guardada = process.env.CUPONES_PEPPER;
+  delete process.env.CUPONES_PEPPER;
+  try {
+    await assert.rejects(() => huellaCliente("email", "ana@x.cl"), /falta_pepper/);
+    const db = await dbEncendida();
+    const r = await S.evaluarCuponCheckout(db, repoFalso({ cupon: CUPON }), entrada());
+    assert.equal(r.ok, false);
+    assert.equal(r.motivo, "no_disponible");
+    assert.match(r.mensaje, /No pudimos revisar el cupón/);
+  } finally {
+    process.env.CUPONES_PEPPER = guardada;
+  }
 });
 
 // ───────── administración ─────────
