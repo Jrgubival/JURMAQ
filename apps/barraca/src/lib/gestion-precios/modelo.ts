@@ -92,6 +92,32 @@ export function precioBajoLocal(local: number, bp: number): number {
   return dividirRedondeando(local * (10_000 - bp), 10_000);
 }
 
+/**
+ * Cómo se redondea el precio web de un descuento en %. Regla de la tienda: múltiplos de 10 hacia arriba.
+ * peso = al peso más cercano (la mitad sube); decena_* = a múltiplos de 10.
+ */
+export const REDONDEOS = ["decena_arriba", "decena_abajo", "decena_cercana", "peso"] as const;
+export type Redondeo = (typeof REDONDEOS)[number];
+export const REDONDEO_POR_DEFECTO: Redondeo = "decena_arriba";
+
+export const TEXTO_REDONDEO: Record<Redondeo, string> = {
+  decena_arriba: "a la decena hacia arriba (múltiplo de 10)",
+  decena_abajo: "a la decena hacia abajo (múltiplo de 10)",
+  decena_cercana: "a la decena más cercana (múltiplo de 10; la mitad sube)",
+  peso: "al peso más cercano (la mitad sube)",
+};
+
+/** Precio web = local menos `bp` puntos base, con el redondeo pedido. Solo enteros (sin errores de coma flotante). */
+export function precioBajoLocalRedondeado(local: number, bp: number, redondeo: Redondeo): number {
+  const num = local * (10_000 - bp);
+  switch (redondeo) {
+    case "peso": return dividirRedondeando(num, 10_000);
+    case "decena_arriba": return Math.ceil(num / 100_000 - 1e-9) * 10;
+    case "decena_abajo": return Math.floor(num / 100_000 + 1e-9) * 10;
+    case "decena_cercana": return dividirRedondeando(num, 100_000) * 10;
+  }
+}
+
 /** Reajuste firmado (+/-) de un precio, al peso más cercano. */
 export function reajustarPrecio(valor: number, bp: number): number {
   return dividirRedondeando(valor * (10_000 + bp), 10_000);

@@ -161,6 +161,57 @@ test("las fichas repetidas cuentan como un solo producto", async () => {
   assert.equal(e.requiere, false);
 });
 
+// ───────── redondeo de descuentos en % (regla de la tienda: múltiplos de 10 hacia arriba) ─────────
+test("caso de Claudia: $40.970 menos 5 % = $38.930 (decena hacia arriba), no $38.922", () => {
+  assert.equal(M.precioBajoLocalRedondeado(40970, 500, "decena_arriba"), 38930);
+  assert.equal(M.precioBajoLocalRedondeado(40970, 500, "peso"), 38922); // el comportamiento de antes, ahora opcional
+  assert.equal(M.precioBajoLocalRedondeado(40970, 500, "decena_abajo"), 38920);
+  assert.equal(M.precioBajoLocalRedondeado(40970, 500, "decena_cercana"), 38920);
+  assert.equal(M.precioBajoLocalRedondeado(40990, 500, "decena_cercana"), 38940); // 38940,5 sube
+  // un múltiplo de 10 exacto no se mueve
+  for (const r of M.REDONDEOS) assert.equal(M.precioBajoLocalRedondeado(1000, 500, r), 950, r);
+  const plan = P.planificarDescuentoWeb([ficha({ id: 1, codigo: "C", precio: 40970 })], 500, ["C"], "decena_arriba");
+  assert.deepEqual(plan.cambios[0].despues, { precio: 38930, precio_original: 40970, en_oferta: true });
+  assert.match(plan.formula, /decena hacia arriba/);
+  // un redondeo que dejaría el web sobre el local no se aplica
+  const raro = P.planificarDescuentoWeb([ficha({ id: 2, codigo: "R", precio: 15 })], 100, ["R"], "decena_arriba");
+  assert.equal(raro.cambios.length, 0);
+  assert.match(raro.invalidos[0].motivo, /redondeo/);
+});
+
+test("previsualizar_precios por porcentaje: decena_arriba por defecto, muestra fórmula y redondeo, y los umbrales usan el precio ya redondeado", async () => {
+  const db = nuevaDb();
+  // costo 33.850: 38.922 queda en 14,98 % de utilidad (avisa), 38.930 en 15,01 % (no avisa)
+  const T = crearTienda([ficha({ id: 1, codigo: "C", precio: 40970, costo: 33850 })]);
+  const prev = await Pre.previsualizarPrecios(T.deps, crearCtx(db, JORGE, T0), { por: "porcentaje", codigos: ["C"], descuento_web_pct: 5 });
+  assert.equal(prev.datos.redondeo, "decena_arriba");
+  assert.match(prev.datos.formula, /decena hacia arriba/);
+  assert.match(prev.texto, /decena hacia arriba/);
+  assert.equal(prev.datos.resumen.menos15.total, 0);
+  assert.equal(prev.datos.resumen.mayoresBajadas[0].despues, 38930);
+  const antiguo = await Pre.previsualizarPrecios(T.deps, crearCtx(db, JORGE, T0), { por: "porcentaje", codigos: ["C"], descuento_web_pct: 5, redondeo: "peso" });
+  assert.equal(antiguo.datos.redondeo, "peso");
+  assert.equal(antiguo.datos.resumen.mayoresBajadas[0].despues, 38922);
+  assert.equal(antiguo.datos.resumen.menos15.total, 1);
+  assert.equal(T.filas[0].precio, 40970, "no cambia nada");
+  const ctx = crearCtx(db, JORGE, T0 + 1000, "confirmar_precios");
+  const r = await Pre.confirmarPrecios(T.deps, ctx, { vista_previa_id: prev.datos.vista_previa_id });
+  assert.equal(r.datos.aplicado, true);
+  assert.equal(T.filas[0].precio, 38930);
+});
+
+test("redondeo: la herramienta lo acepta, rechaza valores inventados; lista y reajuste siguen al peso más cercano", async () => {
+  const s = TPr.previsualizarPrecios.esquema.strict();
+  assert.equal(s.safeParse({ por: "porcentaje", codigos: ["A"], descuento_web_pct: 5, redondeo: "decena_abajo" }).success, true);
+  assert.equal(s.safeParse({ por: "porcentaje", codigos: ["A"], descuento_web_pct: 5, redondeo: "centena" }).success, false);
+  const db = nuevaDb();
+  const T = crearTienda([ficha({ id: 1, codigo: "L", precio: 40970, costo: 100 })]);
+  const lista = await Pre.previsualizarPrecios(T.deps, crearCtx(db, JORGE, T0), { por: "lista", items: [{ codigo: "L", precio_web: 38923 }] });
+  assert.equal(lista.datos.resumen.mayoresBajadas[0].despues, 38923, "por lista: el precio exacto pedido");
+  assert.equal(M.reajustarPrecio(40970, -500), 38922, "reajuste: al peso más cercano, como antes");
+  assert.equal(M.precioBajoLocal(40970, 500), 38922, "ofertas programadas: al peso más cercano, como antes");
+});
+
 // ───────── dos pasos ─────────
 const fichasSimples = (n, extra = {}) => Array.from({ length: n }, (_, i) => ficha({ id: i + 1, codigo: `P${i}`, precio: 1000, costo: 100, ...extra }));
 

@@ -11,7 +11,7 @@ import { consumirVistaPrevia, crearVistaPrevia } from "../gestion/index.ts";
 import type { CtxGestion, DepsGestion } from "./deps.ts";
 import { exigirAprobacion, textoMotivos } from "./aprobacion.ts";
 import { aplicarCambiosPrecio, auditoriaDePrecios } from "./aplicar.ts";
-import { type FichaProducto, estadoDe, pesos, precioLocalDe, precioWebDe } from "./modelo.ts";
+import { type FichaProducto, type Redondeo, REDONDEO_POR_DEFECTO, estadoDe, pesos, precioLocalDe, precioWebDe } from "./modelo.ts";
 import {
   type CambioFicha, type ItemLista, type PlanPrecios, type ResumenPlan, compactar, descompactar, huellaDeCambios, planificarDescuentoWeb,
   planificarLista, planificarReajuste, porcentajeABp, resumirPlan,
@@ -40,6 +40,8 @@ export interface EntradaPreviaPrecios {
   categoria_id?: number;
   incluir_subcategorias?: boolean;
   descuento_web_pct?: number;
+  /** Redondeo del precio web en descuentos por %. Por defecto, decena hacia arriba (regla de la tienda). */
+  redondeo?: Redondeo;
   reajuste_pct?: number;
 }
 
@@ -91,7 +93,7 @@ export async function construirPlanPrecios(deps: DepsGestion, e: EntradaPreviaPr
     const codigos = [...new Set((e.codigos ?? []).map((c) => c.trim()).filter(Boolean))];
     if (codigos.length === 0) throw new ErrorGestion("Falta la lista de códigos (codigos).");
     const bp = bpDescuento(e.descuento_web_pct);
-    return planificarDescuentoWeb(await deps.productos.fichasPorCodigos(codigos), bp, codigos);
+    return planificarDescuentoWeb(await deps.productos.fichasPorCodigos(codigos), bp, codigos, e.redondeo ?? REDONDEO_POR_DEFECTO);
   }
 
   // categoria
@@ -105,7 +107,7 @@ export async function construirPlanPrecios(deps: DepsGestion, e: EntradaPreviaPr
   const fichas = await deps.productos.fichasPorCategorias(ids, { soloActivas: true, tope: MAX_FICHAS_POR_OPERACION + 1 });
   if (fichas.length === 0) throw new ErrorGestion("Esa categoría no tiene productos activos.");
   if (fichas.length > MAX_FICHAS_POR_OPERACION) throw new ErrorGestion(`La categoría tiene más de ${MAX_FICHAS_POR_OPERACION} productos activos; hazlo por subcategorías o por lista de códigos.`);
-  if (tieneDescuento) return planificarDescuentoWeb(fichas, bpDescuento(e.descuento_web_pct));
+  if (tieneDescuento) return planificarDescuentoWeb(fichas, bpDescuento(e.descuento_web_pct), [], e.redondeo ?? REDONDEO_POR_DEFECTO);
   const bp = porcentajeABp(e.reajuste_pct as number);
   if (bp === null || bp === 0 || bp < -9000 || bp > 20000) throw new ErrorGestion("reajuste_pct debe estar entre -90 y 200, con hasta 2 decimales, y no ser 0.");
   return planificarReajuste(fichas, bp);
@@ -167,6 +169,7 @@ export async function previsualizarPrecios(deps: DepsGestion, ctx: CtxGestion, e
       vista_previa_id: vista.id,
       expira_en: vista.expiraEn,
       formula: plan.formula,
+      redondeo: plan.metodo === "descuento_web" ? (entrada.redondeo ?? REDONDEO_POR_DEFECTO) : null,
       requiere_aprobacion: eval_.requiere,
       motivos: eval_.motivosTexto,
       resumen,

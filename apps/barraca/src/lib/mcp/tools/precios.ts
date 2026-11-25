@@ -3,6 +3,7 @@
  * confirmar_precios (aplica, o deja pendiente de la aprobación de Jorge).
  */
 import { confirmarPrecios as confirmarSrv, previsualizarPrecios as previsualizarSrv } from "../../gestion-precios/precios-masivos.ts";
+import { REDONDEOS } from "../../gestion-precios/modelo.ts";
 import { defineHerramienta, z } from "./registro.ts";
 import { aCtxGestion, ejecutarServicio, obtenerDeps, revertidorGeneral } from "./productos-comun.ts";
 
@@ -17,7 +18,7 @@ export const previsualizarPrecios = defineHerramienta({
   nombre: "previsualizar_precios",
   titulo: "Previsualizar cambio de precios",
   descripcion:
-    "PASO 1 de un cambio masivo de precios: calcula y NO cambia nada. por='lista' (items con código o id y precio_local y/o precio_web exactos), por='porcentaje' (codigos + descuento_web_pct: el precio local actual queda como precio normal y el web = local menos ese %, al peso más cercano) o por='categoria' (categoria_id + descuento_web_pct, o reajuste_pct para subir o bajar local y web). Pesos enteros. Devuelve cuántos cambian, mayores subidas y bajadas, los bajo el costo o con menos de 15 % de utilidad, códigos no encontrados y un id de un solo uso. Aplica con confirmar_precios. Un cambio por código llega a todas sus fichas.",
+    "PASO 1 de un cambio masivo de precios: calcula y NO cambia nada. por='lista' (items con código o id y precio_local y/o precio_web exactos), por='porcentaje' (codigos + descuento_web_pct: el precio local actual queda como precio normal y el web = local menos ese %, redondeado según «redondeo»; por defecto a la decena hacia arriba, regla de la tienda) o por='categoria' (categoria_id + descuento_web_pct, o reajuste_pct para subir o bajar local y web). Pesos enteros. Devuelve cuántos cambian, mayores subidas y bajadas, los bajo el costo o con menos de 15 % de utilidad, códigos no encontrados y un id de un solo uso. Aplica con confirmar_precios. Un cambio por código llega a todas sus fichas.",
   esquema: z.object({
     por: z.enum(["lista", "porcentaje", "categoria"]).describe("Cómo se piden los cambios."),
     items: z.array(item).max(500).optional().describe("Solo con por='lista'."),
@@ -25,6 +26,7 @@ export const previsualizarPrecios = defineHerramienta({
     categoria_id: z.number().int().positive().optional().describe("Solo con por='categoria'."),
     incluir_subcategorias: z.boolean().optional().describe("Con categoria: incluir subcategorías (sí por defecto)."),
     descuento_web_pct: z.number().min(0.01).max(50).optional().describe("Precio web = local menos este % (2 decimales)."),
+    redondeo: z.enum(REDONDEOS).optional().describe("Redondeo del precio web con descuento_web_pct: decena_arriba (por defecto, múltiplos de 10 hacia arriba), decena_abajo, decena_cercana o peso."),
     reajuste_pct: z.number().min(-90).max(200).optional().describe("Con categoria: sube (+) o baja (-) local y web este %."),
   }),
   anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },

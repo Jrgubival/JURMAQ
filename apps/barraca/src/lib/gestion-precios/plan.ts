@@ -9,8 +9,8 @@
  * En los tres casos un cambio por código llega a TODAS las fichas de ese código.
  */
 import {
-  type EstadoPrecio, type FichaProducto, agruparPorCodigo, clasificarMargen, construirEstado, esPesosValido, estadoDe, mismoEstado,
-  normalizarCodigo, porcentajeABp, precioBajoLocal, precioLocalDe, precioWebDe, reajustarPrecio, tachadoSeMuestra, variacionFirmadaPct,
+  type EstadoPrecio, type FichaProducto, type Redondeo, TEXTO_REDONDEO, agruparPorCodigo, clasificarMargen, construirEstado, esPesosValido, estadoDe, mismoEstado,
+  normalizarCodigo, porcentajeABp, precioBajoLocalRedondeado, precioLocalDe, precioWebDe, reajustarPrecio, tachadoSeMuestra, variacionFirmadaPct,
 } from "./modelo.ts";
 import { huellaDeDatos } from "../gestion/util.ts";
 
@@ -177,14 +177,14 @@ export function planificarLista(items: ItemLista[], fichas: FichaProducto[]): Pl
 }
 
 // ───────── precio web = local menos X % ─────────
-export function formulaDescuento(bp: number): string {
+export function formulaDescuento(bp: number, redondeo: Redondeo = "peso"): string {
   const pct = (bp / 100).toString().replace(".", ",");
-  return `Precio normal (tachado) = precio local actual (el tachado de hoy, o el precio si no hay tachado). Precio web = precio local − ${pct} %, redondeado al peso más cercano (la mitad sube).`;
+  return `Precio normal (tachado) = precio local actual (el tachado de hoy, o el precio si no hay tachado). Precio web = precio local − ${pct} %, redondeado ${TEXTO_REDONDEO[redondeo]}.`;
 }
 
-export function planificarDescuentoWeb(fichas: FichaProducto[], bp: number, codigosPedidos: string[] = []): PlanPrecios {
+export function planificarDescuentoWeb(fichas: FichaProducto[], bp: number, codigosPedidos: string[] = [], redondeo: Redondeo = "peso"): PlanPrecios {
   if (!Number.isInteger(bp) || bp < 1 || bp > 5000) throw new RangeError("Descuento fuera de rango");
-  const plan = planVacio("descuento_web", formulaDescuento(bp));
+  const plan = planVacio("descuento_web", formulaDescuento(bp, redondeo));
   const encontrados = new Set(fichas.map((f) => (f.codigo ? normalizarCodigo(f.codigo) : "")));
   for (const c of codigosPedidos) if (!encontrados.has(normalizarCodigo(c))) plan.noEncontrados.push(c.trim());
   for (const f of fichas) {
@@ -194,10 +194,15 @@ export function planificarDescuentoWeb(fichas: FichaProducto[], bp: number, codi
       plan.invalidos.push({ referencia: refDe(f), motivo: "Sin precio local válido." });
       continue;
     }
-    const web = precioBajoLocal(local, bp);
+    const web = precioBajoLocalRedondeado(local, bp, redondeo);
     if (!esPesosValido(web)) {
       plan.fichasRevisadas++;
       plan.invalidos.push({ referencia: refDe(f), motivo: "El precio web quedaría en 0." });
+      continue;
+    }
+    if (web > local) {
+      plan.fichasRevisadas++;
+      plan.invalidos.push({ referencia: refDe(f), motivo: "El redondeo dejaría el precio web sobre el local." });
       continue;
     }
     aplicar(plan, f, construirEstado(local, web));

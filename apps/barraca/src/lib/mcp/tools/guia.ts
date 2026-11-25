@@ -69,7 +69,7 @@ export const SECCIONES: Record<Exclude<TemaGuia, "herramientas">, string> = {
   ].join("\n"),
   precios: [
     "PRECIOS Y OFERTAS: un producto, con editar_producto. Muchos, con previsualizar_precios y confirmar_precios. Ofertas que empiezan y terminan solas: programar_oferta, ver_ofertas, cancelar_oferta. Despacho: ver_zonas_despacho y cambiar_despacho (siempre con el OK de Jorge). Márgenes: ver_margenes.",
-    "Un cambio por código llega a todas las fichas con ese código. Pesos enteros. Bajo el costo, menos de 15 % de utilidad o rebajas grandes piden el OK de Jorge (tema «aprobaciones»).",
+    "Un cambio por código llega a todas las fichas con ese código. Pesos enteros. Descuento en % (previsualizar_precios por porcentaje o categoría): el precio web se redondea a múltiplos de 10 hacia arriba (opción «redondeo»: decena_arriba por defecto, decena_abajo, decena_cercana, peso); por lista queda el precio exacto y los reajustes y ofertas van al peso más cercano. Bajo el costo, menos de 15 % de utilidad o rebajas grandes piden el OK de Jorge (tema «aprobaciones»).",
   ].join("\n"),
   seo: [
     "SEO (título y descripción para Google y redes): ver_seo (lo de hoy, el sugerido y avisos), auditar_seo (qué falta, por lote), editar_seo (hasta 5 entradas, directo) o previsualizar_seo y confirmar_seo (hasta 200, en dos pasos).",
