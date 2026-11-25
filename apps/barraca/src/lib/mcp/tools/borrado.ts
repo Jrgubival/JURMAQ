@@ -15,7 +15,7 @@ import type { EstadoPedido, Reembolso } from "../../pedidos/index.ts";
 import { archivarPedido, desarchivarPedido, estaArchivado } from "../../pedidos/archivados.ts";
 import { ESTADOS_A_MEDIAS, TEXTO_ESTADO_DEVOLUCION, leerDevolucion } from "../../pedidos/devoluciones-d1.ts";
 import { leerPimientaBorrado } from "../../borrado/pimienta.ts";
-import { aplicarBorradoPersona, planificarPersona, datosParaHuella, normalizarCorreo, type PlanPersona, type PuertoPersonas } from "../../borrado/personas.ts";
+import { aplicarBorradoPersona, planificarPersona, datosParaHuella, normalizarCorreo, type PuertoPersonas } from "../../borrado/personas.ts";
 import { auditarSeguro, cl, conAvisoDinero, exigirAvisoPosible, exigirCupo, gastarVista, nuevaVista, type DepsAvisoDinero } from "./dinero-comun.ts";
 import type { D1Like } from "../../gestion/tipos.ts";
 

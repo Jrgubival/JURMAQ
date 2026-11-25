@@ -147,6 +147,7 @@ function historial(p: FilaVenta, eventos: EventoPedido[]): Array<{ cuando: strin
 
 export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisponibles = true, tieneComprobante, tieneDocumento, puedeEditar, puedeReembolsar }: Props) {
   const router = useRouter();
+  const [ahoraMs] = useState(() => Date.now()); // referencia de la hora al abrir el detalle (decide si una devolución quedó colgada)
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
   const [rechazo, setRechazo] = useState<{ motivo: MotivoRechazo | ""; nota: string } | null>(null);
@@ -165,7 +166,7 @@ export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisp
   // Devoluciones de Webpay que quedaron a medias (el proceso se cortó): se ofrece un reintento SEGURO con confirmación.
   const webpayCobrado = p.pasarela === "webpay" && !!p.pagado_at && !!p.pasarela_referencia;
   const cerradoSinDevolucion = webpayCobrado && (p.estado === "cancelado" || p.estado === "rechazado") && !p.reembolso;
-  const devolucionColgada = webpayCobrado && reembolsoEnCursoViejo(p.reembolso, Date.now());
+  const devolucionColgada = webpayCobrado && reembolsoEnCursoViejo(p.reembolso, ahoraMs);
   const detallePago = (p.pago_detalle ?? null) as null | {
     ordenCompra?: unknown; autorizacion?: unknown; tarjeta?: unknown; tipoPago?: unknown; cuotas?: unknown; fecha?: unknown; monto?: unknown;
   };

@@ -1,3 +1,4 @@
+import { TOPES_DINERO } from "../topes-dinero.ts";
 import { DINERO_PUEDE, DINERO_SIGUE_FUERA, TOPES_DUROS } from "../permisos-texto.ts";
 import { defineHerramienta, z } from "./registro.ts";
 
@@ -95,6 +96,7 @@ export const SECCIONES: Record<Exclude<TemaGuia, "herramientas">, string> = {
     "Un texto editable (contenido, SEO, guías) tampoco puede agregar ni cambiar números de cuenta, IBAN ni enlaces a pasarelas de pago o sitios de cobro; los datos de transferencia de la tienda los arma solo el código. Lo que ya estaba (como el número de cuenta de los Términos) se puede dejar tal cual.",
   ].join("\n"),
   dinero: [
+    `TOPES DE VOLUMEN (duros, iguales en ambos modos, no los puedes cambiar): por usuario, máximo ${TOPES_DINERO.operacionesPorHora} operaciones de dinero o borrado por hora y ${TOPES_DINERO.operacionesPor24h} en 24 horas, ${TOPES_DINERO.devolucionesPorHora} devoluciones por hora y $${TOPES_DINERO.montoDevueltoPor24h.toLocaleString("es-CL")} devueltos en 24 horas. Pasado el tope la herramienta rechaza («tope de seguridad; hágalo desde el panel»), no hace nada y le avisa a Jorge del intento: no insistas ni busques otro camino. Además la confirmación no puede ir pegada a la vista previa: espera al menos ${TOPES_DINERO.esperaMinimaConfirmacionMs / 1000} segundos y que Jorge la pida (si llega antes se rechaza sin gastar el id).`,
     "DINERO Y BORRADO es un permiso APARTE (tienda:dinero). Jorge lo da, o no, al conectar a Claude: la pantalla de autorización tiene una sección «Dinero y borrado» con una casilla desmarcada. Una conexión sin ese permiso NO ve estas herramientas en la lista y no puede ejecutarlas aunque sepa el nombre (da un error que pide volver a autorizar). Si necesitas una herramienta de dinero y no la tienes, dile al usuario que Jorge vuelva a conectar a Claude y marque la casilla; no intentes otro camino.",
     `Con el permiso, solo esto: ${DINERO_PUEDE.map((t) => t.replace(/\.$/, "")).join("; ")}.`,
     `Siguen fuera aunque tenga el permiso: ${DINERO_SIGUE_FUERA.map((t) => t.replace(/\.$/, "")).join("; ")}.`,

@@ -10,6 +10,7 @@
  *    La lista de abajo (DINERO_PUEDE) debe coincidir EXACTAMENTE con las herramientas que declaran `scope: "tienda:dinero"`.
  */
 import { SCOPE_DINERO } from "./config.ts";
+import { TOPES_DINERO } from "./topes-dinero.ts";
 
 export const PUEDE: readonly string[] = [
   "Ver los productos, precios, categorías y ventas de la tienda.",
@@ -76,7 +77,8 @@ export const NO_PUEDE: readonly string[] = [
 export const TOPES_DUROS: readonly string[] = [
   "Dejar un producto a precio 0 o negativo.",
   "Vender bajo el 50 % del costo (cuando el costo está cargado).",
-  "Tocar datos bancarios ni enlaces de pago.",
+  "Tocar datos bancarios ni enlaces de pago (tampoco en nombres y descripciones de productos).",
+  `Pasar de ${TOPES_DINERO.operacionesPorHora} operaciones de dinero o borrado por hora (${TOPES_DINERO.operacionesPor24h} al día), de ${TOPES_DINERO.devolucionesPorHora} devoluciones por hora, ni de $${TOPES_DINERO.montoDevueltoPor24h.toLocaleString("es-CL")} devueltos en 24 horas.`,
 ];
 
 export const NOTAS: readonly string[] = [
