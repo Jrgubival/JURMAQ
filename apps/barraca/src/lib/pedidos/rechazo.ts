@@ -27,6 +27,7 @@ export async function devolverWebpayDetallado(p: Pedido) {
       tomarReembolso: (n, r) => store.tomarReembolso(n, r),
       guardarReembolso: (n, r) => store.guardarReembolso(n, r),
       reembolsar: reembolsarWebpay,
+      estadoTransaccion: estadoTransaccionWebpay,
       log: (evento, datos) => (datos.error ? logSafeError(evento, datos) : logSafe(evento, datos)),
     },
     { numero: p.numero, total: p.total, pasarela_referencia: p.pasarela_referencia! },

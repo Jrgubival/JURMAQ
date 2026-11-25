@@ -4,7 +4,7 @@ import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { pedidos, PATRON_NUMERO } from '@/lib/pedidos';
 import { aplicarEstadoPago, origenTienda } from '@/lib/pagos';
-import { confirmarWebpay, reembolsarWebpay, sesionWebpay } from '@/lib/pagos/webpay';
+import { confirmarWebpay, estadoTransaccionWebpay, reembolsarWebpay, sesionWebpay } from '@/lib/pagos/webpay';
 import { ejecutarDevolucionWebpay } from '@/lib/pedidos/devolucion-webpay';
 
 /**
@@ -97,6 +97,7 @@ async function atender(request: NextRequest) {
               tomarReembolso: (n, rb) => store.tomarReembolso(n, rb),
               guardarReembolso: (n, rb) => store.guardarReembolso(n, rb),
               reembolsar: reembolsarWebpay,
+              estadoTransaccion: estadoTransaccionWebpay,
               log: (evento, datos) => (datos.error ? logSafeError(evento, datos) : logSafe(evento, datos)),
             },
             { numero, total: r.detalle.monto, pasarela_referencia: tokenWs },

@@ -29,6 +29,11 @@ export interface DepsDevolucionWebpay {
   tomarReembolso(numero: string, r: Reembolso): Promise<boolean>;
   guardarReembolso(numero: string, r: Reembolso): Promise<void>;
   reembolsar(token: string, monto: number): Promise<{ ok: boolean; tipo: string | null; autorizacion: string | null }>;
+  /**
+   * Solo lectura. Opcional: si falta, un 422 de «ya devuelta/anulada» queda `incierto` (nunca «no se hizo»). Con ella, si
+   * Transbank dice REVERSED o NULLIFIED por el monto íntegro se registra como `hecho`.
+   */
+  estadoTransaccion?(token: string): Promise<{ estado: string | null; monto: number | null; saldo: number | null }>;
   ahora?: () => string;
   /** Registro seguro (sin datos personales). */
   log?: (evento: string, datos: Record<string, unknown>) => void;
@@ -43,8 +48,20 @@ export interface DepsDevolucionWebpay {
 export function fallaGarantizaQueNoSeDevolvio(e: unknown): boolean {
   if (e && typeof e === "object" && (e as { sinEnviar?: unknown }).sinEnviar === true) return true;
   const err = e as { name?: unknown; message?: unknown } | null;
-  if (err?.name === "TransbankError" && typeof err.message === "string") return /status code (?:400|401|403|404|422)\b/.test(err.message);
+  if (err?.name === "TransbankError" && typeof err.message === "string") {
+    if (esYaDevuelta(err.message)) return false;
+    return /status code (?:400|401|403|404|422)\b/.test(err.message);
+  }
   return false;
+}
+
+/**
+ * Un 422 que dice que la transacción YA se devolvió o anuló («already nullified», «already reversed», «ya anulada»…) es lo
+ * contrario de «no se hizo»: el dinero pudo haber salido (por una llamada anterior cuya respuesta se perdió). Los otros 422
+ * (monto inválido, token inválido, transacción sin terminar, fuera de plazo) sí garantizan que no se devolvió.
+ */
+export function esYaDevuelta(mensaje: string): boolean {
+  return /status code 422\b/.test(mensaje) && /already|nullif|reversed|refunded|anulad|devuelt|reversad/i.test(mensaje);
 }
 
 export async function ejecutarDevolucionWebpay(deps: DepsDevolucionWebpay, p: PedidoParaDevolver): Promise<{ resultado: ResultadoDevolucionWebpay; sinRegistro?: boolean }> {
@@ -68,6 +85,11 @@ async function pedirYGuardarReembolso(deps: DepsDevolucionWebpay, p: PedidoParaD
   try {
     tb = await deps.reembolsar(p.pasarela_referencia, p.total);
   } catch (error) {
+    if (esYaDevuelta(String((error as { message?: unknown } | null)?.message ?? ""))) {
+      // «Ya devuelta/anulada»: no es «no se hizo». Se consulta el estado real; si no se puede confirmar, queda incierta.
+      deps.log?.("admin-pedido-reembolso-ya-devuelta", { numero: p.numero, error: String(error).slice(0, 200) });
+      return verificarYaDevuelta(deps, p, guardar);
+    }
     const definitivo = fallaGarantizaQueNoSeDevolvio(error);
     deps.log?.("admin-pedido-reembolso-error", { numero: p.numero, definitivo, error: String(error).slice(0, 200) });
     const sinRegistro = !(await guardar({ ...base, estado: definitivo ? "error" : "incierto", fecha: ahora() }));
@@ -81,6 +103,23 @@ async function pedirYGuardarReembolso(deps: DepsDevolucionWebpay, p: PedidoParaD
   const sinRegistro = !(await guardar({ ...base, estado: tb.ok ? "hecho" : "error", tipo: tb.tipo, autorizacion: tb.autorizacion, fecha: ahora() }));
   deps.log?.("admin-pedido-reembolso", { numero: p.numero, ok: tb.ok, tipo: tb.tipo });
   return { resultado: tb.ok ? "hecho" : "rechazada", ...(sinRegistro ? { sinRegistro } : {}) };
+}
+
+/** Tras un 422 de «ya devuelta/anulada»: consulta a Transbank (solo lectura) y registra `hecho` o `incierto`, nunca `error`. */
+async function verificarYaDevuelta(
+  deps: DepsDevolucionWebpay, p: PedidoParaDevolver, guardar: (r: Reembolso) => Promise<boolean>,
+): Promise<{ resultado: ResultadoDevolucionWebpay; sinRegistro?: boolean }> {
+  const ahora = deps.ahora ?? (() => new Date().toISOString());
+  const base = { medio: "webpay" as const, monto: p.total };
+  let t: { estado: string | null; monto: number | null; saldo: number | null } | null = null;
+  try { t = deps.estadoTransaccion ? await deps.estadoTransaccion(p.pasarela_referencia) : null; } catch { t = null; }
+  // NULLIFIED/REVERSED por el monto íntegro del pedido: se devolvió. Parcial, otro monto o sin consulta: se resuelve a mano.
+  if (t && (t.estado === "NULLIFIED" || t.estado === "REVERSED") && t.monto === p.total) {
+    const sinRegistro = !(await guardar({ ...base, estado: "hecho", tipo: t.estado, autorizacion: null, fecha: ahora(), hecho_at: ahora(), hecho_por: "comprobado en Transbank" }));
+    return { resultado: "hecho", ...(sinRegistro ? { sinRegistro } : {}) };
+  }
+  const sinRegistro = !(await guardar({ ...base, estado: "incierto", fecha: ahora() }));
+  return { resultado: "incierta", ...(sinRegistro ? { sinRegistro } : {}) };
 }
 
 // ───────── Devolución «en curso» que quedó a medias (el proceso murió después de tomar el candado) ─────────

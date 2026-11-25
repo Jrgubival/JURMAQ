@@ -105,3 +105,57 @@ test("clasificación de fallas: solo el 4xx de Transbank o un error marcado ante
   assert.equal(fallaGarantizaQueNoSeDevolvio(null), false);
   assert.equal(fallaGarantizaQueNoSeDevolvio(Object.assign(new Error("x"), { sinEnviar: true })), true);
 });
+
+// ───────── 422 por «ya devuelta/anulada»: se verifica, nunca se toma por «no se hizo» ─────────
+const tb422 = (m) => Object.assign(new Error(`AxiosError: Request failed with status code 422\n${m}\n`), { name: "TransbankError" });
+const lanza422 = (m) => async () => { throw tb422(m); };
+
+test("422 «ya anulada»: no es definitivo (no garantiza que no se devolvió); los otros 422 siguen siéndolo", () => {
+  assert.equal(fallaGarantizaQueNoSeDevolvio(tb422("Transaction already nullified")), false);
+  assert.equal(fallaGarantizaQueNoSeDevolvio(tb422("Transaction already reversed")), false);
+  assert.equal(fallaGarantizaQueNoSeDevolvio(tb422("La transacción ya fue anulada")), false);
+  assert.equal(fallaGarantizaQueNoSeDevolvio(tb422("Invalid value for parameter: amount")), true);
+  assert.equal(fallaGarantizaQueNoSeDevolvio(tb422("Transaction is unfinished, it is not possible to refund it yet")), true);
+  assert.equal(fallaGarantizaQueNoSeDevolvio(tb422("Refund period expired")), true);
+});
+
+test("422 «ya anulada» + Transbank confirma NULLIFIED por el monto: queda «hecho» (no «error»)", async () => {
+  const e = entorno({ transbank: lanza422("Transaction already nullified") });
+  e.deps.estadoTransaccion = async () => ({ estado: "NULLIFIED", monto: 15000, saldo: 0 });
+  const r = await ejecutarDevolucionWebpay(e.deps, PEDIDO);
+  assert.equal(r.resultado, "hecho");
+  assert.equal(e.reembolso.estado, "hecho");
+  assert.equal(e.reembolso.monto, 15000);
+  assert.equal(e.reembolso.tipo, "NULLIFIED");
+  assert.equal(e.llamadasTransbank.length, 1, "no se pide una segunda devolución");
+});
+
+test("422 «ya anulada» sin poder determinarlo (sin consulta, consulta falla, parcial, otro monto, sigue AUTHORIZED): «incierta»", async () => {
+  const casos = [
+    undefined,
+    async () => { throw new Error("red caída"); },
+    async () => ({ estado: "PARTIALLY_NULLIFIED", monto: 15000, saldo: 5000 }),
+    async () => ({ estado: "NULLIFIED", monto: 9000, saldo: 0 }),
+    async () => ({ estado: "AUTHORIZED", monto: 15000, saldo: 15000 }),
+    async () => ({ estado: null, monto: null, saldo: null }),
+  ];
+  for (const [i, consulta] of casos.entries()) {
+    const e = entorno({ transbank: lanza422("Transaction already nullified") });
+    if (consulta) e.deps.estadoTransaccion = consulta;
+    const r = await ejecutarDevolucionWebpay(e.deps, PEDIDO);
+    assert.equal(r.resultado, "incierta", `caso ${i}`);
+    assert.equal(e.reembolso.estado, "incierto", `caso ${i}`);
+    assert.equal((await ejecutarDevolucionWebpay(e.deps, PEDIDO)).resultado, "ocupada", `no se reintenta sola, caso ${i}`);
+  }
+});
+
+test("422 por monto inválido o fuera de plazo sigue siendo «error» y no consulta el estado", async () => {
+  for (const m of ["Invalid value for parameter: amount", "Refund period expired"]) {
+    const e = entorno({ transbank: lanza422(m) });
+    let consultas = 0;
+    e.deps.estadoTransaccion = async () => { consultas++; return { estado: "NULLIFIED", monto: 15000, saldo: 0 }; };
+    assert.equal((await ejecutarDevolucionWebpay(e.deps, PEDIDO)).resultado, "rechazada", m);
+    assert.equal(e.reembolso.estado, "error", m);
+    assert.equal(consultas, 0, m);
+  }
+});
