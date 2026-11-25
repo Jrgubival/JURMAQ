@@ -11,6 +11,10 @@ import type { TextosLocal } from './textos-local';
 import { ETIQUETA_ESTADO, MOTIVOS_CANCELACION, MOTIVOS_RECHAZO, type DocumentoTributario, type Pedido } from './index';
 import { urlVerPedido, urlOpinar } from './enlace';
 import { MIME_COMPROBANTE, type TipoComprobante } from './comprobantes';
+import { textosCorreo } from '@/lib/correos-cliente/servidor';
+import { resolverTextos } from '@/lib/correos-cliente/render';
+import { variablesCorreo } from '@/lib/correos-cliente/variables';
+import type { ClaveCorreo, VariablesCorreo } from '@/lib/correos-cliente/plantillas';
 
 /**
  * Correos de la tienda: confirmación al comprador y aviso a la barraca. Si
@@ -21,6 +25,22 @@ import { MIME_COMPROBANTE, type TipoComprobante } from './comprobantes';
  * enlace de acceso (lib/pedidos/enlace.ts): no hay cuentas de cliente.
  * Van con skipAdminBcc: la barraca recibe su propio aviso con los datos.
  */
+
+/**
+ * Textos editables de un correo al cliente (asunto, saludo, párrafos, despedida; ver
+ * lib/correos-cliente): lo publicado en D1 si valida, y si no el texto de siempre. Nunca lanza:
+ * el correo no puede dejar de salir por un texto.
+ */
+async function textosDe(clave: ClaveCorreo, vars: VariablesCorreo): Promise<Record<string, string>> {
+  try {
+    return (await textosCorreo(clave, vars)).campos;
+  } catch {
+    return resolverTextos(clave, null, vars).campos;
+  }
+}
+
+/** Despedida opcional (vacía por defecto: no agrega nada al correo). */
+const bloqueDespedida = (html: string, margen: number) => (html ? `\n<p style="margin:0${margen ? ` 0 ${margen}px` : ''};">${html}</p>` : '');
 
 /** En pruebas locales (pedidos en archivo) no se mandan correos reales. */
 function modoPrueba(): boolean {
@@ -115,7 +135,7 @@ function bloqueVerPedido(p: Pedido): string {
 <p style="margin:0 0 16px;color:#6b7280;font-size:12px;">Este enlace es personal: abre tu pedido sin contraseña. No lo reenvíes.</p>`;
 }
 
-function cuerpo(p: Pedido, intro: string, loc: TextosLocal, conEnlace = true): string {
+function cuerpo(p: Pedido, intro: string, loc: TextosLocal, conEnlace = true, despedida = ''): string {
   return `
 <p style="margin:0 0 16px;">${intro}</p>
 ${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio, subtotal: i.subtotal, nota: i.combo ? textoCombo(i.combo) : null })))}
@@ -126,7 +146,7 @@ ${(p.descuento_transferencia ?? 0) > 0 ? `<p style="margin:8px 0 0;font-size:14p
 <div style="margin:0 0 16px;">${bloqueEntrega(p, loc)}</div>
 <div style="margin:0 0 16px;">${bloqueDocumento(p)}</div>
 <div style="margin:0 0 16px;">${bloquePago(p)}</div>
-${conEnlace ? bloqueVerPedido(p) : ''}
+${conEnlace ? bloqueVerPedido(p) : ''}${bloqueDespedida(despedida, 16)}
 <p style="margin:0;color:#6b7280;font-size:12px;">Esta compra se rige por nuestros <a href="${URL_TERMINOS}" style="color:#6b7280;">Términos y Condiciones</a> (${URL_TERMINOS}), que aceptaste al comprar. Puedes guardarlos o imprimirlos desde ese enlace.</p>`;
 }
 
@@ -134,14 +154,15 @@ export async function correoConfirmacionComprador(p: Pedido) {
   if (modoPrueba()) return;
   try {
     const loc = await textosDelLocal();
-    const titulo = p.estado === 'pagado' ? `Pago recibido · pedido ${p.numero}` : `Recibimos tu pedido ${p.numero}`;
+    const clave: ClaveCorreo = p.estado === 'pagado' ? 'pago_recibido' : p.metodo_pago === 'transferencia' ? 'confirmacion_transferencia' : 'confirmacion_pedido';
+    const t = await textosDe(clave, variablesCorreo(p, loc));
     await transporter.sendMail({
       to: p.email,
-      subject: `${titulo} | Barraca JURMAQ`,
+      subject: t.asunto,
       html: renderEmailLayout({
-        title: titulo,
-        preheader: `Pedido ${p.numero} por ${formatCLP(p.total)}`,
-        bodyHtml: cuerpo(p, `Hola ${escapeHtml(p.nombre.split(' ')[0])}, este es el detalle de tu pedido <strong>${escapeHtml(p.numero)}</strong>.`, loc),
+        title: t.titulo,
+        preheader: t.preheader,
+        bodyHtml: cuerpo(p, t.saludo, loc, true, t.despedida),
       }),
       skipAdminBcc: true,
     });
@@ -201,19 +222,19 @@ export async function correoRechazoComprador(p: Pedido) {
     ? `<p style="margin:0 0 12px;">Si te sirve, puedes retirar el pedido en la barraca (${escapeHtml(loc.direccionCorta)}) en vez de la devolución: respóndenos este correo.</p>`
     : '';
   try {
-    const titulo = `No pudimos aprobar tu pedido ${p.numero}`;
+    const t = await textosDe('rechazo_pedido', variablesCorreo(p, loc));
     await transporter.sendMail({
       to: p.email,
-      subject: `${titulo} | Barraca JURMAQ`,
+      subject: t.asunto,
       html: renderEmailLayout({
-        title: titulo,
-        preheader: `Te devolvemos el 100% de lo pagado`,
+        title: t.titulo,
+        preheader: t.preheader,
         bodyHtml: `
-<p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, lamentamos avisarte que no podemos aprobar tu pedido <strong>${escapeHtml(p.numero)}</strong>.</p>
+<p style="margin:0 0 12px;">${t.saludo}</p>
 <p style="margin:0 0 12px;"><strong>Motivo:</strong> ${escapeHtml(motivo)}.</p>
 ${retiro}${devolucion}
 <div style="margin:0 0 12px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
-<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a ${escapeHtml(loc.email)} o al ${escapeHtml(loc.whatsappDisplay)}.</p>
+<p style="margin:0 0 12px;">${t.dudas}</p>${bloqueDespedida(t.despedida, 12)}
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 8.4: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
       // Copia a la barraca (BCC automático del transporte).
@@ -248,16 +269,15 @@ export async function correoCancelacionComprador(p: Pedido) {
   const loc = await textosDelLocal();
   const motivo = p.cancelacion_motivo;
   const pagado = !!p.pagado_at;
-  const nombre = escapeHtml(p.nombre.split(' ')[0]);
-  const numero = escapeHtml(p.numero);
+  const t = await textosDe('cancelacion_pedido', variablesCorreo(p, loc));
   const intro =
     motivo === 'transferencia_no_recibida'
-      ? `Hola ${nombre}, no recibimos el pago de tu pedido <strong>${numero}</strong>, por eso lo anulamos.`
+      ? t.intro_transferencia_no_recibida
       : motivo === 'vencido'
-        ? `Hola ${nombre}, no recibimos la transferencia de tu pedido <strong>${numero}</strong> dentro de 48 horas, así que lo anulamos sin costo para ti (Términos 8.3).`
+        ? t.intro_vencido
         : motivo === 'cliente'
-          ? `Hola ${nombre}, anulamos tu pedido <strong>${numero}</strong>, como nos pediste.`
-          : `Hola ${nombre}, anulamos tu pedido <strong>${numero}</strong>.`;
+          ? t.intro_cliente
+          : t.intro_otro;
   const plata = !pagado
     ? motivo === 'transferencia_no_recibida' || motivo === 'vencido'
       ? `<p style="margin:0 0 12px;">No hay nada que devolver. Si crees que sí transferiste, respóndenos este correo o escríbenos por WhatsApp al ${escapeHtml(loc.whatsappDisplay)} con el comprobante y lo revisamos.</p>`
@@ -266,20 +286,19 @@ export async function correoCancelacionComprador(p: Pedido) {
       ? `<p style="margin:0 0 12px;">${p.reembolso.estado === 'hecho' ? 'Ya anulamos' : 'Estamos anulando'} el cobro de <strong>${formatCLP(p.total)}</strong> en Webpay. El abono vuelve a la misma tarjeta y el plazo en que lo ves depende de tu banco o emisor.</p>`
       : devolucionTransferencia(p, loc);
   try {
-    const titulo = `Anulamos tu pedido ${p.numero}`;
     await enviarOGuardar(`${p.numero}-cancelacion`, {
       to: p.email,
-      subject: `${titulo} | Barraca JURMAQ`,
+      subject: t.asunto,
       html: renderEmailLayout({
-        title: titulo,
-        preheader: pagado ? 'Te devolvemos el 100% de lo pagado' : 'No se cobró nada',
+        title: t.titulo,
+        preheader: pagado ? t.preheader_pagado : t.preheader_sin_pago,
         bodyHtml: `
 <p style="margin:0 0 12px;">${intro}</p>
 ${motivo ? `<p style="margin:0 0 12px;"><strong>Motivo:</strong> ${escapeHtml(MOTIVOS_CANCELACION[motivo])}.</p>` : ''}
 ${resumenItems(p)}
 ${plata}
 <div style="margin:0 0 12px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
-<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a ${escapeHtml(loc.email)} o al ${escapeHtml(loc.whatsappDisplay)}.</p>
+<p style="margin:0 0 12px;">${t.dudas}</p>${bloqueDespedida(t.despedida, 12)}
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
       // Copia a la barraca (BCC automático del transporte).
@@ -294,18 +313,18 @@ ${plata}
 export async function correoDevolucionHecha(p: Pedido) {
   const loc = await textosDelLocal();
   const c = p.reembolso?.cuenta;
-  const cuenta = c ? `${escapeHtml(c.banco)}, cuenta terminada en ${escapeHtml(c.numero.slice(-4))}` : 'la cuenta que nos indicaste';
+  const cuenta = c ? `${c.banco}, cuenta terminada en ${c.numero.slice(-4)}` : 'la cuenta que nos indicaste';
   try {
-    const titulo = `Te devolvimos el pago del pedido ${p.numero}`;
+    const t = await textosDe('devolucion_hecha', variablesCorreo(p, loc, { monto_devolucion: formatCLP(p.reembolso?.monto ?? p.total), cuenta_devolucion: cuenta }));
     await enviarOGuardar(`${p.numero}-devolucion-hecha`, {
       to: p.email,
-      subject: `${titulo} | Barraca JURMAQ`,
+      subject: t.asunto,
       html: renderEmailLayout({
-        title: titulo,
-        preheader: `Transferimos ${formatCLP(p.reembolso?.monto ?? p.total)}`,
+        title: t.titulo,
+        preheader: t.preheader,
         bodyHtml: `
-<p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, te transferimos <strong>${formatCLP(p.reembolso?.monto ?? p.total)}</strong> del pedido <strong>${escapeHtml(p.numero)}</strong> a ${cuenta}.</p>
-<p style="margin:0 0 12px;">Si no ves el abono, respóndenos este correo o escríbenos por WhatsApp al ${escapeHtml(loc.whatsappDisplay)}.</p>
+<p style="margin:0 0 12px;">${t.saludo}</p>
+<p style="margin:0 0 12px;">${t.dudas}</p>${bloqueDespedida(t.despedida, 12)}
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 12: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
       skipAdminBcc: false,
@@ -325,19 +344,19 @@ export async function correoPedirOpinion(p: Pedido, urlBajaCorreos: string): Pro
   if (modoPrueba()) return false;
   const nombres = [...new Map(p.items.map((i) => [i.productoId, i.nombre])).values()].slice(0, 5);
   try {
-    const titulo = '¿Qué te parecieron tus productos?';
+    const t = await textosDe('pedir_opinion', variablesCorreo(p, await textosDelLocal()));
     await transporter.sendMail({
       to: p.email,
-      subject: `${titulo} · pedido ${p.numero} | Barraca JURMAQ`,
+      subject: t.asunto,
       html: renderEmailLayout({
-        title: titulo,
-        preheader: `Cuéntanos cómo te fue con tu pedido ${p.numero}`,
+        title: t.titulo,
+        preheader: t.preheader,
         bodyHtml: `
-<p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, ya entregamos tu pedido <strong>${escapeHtml(p.numero)}</strong>.</p>
-<p style="margin:0 0 12px;">Si tienes un minuto, califica los productos que compraste. Tu opinión ayuda a otros clientes a elegir:</p>
+<p style="margin:0 0 12px;">${t.saludo}</p>
+<p style="margin:0 0 12px;">${t.invitacion}</p>
 <ul style="margin:0 0 16px;padding:0 0 0 18px;font-size:14px;line-height:1.6;">${nombres.map((n) => `<li>${escapeHtml(n)}</li>`).join('')}</ul>
 <div style="margin:0 0 16px;">${renderButton({ href: urlOpinar(p.numero), label: 'Dar mi opinión' })}</div>
-<p style="margin:0 0 12px;color:#6b7280;font-size:13px;">En la opinión publicada sólo aparece tu nombre y la inicial de tu apellido. Puedes opinar una vez por producto.</p>
+<p style="margin:0 0 12px;color:#6b7280;font-size:13px;">En la opinión publicada sólo aparece tu nombre y la inicial de tu apellido. Puedes opinar una vez por producto.</p>${bloqueDespedida(t.despedida, 12)}
 <p style="margin:0;color:#6b7280;font-size:12px;">Te escribimos una sola vez por este pedido. <a href="${escapeHtml(urlBajaCorreos)}" style="color:#6b7280;">No quiero recibir más correos como este</a>.</p>`,
       }),
       skipAdminBcc: true,
@@ -404,18 +423,24 @@ export async function correoTransferenciaInformada(p: Pedido, adjunto: AdjuntoCo
  * el panel. Plantilla fija; todo dato del pedido va con escapeHtml. Nunca
  * lanza. En pruebas locales no se envía ('omitido').
  */
-export function armarCorreoDocumentoTributario(p: Pedido, tipo: DocumentoTributario, pdf: Buffer, emailContacto: string) {
+/** Variables del correo de boleta o factura: las comunes más el tipo de documento. */
+function variablesDocumento(p: Pedido, tipo: DocumentoTributario, loc: Partial<TextosLocal>): VariablesCorreo {
+  const doc = tipo === 'factura' ? 'factura' : 'boleta';
+  return variablesCorreo(p, loc, { documento: doc, documento_cap: `${doc[0].toUpperCase()}${doc.slice(1)}` });
+}
+
+export function armarCorreoDocumentoTributario(p: Pedido, tipo: DocumentoTributario, pdf: Buffer, emailContacto: string, textos?: Record<string, string>) {
   const nombreDoc = tipo === 'factura' ? 'factura' : 'boleta';
-  const titulo = `Tu ${nombreDoc} del pedido ${p.numero}`;
+  const t = textos ?? resolverTextos('documento_tributario', null, variablesDocumento(p, tipo, { email: emailContacto })).campos;
   const bodyHtml = `
-<p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, te adjuntamos la ${nombreDoc} de tu pedido <strong>${escapeHtml(p.numero)}</strong> por <strong>${formatCLP(p.total)}</strong>.</p>
+<p style="margin:0 0 12px;">${t.saludo}</p>
 ${tipo === 'factura' && p.factura_razon_social ? `<p style="margin:0 0 12px;font-size:14px;color:#374151;">Emitida a ${escapeHtml(p.factura_razon_social)}${p.factura_rut ? ` · RUT ${escapeHtml(p.factura_rut)}` : ''}.</p>` : ''}
 <div style="margin:0 0 16px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
-<p style="margin:0;color:#6b7280;font-size:12px;">Si algún dato está mal, respóndenos este correo o escríbenos a ${escapeHtml(emailContacto)}.</p>`;
+<p style="margin:0${t.despedida ? ' 0 12px' : ''};color:#6b7280;font-size:12px;">${t.dudas}</p>${bloqueDespedida(t.despedida, 0)}`;
   return {
     to: p.email,
-    subject: `${titulo} | Barraca JURMAQ`,
-    html: renderEmailLayout({ title: titulo, preheader: `${nombreDoc[0].toUpperCase()}${nombreDoc.slice(1)} adjunta en PDF`, bodyHtml }),
+    subject: t.asunto,
+    html: renderEmailLayout({ title: t.titulo, preheader: t.preheader, bodyHtml }),
     skipAdminBcc: true as const,
     attachments: [{ filename: `${nombreDoc}-${p.numero}.pdf`, content: pdf, contentType: 'application/pdf' }],
   };
@@ -423,7 +448,8 @@ ${tipo === 'factura' && p.factura_razon_social ? `<p style="margin:0 0 12px;font
 
 export async function correoDocumentoTributario(p: Pedido, tipo: DocumentoTributario, pdf: Buffer): Promise<'enviado' | 'omitido' | 'error'> {
   if (modoPrueba()) return 'omitido';
-  const correo = armarCorreoDocumentoTributario(p, tipo, pdf, (await textosDelLocal()).email);
+  const loc = await textosDelLocal();
+  const correo = armarCorreoDocumentoTributario(p, tipo, pdf, loc.email, await textosDe('documento_tributario', variablesDocumento(p, tipo, loc)));
   try {
     const r = await transporter.sendMail(correo);
     return r.error ? 'error' : 'enviado';

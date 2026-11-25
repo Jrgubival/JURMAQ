@@ -18,6 +18,12 @@ import { cambiarDespacho, verZonasDespacho } from "./despacho.ts";
 import { herramientasDescuentoTransferencia } from "./descuento-transferencia.ts";
 import { cancelarOferta, programarOferta, verOfertas } from "./ofertas.ts";
 
+import { editarBorradorCorreo, listarPlantillasCorreo, previsualizarCorreo, publicarCorreo, restaurarCorreo, verPlantillaCorreo } from "./correos.ts";
+import {
+  borrarCampanaBorrador, contarSuscriptoresHerramienta, crearCampanaBorrador, editarCampanaBorrador, listarCampanasHerramienta, previsualizarCampana,
+  restaurarCampanaVersion, verCampana,
+} from "./campanas.ts";
+
 export const registro = crearRegistro();
 registro.agregar(guia);
 // Contenido editable, imágenes, cupones, opiniones, historial y deshacer.
@@ -47,3 +53,18 @@ registro.agregar(verOfertas);
 registro.agregar(cancelarOferta);
 // Descuento por transferencia configurable (ver, previsualizar, confirmar con aprobación).
 registro.agregar(...herramientasDescuentoTransferencia);
+// Etapa 2: textos de correos al cliente (publicar siempre con OK de Jorge) y borradores de campañas (nunca envían).
+registro.agregar(listarPlantillasCorreo);
+registro.agregar(verPlantillaCorreo);
+registro.agregar(editarBorradorCorreo);
+registro.agregar(previsualizarCorreo);
+registro.agregar(publicarCorreo);
+registro.agregar(restaurarCorreo);
+registro.agregar(crearCampanaBorrador);
+registro.agregar(editarCampanaBorrador);
+registro.agregar(listarCampanasHerramienta);
+registro.agregar(verCampana);
+registro.agregar(previsualizarCampana);
+registro.agregar(contarSuscriptoresHerramienta);
+registro.agregar(borrarCampanaBorrador);
+registro.agregar(restaurarCampanaVersion);

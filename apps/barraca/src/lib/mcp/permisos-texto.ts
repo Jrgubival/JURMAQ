@@ -7,13 +7,15 @@ export const PUEDE: readonly string[] = [
   "Ver los productos, precios, categorías y ventas de la tienda.",
   "Cambiar precios, ofertas y textos de la tienda cuando tú se lo pidas.",
   "Prepararte cambios grandes y mostrártelos antes de aplicarlos.",
+  "Redactar borradores de los correos que reciben los clientes (solo los textos) y de campañas a suscriptores.",
 ];
 
 export const NO_PUEDE: readonly string[] = [
   "Ver ni cambiar contraseñas, claves ni usuarios del panel.",
   "Cobrar, devolver ni mover dinero.",
   "Borrar pedidos ni clientes.",
-  "Hacer cambios grandes o riesgosos sin tu aprobación por correo (más de 300 productos, un precio que se mueva más de 30 %, precios bajo el costo, descuentos, despacho, términos legales).",
+  "Enviar ni programar correos ni campañas: las campañas quedan como borrador y las envías tú.",
+  "Hacer cambios grandes o riesgosos sin tu aprobación por correo (más de 300 productos, un precio que se mueva más de 30 %, precios bajo el costo, descuentos, despacho, términos legales, textos de correos a clientes).",
 ];
 
 export const NOTAS: readonly string[] = [
