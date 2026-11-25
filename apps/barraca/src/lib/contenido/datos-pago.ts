@@ -5,7 +5,9 @@
  * No rechaza la prosa que nombra «Webpay», «transferencia» o «banco», ni lo que los Términos ya traen desde antes (su número
  * de cuenta): rechaza AGREGAR o CAMBIAR lo que sirve para cobrar o pagar de verdad:
  *  - un número de cuenta junto a las palabras que lo anuncian («cuenta corriente 12345678», «N° de cuenta: …»), un IBAN,
- *    un RUT con dígito verificador junto a palabras de banco o pago (el RUT suelto del local es dato normal), o un NÚMERO LARGO suelto (10 dígitos o más, sin importar si dice «cuenta»);
+ *    un RUT con dígito verificador junto a palabras de banco o pago (el RUT suelto del local es dato normal), o un NÚMERO LARGO
+ *    (10 dígitos o más, con separadores variados: «1234 - 5678 - 9012») que tenga cerca palabras de cuenta, banco, transferencia, RUT
+ *    o titular, o que sea una tarjeta (13 a 19 dígitos que pasan Luhn); un código de fabricante o un SKU de 10 dígitos SIN ese contexto pasa;
  *    se dejan pasar los teléfonos chilenos (+56 9 1234 5678, 9 dígitos) y los códigos de barras (EAN) que se anuncian como tales;
  *  - un enlace (https o dominio suelto) a una pasarela de pagos o a un sitio de cobro (también por la ruta: /pagar, /pay,
  *    /checkout…), salvo jurmaq.cl y sus subdominios;
@@ -20,10 +22,27 @@ const CUENTA = /(?:cuenta\s+(?:corriente|vista|rut|de\s+ahorros?|bancaria)|n[°�
 const IBAN = /\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/;
 const RUT = /\b\d{1,2}\.?\d{3}\.?\d{3}\s?-\s?[\dkK]\b/g;
 const CONTEXTO_BANCARIO = /banco|cuenta|\bcta\b|transfier|transferir|dep[óo]sit|abon[ae]|giro|vista|corriente|ahorro|bancari|pagar\s+a|pago\s+a|destinatari/i;
-/** Una corrida de dígitos que admite UN separador (espacio, punto o guion) entre ellos: «1234 5678 9012», «12-34-56…». */
-const CORRIDA = /\d(?:[ .\-]?\d){9,}/g;
+/**
+ * Una corrida de 10 o más dígitos con separadores variados entre ellos (hasta 3 caracteres de espacio, punto, guion, raya o
+ * barra): «1234 5678 9012», «1234 - 5678 - 9012», «1234  5678», «1.234.567.890», «12-34-56…».
+ */
+const CORRIDA = /\d(?:[\s.\-‐-―−_/]{0,3}\d){9,}/g;
+/**
+ * Contexto que anuncia una cuenta o un pago, alrededor de un número largo. Un número largo SIN este contexto (código de
+ * fabricante, lote, SKU) no se bloquea; una tarjeta (13 a 19 dígitos que pasan Luhn) sí, con o sin contexto.
+ */
+const CONTEXTO_CUENTA = /banco|\bcuentas?\b|\bcta\b|transfier|transferir|transferencia|dep[óo]sit|abon[ae]|\brut\b|titular|bancari|destinatari|pagar\s+a|pago\s+a|tarjeta|\bcvv\b/i;
 const ANUNCIA_BARRAS = /(?:\bean\b|\bgtin\b|\bupc\b|\bsku\b|c[óo]d(?:igo|\.)?\s+(?:de\s+)?barras?|barcode)[^.\n]{0,25}$/i;
 const DOMINIO = /(?:https?:\/\/)?((?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d+)?([/?#][^\s"'<>)]*)?/gi;
+/**
+ * Un «dominio» sin https:// ni www solo cuenta si termina en un sufijo de internet real: «contado.Pago» o «kilo.Pagos» son
+ * dos palabras pegadas por un punto sin espacio, no un enlace. Con https:// o www. se mira siempre.
+ */
+const SUFIJOS = new Set([
+  "cl", "com", "net", "org", "io", "co", "app", "me", "ly", "link", "info", "biz", "store", "shop", "online", "site", "xyz", "dev", "page",
+  "ar", "pe", "es", "us", "uk", "de", "br", "mx", "cc", "tv", "to", "gl", "ee", "ai", "fm", "gg", "pro", "tech", "top", "club", "live", "cloud",
+  "edu", "gov", "eu", "fr", "it", "ec", "bo", "py", "uy", "ve", "pa", "cr", "gt", "do", "pt", "nl", "ca", "au", "jp", "cn", "in", "ru", "ws", "su",
+]);
 const PASARELAS = /webpay|transbank|mercadopago|mercadolibre|flow\.cl|khipu|paypal|stripe|pagofacil|getnet|onepay|fintoc|kushki|payku|multicaja|servipag|(?:^|[.-])pagos?(?:[.-]|$)|(?:^|[.-])pay(?:ment)?s?(?:[.-]|$)|checkout/i;
 /** Rutas y parámetros que anuncian un cobro, en cualquier sitio ajeno. */
 const RUTA_DE_PAGO = /(?:^|[/?#&=_.-])(?:pag(?:o|os|ar|a)|pay|payment|payments|checkout|cobro|cobrar|cobranza|transferir|donat(?:e|ion)|invoice)(?:[/?#&=_.-]|$)/i;
@@ -47,6 +66,16 @@ function decodificado(t: string): string {
   try { return decodeURIComponent(t.replace(/%(?![0-9a-f]{2})/gi, "%25")); } catch { return t; }
 }
 
+function luhn(d: string): boolean {
+  let suma = 0;
+  for (let i = 0; i < d.length; i++) {
+    let n = d.charCodeAt(d.length - 1 - i) - 48;
+    if (i % 2 === 1) { n *= 2; if (n > 9) n -= 9; }
+    suma += n;
+  }
+  return suma % 10 === 0;
+}
+
 const esTelefono = (d: string) => /^(?:56)?[2-9]\d{8}$/.test(d);
 const FECHA_AMD = /\b(?:19|20)\d{2}[-/.](?:0?[1-9]|1[0-2])[-/.](?:0?[1-9]|[12]\d|3[01])\b/g;
 const FECHA_DMA = /\b(?:0?[1-9]|[12]\d|3[01])[-/.](?:0?[1-9]|1[0-2])[-/.](?:19|20)?\d{2}\b/g;
@@ -68,12 +97,16 @@ function enTexto(t: string, out: Set<string>): void {
   for (const m of sinFechas.matchAll(CORRIDA)) {
     const digitos = m[0].replace(/\D/g, "");
     if (esTelefono(digitos)) continue;
-    const antes = sinFechas.slice(Math.max(0, (m.index ?? 0) - 40), m.index ?? 0);
+    const i = m.index ?? 0;
+    const antes = sinFechas.slice(Math.max(0, i - 40), i);
     if (ANUNCIA_BARRAS.test(antes)) continue;
-    out.add(`numero:${digitos}`);
+    const alrededor = sinFechas.slice(Math.max(0, i - 60), i + m[0].length + 60);
+    if (CONTEXTO_CUENTA.test(alrededor) || (digitos.length >= 13 && digitos.length <= 19 && luhn(digitos))) out.add(`numero:${digitos}`);
   }
   for (const m of t.matchAll(DOMINIO)) {
+    const explicito = /^https?:\/\//i.test(m[0]) || /^www\./i.test(m[1]);
     const host = m[1].toLowerCase().replace(/^www\./, "");
+    if (!explicito && !SUFIJOS.has(host.slice(host.lastIndexOf(".") + 1))) continue;
     const resto = (m[2] ?? "").toLowerCase();
     if (PROPIO.test(host)) continue;
     if (ACORTADORES.has(host)) { out.add(`enlace:${host}`); continue; }

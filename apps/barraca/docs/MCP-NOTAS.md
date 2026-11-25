@@ -667,3 +667,21 @@ Usa `ejecutarDevolucionWebpay` (la misma de panel y MCP): timeout, red o 5xx = `
 
 ### Para publicar (suma a lo anterior)
 Aplicar `0012` además de `0010` y `0011` en la D1 real; poner el secreto `BORRADO_REF_PEPPER`; revisar los valores de `topes-dinero.ts`. No se probó con Transbank, Supabase, D1 ni Resend reales ni en un navegador (regla de no prender servidor): el panel y el retorno de Webpay solo tienen revisión de código y pruebas de la lógica pura.
+
+## Segunda re-auditoría de la Parte B: dinero (rama `claude/mcp-dinero`, 25-11-2026)
+Pruebas nuevas: `scripts/mcp-correcciones-dinero-2.test.mjs` (22, solo dobles). Ajustes de textos en `mcp-dinero` y `mcp-correcciones-dinero`.
+
+- **Una sola decisión de «qué salida hay» (`lib/pedidos/devolucion-panel.ts`, `salidaDevolucion`)**: la usan la pantalla (`DetalleVenta`) y `reintentarDevolucion` del servidor, así que el botón que se muestra es el que la ruta acepta (sin 409 por un botón visible). Resultados: `reintentar`, `resolver` (incierta: «Ya se devolvió» / «No se devolvió»), `esperar` (en curso hace menos de 15 min), `registrar_transferencia`, o nada.
+- **Transferencia pagada y cancelada sin devolución registrada**: el panel ofrece «Registrar devolución pendiente por transferencia» (`POST …/devolucion` con `accion: registrar_pendiente`, mismo permiso `barraca_ventas/reembolsar`). Update condicional en Supabase (`registrarDevolucionTransferencia`: solo si sigue sin reembolso, pedido cancelado/no aprobado, pagado, transferencia): dos clics = uno. No mueve plata ni envía correo (si el cliente no recibió el aviso, pedirle la cuenta por correo o WhatsApp); deja el flujo normal (anotar cuenta, «Devolución hecha»). Pone al día `devoluciones_mcp` a `transferencia_pendiente` si estaba a medias. Los textos de la herramienta MCP distinguen Webpay (`PANEL_REINTENTO`) de transferencia (`PANEL_TRANSFERENCIA`).
+- **Todo reintento consulta antes a Transbank** (`reintentarDevolucionConsultando`, desde `sin_registro`, `error` o `en_curso`): toma el candado atómico y consulta el estado (solo lectura). REVERSED/NULLIFIED = «hecha» sin pedir otra; AUTHORIZED con monto igual al total y saldo íntegro = se pide UNA devolución; todo lo demás (parcial, monto o saldo raros, consulta fallida) = `incierto`, sin reintento. Motivo: el código ya desplegado guardaba `error` ante cualquier excepción, timeouts incluidos. El botón del panel ahora dice «Comprobar en Transbank y reintentar». La primera devolución (al cancelar) no consulta: no hay intento previo.
+- **Pago tardío** (sin `pagado_at`, con devolución de Webpay abierta): ahora tiene salida (reintento con consulta, o «incierta» con cierre manual). Sin `pagado_at` y sin devolución registrada NO se ofrece nada (no hay prueba de cobro).
+- **Datos de pago** (`lib/contenido/datos-pago.ts`; el brief decía `lib/mcp/`): números de 10+ dígitos con separadores variados (espacios dobles, « - », puntos, rayas, barras; hasta 3 caracteres entre dígitos) se bloquean solo con contexto de cuenta, banco, transferencia, RUT, titular o tarjeta cerca (±60 caracteres), o si son una tarjeta que pasa Luhn. Un código de fabricante o lote de 10 dígitos sin ese contexto pasa. Un «dominio» sin https:// ni www solo cuenta si termina en un sufijo real (`contado.Pago` ya no es enlace). Cambio de comportamiento: un número largo SUELTO sin contexto ya no se rechaza.
+
+### Topes: son POR USUARIO, no globales
+Los topes de `topes-dinero.ts` (10 por hora, 30 en 24 h, 5 devoluciones por hora, $1.000.000 en 24 h) se cuentan por usuario de MCP. Si hay varios usuarios, el total posible es la suma; no hay un tope global de la tienda. Con un solo usuario (hoy) coincide.
+
+### Limitaciones que quedan
+- El reintento consulta `status` de Transbank, que solo responde por un tiempo limitado tras la compra; pasado ese plazo (o si falla) queda «incierta» y se resuelve a mano en el portal.
+- «Registrar devolución pendiente» no reenvía el correo al cliente.
+- Un pedido Webpay con `pagado_at` pero sin `pasarela_referencia` no tiene salida automática (revisión manual).
+- Nada se probó con Transbank, Supabase, D1 ni un navegador reales (regla de no prender servidor).
