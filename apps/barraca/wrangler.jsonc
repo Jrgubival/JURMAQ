@@ -11,7 +11,19 @@
   // Caché de ISR: páginas en R2, revalidatePath en D1, regeneración en un DO.
   "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "jurmaq-barraca-cache" }],
   "d1_databases": [
-    { "binding": "NEXT_TAG_CACHE_D1", "database_name": "jurmaq-barraca-tags", "database_id": "1822b759-5a4f-4fbb-bc29-74b631e7d80a" }
+    { "binding": "NEXT_TAG_CACHE_D1", "database_name": "jurmaq-barraca-tags", "database_id": "1822b759-5a4f-4fbb-bc29-74b631e7d80a" },
+    // Gestión de la tienda (auditoría, vistas previas, MCP). MARCADOR: el id de
+    // abajo es falso. Antes de publicar: `wrangler d1 create jurmaq-barraca-gestion`,
+    // pegar aquí el database_id real y correr
+    // `wrangler d1 migrations apply jurmaq-barraca-gestion --remote`.
+    // Si la base no existe o no tiene las tablas, el código la trata como
+    // "no disponible" (GestionNoDisponibleError) y no rompe la tienda.
+    {
+      "binding": "GESTION_DB",
+      "database_name": "jurmaq-barraca-gestion",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations-gestion"
+    }
   ],
   "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
