@@ -449,8 +449,7 @@ test("deshacer: borrador y publicación vuelven atrás en dos pasos, sin pisar c
   // alguien cambia lo publicado después: no se pisa
   await Repo.publicar(m.db, { clave: "popup", usuario: OTRO, valor: { ...(await Repo.obtenerEstado(m.db, "popup")).publicado, titular: "De otra persona" }, ahora: T0 + 40 * MIN });
   const p0 = await m.llamar("previsualizar_deshacer_lote", { lote_id: loteDos }, { ahora: T0 + 41 * MIN });
-  const bloqueado = await m.llamar("deshacer_lote", { lote_id: loteDos, vista_previa_id: p0.datos.vistaPreviaId }, { ahora: T0 + 41 * MIN });
-  assert.match(bloqueado.error, /ya cambió después/);
+  assert.match(p0.error, /ya cambió después/, "ahora la vista previa ya avisa que no se puede");
   assert.equal((await Repo.obtenerEstado(m.db, "popup")).publicado.titular, "De otra persona");
   const lotes = await listarLotes(m.db, { limite: 50 });
   assert.ok(!lotes.find((l) => l.loteId === loteDos).deshecho, "no se marcó como deshecho");
@@ -480,6 +479,66 @@ test("deshacer una publicación directa vuelve a la versión anterior como versi
   assert.equal(est.publicado.titular, "Uno");
   assert.equal(est.versionPublicada, 3, "queda como versión nueva");
   assert.ok(m.revalidadas.length >= 3);
+});
+
+async function deshacerPorHerramienta(m, loteId, ahora) {
+  const p = await m.llamar("previsualizar_deshacer_lote", { lote_id: loteId }, { ahora });
+  assert.ok(p.datos?.vistaPreviaId, p.error ?? p.texto);
+  return m.llamar("deshacer_lote", { lote_id: loteId, vista_previa_id: p.datos.vistaPreviaId }, { ahora });
+}
+
+test("deshacer la PRIMERA publicación vuelve al respaldo del código (sin versión publicada, con historial) y sePuedeDeshacer es veraz", async () => {
+  const m = montar();
+  const c1 = await publicarPopup(m, "Primera", T0);
+  const lista = await m.llamar("ver_historial", { limite: 5 }, { ahora: T0 + MIN });
+  assert.equal(lista.datos.lotes.find((l) => l.loteId === c1.loteId).sePuedeDeshacer, true);
+  const ok = await deshacerPorHerramienta(m, c1.loteId, T0 + 2 * MIN);
+  assert.ok(!ok.error, ok.error);
+  const est = await Repo.obtenerEstado(m.db, "popup");
+  assert.equal(est.origen, "codigo");
+  assert.equal(est.publicado, null);
+  assert.equal(est.versionPublicada, null);
+  const versiones = await Repo.listarVersiones(m.db, "popup");
+  assert.equal(versiones.length, 1, "el historial se conserva");
+  assert.equal(versiones[0].estado, "reemplazada");
+  assert.ok(m.revalidadas.length >= 2, "se regeneran las páginas");
+  const despues = await m.llamar("ver_historial", { limite: 5 }, { ahora: T0 + 3 * MIN });
+  assert.equal(despues.datos.lotes.find((l) => l.loteId === c1.loteId).sePuedeDeshacer, false);
+});
+
+test("publicar dos veces y deshacer la segunda vuelve a la primera; deshacer la primera ya publicada otra vez vuelve al código", async () => {
+  const m = montar();
+  const c1 = await publicarPopup(m, "Uno", T0);
+  const c2 = await publicarPopup(m, "Dos", T0 + 20 * MIN);
+  const ok2 = await deshacerPorHerramienta(m, c2.loteId, T0 + 30 * MIN);
+  assert.ok(!ok2.error, ok2.error);
+  assert.equal((await Repo.obtenerEstado(m.db, "popup")).publicado.titular, "Uno");
+  // la primera ya no coincide con lo vivo (ahora es la versión 3): no se pisa y sePuedeDeshacer dice false con motivo
+  const hist = await m.llamar("ver_historial", { lote_id: c1.loteId }, { ahora: T0 + 31 * MIN });
+  assert.equal(hist.datos.sePuedeDeshacer, false);
+  assert.ok(hist.datos.motivoNoSePuede, "da el motivo");
+  const no = await m.llamar("previsualizar_deshacer_lote", { lote_id: c1.loteId }, { ahora: T0 + 31 * MIN });
+  assert.match(no.error, /ya cambió después/);
+});
+
+test("deshacer la primera publicación funciona también para cinta, avisos y slides", async () => {
+  const m = montar();
+  const cambios = [
+    ["cinta", () => m.llamar("editar_campos_contenido", { clave: "cinta", cambios: { texto: "Cinta de prueba", activa: true } }, { ahora: T0 })],
+    ["avisos", () => m.llamar("editar_avisos", { operaciones: [{ op: "agregar", texto: "Aviso de prueba", activo: true, tipo: "otro", severidad: "info" }] }, { ahora: T0 })],
+  ];
+  for (const [clave, editar] of cambios) {
+    const e = await editar();
+    if (e.error) { assert.ok(clave !== "cinta", `${clave}: ${e.error}`); continue; }
+    const p = await m.llamar("previsualizar_publicacion_contenido", { clave }, { ahora: T0 + MIN });
+    assert.ok(p.datos?.vistaPreviaId, `${clave}: ${p.error ?? p.texto}`);
+    if (p.datos.requiereAprobacion) continue;
+    const c = await m.llamar("confirmar_publicacion_contenido", { clave, vista_previa_id: p.datos.vistaPreviaId }, { ahora: T0 + MIN });
+    assert.ok(!c.error && c.datos.estado === "publicada", `${clave}: ${c.error ?? c.texto}`);
+    const ok = await deshacerPorHerramienta(m, c.loteId, T0 + 2 * MIN);
+    assert.ok(!ok.error, `${clave}: ${ok.error}`);
+    assert.equal((await Repo.obtenerEstado(m.db, clave)).origen, "codigo", clave);
+  }
 });
 
 test("deshacer de otro usuario o con id ajeno falla; la vista previa es personal", async () => {

@@ -488,3 +488,37 @@ export async function restaurarVersion(
     ahora: args.ahora,
   });
 }
+
+// ───────── Volver al respaldo del código ─────────
+
+export type ResultadoVolverAlCodigo = { ok: true; estado: "codigo"; clave: ClaveContenido; versionAnterior: number | null } | { ok: false; motivo: "cambio_ajeno" };
+
+/**
+ * Deja la clave SIN versión publicada: la tienda vuelve a mostrar el respaldo del código.
+ * El historial se conserva (la versión que estaba viva pasa a «reemplazada»; no se borra nada).
+ * `esperada` evita pisar un cambio posterior: si la versión viva ya no es esa, no hace nada.
+ */
+export async function volverAlCodigo(
+  db: D1Like,
+  args: { clave: ClaveContenido; usuario: UsuarioContenido; esperada?: number | null; ahora?: number },
+): Promise<ResultadoVolverAlCodigo> {
+  validarClave(args.clave);
+  validarUsuario(args.usuario);
+  const ahora = args.ahora ?? Date.now();
+  const previa = await versionActual(db, args.clave);
+  if (args.esperada !== undefined && previa !== args.esperada) return { ok: false, motivo: "cambio_ajeno" };
+  if (previa === null) return { ok: true, estado: "codigo", clave: args.clave, versionAnterior: null };
+  await db.batch([
+    db.prepare("UPDATE contenido_versiones SET estado = 'reemplazada' WHERE clave = ? AND estado = 'publicada'").bind(args.clave),
+    db
+      .prepare("UPDATE contenido SET publicado = NULL, version_publicada = NULL, publicado_por = NULL, publicado_email = NULL, publicado_en = NULL WHERE clave = ?")
+      .bind(args.clave),
+  ]);
+  await registrarCambio(
+    db,
+    args.usuario,
+    { herramienta: `${HERRAMIENTA}.volver_al_codigo`, entidad: HERRAMIENTA, entidadId: args.clave, antes: { version: previa }, despues: { version: null, estado: "codigo" } },
+    { ahora },
+  );
+  return { ok: true, estado: "codigo", clave: args.clave, versionAnterior: previa };
+}

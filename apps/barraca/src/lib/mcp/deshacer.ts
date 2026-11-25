@@ -11,11 +11,36 @@ export type ResultadoDeshacer =
   | { ok: true; revertidos: number; mensajes: string[] }
   | { ok: false; motivo: "no_existe" | "ya_deshecho" | "sin_revertidor" | "fallo"; mensaje: string };
 
-/** ¿Este lote tiene botón Deshacer? (existen todos los revertidores y queda algo vigente). */
-export async function loteSePuedeDeshacer(db: D1Like, registro: Registro, loteId: string): Promise<boolean> {
+/**
+ * ¿Por qué este lote NO se puede deshacer hoy? null = se puede. Comprueba que existan todos los revertidores y, donde la
+ * herramienta lo sabe (`puedeDeshacer`), que el dato siga como lo dejó (sin escribir nada).
+ */
+export async function motivoNoSePuedeDeshacer(
+  db: D1Like, registro: Registro, loteId: string, usuario: UsuarioGestion = { id: "sistema", email: null } as UsuarioGestion, ahora: number = Date.now(),
+): Promise<string | null> {
   const entradas = (await obtenerLote(db, loteId)).filter((e) => e.deshechoEn === null);
-  if (entradas.length === 0) return false;
-  return registro.puedenDeshacerse([...new Set(entradas.map((e) => e.herramienta))]);
+  if (entradas.length === 0) return "Ese lote ya se deshizo o no existe.";
+  const porHerramienta = new Map<string, typeof entradas>();
+  for (const e of entradas) porHerramienta.set(e.herramienta, [...(porHerramienta.get(e.herramienta) ?? []), e]);
+  for (const nombre of porHerramienta.keys()) {
+    if (!registro.obtener(nombre)?.revertidor) return "Alguna de sus herramientas no tiene deshacer (por ejemplo, textos legales aprobados o encendido de cupones).";
+  }
+  for (const [nombre, es] of porHerramienta) {
+    const simula = registro.obtener(nombre)!.puedeDeshacer;
+    if (!simula) continue;
+    try {
+      const r = await simula({ db, usuario, ahora, entradas: es, simular: true });
+      if (!r.ok) return r.mensaje;
+    } catch {
+      return "No pude comprobar si se puede deshacer; intenta de nuevo.";
+    }
+  }
+  return null;
+}
+
+/** ¿Este lote tiene botón Deshacer? (existen todos los revertidores, queda algo vigente y el dato sigue como se dejó). */
+export async function loteSePuedeDeshacer(db: D1Like, registro: Registro, loteId: string): Promise<boolean> {
+  return (await motivoNoSePuedeDeshacer(db, registro, loteId)) === null;
 }
 
 export async function deshacerLote(

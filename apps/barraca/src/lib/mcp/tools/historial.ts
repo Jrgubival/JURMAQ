@@ -11,7 +11,7 @@ import { listarLotes, obtenerLote, type EntradaAuditoria, type ResumenLote } fro
 import { huellaDeDatos } from "../../gestion/util.ts";
 import { consumirVistaPrevia, crearVistaPrevia } from "../../gestion/vistas-previas.ts";
 import type { D1Like } from "../../gestion/tipos.ts";
-import { deshacerLote, loteSePuedeDeshacer } from "../deshacer.ts";
+import { deshacerLote, motivoNoSePuedeDeshacer } from "../deshacer.ts";
 import { defineHerramienta, ErrorHerramienta, z, type Herramienta, type Registro } from "./registro.ts";
 import { aEnteroSeguro, recortar, textoRechazoVistaPrevia, usuarioDe } from "./contenido-comun.ts";
 
@@ -29,6 +29,16 @@ const fechaHora = (ms: number) => new Date(ms).toISOString().slice(0, 16).replac
 export function sinDuplicadosDeServicio(lotes: ResumenLote[]): ResumenLote[] {
   const deHerramienta = new Set(lotes.filter((l) => !l.herramienta.includes(".")).map((l) => `${l.usuarioId}|${l.creadoEn}`));
   return lotes.filter((l) => !(l.herramienta.includes(".") && deHerramienta.has(`${l.usuarioId}|${l.creadoEn}`)));
+}
+
+/** Una entrada de auditoría como dato (antes/después recortados para no inflar la respuesta). */
+function datosEntrada(e: EntradaAuditoria) {
+  return { entidad: e.entidad, entidadId: e.entidadId, herramienta: e.herramienta, deshechoEn: e.deshechoEn, antes: recortarJson(e.antes), despues: recortarJson(e.despues) };
+}
+
+function recortarJson(v: unknown): unknown {
+  const t = JSON.stringify(v ?? null);
+  return t.length <= 1500 ? (v ?? null) : `${t.slice(0, 1500)}… [${t.length} caracteres]`;
 }
 
 function resumenEntrada(e: EntradaAuditoria): string {
@@ -59,11 +69,16 @@ export function crearHerramientasHistorial(obtenerRegistro: () => Registro): Her
         const entradas = await obtenerLote(ctx.db, lote_id);
         if (entradas.length === 0) throw new ErrorHerramienta("No encontré ese lote.");
         const primero = entradas[0];
-        const puede = await loteSePuedeDeshacer(ctx.db, obtenerRegistro(), lote_id);
+        const motivo = await motivoNoSePuedeDeshacer(ctx.db, obtenerRegistro(), lote_id);
+        const puede = motivo === null;
         const lineas = entradas.slice(0, 30).map(resumenEntrada);
         return {
-          texto: `Lote ${lote_id}: ${primero.herramienta} · ${fechaHora(primero.creadoEn)} · por ${primero.usuarioEmail ?? primero.usuarioId} · ${entradas.length} cambio(s) · ${puede ? "se puede deshacer" : "no se puede deshacer"}\n${lineas.join("\n")}${entradas.length > 30 ? `\n… y ${entradas.length - 30} más.` : ""}`,
-          datos: { loteId: lote_id, cambios: entradas.length, sePuedeDeshacer: puede },
+          texto: `Lote ${lote_id}: ${primero.herramienta} · ${fechaHora(primero.creadoEn)} · por ${primero.usuarioEmail ?? primero.usuarioId} · ${entradas.length} cambio(s) · ${puede ? "se puede deshacer" : `no se puede deshacer: ${motivo}`}\n${lineas.join("\n")}${entradas.length > 30 ? `\n… y ${entradas.length - 30} más.` : ""}`,
+          datos: {
+            loteId: lote_id, herramienta: primero.herramienta, creadoEn: primero.creadoEn, usuario: primero.usuarioEmail ?? primero.usuarioId, usuarioId: primero.usuarioId,
+            cambios: entradas.length, sePuedeDeshacer: puede, motivoNoSePuede: motivo,
+            entradas: entradas.slice(0, 30).map(datosEntrada),
+          },
         };
       }
       const lim = aEnteroSeguro(limite, 15, 1, 50);
@@ -73,12 +88,12 @@ export function crearHerramientasHistorial(obtenerRegistro: () => Registro): Her
       const registro = obtenerRegistro();
       const filas = [];
       for (const l of lotes) {
-        const puede = !l.deshecho && (await loteSePuedeDeshacer(ctx.db, registro, l.loteId));
-        filas.push({ ...l, sePuedeDeshacer: puede });
+        const motivo = l.deshecho ? "Ya se deshizo." : await motivoNoSePuedeDeshacer(ctx.db, registro, l.loteId);
+        filas.push({ ...l, sePuedeDeshacer: motivo === null, motivoNoSePuede: motivo });
       }
       const texto = filas.map((l) => `- ${l.loteId} · ${fechaHora(l.creadoEn)} · ${l.herramienta} · ${l.usuarioEmail ?? l.usuarioId} · ${l.cambios} cambio(s)${l.deshecho ? " · DESHECHO" : l.deshechos ? ` · ${l.deshechos} deshecho(s)` : ""}${l.sePuedeDeshacer ? " · se puede deshacer" : ""}`).join("\n");
       const ultimo = lotes[lotes.length - 1];
-      return { texto: `${texto}\n${crudos.length >= lim ? `Para ver más antiguos: antes_de ${ultimo.creadoEn}.` : ""}`.trim(), datos: { lotes: filas.map((l) => ({ loteId: l.loteId, creadoEn: l.creadoEn, herramienta: l.herramienta, cambios: l.cambios, deshecho: l.deshecho, sePuedeDeshacer: l.sePuedeDeshacer })) } };
+      return { texto: `${texto}\n${crudos.length >= lim ? `Para ver más antiguos: antes_de ${ultimo.creadoEn}.` : ""}`.trim(), datos: { lotes: filas.map((l) => ({ loteId: l.loteId, creadoEn: l.creadoEn, herramienta: l.herramienta, usuario: l.usuarioEmail ?? l.usuarioId, usuarioId: l.usuarioId, cambios: l.cambios, deshecho: l.deshecho, deshechos: l.deshechos, sePuedeDeshacer: l.sePuedeDeshacer, motivoNoSePuede: l.sePuedeDeshacer ? null : l.motivoNoSePuede })), ...(crudos.length >= lim ? { siguienteAntesDe: ultimo.creadoEn } : {}) } };
     },
   });
 
@@ -94,13 +109,18 @@ export function crearHerramientasHistorial(obtenerRegistro: () => Registro): Her
       if (entradas.length === 0) throw new ErrorHerramienta("No encontré ese lote.");
       const vigentes = entradas.filter((e) => e.deshechoEn === null);
       if (vigentes.length === 0) throw new ErrorHerramienta("Ese lote ya se había deshecho.");
-      const puede = await loteSePuedeDeshacer(ctx.db, obtenerRegistro(), lote_id);
-      if (!puede) throw new ErrorHerramienta("Ese lote no se puede deshacer desde aquí (alguna de sus herramientas no tiene deshacer; por ejemplo, textos legales o encendido de cupones con aprobación).");
+      const motivo = await motivoNoSePuedeDeshacer(ctx.db, obtenerRegistro(), lote_id);
+      if (motivo !== null) throw new ErrorHerramienta(`Ese lote no se puede deshacer desde aquí: ${motivo}`);
       const vp = await crearVistaPrevia(ctx.db, { usuarioId: ctx.usuario.id, tipo: "deshacer_lote", payload: { loteId: lote_id }, huella }, ctx.ahora);
       const lineas = vigentes.slice(0, 25).map(resumenEntrada);
       return {
         texto: `Se deshacería el lote ${lote_id} (${vigentes[0].herramienta}, ${fechaHora(vigentes[0].creadoEn)}, ${vigentes.length} cambio(s)):\n${lineas.join("\n")}${vigentes.length > 25 ? `\n… y ${vigentes.length - 25} más.` : ""}\nSi algún dato ya no está como lo dejó esa herramienta, no se pisa y no se deshace nada.\nId de vista previa: ${vp.id} (un solo uso, vence en 15 minutos). Para aplicar: deshacer_lote con lote_id y ese id, solo con el OK del usuario.`,
-        datos: { vistaPreviaId: vp.id, expiraEn: vp.expiraEn, cambios: vigentes.length },
+        datos: {
+          vistaPreviaId: vp.id, expiraEn: vp.expiraEn, loteId: lote_id, herramienta: vigentes[0].herramienta, creadoEn: vigentes[0].creadoEn,
+          usuario: vigentes[0].usuarioEmail ?? vigentes[0].usuarioId, cambios: vigentes.length,
+          entradas: vigentes.slice(0, 25).map(datosEntrada),
+          ...(vigentes.length > 25 ? { entradasOmitidas: vigentes.length - 25 } : {}),
+        },
       };
     },
   });

@@ -47,6 +47,8 @@ export interface ContextoRevertidor {
   ahora: number;
   /** Entradas vigentes (no deshechas) del lote que pertenecen a esta herramienta. */
   entradas: EntradaAuditoria[];
+  /** Si es true, el revertidor NO escribe nada: solo comprueba que se podría deshacer y devuelve el motivo si no. */
+  simular?: boolean;
 }
 
 export type ResultadoRevertidor = { ok: true; mensaje?: string } | { ok: false; mensaje: string };
@@ -73,6 +75,8 @@ export interface Herramienta<E extends z.ZodObject = z.ZodObject> {
   ejecutar(args: z.infer<E>, ctx: ContextoHerramienta): Promise<SalidaHerramienta>;
   /** Cómo deshacer lo que esta herramienta audita (si no hay, sus lotes no tienen botón Deshacer). */
   revertidor?: Revertidor;
+  /** Comprobación SIN escribir de que el deshacer hoy funcionaría (recibe `simular: true`). Si no hay, se asume que sí. */
+  puedeDeshacer?: Revertidor;
 }
 
 /** Error con mensaje seguro de mostrar a Claude y a la persona. Cualquier otro error sale genérico. */

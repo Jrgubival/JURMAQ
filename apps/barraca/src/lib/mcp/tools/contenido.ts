@@ -221,7 +221,7 @@ const revertirBorrador: Revertidor = async ({ db, usuario, ahora, entradas }) =>
 
 /** Deshace publicaciones directas (y cancela solicitudes pendientes de términos y privacidad). */
 function crearRevertidorPublicacion(deps: () => DepsContenido): Revertidor {
-  return async ({ db, usuario, ahora, entradas }) => {
+  return async ({ db, usuario, ahora, entradas, simular }) => {
     const mensajes: string[] = [];
     for (const e of entradas) {
       const clave = e.entidadId as ClaveContenido;
@@ -231,7 +231,7 @@ function crearRevertidorPublicacion(deps: () => DepsContenido): Revertidor {
       const estado = await repo.obtenerEstado(db, clave);
       if (despues.estado === "pendiente") {
         if (estado.pendiente?.version !== despues.version) return { ok: false, mensaje: `La solicitud de ${etiqueta(clave)} ya no está pendiente.` };
-        await repo.rechazarPendiente(db, { clave, version: despues.version as number, rechazadoPor: usuario.id, ahora });
+        if (!simular) await repo.rechazarPendiente(db, { clave, version: despues.version as number, rechazadoPor: usuario.id, ahora });
         mensajes.push(`Solicitud de publicación de ${etiqueta(clave)} cancelada.`);
         continue;
       }
@@ -239,12 +239,20 @@ function crearRevertidorPublicacion(deps: () => DepsContenido): Revertidor {
         return { ok: false, mensaje: `${etiqueta(clave)} ya cambió después (versión ${estado.versionPublicada ?? "del código"}); no lo piso.` };
       }
       if (antes.version === null || antes.version === undefined) {
-        return { ok: false, mensaje: `Antes de esa publicación se veía el texto original del código; no se puede volver solo. Edita y publica de nuevo.` };
+        // Primera publicación de esta clave: antes la tienda mostraba el respaldo del código. Se vuelve a él
+        // (sin versión publicada, con el historial intacto). El respaldo del código es el texto original revisado, no pide aprobación.
+        if (simular) { mensajes.push(`${etiqueta(clave)} volvería al texto original del código.`); continue; }
+        const v = await repo.volverAlCodigo(db, { clave, usuario, esperada: despues.version ?? null, ahora });
+        if (!v.ok) return { ok: false, mensaje: `${etiqueta(clave)} ya cambió después; no lo piso.` };
+        await deps().revalidar(clave);
+        mensajes.push(`${etiqueta(clave)} volvió al texto original del código (el historial se conserva).`);
+        continue;
       }
       const anterior = await repo.obtenerVersion(db, clave, antes.version);
       if (publicacionRequiereAprobacion(clave, estado.efectivo, anterior?.valor ?? null)) {
         return { ok: false, mensaje: `${etiqueta(clave)} es un texto legal, trae datos de contacto del local o enlaces, teléfonos o correos distintos: para volver atrás usa restaurar_version_contenido y publícalo con la aprobación de Jorge.` };
       }
+      if (simular) { mensajes.push(`${etiqueta(clave)} volvería a la versión ${antes.version}.`); continue; }
       const r = await repo.restaurarVersion(db, { clave, version: antes.version, usuario, destino: "publicado", nota: `Deshacer la versión ${despues.version}`, ahora });
       if (!r.ok || r.estado !== "publicada") return { ok: false, mensaje: `No pude volver a la versión ${antes.version} de ${etiqueta(clave)}.` };
       await deps().revalidar(clave);
@@ -671,6 +679,7 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
       return { texto: `${etiqueta(clave)} publicado (versión ${r.version}). Las páginas se regeneran en unos minutos. Se puede deshacer.`, datos: { estado: "publicada", version: r.version } };
     },
     revertidor: revertirPublicacion,
+    puedeDeshacer: (c) => revertirPublicacion({ ...c, simular: true }),
   });
 
   const aplicar_aprobacion_contenido = defineHerramienta({
