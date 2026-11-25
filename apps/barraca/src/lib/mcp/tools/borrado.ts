@@ -153,7 +153,7 @@ export function crearHerramientasBorrado(deps: DepsBorrado = depsBorradoReales):
     descripcion: "BORRADO: vuelve a mostrar pedidos archivados en las listas y reportes. Directo (es reversible y no borra nada). Hasta 20 por vez; avisa a Jorge.",
     esquema: z.object({ numeros: zNumeros.describe("Números de pedido archivados.") }),
     scope: "tienda:dinero",
-    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    anotaciones: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
     async ejecutar({ numeros: crudos }, ctx) {
       const numeros = unicos(crudos);
       const avisoDeps = await exigirAvisoPosible(deps);

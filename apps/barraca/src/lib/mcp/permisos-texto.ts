@@ -32,14 +32,27 @@ export const NO_PUEDE_SIN_DINERO: readonly string[] = [
   "Borrar ni archivar pedidos, clientes ni suscriptores.",
 ];
 
-/** Con el permiso de dinero, esto es TODO lo que además podrá (una herramienta por línea). */
-export const DINERO_PUEDE: readonly string[] = [
-  "Confirmar una transferencia que ya recibiste en tu cuenta (el pedido pasa a pagado).",
-  "Cancelar un pedido ya pagado con su devolución (el aviso de la devolución te llega a ti).",
-  "Archivar pedidos.",
-  "Borrar para siempre un pedido que nunca se pagó.",
-  "Borrar clientes o suscriptores, de uno en uno.",
-];
+/**
+ * Con el permiso de dinero, esto es TODO lo que además podrá. Una línea por grupo de herramientas; la clave es el
+ * nombre de CADA herramienta con `scope: "tienda:dinero"`. Una prueba exige que las claves sean EXACTAMENTE las
+ * herramientas de dinero del registro: no puede existir una herramienta de dinero que este texto no mencione.
+ */
+export const DINERO_TEXTO_POR_HERRAMIENTA: Readonly<Record<string, string>> = {
+  previsualizar_confirmar_transferencia: "Confirmar una transferencia que ya recibiste en tu cuenta (el pedido pasa a pagado y el cliente recibe el correo de pago recibido).",
+  confirmar_transferencia_recibida: "Confirmar una transferencia que ya recibiste en tu cuenta (el pedido pasa a pagado y el cliente recibe el correo de pago recibido).",
+  previsualizar_cancelar_pedido_pagado: "Cancelar un pedido ya pagado con su devolución: por Webpay se devuelve sola a la misma tarjeta; por transferencia queda pendiente y tú anotas la cuenta en el panel.",
+  confirmar_cancelar_pedido_pagado: "Cancelar un pedido ya pagado con su devolución: por Webpay se devuelve sola a la misma tarjeta; por transferencia queda pendiente y tú anotas la cuenta en el panel.",
+  devolucion_transferencia_hecha: "Marcar como hecha una devolución por transferencia, solo después de que tú la hagas en tu banco.",
+  archivar_pedido: "Archivar pedidos (salen de las listas y los reportes, y se pueden volver a mostrar).",
+  desarchivar_pedido: "Archivar pedidos (salen de las listas y los reportes, y se pueden volver a mostrar).",
+  borrar_pedido_definitivo: "Borrar para siempre un pedido que nunca se pagó (cancelado o vencido, sin boleta ni devolución).",
+  borrar_datos_persona: "Borrar los datos de un cliente o suscriptor, de uno en uno (los pedidos pagados se conservan).",
+};
+
+export const DINERO_PUEDE: readonly string[] = [...new Set(Object.values(DINERO_TEXTO_POR_HERRAMIENTA))];
+
+/** Aviso fijo del permiso de dinero y borrado. */
+export const DINERO_NOTA_AVISO = "Cada operación de dinero o borrado le llega a Jorge por correo (sin datos personales del cliente) y no se puede deshacer desde Claude.";
 
 /** Con el permiso de dinero, esto SIGUE fuera. */
 export const DINERO_SIGUE_FUERA: readonly string[] = [
@@ -85,7 +98,7 @@ export function textoPermisos(scope: string): TextoPermisos {
   const base = [...PUEDE];
   const requiereOk = NO_PUEDE[NO_PUEDE.length - 1];
   return dinero
-    ? { dinero, puede: [...base, ...DINERO_PUEDE], noPuede: [...NO_PUEDE_CON_DINERO, requiereOk], notas: [...NOTAS] }
+    ? { dinero, puede: [...base, ...DINERO_PUEDE], noPuede: [...NO_PUEDE_CON_DINERO, requiereOk], notas: [...NOTAS, DINERO_NOTA_AVISO] }
     : { dinero, puede: base, noPuede: [...NO_PUEDE], notas: [...NOTAS] };
 }
 
