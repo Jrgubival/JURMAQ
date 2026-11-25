@@ -84,6 +84,8 @@ export interface EntradaEvaluarCupon {
   email: string;
   rut?: string | null;
   ahora?: number;
+  /** % de transferencia vigente para este pedido (el piso cobrable lo considera). Sin él, 2%. */
+  pctTransferencia?: number;
 }
 
 /** Revisa el cupón contra el carrito. No consume nada: sirve para la vista previa y como primer paso del pedido. */
@@ -132,7 +134,7 @@ export async function evaluarCuponCheckout(db: D1Like, repo: RepoCupones, e: Ent
     }
     // Piso cobrable: el descuento se limita para que los productos nunca queden bajo el piso (ver totales.ts).
     const subtotalCarrito = e.lineas.reduce((t, l) => t + (Number.isInteger(l.subtotal) && l.subtotal > 0 ? l.subtotal : 0), 0);
-    const descuento = Math.min(calculo.descuento, descuentoMaximoCupon(subtotalCarrito));
+    const descuento = Math.min(calculo.descuento, descuentoMaximoCupon(subtotalCarrito, e.pctTransferencia));
     if (descuento <= 0) return { ok: false, motivo: "no_aplica", mensaje: "Este cupón no da descuento en una compra tan baja." };
     return {
       ok: true, cupon, reglas, descuento, base: calculo.base, excluidas: calculo.excluidas,

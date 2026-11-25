@@ -3,7 +3,7 @@ import { DESCUENTO_TRANSFERENCIA_PCT, descuentoTransferencia } from "../pagos/de
 /**
  * Totales de un pedido con cupón. Orden de los descuentos (decisión documentada):
  *   1. cupón, sobre los productos que califican;
- *   2. 2% por transferencia, sobre los productos MENOS el cupón (nunca sobre el despacho);
+ *   2. descuento por transferencia (2% por defecto, configurable), sobre los productos MENOS el cupón (nunca sobre el despacho);
  *   3. despacho al final.
  * total = subtotal - cupón - descuentoTransferencia + despacho
  * Sin cupón (descuentoCupon = 0) el resultado es idéntico al de antes.
@@ -24,11 +24,11 @@ export function pisoCobrable(subtotal: number): number {
 }
 
 /** Descuento de cupón más alto permitido para este subtotal (cubre también el caso de transferencia). */
-export function descuentoMaximoCupon(subtotal: number): number {
+export function descuentoMaximoCupon(subtotal: number, pct: number = DESCUENTO_TRANSFERENCIA_PCT): number {
   const piso = pisoCobrable(subtotal);
   if (piso <= 0 || subtotal <= piso) return 0;
-  const neto = (c: number) => subtotal - c - descuentoTransferencia(subtotal - c);
-  let c = Math.max(0, subtotal - Math.ceil(piso / (1 - DESCUENTO_TRANSFERENCIA_PCT / 100)));
+  const neto = (c: number) => subtotal - c - descuentoTransferencia(subtotal - c, pct);
+  let c = Math.max(0, subtotal - Math.ceil(piso / (1 - pct / 100)));
   while (c > 0 && neto(c) < piso) c--;
   return c;
 }
@@ -46,9 +46,12 @@ export function totalesPedido(args: {
   descuentoCupon?: number;
   metodoPago: "webpay" | "transferencia";
   costoDespacho: number | null;
+  /** % de descuento por transferencia vigente (lo lee el servidor una vez por pedido). Sin él, el respaldo de 2%. */
+  pctTransferencia?: number;
 }): TotalesPedido {
-  const cupon = Math.max(0, Math.min(Math.round(args.descuentoCupon ?? 0), descuentoMaximoCupon(args.subtotal)));
-  const transf = args.metodoPago === "transferencia" ? descuentoTransferencia(args.subtotal - cupon) : 0;
+  const pct = args.pctTransferencia ?? DESCUENTO_TRANSFERENCIA_PCT;
+  const cupon = Math.max(0, Math.min(Math.round(args.descuentoCupon ?? 0), descuentoMaximoCupon(args.subtotal, pct)));
+  const transf = args.metodoPago === "transferencia" ? descuentoTransferencia(args.subtotal - cupon, pct) : 0;
   return {
     subtotal: args.subtotal,
     descuentoCupon: cupon,

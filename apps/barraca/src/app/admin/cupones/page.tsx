@@ -399,7 +399,7 @@ export default function CuponesAdminPage() {
               <strong>No acumulable con productos en oferta o precio web</strong>
               <span className="block text-xs text-gray-500">
                 El cupón no se aplica a los productos que ya vienen con oferta (precio tachado), promoción de categoría o descuento por cantidad;
-                el resto de la compra sí lo recibe. Solo se puede usar un cupón por pedido. El 2% por transferencia se mantiene.
+                el resto de la compra sí lo recibe. Solo se puede usar un cupón por pedido. El descuento por transferencia se mantiene.
               </span>
             </span>
           </label>

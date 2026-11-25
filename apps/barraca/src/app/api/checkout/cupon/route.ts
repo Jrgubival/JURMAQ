@@ -6,6 +6,7 @@ import { revisarLineas, MAX_LINEAS } from '@/lib/tienda';
 import { usarGestion } from '@/lib/gestion';
 import { evaluarCuponCheckout, MENSAJES_CUPON, type ResultadoCupon } from '@/lib/cupones/servicio';
 import { totalesPedido } from '@/lib/cupones/totales';
+import { pctTransferenciaActual } from '@/lib/pagos/descuento-config';
 import { repoSupabase } from '@/lib/cupones/repo-supabase';
 import { rutValido } from '@/lib/rut';
 
@@ -38,19 +39,20 @@ export async function POST(request: NextRequest) {
 
   try {
     const lineas = await revisarLineas(d.items);
+    const pctTransferencia = await pctTransferenciaActual();
     const lineasCupon = lineas
       .filter((l) => !l.problema)
       .map((l) => ({ productoId: l.productoId, categoriaId: l.categoriaId, subtotal: l.subtotal, conDescuento: l.conDescuento }));
     let ev: ResultadoCupon;
     try {
-      ev = await usarGestion((db) => evaluarCuponCheckout(db, repoSupabase, { codigo: d.codigo, lineas: lineasCupon, email: d.email, rut: d.rut }));
+      ev = await usarGestion((db) => evaluarCuponCheckout(db, repoSupabase, { codigo: d.codigo, lineas: lineasCupon, email: d.email, rut: d.rut, pctTransferencia }));
     } catch {
       ev = { ok: false, motivo: 'no_disponible', mensaje: MENSAJES_CUPON.no_disponible };
     }
     if (!ev.ok) return NextResponse.json({ ok: false, motivo: ev.motivo, error: ev.mensaje }, { status: 200 });
 
     const subtotal = lineas.reduce((s, l) => s + l.subtotal, 0);
-    const t = totalesPedido({ subtotal, descuentoCupon: ev.descuento, metodoPago: d.metodoPago, costoDespacho: null });
+    const t = totalesPedido({ subtotal, descuentoCupon: ev.descuento, metodoPago: d.metodoPago, costoDespacho: null, pctTransferencia });
     return NextResponse.json({
       ok: true,
       codigo: ev.cupon.codigo,

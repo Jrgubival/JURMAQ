@@ -15,6 +15,7 @@ import { herramientasReportes } from "./reportes.ts";
 import { buscarProductos, crearCategoria, crearProducto, editarCategoria, editarProducto, listarCategorias, verMargenes, verProducto } from "./productos.ts";
 import { confirmarPrecios, previsualizarPrecios } from "./precios.ts";
 import { cambiarDespacho, verZonasDespacho } from "./despacho.ts";
+import { herramientasDescuentoTransferencia } from "./descuento-transferencia.ts";
 import { cancelarOferta, programarOferta, verOfertas } from "./ofertas.ts";
 
 export const registro = crearRegistro();
@@ -44,3 +45,5 @@ registro.agregar(cambiarDespacho);
 registro.agregar(programarOferta);
 registro.agregar(verOfertas);
 registro.agregar(cancelarOferta);
+// Descuento por transferencia configurable (ver, previsualizar, confirmar con aprobación).
+registro.agregar(...herramientasDescuentoTransferencia);

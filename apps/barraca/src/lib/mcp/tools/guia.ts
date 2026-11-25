@@ -24,7 +24,7 @@ export const SECCIONES: Record<Exclude<TemaGuia, "herramientas">, string> = {
     "- «precio_original» es el precio del local (el que se muestra tachado cuando hay oferta). El precio web debe ser menor que el del local para que haya oferta real.",
     "- «en_oferta» y «oferta_fin»: el producto está en oferta hasta esa fecha; pasada la fecha la oferta termina sola.",
     "- Combo («combo_cantidad» y «combo_precio»): «Lleva N por $X». Se aplica por cada grupo completo de N unidades; las que sobran se cobran al precio web. Solo vale si el precio por unidad del combo es menor que el precio web, y no se suma a otras promociones.",
-    "- Descuento por transferencia: 2 % sobre los productos (después de restar un cupón, si hay). El despacho se suma al final y no lleva descuento.",
+    "- Descuento por transferencia: 2 % por defecto (configurable; míralo con ver_descuento_transferencia) sobre los productos, después de restar un cupón si hay. El despacho se suma al final y no lleva descuento. Cambiarlo es en dos pasos (previsualizar_descuento_transferencia y confirmar_descuento_transferencia) y siempre necesita el OK de Jorge; los Términos dicen «2%» y hay que actualizarlos aparte.",
     "- Despacho: tarifas por zona o comuna, con un monto desde el cual el despacho es gratis.",
     "- Cupones: existen, pero solo funcionan en el checkout si el interruptor de cupones está encendido (lo aprueba Jorge). No se suman a productos con oferta, combo o promoción cuando el cupón es «no acumulable». Un cupón por pedido.",
     "- Hay códigos de producto repetidos en varias fichas (274 códigos). Un cambio «por código» se aplica a TODAS las fichas con ese código.",

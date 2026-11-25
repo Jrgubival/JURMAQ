@@ -6,6 +6,7 @@ import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { logSafe, logSafeError, maskEmail } from '@jurmaq/shared/logging';
 import { revisarLineas, MAX_LINEAS } from '@/lib/tienda';
 import { totalesPedido } from '@/lib/cupones/totales';
+import { pctTransferenciaActual } from '@/lib/pagos/descuento-config';
 import { usarGestion } from '@/lib/gestion';
 import { evaluarCuponCheckout, reservarCuponParaPedido, MENSAJES_CUPON, type ResultadoCupon } from '@/lib/cupones/servicio';
 import { asignarPedido, liberarReserva } from '@/lib/cupones/reservas';
@@ -52,6 +53,8 @@ const schema = z
     cupon: texto(40).optional().default(''),
     // Descuento del cupón que vio el cliente; si el servidor calcula otro, se le avisa antes de cobrar.
     cuponDescuentoVisto: z.number().int().nonnegative().max(1_000_000_000).optional(),
+    // % de descuento por transferencia que mostró el checkout; si el servidor tiene otro, se avisa antes de cobrar.
+    pctTransferenciaVisto: z.number().min(0).max(100).optional(),
     // Fail-closed: sin la casilla marcada no hay pedido (Ley 19.496, art. 12 A).
     aceptaTerminos: z.literal(true),
     aceptaOfertas: z.boolean().optional().default(false),
@@ -176,6 +179,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No pudimos calcular el despacho. Intenta de nuevo.' }, { status: 409 });
     }
 
+    // % de transferencia: se lee UNA vez por pedido y ese mismo valor se usa para el cupón (piso cobrable)
+    // y para el total. Sin configuración (o con la base caída) es el 2% de siempre.
+    const pctTransferencia = await pctTransferenciaActual();
+    if (d.metodoPago === 'transferencia' && d.pctTransferenciaVisto !== undefined && d.pctTransferenciaVisto !== pctTransferencia) {
+      return NextResponse.json(
+        { error: 'El descuento por transferencia cambió. Revisa tu total antes de confirmar.', pctTransferencia },
+        { status: 409 },
+      );
+    }
+
     // Cupón (solo con el interruptor encendido): el servidor calcula el descuento y reserva el uso
     // de forma atómica ANTES de crear el pedido. Falla cerrado: si no se puede aplicar, no se
     // crea el pedido con un total distinto al que esperaba el cliente; se le dice y puede seguir sin cupón.
@@ -184,7 +197,7 @@ export async function POST(request: NextRequest) {
       const lineasCupon = lineas.map((l) => ({ productoId: l.productoId, categoriaId: l.categoriaId, subtotal: l.subtotal, conDescuento: l.conDescuento }));
       let ev: ResultadoCupon;
       try {
-        ev = await usarGestion((db) => evaluarCuponCheckout(db, repoSupabase, { codigo: d.cupon, lineas: lineasCupon, email: d.email, rut: d.rut }));
+        ev = await usarGestion((db) => evaluarCuponCheckout(db, repoSupabase, { codigo: d.cupon, lineas: lineasCupon, email: d.email, rut: d.rut, pctTransferencia }));
       } catch {
         ev = { ok: false, motivo: 'no_disponible', mensaje: MENSAJES_CUPON.no_disponible };
       }
@@ -199,9 +212,9 @@ export async function POST(request: NextRequest) {
       reservaCupon = reserva.reservaId;
       cuponAplicado = ev;
     }
-    // 2% por transferencia, sólo sobre los productos (menos el cupón); sin cupón es idéntico a antes
-    // (lib/cupones/totales.ts, lib/pagos/descuento-transferencia.ts).
-    const totales = totalesPedido({ subtotal, descuentoCupon: cuponAplicado?.descuento ?? 0, metodoPago: d.metodoPago, costoDespacho });
+    // Descuento por transferencia (2% por defecto, configurable), sólo sobre los productos (menos el cupón);
+    // sin cupón y sin configurar es idéntico a antes (lib/cupones/totales.ts, lib/pagos/descuento-transferencia.ts).
+    const totales = totalesPedido({ subtotal, descuentoCupon: cuponAplicado?.descuento ?? 0, metodoPago: d.metodoPago, costoDespacho, pctTransferencia });
     const descuento = totales.descuentoTransferencia;
     const porCourier = despacho?.estado === 'ok' && despacho.tipo === 'courier' ? despacho : null;
 

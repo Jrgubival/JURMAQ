@@ -328,7 +328,7 @@ Código en `src/lib/gestion-precios/`, herramientas en `src/lib/mcp/tools/{produ
 - `revertirEntradas` (revertir.ts): restaura `antes` solo si el dato sigue como `despues`; si ya estaba como `antes`, cuenta como hecho; si alguien lo cambió, no lo toca y lo informa. Si nada se pudo restaurar devuelve error y el lote queda vigente. Crear = desactivar (nunca borrar). Cambios de despacho se restauran desde el panel (acción humana del admin).
 
 ### Pendientes / riesgos
-- El 2 % de transferencia es una constante en código (`pagos/descuento-transferencia.ts`): no hay herramienta para cambiarlo (la bandera `descuento_transferencia` ya está en el centro de reglas para cuando exista).
+- (Resuelto en la Etapa 2) El 2 % de transferencia ahora es configurable con herramienta: ver la sección «Etapa 2: descuento por transferencia configurable».
 - `barraca_zonas_despacho` debe existir en Supabase (migración `2026_10_31_barraca_admin.sql`); si no, `cambiar_despacho` avisa y `ver_zonas_despacho` muestra las tarifas fijas del código.
 - Subpeticiones de Workers: cada ficha escrita y cada consulta cuentan; un masivo de 1.200 fichas puede acercarse al límite del plan. Si se corta, lo aplicado queda auditado y el resto se rehace con una vista previa nueva.
 - No se probó contra Supabase ni D1 reales (no existen en este entorno); sí con tienda falsa y D1 simulada. `precio-web.ts` ahora importa `./stock.ts` en vez de `@/lib/stock` para poder cargarse en pruebas.
@@ -402,3 +402,28 @@ Cinco cambios los hace Claude **sin pedir aprobación**: `stock` y `activo` (cam
 4. Candado a futuro: índice único parcial sobre `slug` donde `activo` (migración SQL, la aplica Jorge) y que el importador y el MCP asignen `nombre-<id>` tras insertar. Esfuerzo: 1 hora con pruebas. Requiere aplicar antes la opción 2 o el índice falla.
 
 **Recomendación.** Hacer la opción 1 ya (arreglo inmediato y sin riesgo), la 2 con aprobación de Jorge para corregir los datos, y la 4 después, para que no vuelva a pasar. La 3 solo si Jorge quiere limpiar duplicados, aparte y revisando pedidos. Antes de la opción 2 hay que decidir qué precio vale en los dos pares con precio distinto (ambos con stock 0).
+
+## Etapa 2: descuento por transferencia configurable (rama `claude/mcp-etapa2`, 25-11-2026)
+
+Valor de hoy NO cambiado: 2 %. Sin migración nueva (reusa la tabla D1 `ajustes`, clave `descuento_transferencia_pct`). Pruebas: `scripts/descuento-transferencia.test.mjs` (18).
+
+### Cómo funciona
+- `src/lib/pagos/descuento-transferencia.ts` (puro, lo importan navegador, servidor y pruebas): `DESCUENTO_TRANSFERENCIA_PCT = 2` es el RESPALDO en código; `descuentoTransferencia(subtotal, pct = 2)`. El cálculo pasó a décimas de punto con enteros (`ceil(subtotal × décimas / 1000)`): con 2 % da exactamente lo mismo que `ceil(subtotal × 2 / 100)` (probado en todo el rango de 1 a 300.000 pesos y 100.000 subtotales al azar hasta 2.000 millones) y evita errores de punto flotante con decimales (1 000 × 1,1).
+- **Rango válido**: 0 a 10 %, entero o con UN decimal (0, 2, 2.5, 10). 0 apaga el descuento (el checkout oculta la etiqueta y la línea). Se guarda como texto ("2", "2.5"); un valor guardado dañado o fuera de rango se ignora y se usa el 2 %.
+- `src/lib/pagos/descuento-config.ts`: `leerDescuentoTransferencia(db)` (D1 concreta, nunca lanza) y `pctTransferenciaActual()` (servidor; plazo de 1,2 s, tras un fallo no reintenta 15 s; en build, `next dev` o sin binding = 2 %). Sin fila, D1 vacía, sin tablas, caída o valor dañado: respaldo 2 % (pruebas de equivalencia en `totalesPedido`, `descuentoMaximoCupon` y el descuento, con todas las combinaciones de subtotal, cupón, método y despacho, contra las fórmulas originales copiadas tal cual).
+- **Puntos de cálculo** (todos pasan el MISMO % a la MISMA función `totalesPedido` de `lib/cupones/totales.ts`): `/api/pedidos` (lee el % UNA vez por pedido, antes del cupón, y usa ese valor para el piso cobrable del cupón y para el total), `/api/checkout/cupon` (vista previa), y el checkout. `checkout/page.tsx` (force-dynamic) lee el % en el servidor y se lo pasa a `CheckoutClient` (etiqueta «X% de descuento» y línea del resumen). `evaluarCuponCheckout` y `descuentoMaximoCupon` reciben el % (opcional; sin él, 2 %).
+- **Consistencia carrito/checkout/pedido**: el checkout manda `pctTransferenciaVisto`; si es transferencia y el servidor tiene otro valor, `/api/pedidos` responde 409 con el valor nuevo sin cobrar y el checkout se actualiza y pide confirmar de nuevo. Si D1 falla justo al crear un pedido y el valor configurado no es 2 %, el cliente verá ese 409 con 2 % (nunca se cobra distinto de lo mostrado). Webpay no lleva descuento.
+- Los pedidos ya creados guardan su monto (`descuento_transferencia`); página del pedido, correos y panel de Ventas lo muestran tal cual: no cambian al reconfigurar.
+
+### Herramientas (`src/lib/mcp/tools/descuento-transferencia.ts`, lógica en `lib/gestion-precios/descuento-servicio.ts`)
+- `ver_descuento_transferencia` (lee): valor, si es configurado o de respaldo, ejemplo con un carrito (por defecto $100.000) y dónde se muestra.
+- `previsualizar_descuento_transferencia` (vista previa de 5 h, un solo uso, ligada al usuario y a la huella `{actual, nuevo}`): ejemplo numérico hoy contra después, textos que cambian y la advertencia legal.
+- `confirmar_descuento_transferencia`: SIEMPRE pide la aprobación de Jorge (`exigirAprobacion`, motivo `descuento_transferencia`); sin `BARRACA_APROBADOR_EMAIL`, mismo usuario o más de 10 solicitudes por hora queda bloqueado. Al aprobar se repite la misma llamada con el mismo id: se gasta la vista y luego la aprobación y se escribe con una sentencia condicional (solo si el valor sigue como se leyó; si no, devuelve la aprobación y no cambia nada). Auditoría `entidad = "ajuste"`, `entidadId = descuento_transferencia_pct`, `antes/despues = {pct}`.
+- **Deshacer** (revertidor): no pisa si alguien cambió el valor después (conflicto, sin pedir aprobación); si sigue como lo dejó la herramienta, pide el OK de Jorge (herramienta `deshacer_lote`) y recién entonces restaura.
+
+### Texto legal (importante)
+Los Términos (`src/content/legal/terminos.md`, puntos 14.2 y 16.1) dicen «2%» en texto fijo y NO se leen del valor configurado (es texto legal; cambiarlo exige publicar términos nuevos con la aprobación de Jorge y actualizar `VERSION_TERMINOS` a mano). La vista previa y la confirmación lo advierten siempre que el valor deja de ser 2 % (o sale de él). Un valor distinto de 2 % con los términos sin actualizar deja una diferencia entre lo que dice el texto legal y lo que cobra la tienda: actualizar términos ANTES o junto con el cambio. Otros textos que decían «2%» ahora son genéricos o leen el valor (`admin/cupones` y `guia`).
+
+### Pendiente / riesgos
+- No se probó contra D1 ni Supabase reales ni se vio el checkout en un navegador (regla: no prender servidor); sí con D1 simulada y funciones puras.
+- El checkout lee D1 en cada carga (una consulta pequeña); con la base caída no suma latencia tras el primer fallo.

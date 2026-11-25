@@ -8,7 +8,7 @@ import { useLocal } from "@/components/barraca/TiendaContexto";
 import { trackEvents } from "@/lib/analytics";
 import { useCarrito } from "@/lib/useCarrito";
 import { totalLinea } from "@/lib/combos";
-import { DESCUENTO_TRANSFERENCIA_PCT } from "@/lib/pagos/descuento-transferencia";
+import { DESCUENTO_TRANSFERENCIA_PCT, formatoPct } from "@/lib/pagos/descuento-transferencia";
 import { totalesPedido } from "@/lib/cupones/totales";
 import LineaCombo from "@/components/barraca/LineaCombo";
 import { reemplazarCarrito, vaciarCarrito, type ItemRevisado } from "@/lib/carrito";
@@ -230,7 +230,9 @@ function Seccion({ n, titulo, children }: { n: number; titulo: string; children:
   );
 }
 
-export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false }: { pagoEnLinea: boolean; cuponesActivos?: boolean }) {
+export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false, pctTransferencia = DESCUENTO_TRANSFERENCIA_PCT }: { pagoEnLinea: boolean; cuponesActivos?: boolean; pctTransferencia?: number }) {
+  // % de descuento por transferencia que dejó el servidor al armar la página (el que vale lo calcula el servidor al crear el pedido).
+  const [pctTransf, setPctTransf] = useState(pctTransferencia);
   const router = useRouter();
   const { items, total, ahorro, cantidad, cargando, hayProblemas } = useCarrito({ revisar: true });
   const [datos, setDatos] = useState<Datos>(VACIO);
@@ -311,7 +313,7 @@ export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false }: 
   const costoDespacho = despacho && cotizacion?.estado === "ok" ? cotizacion.costo : null;
   // Vista previa: el descuento que vale es el que calcula el servidor al crear el pedido.
   const descuentoCupon = cuponesActivos && cuponAplicado ? cuponAplicado.descuento : 0;
-  const totales = totalesPedido({ subtotal: total, descuentoCupon, metodoPago: metodo, costoDespacho });
+  const totales = totalesPedido({ subtotal: total, descuentoCupon, metodoPago: metodo, costoDespacho, pctTransferencia: pctTransf });
   const descuento = totales.descuentoTransferencia;
   const totalPedido = totales.total;
 
@@ -446,10 +448,17 @@ export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false }: 
           aceptaTerminos,
           aceptaOfertas,
           ...(cuponesActivos && cuponAplicado ? { cupon: cuponAplicado.codigo, cuponDescuentoVisto: cuponAplicado.descuento } : {}),
+          pctTransferenciaVisto: pctTransf,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 409 && typeof data.pctTransferencia === "number") {
+          // Cambió el descuento por transferencia: se muestra el nuevo total y la persona confirma de nuevo (no se cobró nada).
+          setPctTransf(data.pctTransferencia);
+          setErrorEnvio(data.error || "El descuento por transferencia cambió. Revisa tu total.");
+          return;
+        }
         if (res.status === 409 && data.cupon) {
           // El cupón no se pudo aplicar (agotado, ya usado, cambió el descuento...): no se cobró nada.
           if (data.cupon.motivo === "cambio" && typeof data.cupon.descuento === "number" && cuponAplicado) {
@@ -629,7 +638,7 @@ export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false }: 
                 detalle={pagoEnLinea ? "Tarjeta de débito o crédito. Hasta 3 cuotas sin interés con tarjeta de crédito. El pedido queda confirmado al pagar." : "No disponible por ahora."} />
               <Opcion nombre="pago" valor="transferencia" actual={metodo} onChange={(v) => setMetodo(v as "transferencia")}
                 titulo="Transferencia bancaria"
-                etiqueta={`${DESCUENTO_TRANSFERENCIA_PCT}% de descuento`}
+                etiqueta={pctTransf > 0 ? `${formatoPct(pctTransf)}% de descuento` : undefined}
                 detalle="Te mostramos los datos de la cuenta. Preparamos el pedido cuando veamos la transferencia." />
             </div>
             <CampoForm id="co-notas" label="Comentario para la barraca" opcional>
