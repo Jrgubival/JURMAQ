@@ -236,7 +236,8 @@ test("texto de permisos: sin dinero dice que NO puede tocar pagos ni borrar; con
   assert.match(puede, /Cancelar un pedido ya pagado con su devolución/);
   assert.match(puede, /Archivar pedidos/);
   assert.match(puede, /Borrar para siempre un pedido que nunca se pagó/);
-  assert.match(puede, /Borrar clientes o suscriptores, de uno en uno/);
+  assert.match(puede, /Borrar los datos de un cliente o suscriptor, de uno en uno/);
+  assert.match(puede, /Marcar como hecha una devolución por transferencia/);
   const fuera = con.noPuede.join("\n");
   assert.match(fuera, /cuentas bancarias/);
   assert.match(fuera, /enlaces de pago/);
