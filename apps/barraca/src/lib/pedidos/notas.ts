@@ -54,3 +54,38 @@ export async function borrarNota(db: D1Like, id: string, usuarioId: string, ahor
     .first<{ id: string }>();
   return !!f;
 }
+
+/** Nota tal como la muestra el panel de Ventas (fecha en ISO; solo lectura). */
+export interface NotaParaPanel {
+  id: string;
+  texto: string;
+  autor: string | null;
+  creadaEn: string;
+}
+
+/**
+ * Notas para el detalle de venta del panel. NUNCA lanza: si la base de gestión no
+ * está, no tiene tablas o falla, devuelve `disponibles: false` y el panel sigue
+ * funcionando sin notas. `conDb` es `usarGestion` en producción.
+ */
+export async function notasParaPanel(
+  conDb: <T>(fn: (db: D1Like) => Promise<T>) => Promise<T>, numero: string, plazoMs = 2000,
+): Promise<{ notas: NotaParaPanel[]; disponibles: boolean }> {
+  let reloj: ReturnType<typeof setTimeout> | undefined;
+  try {
+    // Plazo corto: una base lenta no debe colgar la página de la venta.
+    const filas = await Promise.race([
+      conDb((db) => notasDePedido(db, numero, MAX_NOTAS_POR_PEDIDO)),
+      new Promise<never>((_, mal) => { reloj = setTimeout(() => mal(new Error('plazo')), plazoMs); }),
+    ]);
+    return {
+      notas: filas.map((n) => ({ id: n.id, texto: n.texto, autor: n.autor, creadaEn: new Date(n.creadaEn).toISOString() })),
+      disponibles: true,
+    };
+  } catch (error) {
+    console.error('[admin-venta-notas]', error instanceof Error ? error.name : 'error');
+    return { notas: [], disponibles: false };
+  } finally {
+    if (reloj) clearTimeout(reloj);
+  }
+}

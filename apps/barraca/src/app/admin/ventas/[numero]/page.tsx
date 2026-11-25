@@ -6,6 +6,8 @@ import { pedidos, PATRON_NUMERO, type EventoPedido, type Pedido } from '@/lib/pe
 import { aFila } from '@/lib/admin/ventas-servidor';
 import { rutaDocumentoValida } from '@/lib/pedidos/documentos';
 import { rutaValida } from '@/lib/pedidos/comprobantes';
+import { usarGestion } from '@/lib/gestion';
+import { notasParaPanel } from '@/lib/pedidos/notas';
 import SinPermiso from '@/components/admin/SinPermiso';
 import DetalleVenta from './DetalleVenta';
 
@@ -57,11 +59,16 @@ export default async function DetalleVentaPage({ params }: { params: Promise<{ n
     logSafeError('admin-venta-eventos', { numero, error: String(error) });
   }
 
+  // Notas internas (D1 de gestión). Si la base no está o falla, el detalle se muestra igual, sin notas.
+  const { notas, disponibles: notasDisponibles } = await notasParaPanel(usarGestion, numero);
+
   return (
     <DetalleVenta
       // Los datos bancarios de una devolución sólo los ve quien puede devolver.
       pedido={sinCuentaSiNoPuede(aFila(pedido), can(role, 'barraca_ventas', 'reembolsar'))}
       eventos={eventos}
+      notas={notas}
+      notasDisponibles={notasDisponibles}
       tieneComprobante={rutaValida(pedido.comprobante_path) && pedido.comprobante_path.startsWith(`${pedido.numero}/`)}
       tieneDocumento={rutaDocumentoValida(pedido.documento_path, pedido.numero)}
       puedeEditar={can(role, 'barraca_ventas', 'update')}

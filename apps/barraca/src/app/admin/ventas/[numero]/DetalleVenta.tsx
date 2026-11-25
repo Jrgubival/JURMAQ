@@ -19,9 +19,20 @@ import EstadoChip from "@/components/admin/ventas/EstadoChip";
  * transición en el servidor) y después refresca la página del servidor.
  */
 
+/** Nota interna del pedido (solo la ve el equipo). `creadaEn` en ISO. */
+export interface NotaPanel {
+  id: string;
+  texto: string;
+  autor: string | null;
+  creadaEn: string;
+}
+
 interface Props {
   pedido: FilaVenta;
   eventos: EventoPedido[];
+  /** Notas internas; sin la base de gestión llegan vacías con `notasDisponibles` en false. */
+  notas?: NotaPanel[];
+  notasDisponibles?: boolean;
   tieneComprobante: boolean;
   tieneDocumento: boolean;
   puedeEditar: boolean;
@@ -133,7 +144,7 @@ function historial(p: FilaVenta, eventos: EventoPedido[]): Array<{ cuando: strin
   return h.sort((a, b) => a.cuando.localeCompare(b.cuando));
 }
 
-export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tieneDocumento, puedeEditar, puedeReembolsar }: Props) {
+export default function DetalleVenta({ pedido: p, eventos, notas = [], notasDisponibles = true, tieneComprobante, tieneDocumento, puedeEditar, puedeReembolsar }: Props) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
@@ -142,6 +153,7 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
   const [cuenta, setCuenta] = useState({ banco: "", tipo: "", numero: "", rut: "", titular: "" });
   const [docTipo, setDocTipo] = useState<"boleta" | "factura">(p.documento_tipo ?? (p.documento_solicitado === "factura" ? "factura" : "boleta"));
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [notaNueva, setNotaNueva] = useState("");
 
   const wa = linkWhatsappPedido(p);
   const tel = p.telefono.replace(/[^\d+]/g, "");
@@ -261,6 +273,18 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
     setArchivo(null);
     if (data.correo === "omitido") setAviso({ tipo: "ok", texto: `${nombre[0].toUpperCase()}${nombre.slice(1)} guardada. Prueba local: el correo no se envió.` });
     if (data.correo === "error") setAviso({ tipo: "error", texto: `${nombre[0].toUpperCase()}${nombre.slice(1)} guardada, pero el correo no salió. Vuelve a subirla para reintentar.` });
+  }
+
+  async function guardarNota(e: React.FormEvent) {
+    e.preventDefault();
+    const texto = notaNueva.trim();
+    if (!texto) return;
+    const r = await llamar(`/api/admin/pedidos/${encodeURIComponent(p.numero)}/notas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texto }),
+    }, "Nota guardada.");
+    if (r) setNotaNueva("");
   }
 
   const lineas = historial(p, eventos);
@@ -571,6 +595,37 @@ export default function DetalleVenta({ pedido: p, eventos, tieneComprobante, tie
                 </li>
               ))}
             </ol>
+          </Seccion>
+
+          <Seccion titulo="Notas internas">
+            {!notasDisponibles ? (
+              <p className="text-[14px] text-[#8A8884]">Las notas no están disponibles por ahora. El resto del pedido funciona igual.</p>
+            ) : (
+              <>
+                {notas.length === 0 ? (
+                  <p className="text-[14px] text-[#8A8884]">Sin notas todavía. Solo las ve el equipo, nunca el cliente.</p>
+                ) : (
+                  <ul className="space-y-3">
+                    {notas.map((n) => (
+                      <li key={n.id} className="rounded-lg bg-[#FBFBFA] border border-[#EFEDE8] px-3 py-2.5">
+                        <p className="text-[14.5px] text-[#111111] whitespace-pre-wrap break-words">{n.texto}</p>
+                        <p className="mt-1 text-[12.5px] text-[#8A8884]"><span className="tabular-nums">{fechaCorta(n.creadaEn)}</span> · <span className="break-all">{n.autor ?? "—"}</span></p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {puedeEditar && (
+                  <form onSubmit={guardarNota} className="mt-4 space-y-2">
+                    <label className="block text-[13.5px] text-[#5F5E5A]">Agregar una nota
+                      <textarea value={notaNueva} onChange={(e) => setNotaNueva(e.target.value)} maxLength={500} rows={2}
+                        className="mt-1 w-full px-3 py-2.5 rounded-lg border border-[#D9D6CF] bg-white text-[16px] text-[#111111]" />
+                    </label>
+                    <button type="submit" disabled={ocupado || !notaNueva.trim()} className={`${btn} w-full bg-navy-950 text-white hover:bg-navy-900`}>Guardar nota</button>
+                    <p className="text-[12.5px] text-[#8A8884]">Hasta 500 caracteres. No se pueden editar ni borrar desde aquí.</p>
+                  </form>
+                )}
+              </>
+            )}
           </Seccion>
 
           {p.estado === "cancelado" && (
