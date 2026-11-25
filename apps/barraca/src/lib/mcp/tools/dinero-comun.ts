@@ -4,14 +4,16 @@
  * Ninguna herramienta de este grupo repite esta lógica.
  */
 import { ErrorHerramienta, type ContextoHerramienta } from "./registro.ts";
-import { consumirVistaPrevia, crearVistaPrevia, type MotivoRechazo } from "../../gestion/index.ts";
+import { consumirVistaPreviaConEspera, crearVistaPrevia, type MotivoRechazoConEspera } from "../../gestion/index.ts";
 import {
   avisarOperacionDinero, correoAprobadorValido, iniciales, nombrePila, textoAviso, type DatosAvisoDinero, type DepsAviso,
 } from "../aviso-operacion.ts";
 import { datoCliente } from "../../pedidos/vista-mcp.ts";
+import { TOPES_DINERO, TEXTO_TOPE, mensajeTope, reservarCupoDinero } from "../topes-dinero.ts";
+import { despacharAvisoDinero, encolarAvisoDinero } from "../aviso-operacion.ts";
 
-/** El id de confirmación de dinero y borrado dura 10 minutos y sirve una sola vez. */
-export const TTL_DINERO_MS = 10 * 60 * 1000;
+/** El id de confirmación de dinero y borrado dura poco (10 minutos) y sirve una sola vez; el valor vive en topes-dinero.ts. */
+export const TTL_DINERO_MS = TOPES_DINERO.vistaPreviaDuraMs;
 
 export const cl = (n: number) => `$${Math.round(n).toLocaleString("es-CL")}`;
 
@@ -21,12 +23,13 @@ export function clienteSeguro(nombre: unknown): string {
   return corto ? (datoCliente(corto, 40) ?? "(sin nombre)") : "(sin nombre)";
 }
 
-export const MENSAJES_VISTA: Record<MotivoRechazo, string> = {
+export const MENSAJES_VISTA: Record<MotivoRechazoConEspera, string> = {
   no_existe: "Ese id de vista previa no existe (o es de otra persona). Previsualiza de nuevo.",
   expirada: "La vista previa venció (duran 10 minutos). Previsualiza de nuevo.",
   usada: "Esa vista previa ya se usó. Cada una sirve una sola vez: si falta algo, previsualiza de nuevo.",
   tipo_distinto: "Ese id no corresponde a esta operación.",
   huella_cambiada: "Algo cambió desde la vista previa (o no coincide lo que confirmas). No se hizo nada: previsualiza de nuevo.",
+  muy_pronto: "La confirmación llegó demasiado pronto: la vista previa y la confirmación no pueden ir pegadas ni en la misma llamada. Primero muéstrale la vista previa a Jorge y confirma solo cuando él lo pida. No se hizo nada y el id sigue sirviendo (espera unos segundos).",
 };
 
 export interface DepsAvisoDinero {
@@ -51,9 +54,33 @@ export async function nuevaVista(ctx: ContextoHerramienta, tipo: string, payload
 
 /** Gasta el id (una sola vez, solo si es de este usuario, no venció y la huella actual coincide) o falla con un mensaje claro. */
 export async function gastarVista(ctx: ContextoHerramienta, id: string, tipo: string, huellaActual: string): Promise<unknown> {
-  const c = await consumirVistaPrevia(ctx.db, { id, usuarioId: ctx.usuario.id, tipo, huellaActual }, ctx.ahora);
+  const c = await consumirVistaPreviaConEspera(ctx.db, { id, usuarioId: ctx.usuario.id, tipo, huellaActual, edadMinimaMs: TOPES_DINERO.esperaMinimaConfirmacionMs }, ctx.ahora);
   if (!c.ok) throw new ErrorHerramienta(MENSAJES_VISTA[c.motivo] ?? "No se pudo usar esa vista previa.");
   return c.payload;
+}
+
+/**
+ * TOPE DURO de volumen (ver topes-dinero.ts), igual en ambos modos: reserva un cupo ANTES de ejecutar. Si se superó (o no se
+ * pudo comprobar), rechaza con un mensaje claro y manda a Jorge un aviso del intento (resultado «bloqueado»).
+ */
+export async function exigirCupo(
+  ctx: ContextoHerramienta, depsAviso: DepsAviso,
+  d: { herramienta: string; operacion: string; pedidoNumero?: string | null; monto?: number | null; medio?: string | null; clienteNombre?: string | null; esDevolucion?: boolean },
+): Promise<void> {
+  const r = await reservarCupoDinero(ctx.db, { usuarioId: ctx.usuario.id, herramienta: d.herramienta, esDevolucion: d.esDevolucion, monto: d.monto ?? 0, ahora: ctx.ahora });
+  if (r.ok) return;
+  let linea = "";
+  try {
+    const enc = await encolarAvisoDinero(ctx.db, depsAviso, {
+      usuario: ctx.usuario, herramienta: d.herramienta, operacion: `${d.operacion} (BLOQUEADA por tope)`, pedidoNumero: d.pedidoNumero ?? null,
+      clienteNombre: d.clienteNombre ?? null, monto: d.monto ?? null, medio: d.medio ?? null, loteId: ctx.loteId, ahora: ctx.ahora,
+      resumen: `Intento rechazado por un tope de seguridad: ${TEXTO_TOPE[r.motivo]}. No se hizo nada.`,
+    });
+    linea = enc.ok ? textoAviso(await despacharAvisoDinero(ctx.db, depsAviso, enc.id, "bloqueado", ctx.ahora)) : "ATENCIÓN: no se pudo registrar el aviso a Jorge sobre este intento. Avísale.";
+  } catch {
+    linea = "ATENCIÓN: no se pudo avisar a Jorge de este intento. Avísale.";
+  }
+  throw new ErrorHerramienta(`${mensajeTope(r.motivo)} ${linea}`.trim());
 }
 
 /**

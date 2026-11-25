@@ -23,7 +23,9 @@ import {
   ESTADOS_A_MEDIAS, TEXTO_ESTADO_DEVOLUCION, leerDevolucion, pasarDevolucion, reservarDevolucion, soltarReserva,
 } from "../../pedidos/devoluciones-d1.ts";
 import { estaArchivado } from "../../pedidos/archivados.ts";
-import { auditarSeguro, clienteSeguro, cl, conAvisoDinero, exigirAvisoPosible, gastarVista, nuevaVista, type DepsAvisoDinero } from "./dinero-comun.ts";
+import { auditarSeguro, clienteSeguro, cl, conAvisoDinero, exigirAvisoPosible, exigirCupo, gastarVista, nuevaVista, type DepsAvisoDinero } from "./dinero-comun.ts";
+import { APROBACION_CORREO_CANCELAR_PAGADO } from "../topes-dinero.ts";
+import { despacharAvisoDinero, encolarAvisoDinero, textoAviso } from "../aviso-operacion.ts";
 
 export interface PedidoDinero {
   numero: string;
@@ -122,19 +124,41 @@ export function evaluarTransferencia(p: PedidoDinero): { ok: true } | { ok: fals
   return { ok: true };
 }
 
-export type EvaluacionCancelacion = { ok: true; medio: "webpay" | "transferencia" } | { ok: false; motivo: string };
+export type EvaluacionCancelacion = { ok: true; medio: "webpay" | "transferencia" } | { ok: false; motivo: string; cobradoSinDevolucion?: boolean };
+
+const PANEL_REINTENTO = "En el panel, abre el pedido y usa «Reintentar devolución» (si estaba «en curso», el panel antes consulta a Transbank para no devolver dos veces).";
+
+/**
+ * ¿El pedido está CERRADO pero el cliente sigue cobrado y la devolución no terminó? (cancelado o no aprobado, con pago, y sin
+ * devolución registrada, o «en curso», «con error» o «incierta»). Es la situación peligrosa que deja un corte a mitad de camino.
+ */
+export function cobradoSinDevolucion(p: PedidoDinero, devolucionD1: string | null = null): boolean {
+  if (!p.pagado_at || !["cancelado", "rechazado"].includes(p.estado)) return false;
+  if (p.reembolso?.estado === "hecho" || (p.reembolso?.estado === "pendiente" && p.reembolso.medio === "transferencia")) return false;
+  if (!p.reembolso) return true;
+  return ["en_curso", "error", "incierto"].includes(p.reembolso.estado) || devolucionD1 === "devolucion_incierta";
+}
 
 export function evaluarCancelacion(p: PedidoDinero, extra: { archivado: boolean }): EvaluacionCancelacion {
   if (extra.archivado) return { ok: false, motivo: "Este pedido está archivado. Desarchívalo primero (desarchivar_pedido): no se mueve dinero de pedidos que no se ven en las listas." };
   if (p.reembolso) {
-    if (p.reembolso.estado === "incierto") return { ok: false, motivo: "Este pedido tiene una devolución INCIERTA (Webpay no confirmó si devolvió). No se reintenta: revísalo en el portal de Transbank y ciérralo en el panel." };
+    if (p.reembolso.estado === "incierto") return { ok: false, cobradoSinDevolucion: true, motivo: "Este pedido tiene una devolución INCIERTA (Webpay no confirmó si devolvió). No se reintenta: revísalo en el portal de Transbank y ciérralo en el panel («Ya se devolvió» / «No se devolvió»)." };
+    if (p.reembolso.estado === "en_curso") return { ok: false, cobradoSinDevolucion: true, motivo: `Este pedido tiene una devolución EN CURSO que puede haber quedado a medias (si el proceso se cortó, el cliente sigue cobrado). Desde Claude no se completa. ${PANEL_REINTENTO}` };
+    if (p.reembolso.estado === "error") return { ok: false, cobradoSinDevolucion: true, motivo: `Webpay respondió que NO devolvió el dinero: el cliente sigue cobrado. Desde Claude no se reintenta. ${PANEL_REINTENTO}` };
     return { ok: false, motivo: `Este pedido ya tiene una devolución registrada (${p.reembolso.estado}). No se hace otra.` };
   }
-  if (p.estado === "cancelado" || p.estado === "rechazado") return { ok: false, motivo: "Este pedido ya está cancelado o no aprobado." };
+  if (p.estado === "cancelado" || p.estado === "rechazado") {
+    if (cobradoSinDevolucion(p)) {
+      return { ok: false, cobradoSinDevolucion: true, motivo: `Este pedido ya está cancelado y PAGADO, pero SIN devolución registrada: quedó a medias y el cliente sigue cobrado. Desde Claude no se completa (la reserva de devolución es una sola por pedido). ${PANEL_REINTENTO}` };
+    }
+    return { ok: false, motivo: "Este pedido ya está cancelado o no aprobado." };
+  }
   if (!p.pagado_at) return { ok: false, motivo: "Este pedido no está pagado: esta herramienta es solo para pedidos pagados (uno sin pago se cancela en el panel)." };
   if (!CANCELABLE_PAGADO.includes(p.estado)) return { ok: false, motivo: `Un pedido «${ETIQUETA_ESTADO_MCP[p.estado]}» ya salió: no se cancela por aquí. Gestiona la devolución en el panel.` };
   if (!Number.isInteger(p.total) || p.total <= 0) return { ok: false, motivo: "El total del pedido no es válido: revísalo en el panel." };
   const cobrado = p.pago_detalle?.monto;
+  // Webpay: el monto cobrado tiene que existir y calzar con el total (sin un monto verificable no se devuelve nada por aquí).
+  if (pagadoConWebpay(p) && !(typeof cobrado === "number" && Number.isFinite(cobrado))) return { ok: false, motivo: "No hay un monto cobrado verificable en el registro del pago de Webpay: no se devuelve por aquí, revísalo en el panel." };
   if (typeof cobrado === "number" && cobrado !== p.total) return { ok: false, motivo: "Lo cobrado en Webpay no coincide con el total del pedido: no se devuelve por aquí, revísalo en el panel." };
   if (pagadoConWebpay(p)) return { ok: true, medio: "webpay" };
   if (p.metodo_pago === "transferencia" && p.pasarela !== "webpay") return { ok: true, medio: "transferencia" };
@@ -149,6 +173,27 @@ const NO_DESHACE = "NO SE PUEDE DESHACER desde Claude ni desde el panel de Conex
 
 export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): Herramienta[] {
   const anot = { readOnlyHint: false, destructiveHint: true, idempotentHint: false };
+
+  /** Avisa a Jorge que un pedido cerrado tiene al cliente cobrado sin devolución terminada. Una vez cada 6 h por pedido; nunca lanza. */
+  async function avisarCobradoSinDevolucion(ctx: Parameters<typeof nuevaVista>[0], numero: string, p: PedidoDinero): Promise<string> {
+    try {
+      const d = await exigirAvisoPosible(deps);
+      const reciente = await ctx.db
+        .prepare("SELECT 1 AS x FROM avisos_operacion WHERE tipo = 'dinero' AND operacion = ? AND pedido_numero = ? AND creado_en > ?")
+        .bind("Pedido cobrado sin devolución terminada", numero, ctx.ahora - 6 * 3600_000)
+        .first();
+      if (reciente) return "Jorge ya tiene un aviso reciente sobre este pedido.";
+      const enc = await encolarAvisoDinero(ctx.db, d, {
+        usuario: ctx.usuario, herramienta: "previsualizar_cancelar_pedido_pagado", operacion: "Pedido cobrado sin devolución terminada", pedidoNumero: numero,
+        clienteNombre: p.nombre, monto: p.total, medio: medioTexto(p), loteId: ctx.loteId, ahora: ctx.ahora,
+        resumen: "El pedido está cancelado o no aprobado, el cliente pagó y la devolución no terminó (o no existe). Hay que revisarlo en el panel («Reintentar devolución» o resolverla a mano).",
+      });
+      if (!enc.ok) return `ATENCIÓN: no pude registrar el aviso a Jorge. Avísale tú: este pedido tiene al cliente cobrado sin devolución.`;
+      return textoAviso(await despacharAvisoDinero(ctx.db, d, enc.id, "error", ctx.ahora));
+    } catch {
+      return "ATENCIÓN: no pude avisar a Jorge. Avísale tú: este pedido tiene al cliente cobrado sin devolución.";
+    }
+  }
 
   // ───────── transferencia ─────────
   const previsualizarTransferencia = defineHerramienta({
@@ -193,6 +238,7 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
       if (monto !== p.total) throw new ErrorHerramienta(`El monto no coincide con el total del pedido (${cl(p.total)}). No se hizo nada.`);
       const avisoDeps = await exigirAvisoPosible(deps);
       await gastarVista(ctx, id_vista_previa, TIPO_TRANSFERENCIA, await huellaTransferencia(p));
+      await exigirCupo(ctx, avisoDeps, { herramienta: "confirmar_transferencia_recibida", operacion: "Confirmar transferencia recibida", pedidoNumero: numero, monto: p.total, medio: "Transferencia", clienteNombre: p.nombre });
       const { resultado, lineaAviso } = await conAvisoDinero(
         ctx, avisoDeps,
         { herramienta: "confirmar_transferencia_recibida", operacion: "Confirmar transferencia recibida", pedidoNumero: numero, clienteNombre: p.nombre, monto: p.total, medio: "Transferencia", resumen: "Pedido marcado como pagado (transferencia)." },
@@ -230,6 +276,8 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
         const previa = await leerDevolucion(ctx.db, numero);
         let extra = "";
         if (previa) extra = ` Registro de la devolución: ${TEXTO_ESTADO_DEVOLUCION[previa.estado]}.`;
+        // Cliente cobrado sin devolución terminada: se le avisa a Jorge (una vez cada 6 horas por pedido).
+        if (ev.cobradoSinDevolucion || cobradoSinDevolucion(p, previa?.estado ?? null)) extra += ` ${await avisarCobradoSinDevolucion(ctx, numero, p)}`;
         if ((p.reembolso?.estado === "incierto" || previa?.estado === "devolucion_incierta") && p.pasarela_referencia) {
           try {
             const t = await deps.estadoTransbank(p.pasarela_referencia);
@@ -279,8 +327,11 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
       if (monto !== p.total) throw new ErrorHerramienta(`El monto no coincide con lo pagado (${cl(p.total)}). No se hizo nada.`);
       const previa = await leerDevolucion(ctx.db, numero);
       if (previa) throw new ErrorHerramienta(`Ya hay un registro de devolución de este pedido: ${TEXTO_ESTADO_DEVOLUCION[previa.estado]}. No se hace otra; revísalo en el panel.`);
+      // Decisión pendiente de Jorge (ver topes-dinero.ts): con `true` esta operación exige una aprobación por correo que aún no existe.
+      if (APROBACION_CORREO_CANCELAR_PAGADO) throw new ErrorHerramienta("Cancelar un pedido pagado con devolución exige la aprobación de Jorge por correo, y ese flujo todavía no está conectado. No se hizo nada; hágalo desde el panel.");
       const avisoDeps = await exigirAvisoPosible(deps);
       await gastarVista(ctx, id_vista_previa, TIPO_CANCELAR, await huellaCancelar(p, ev.medio, motivo));
+      await exigirCupo(ctx, avisoDeps, { herramienta: "confirmar_cancelar_pedido_pagado", operacion: "Cancelar pedido pagado con devolución", pedidoNumero: numero, monto: p.total, medio: ev.medio === "webpay" ? "Webpay" : "Transferencia", clienteNombre: p.nombre, esDevolucion: true });
       const medioNombre = ev.medio === "webpay" ? "Webpay" : "Transferencia";
       const { resultado, lineaAviso } = await conAvisoDinero(
         ctx, avisoDeps,
@@ -301,25 +352,32 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
             await soltarReserva(ctx.db, numero);
             return { fase: "no_cancelado" as const, codigo: c };
           }
-          await pasarDevolucion(ctx.db, numero, ["devolucion_reservada"], "devolucion_en_curso", ctx.ahora);
-          const cerrado = (await puerto.porNumero(numero)) ?? p;
-          await deps.revalidar(cerrado.items).catch(() => undefined);
-          let estadoFinal: "devolucion_hecha" | "devolucion_rechazada" | "devolucion_incierta" | "transferencia_pendiente" | "devolucion_en_curso";
-          let sinRegistro = false;
-          if (ev.medio === "webpay") {
-            const d = await deps.devolverWebpay(cerrado);
-            sinRegistro = !!d.sinRegistro;
-            estadoFinal = d.resultado === "hecho" ? "devolucion_hecha" : d.resultado === "rechazada" ? "devolucion_rechazada" : d.resultado === "incierta" ? "devolucion_incierta" : "devolucion_en_curso";
-          } else {
-            if (!cerrado.reembolso) await puerto.guardarReembolso(numero, { estado: "pendiente", medio: "transferencia", monto: p.total, fecha: new Date(ctx.ahora).toISOString() });
-            estadoFinal = "transferencia_pendiente";
+          // A partir de aquí el pedido YA está cancelado y el cliente sigue cobrado hasta que la devolución termine. Si el proceso
+          // se corta (error, worker caído), la fila de D1 queda «en curso» (nadie más la toca desde Claude) y el panel ofrece
+          // «Reintentar devolución». Por eso un fallo acá NO se propaga crudo: se devuelve como fase «cortado» con aviso a Jorge.
+          try {
+            await pasarDevolucion(ctx.db, numero, ["devolucion_reservada"], "devolucion_en_curso", ctx.ahora);
+            const cerrado = (await puerto.porNumero(numero)) ?? p;
+            await deps.revalidar(cerrado.items).catch(() => undefined);
+            let estadoFinal: "devolucion_hecha" | "devolucion_rechazada" | "devolucion_incierta" | "transferencia_pendiente" | "devolucion_en_curso";
+            let sinRegistro = false;
+            if (ev.medio === "webpay") {
+              const d = await deps.devolverWebpay(cerrado);
+              sinRegistro = !!d.sinRegistro;
+              estadoFinal = d.resultado === "hecho" ? "devolucion_hecha" : d.resultado === "rechazada" ? "devolucion_rechazada" : d.resultado === "incierta" ? "devolucion_incierta" : "devolucion_en_curso";
+            } else {
+              if (!cerrado.reembolso) await puerto.guardarReembolso(numero, { estado: "pendiente", medio: "transferencia", monto: p.total, fecha: new Date(ctx.ahora).toISOString() });
+              estadoFinal = "transferencia_pendiente";
+            }
+            if (estadoFinal !== "devolucion_en_curso") await pasarDevolucion(ctx.db, numero, ["devolucion_en_curso"], estadoFinal, ctx.ahora);
+            const final = await puerto.porNumero(numero);
+            let correoSalio = true;
+            if (final) await deps.correoCancelacion(final).catch(() => { correoSalio = false; });
+            await puerto.firmarEvento(numero, "cancelado", ctx.usuario.email ?? null, `${MOTIVOS_CANCELAR[motivo]} (desde la conexión de Claude)`).catch(() => undefined);
+            return { fase: "hecho" as const, estadoFinal, sinRegistro, correoSalio };
+          } catch {
+            return { fase: "cortado" as const };
           }
-          if (estadoFinal !== "devolucion_en_curso") await pasarDevolucion(ctx.db, numero, ["devolucion_en_curso"], estadoFinal, ctx.ahora);
-          const final = await puerto.porNumero(numero);
-          let correoSalio = true;
-          if (final) await deps.correoCancelacion(final).catch(() => { correoSalio = false; });
-          await puerto.firmarEvento(numero, "cancelado", ctx.usuario.email ?? null, `${MOTIVOS_CANCELAR[motivo]} (desde la conexión de Claude)`).catch(() => undefined);
-          return { fase: "hecho" as const, estadoFinal, sinRegistro, correoSalio };
         },
         (x) => x.fase === "hecho" && (x.estadoFinal === "devolucion_hecha" || x.estadoFinal === "transferencia_pendiente"),
       );
@@ -327,7 +385,11 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
         case "reserva_ocupada":
           throw new ErrorHerramienta("Ya hay otra devolución de este pedido en marcha o registrada (reserva exclusiva). No se hizo nada. Revisa el pedido en el panel.");
         case "cancelar_incierto":
-          throw new ErrorHerramienta("No pude confirmar si el pedido llegó a cancelarse (falló la conexión). NO repitas la operación: la devolución quedó reservada para evitar duplicados. Revisa el pedido en el panel.");
+          throw new ErrorHerramienta(`No pude confirmar si el pedido llegó a cancelarse (falló la conexión). NO repitas la operación: la devolución quedó reservada para evitar duplicados. Revisa el pedido en el panel: si quedó cancelado y pagado sin devolución, el panel ofrece «Reintentar devolución». ${lineaAviso}`);
+        case "cortado": {
+          const nota = await auditarSeguro(ctx, [{ entidad: "pedido", entidadId: numero, antes: { estado: p.estado }, despues: { estado: "cancelado", monto: p.total, medio: ev.medio, devolucion: "cortada_a_medias" } }]);
+          throw new ErrorHerramienta(`El proceso se CORTÓ después de cancelar el pedido ${numero}: quedó CANCELADO y el cliente puede seguir cobrado, sin devolución confirmada. NO repitas la operación (no se puede desde Claude). En el panel, abre el pedido y usa «Reintentar devolución» (antes consulta a Transbank para no devolver dos veces). ${lineaAviso}${nota}`);
+        }
         case "no_cancelado":
           throw new ErrorHerramienta("El pedido cambió justo ahora (otro cambio se adelantó o ya salió) y no se canceló ni se devolvió nada. Míralo con ver_pedido y previsualiza de nuevo.");
       }
@@ -389,6 +451,7 @@ export function crearHerramientasDinero(deps: DepsDinero = depsDineroReales): He
       if (monto !== r.monto) throw new ErrorHerramienta(`El monto no coincide con la devolución pendiente (${cl(r.monto)}). No se hizo nada.`);
       const avisoDeps = await exigirAvisoPosible(deps);
       await gastarVista(ctx, id_vista_previa, TIPO_DEV_HECHA, await huellaDevHecha(p));
+      await exigirCupo(ctx, avisoDeps, { herramienta: "devolucion_transferencia_hecha", operacion: "Marcar devolución por transferencia como hecha", pedidoNumero: numero, monto: r.monto, medio: "Transferencia", clienteNombre: p.nombre });
       const { resultado, lineaAviso } = await conAvisoDinero(
         ctx, avisoDeps,
         { herramienta: "devolucion_transferencia_hecha", operacion: "Marcar devolución por transferencia como hecha", pedidoNumero: numero, clienteNombre: p.nombre, monto: r.monto, medio: "Transferencia", resumen: "Devolución por transferencia marcada como hecha." },

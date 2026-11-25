@@ -22,6 +22,7 @@ const { listarHerramientasMcp } = await import("../src/lib/mcp/servidor.ts");
 const T0 = Date.UTC(2026, 10, 25, 15, 0, 0);
 const JORGE = { id: "1", email: "contacto@jurmaq.cl" };
 const OTRO = { id: "2", email: "otro@example.com" };
+const PIMIENTA = "pimienta-de-prueba-0123456789-abcdefghijklmnop";
 const NUM = (c) => `BJ-261120-${c.repeat(4)}`;
 
 function pedido(c, extra = {}) {
@@ -126,6 +127,7 @@ async function montar({ pedidos = [], aprobador = "jorge.personal@example.com", 
     eventos: async () => [],
     personas: async () => personas,
     borrarComprobante: async () => undefined,
+    pimienta: () => PIMIENTA,
   };
   store.eventos = [];
   const puertoBorrado = Object.assign(Object.create(store), { eventos: async () => [{}, {}] });
@@ -135,7 +137,10 @@ async function montar({ pedidos = [], aprobador = "jorge.personal@example.com", 
     ...crearHerramientasPedidos({ puerto: async () => store }),
     ...crearHerramientasReportes({ pedidosRango: async () => [...store.mapa.values()].map((p) => structuredClone(p)), productosActivos: async () => ({ filas: [], truncado: false }), carritosAbandonados: async () => ({ filas: [], truncado: false }), usosDeCupones: async () => [] }),
   ];
-  const llamar = async (nombre, args, usuario = JORGE, ahora = T0) => {
+  // Reloj de la prueba: cada llamada sin hora explícita avanza 10 s (la confirmación exige una espera mínima tras la vista previa).
+  let reloj = 0;
+  const llamar = async (nombre, args, usuario = JORGE, ahoraPedida = undefined) => {
+    const ahora = ahoraPedida ?? T0 + (reloj += 10_000);
     const h = herramientas.find((x) => x.nombre === nombre);
     assert.ok(h, nombre);
     const datos = h.esquema.strict().parse(args);
@@ -362,7 +367,7 @@ test("Transbank rechaza claro (4xx): queda rechazada y se reintenta SOLO desde e
   assert.match(r.texto, /RESPONDIÓ QUE NO/);
   assert.match(r.texto, /Reintentar devolución/);
   assert.equal(m.store.mapa.get(NUM("A")).reembolso.estado, "error", "el panel puede reintentar (tomarReembolso acepta error)");
-  await m.falla("previsualizar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente" }, /ya está cancelado|devolución registrada/);
+  await m.falla("previsualizar_cancelar_pedido_pagado", { numero: NUM("A"), motivo: "cliente" }, /NO devolvió|ya está cancelado|devolución registrada/);
 });
 
 test("cancelar: monto mayor a lo pagado, medio distinto, no pagado, ya salió, ya devuelto y archivado se rechazan", async () => {
@@ -484,14 +489,13 @@ test("borrar pedido: SOLO cancelado que nunca se pagó, sin documento ni devoluc
 });
 
 test("borrar pedido cancelado nunca pagado: vista previa dice qué se borra, borra pedido + notas + cupones liberados, audita sin datos personales", async () => {
-  const m = await montar({ pedidos: [pedido("A", { estado: "cancelado", stock_descontado: false, comprobante_path: "comp/a.jpg" })] });
+  const m = await montar({ pedidos: [pedido("A", { estado: "cancelado", stock_descontado: false })] });
   await m.db.prepare("INSERT INTO pedido_notas (id, numero, texto, autor_id, creada_en) VALUES ('n1', ?, 'nota con datos 12.345.678-5', '1', 1)").bind(NUM("A")).run();
   await m.db.prepare("INSERT INTO cupon_usos (id, cupon_id, estado, pedido_numero, email_hash, descuento, monto_compra, creado_en, expira_en) VALUES ('u1', 'c1', 'liberada', ?, 'h', 0, 0, 1, 1)").bind(NUM("A")).run();
   const v = await m.llamar("borrar_pedido_definitivo", { numero: NUM("A") });
   assert.match(v.texto, /BORRAR PARA SIEMPRE/);
   assert.match(v.texto, /1 nota/);
   assert.match(v.texto, /1 uso\(s\) de cupón/);
-  assert.match(v.texto, /comprobante/);
   assert.match(v.texto, /NO SE PUEDE DESHACER/);
   assert.equal(m.store.mapa.size, 1, "la vista previa no borra");
   const r = await m.llamar("borrar_pedido_definitivo", { numero: NUM("A"), id_vista_previa: v.datos.idVistaPrevia });
@@ -539,8 +543,8 @@ test("borrar persona (cliente completo): anonimiza lo no pagado, CONSERVA los pe
   const correo = "Juana.Perez@correo.cl";
   const v = await m.llamar("borrar_datos_persona", { correo, alcance: "cliente_completo" });
   assert.doesNotMatch(JSON.stringify(v), /juana\.perez|Juana\.Perez|correo\.cl/i, "la salida no expone el correo");
-  assert.match(v.texto, /Pedidos PAGADOS que se CONSERVAN completos[^\n]*: 1/);
-  assert.match(v.texto, /Suscripciones a borrar: 1/);
+  assert.match(v.texto, /PAGADOS[^\n]*se CONSERVAN completos/, "la vista previa dice qué se conserva");
+  assert.doesNotMatch(v.texto, /: \d+\b(?!\s*(años|minutos))/, "la vista previa no trae conteos de la persona");
   assert.equal(m.personas.datos.suscriptores.length, 2, "la vista previa no borra");
   // Confirmar exige el MISMO correo (la huella cambia si es otro).
   await m.falla("borrar_datos_persona", { correo: "otra@correo.cl", alcance: "cliente_completo", id_vista_previa: v.datos.idVistaPrevia }, /Algo cambió|no coincide|No encontré/);
@@ -571,12 +575,15 @@ test("borrar persona (cliente completo): anonimiza lo no pagado, CONSERVA los pe
 
 test("borrar suscriptor: solo la lista de correos; cliente con pedido abierto se niega; nada que borrar avisa", async () => {
   const m = await montar({ datosPersonas: { ...datosPersona(), pedidos: [{ numero: NUM("R"), estado: "pendiente_pago", pagado_at: null, email: "juana.perez@correo.cl" }] } });
-  await m.falla("borrar_datos_persona", { correo: "juana.perez@correo.cl", alcance: "cliente_completo" }, /pedido\(s\) abierto\(s\)/);
+  // La vista previa NO revela si la persona existe ni si tiene compras abiertas: eso se sabe recién al confirmar.
+  const vAbierto = await m.llamar("borrar_datos_persona", { correo: "juana.perez@correo.cl", alcance: "cliente_completo" });
+  await m.falla("borrar_datos_persona", { correo: "juana.perez@correo.cl", alcance: "cliente_completo", id_vista_previa: vAbierto.datos.idVistaPrevia }, /pedido\(s\) abierto\(s\)/);
   const v = await m.llamar("borrar_datos_persona", { correo: "otra@correo.cl", alcance: "suscriptor" });
   await m.llamar("borrar_datos_persona", { correo: "otra@correo.cl", alcance: "suscriptor", id_vista_previa: v.datos.idVistaPrevia });
   assert.deepEqual(m.personas.datos.suscriptores.map((s) => s.id), [1]);
   assert.equal(m.personas.datos.carritos.length, 1, "el alcance suscriptor no toca nada más");
-  await m.falla("borrar_datos_persona", { correo: "nadie@correo.cl", alcance: "suscriptor" }, /No encontré datos/);
+  const vNadie = await m.llamar("borrar_datos_persona", { correo: "nadie@correo.cl", alcance: "suscriptor" });
+  await m.falla("borrar_datos_persona", { correo: "nadie@correo.cl", alcance: "suscriptor", id_vista_previa: vNadie.datos.idVistaPrevia }, /No encontré datos/);
   await assert.rejects(() => m.llamar("borrar_datos_persona", { correo: "no-es-correo", alcance: "suscriptor" }));
 });
 

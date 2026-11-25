@@ -18,9 +18,19 @@
  *    uso de cupones (SHA-256): borrarlas volvería a suscribir a quien pidió la baja o permitiría reusar un cupón.
  *
  * La persona se identifica por el correo que escribe quien opera (no se lista ni se devuelve ningún correo): la vista previa
- * da una referencia corta (hash) y la confirmación exige el MISMO correo. Auditoría solo con esa referencia.
+ * da una referencia corta y la confirmación exige el MISMO correo (la huella incluye la referencia). Auditoría solo con esa
+ * referencia.
+ *
+ * La referencia es un HMAC-SHA256 con un secreto del worker (`BORRADO_REF_PEPPER`, ver `pimienta.ts`), no un hash simple:
+ * un SHA-256 sin sal de un correo se adivina por diccionario y, como la referencia queda en la auditoría y en el aviso, serviría
+ * para saber si un correo conocido fue borrado. Sin el secreto, la herramienta de borrar personas se bloquea.
+ *
+ * Sin oráculo de existencia: la VISTA PREVIA responde igual exista o no la persona (solo dice qué se haría «si existe»); si
+ * existe, si tiene compras abiertas o si no hay nada que borrar se sabe recién en la CONFIRMACIÓN (que exige id de un solo uso,
+ * espera mínima, el mismo correo y gasta un cupo de los topes de volumen). Ver borrado.ts.
  */
-import { sha256Hex } from "../gestion/util.ts";
+/** Largo mínimo (caracteres) del secreto `BORRADO_REF_PEPPER`. */
+export const PIMIENTA_MIN = 32;
 
 export type AlcancePersona = "suscriptor" | "cliente_completo";
 
@@ -51,9 +61,17 @@ export function normalizarCorreo(correo: string): string {
   return correo.trim().toLowerCase();
 }
 
-/** Referencia corta y estable de la persona (para auditoría y mensajes): NO es el correo. */
-export async function referenciaPersona(correo: string): Promise<string> {
-  return (await sha256Hex(`persona:${normalizarCorreo(correo)}`)).slice(0, 12);
+/** HMAC-SHA256 en hexadecimal (WebCrypto, sin dependencias). */
+export async function hmacSha256Hex(secreto: string, texto: string): Promise<string> {
+  const llave = await crypto.subtle.importKey("raw", new TextEncoder().encode(secreto), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const firma = await crypto.subtle.sign("HMAC", llave, new TextEncoder().encode(texto));
+  return Array.from(new Uint8Array(firma), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Referencia corta y estable de la persona (para auditoría y mensajes): HMAC con el secreto del worker, NO es el correo. */
+export async function referenciaPersona(correo: string, pimienta: string): Promise<string> {
+  if (typeof pimienta !== "string" || pimienta.length < PIMIENTA_MIN) throw new Error("falta_pimienta");
+  return (await hmacSha256Hex(pimienta, `persona:${normalizarCorreo(correo)}`)).slice(0, 12);
 }
 
 export interface PlanPersona {
@@ -75,9 +93,9 @@ export interface PlanPersona {
   vacio: boolean;
 }
 
-export async function planificarPersona(puerto: PuertoPersonas, correo: string, alcance: AlcancePersona): Promise<PlanPersona> {
+export async function planificarPersona(puerto: PuertoPersonas, correo: string, alcance: AlcancePersona, pimienta: string): Promise<PlanPersona> {
   const email = normalizarCorreo(correo);
-  const ref = await referenciaPersona(email);
+  const ref = await referenciaPersona(email, pimienta);
   const suscriptores = await puerto.contarSuscriptores(email);
   const base: PlanPersona = {
     alcance, ref, suscriptores, carritos: 0, cotizacionesAnonimizar: 0, cotizacionesConservar: 0, pedidosAnonimizar: [],

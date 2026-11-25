@@ -232,7 +232,7 @@ export function construirCorreoAviso(f: FilaAviso, para: string, base: string): 
       pie: "Si no esperabas este cambio, entra a Administración, Conexiones para deshacerlo o revocar el acceso de Claude.",
     };
   }
-  const estado = f.resultado === "ok" ? "Hecho" : f.resultado === "error" ? "Se intentó, pero falló: revisa el pedido" : "Registrado; no se pudo confirmar si terminó: revisa el pedido";
+  const estado = f.resultado === "ok" ? "Hecho" : f.resultado === "bloqueado" ? "BLOQUEADO por un tope de seguridad: no se hizo nada" : f.resultado === "error" ? "Se intentó, pero falló: revisa el pedido" : "Registrado; no se pudo confirmar si terminó: revisa el pedido";
   const cliente = quienEs(f.cliente_nombre);
   const filas: CorreoAviso["filas"] = [
     { etiqueta: "Operación", valor: f.operacion },
@@ -433,7 +433,7 @@ export async function encolarAvisoDinero(db: D1Like, deps: DepsAviso, d: DatosAv
 }
 
 /** Paso (d): marca cómo terminó la operación y envía el correo (el aviso ya está registrado; si falla se reintenta en el cron). */
-export async function despacharAvisoDinero(db: D1Like, deps: DepsAviso, id: string, resultado: "ok" | "error" | null, ahora: number = Date.now()): Promise<ResultadoAviso> {
+export async function despacharAvisoDinero(db: D1Like, deps: DepsAviso, id: string, resultado: "ok" | "error" | "bloqueado" | null, ahora: number = Date.now()): Promise<ResultadoAviso> {
   await db.prepare("UPDATE avisos_operacion SET resultado = ?, actualizado_en = ? WHERE id = ?").bind(resultado, ahora, id).run().catch(() => undefined);
   return enviarAviso(db, deps, id, ahora);
 }

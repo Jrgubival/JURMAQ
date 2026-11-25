@@ -35,6 +35,12 @@ export type MotivoRechazo =
   | "tipo_distinto"
   | "huella_cambiada";
 
+/** Con espera mínima (dinero y borrado): además «muy_pronto» = todavía no pasó la espera; NO se consume y sirve más tarde. */
+export type MotivoRechazoConEspera = MotivoRechazo | "muy_pronto";
+export type ResultadoConsumoConEspera =
+  | Extract<ResultadoConsumo, { ok: true }>
+  | { ok: false; motivo: MotivoRechazoConEspera };
+
 export type ResultadoConsumo =
   | { ok: true; id: string; tipo: string; payload: unknown; huella: string | null }
   | { ok: false; motivo: MotivoRechazo };
@@ -76,6 +82,18 @@ export async function consumirVistaPrevia(
   p: { id: string; usuarioId: string; tipo?: string; huellaActual?: string | null },
   ahora: number = Date.now(),
 ): Promise<ResultadoConsumo> {
+  return (await consumirVistaPreviaConEspera(db, p, ahora)) as ResultadoConsumo; // sin espera mínima nunca sale «muy_pronto»
+}
+
+/**
+ * Igual que `consumirVistaPrevia`, pero exige que la vista previa tenga al menos `edadMinimaMs` de vida: así la vista previa
+ * y su confirmación no pueden ir en la misma llamada ni pegadas. Si es muy pronto NO se consume (sirve unos segundos después).
+ */
+export async function consumirVistaPreviaConEspera(
+  db: D1Like,
+  p: { id: string; usuarioId: string; tipo?: string; huellaActual?: string | null; edadMinimaMs?: number },
+  ahora: number = Date.now(),
+): Promise<ResultadoConsumoConEspera> {
   const id = (p.id ?? "").toString().trim().toUpperCase();
   if (!FORMATO_ID.test(id) || !p.usuarioId) return { ok: false, motivo: "no_existe" };
 
@@ -85,21 +103,24 @@ export async function consumirVistaPrevia(
        WHERE id = ?2 AND usuario_id = ?3 AND usada_en IS NULL AND expira_en > ?1
          AND (?4 IS NULL OR tipo = ?4)
          AND (huella IS NULL OR huella = ?5)
+         AND (?6 = 0 OR creado_en <= ?1 - ?6)
        RETURNING id, tipo, payload, huella`,
     )
-    .bind(ahora, id, p.usuarioId, p.tipo ?? null, p.huellaActual ?? null)
+    .bind(ahora, id, p.usuarioId, p.tipo ?? null, p.huellaActual ?? null, Math.max(0, Math.trunc(p.edadMinimaMs ?? 0)))
     .first<{ id: string; tipo: string; payload: string; huella: string | null }>();
   if (fila) return { ok: true, id: fila.id, tipo: fila.tipo, payload: desdeJson(fila.payload), huella: fila.huella };
 
   // No se consumió: se averigua por qué (solo de vistas del mismo usuario).
   const v = await db
-    .prepare("SELECT tipo, huella, expira_en, usada_en FROM vistas_previas WHERE id = ? AND usuario_id = ?")
+    .prepare("SELECT tipo, huella, expira_en, usada_en, creado_en FROM vistas_previas WHERE id = ? AND usuario_id = ?")
     .bind(id, p.usuarioId)
-    .first<{ tipo: string; huella: string | null; expira_en: number; usada_en: number | null }>();
+    .first<{ tipo: string; huella: string | null; expira_en: number; usada_en: number | null; creado_en: number }>();
   if (!v) return { ok: false, motivo: "no_existe" };
   if (v.usada_en !== null) return { ok: false, motivo: "usada" };
   if (v.expira_en <= ahora) return { ok: false, motivo: "expirada" };
   if (p.tipo && v.tipo !== p.tipo) return { ok: false, motivo: "tipo_distinto" };
+  if (v.huella !== null && v.huella !== (p.huellaActual ?? null)) return { ok: false, motivo: "huella_cambiada" };
+  if (p.edadMinimaMs && v.creado_en > ahora - p.edadMinimaMs) return { ok: false, motivo: "muy_pronto" };
   return { ok: false, motivo: "huella_cambiada" };
 }
 
