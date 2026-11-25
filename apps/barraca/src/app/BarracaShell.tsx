@@ -8,11 +8,13 @@ import MediosPago from "@/components/barraca/MediosPago";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import SearchBar from "@/components/barraca/SearchBar";
+import { AvisosTienda, CintaSuperior } from "@/components/barraca/CintaYAvisos";
 import SelectorZona, { EVENTO_MENU } from "@/components/barraca/SelectorZona";
 import ToastContainer from "@/components/Toast";
-import { CIUDADES, HORARIO_BARRACA, buildFooterCopyright } from "@jurmaq/shared/seo";
+import { CIUDADES } from "@jurmaq/shared/seo";
 import { despachaA } from "@/lib/cobertura";
-import { whatsappCtaBarracaCotizar } from "@jurmaq/shared/whatsapp";
+import { whatsappCotizar } from "@/lib/contenido/whatsapp";
+import { useTienda } from "@/components/barraca/TiendaContexto";
 import { precioWebHasta } from "@/lib/vigencia";
 import { cantidadEnCarrito } from "@/lib/carrito";
 import gsap from "gsap";
@@ -326,12 +328,13 @@ function WhatsAppFloat() {
   // w-11 h-11 para no competir visualmente con el botón ADIA primary.
   // Verde mantenido por reconocimiento de marca WhatsApp.
   const pathname = usePathname();
+  const { local } = useTienda();
   // En la compra (carrito, checkout, confirmación) el botón flotante tapaba
   // campos y el botón de pagar en celular; ahí no se muestra.
   if (pathname === "/carrito" || pathname === "/checkout" || pathname?.startsWith("/pedido/") || pathname?.startsWith("/pago/")) {
     return null;
   }
-  const href = whatsappCtaBarracaCotizar('shell_fab');
+  const href = whatsappCotizar(local.whatsapp, 'shell_fab');
   return (
     <a
       href={href}
@@ -372,9 +375,6 @@ const EMPRESA_PIE = [
   { href: "/privacidad", name: "Política de privacidad" },
 ] as const;
 
-const DIRECCION_MAPS = "Av. Poniente 2157, Molina, Chile";
-const URL_COMO_LLEGAR = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(DIRECCION_MAPS)}`;
-
 /* Pie en cuatro columnas: marca con el contacto compacto (teléfono que se
    toca, WhatsApp, dirección con "Cómo llegar" y horario), tienda, comunas en
    chico y medios de pago con logos. Reemplaza la franja "¿No encuentras lo
@@ -382,6 +382,7 @@ const URL_COMO_LLEGAR = `https://www.google.com/maps/dir/?api=1&destination=${en
 function Footer() {
   const titulo = "text-sm font-bold text-navy-950 mb-3";
   const pagoEnLinea = usePagoEnLinea();
+  const { local, pieDescripcion } = useTienda();
   const enlace = "text-sm text-gray-600 hover:text-navy-950 transition-colors duration-150";
   return (
     <footer role="contentinfo" className="bg-[#F4F5F7] text-gray-600 border-t border-gray-200">
@@ -394,16 +395,16 @@ function Footer() {
               <span className="text-lg font-semibold text-marca-500 ml-1">Barraca</span>
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed max-w-xs">
-              Fierros y materiales de construcción en Molina. Retiro en el local o despacho a domicilio en Molina, Curicó, Talca y alrededores.
+              {pieDescripcion}
             </p>
             {/* Contacto compacto: teléfono que se toca, WhatsApp, dirección y horario. */}
             <div className="mt-5 space-y-2">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <a href="tel:+56976673577" className="text-sm font-semibold text-navy-950 tabular-nums whitespace-nowrap hover:text-marca-600 transition-colors">
-                  +56 9 7667 3577
+                <a href={local.telUrl} className="text-sm font-semibold text-navy-950 tabular-nums whitespace-nowrap hover:text-marca-600 transition-colors">
+                  {local.telefonoDisplay}
                 </a>
                 <a
-                  href={whatsappCtaBarracaCotizar('footer')}
+                  href={whatsappCotizar(local.whatsapp, 'footer')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-navy-950 transition-colors"
@@ -415,9 +416,9 @@ function Footer() {
                 </a>
               </div>
               <p className="text-sm text-gray-600">
-                Av. Poniente 2157, Molina{" "}
+                {local.direccionCorta}{" "}
                 <a
-                  href={URL_COMO_LLEGAR}
+                  href={local.comoLlegarUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ml-1 text-xs font-semibold text-marca-600 hover:text-marca-700 whitespace-nowrap transition-colors"
@@ -426,8 +427,8 @@ function Footer() {
                 </a>
               </p>
               <div className="text-xs text-gray-500 leading-relaxed">
-                <p>{HORARIO_BARRACA.semana}</p>
-                <p>{HORARIO_BARRACA.sabado} · {HORARIO_BARRACA.domingo}</p>
+                <p>{local.h.semana}</p>
+                <p>{local.h.sabado} · {local.h.domingo}</p>
               </div>
             </div>
           </div>
@@ -506,7 +507,7 @@ function Footer() {
             </p>
           )}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-center sm:text-left">{buildFooterCopyright('barraca')}</p>
+            <p className="text-center sm:text-left">© {new Date().getFullYear()} {local.razonSocial} · RUT {local.rut} · {local.direccion}. Todos los derechos reservados.</p>
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
               <Link href="/terminos" className="hover:text-navy-950 transition-colors duration-150">Términos y condiciones</Link>
               <span className="text-gray-300" aria-hidden="true">|</span>
@@ -545,8 +546,12 @@ export default function BarracaShell({
       <a href="#main-content" className="skip-to-content">
         Ir al contenido principal
       </a>
+      <CintaSuperior />
       <Navbar />
-      <main id="main-content" className="flex-1 min-h-screen bg-gray-50">{children}</main>
+      <main id="main-content" className="flex-1 min-h-screen bg-gray-50">
+        <AvisosTienda />
+        {children}
+      </main>
       <Footer />
       <WhatsAppFloat />
       <ToastContainer />

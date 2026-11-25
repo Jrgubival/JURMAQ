@@ -10,6 +10,9 @@ import MetaPixel from "@/components/MetaPixel";
 import AvisoVentasOnline from "@/components/barraca/AvisoVentasOnline";
 import { buildJsonLdGraph } from "@jurmaq/shared/seo/jsonld";
 import { ZONAS_DESPACHO } from "@/lib/despacho/zonas";
+import { leerContenido, leerLocal } from "@/lib/contenido/lectura";
+import { aplicarDatosAJsonLd } from "@/lib/contenido/derivados";
+import { TiendaProvider } from "@/components/barraca/TiendaContexto";
 // Side-effect import: valida env vars al startup. Si falta una required en
 // prod, Zod tira un error explícito en lugar de propagar `undefined`.
 import "@jurmaq/shared/env";
@@ -172,11 +175,14 @@ export const metadata: Metadata = {
     : {}),
 };
 
-export default function BarracaLayout({
+export default async function BarracaLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  // Datos del local y textos del pie desde el contenido editable (D1), con
+  // respaldo en código ante cualquier falla (lib/contenido/lector.ts).
+  const [local, textos] = await Promise.all([leerLocal(), leerContenido("textos")]);
   return (
     <html lang="es-CL" className={`${geist.variable} ${geistMono.variable} ${newsreader.variable} ${oswald.variable}`}>
       <head>
@@ -197,7 +203,7 @@ export default function BarracaLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: safeJsonLd(buildJsonLdGraph('barraca', { areaServed: ZONAS_DESPACHO.map((z) => z.nombre) })),
+            __html: safeJsonLd(aplicarDatosAJsonLd(buildJsonLdGraph('barraca', { areaServed: ZONAS_DESPACHO.map((z) => z.nombre) }), local)),
           }}
         />
       </head>
@@ -207,7 +213,9 @@ export default function BarracaLayout({
         <AnalyticsConConsentimiento />
         <MetaPixel />
         <PagoEnLineaProvider activo={pagoEnLineaDisponible()}>
-          <BarracaShell>{children}</BarracaShell>
+          <TiendaProvider valor={{ local, pieDescripcion: textos.pieDescripcion }}>
+            <BarracaShell>{children}</BarracaShell>
+          </TiendaProvider>
         </PagoEnLineaProvider>
         <CookieBanner
           productLabel="productos"

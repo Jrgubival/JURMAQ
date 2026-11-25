@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 // Audit A1+SEO: cliente publico (anon) para lecturas de catalogo. Reduce
 // blast-radius del admin client y permite SSG estatico de la landing.
 import { supabasePublic } from "@jurmaq/shared/supabase";
-import { CIUDADES, TOP_PRODUCTOS_BARRACA, HQ, DISTANCIAS_BARRACA } from "@jurmaq/shared/seo";
+import { CIUDADES, TOP_PRODUCTOS_BARRACA, DISTANCIAS_BARRACA } from "@jurmaq/shared/seo";
 import Breadcrumbs from "@jurmaq/shared/ui/Breadcrumbs";
 import CrossLinksGrid from "@jurmaq/shared/ui/CrossLinksGrid";
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import { whatsappCtaBarracaCiudad } from "@jurmaq/shared/whatsapp";
+import { SALUDO_WEB_BARRACA } from "@jurmaq/shared/whatsapp";
+import { leerLocal } from "@/lib/contenido/lectura";
+import { whatsappConTexto } from "@/lib/contenido/whatsapp";
 import { despachaA, LUGARES_DESPACHO, COBERTURA_CORTA } from "@/lib/cobertura";
 
 interface Categoria {
@@ -16,6 +18,9 @@ interface Categoria {
   nombre: string;
   slug: string;
 }
+
+// Teléfono y WhatsApp salen del contenido editable (D1): la página se refresca cada hora y al cambiar los datos del local.
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   return CIUDADES.map((c) => ({ ciudad: c.slug }));
@@ -88,6 +93,8 @@ export default async function BarracaEnCiudadPage({
   const { ciudad } = await params;
   const c = CIUDADES.find((x) => x.slug === ciudad);
   if (!c) notFound();
+  // Teléfono y WhatsApp de la fuente única del local (D1 con respaldo en código).
+  const local = await leerLocal();
   // Solo se promete despacho a los lugares de ZONAS_DESPACHO (camión propio).
   const cubre = despachaA(c.nombre);
   const km = DISTANCIAS_BARRACA[c.slug].km;
@@ -117,7 +124,7 @@ export default async function BarracaEnCiudadPage({
           ? `Barraca de fierros y materiales de construcción con despacho en camión a ${c.nombre} desde Molina, con precio y stock publicados en línea.`
           : `Barraca de fierros y materiales de construcción en Molina. ${COBERTURA_CORTA}`,
         url: `https://barraca.jurmaq.cl/en/${c.slug}`,
-        telephone: HQ.telefono,
+        telephone: local.telefono,
         priceRange: "$$",
         areaServed: {
           "@type": "City",
@@ -376,12 +383,12 @@ export default async function BarracaEnCiudadPage({
                 Comprar en línea
               </Link>
               <a
-                href={whatsappCtaBarracaCiudad(c.slug, c.nombre)}
+                href={whatsappConTexto(local.whatsapp, `${SALUDO_WEB_BARRACA} y necesito cotizar materiales para una obra en ${c.nombre}`, { content: `barraca_ciudad_${c.slug}`, campaign: "barraca_ciudad" })}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
               >
-                WhatsApp +56 9 7667 3577
+                WhatsApp {local.telefonoDisplay}
               </a>
             </div>
           </div>

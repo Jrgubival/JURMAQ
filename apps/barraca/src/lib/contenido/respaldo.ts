@@ -7,48 +7,12 @@
  * Datos del local: parten de las constantes compartidas (@jurmaq/shared/seo:
  * HQ, LEGAL_INFO, HORARIO_BARRACA), que son el respaldo en código.
  */
-import { HORARIO_BARRACA, HQ, LEGAL_INFO } from "@jurmaq/shared/seo";
 import { PRIVACIDAD_MD, TERMINOS_MD } from "./legal-embebido.ts";
-import { DIAS_SEMANA, type ClaveContenido, type DatosLocal, type DiaSemana, type HorarioSemanal, type ValoresContenido } from "./tipos.ts";
+import { POPUP_RESPALDO } from "./popup-respaldo.ts";
+import { PIE_DESCRIPCION_RESPALDO, datosLocalRespaldo } from "./local-respaldo.ts";
+import type { ClaveContenido, ValoresContenido } from "./tipos.ts";
 
-const DIA_DESDE_SCHEMA: Record<string, DiaSemana> = {
-  Monday: "lunes",
-  Tuesday: "martes",
-  Wednesday: "miercoles",
-  Thursday: "jueves",
-  Friday: "viernes",
-  Saturday: "sabado",
-  Sunday: "domingo",
-};
-
-function horarioRespaldo(): HorarioSemanal {
-  const h = Object.fromEntries(DIAS_SEMANA.map((d) => [d, []])) as unknown as HorarioSemanal;
-  for (const spec of HORARIO_BARRACA.openingHoursSpecification) {
-    for (const dia of spec.dayOfWeek) h[DIA_DESDE_SCHEMA[dia]].push({ abre: spec.opens, cierra: spec.closes });
-  }
-  return h;
-}
-
-export function datosLocalRespaldo(): DatosLocal {
-  const b = LEGAL_INFO.brands.barraca;
-  return {
-    nombre: b.nombre,
-    razonSocial: b.razonSocial,
-    rut: b.rut,
-    direccion: b.direccion,
-    calle: b.streetAddress,
-    comuna: b.addressLocality,
-    region: b.addressRegion,
-    codigoPostal: b.postalCode,
-    telefono: b.telefono,
-    telefonoDisplay: b.telefonoDisplay,
-    whatsapp: b.whatsapp.replace("https://wa.me/", ""),
-    email: HQ.email,
-    instagram: b.instagram,
-    geo: { lat: b.geo.latitude, lng: b.geo.longitude },
-    horario: horarioRespaldo(),
-  };
-}
+export { datosLocalRespaldo };
 
 export const ENVIOS_MD_RESPALDO = `# Envíos y devoluciones
 
@@ -89,9 +53,6 @@ Puedes comprar en el local o en esta tienda en línea, con el precio y el stock 
 
 Pagas con tarjeta de débito o crédito en Webpay (Transbank) o por transferencia bancaria a la cuenta de la empresa.`;
 
-/** Primer instante sin popup: 02-12-2026 00:00 de Chile (= FIN_AVISO_MS de lib/aviso-promo.ts). */
-export const POPUP_HASTA_RESPALDO = "2026-12-02T00:00";
-
 export function respaldoDe<K extends ClaveContenido>(clave: K): ValoresContenido[K] {
   return RESPALDOS[clave]() as ValoresContenido[K];
 }
@@ -106,19 +67,7 @@ const RESPALDOS: { [K in ClaveContenido]: () => ValoresContenido[K] } = {
     nota: "Para un pedido ya hecho, ten a mano el número (BJ-…) que te llegó por correo.",
   }),
   datos_local: datosLocalRespaldo,
-  popup: () => ({
-    activo: true,
-    imagen: "/aviso-bodega-perfiles.webp",
-    titular: "Estamos recién partiendo con la venta en línea",
-    texto: "Por eso, hasta el 1 de diciembre, comprar en la página sale más barato que en el local. Más de 900 productos con precio web.",
-    botonPrincipal: { texto: "Ver precios web", enlace: "/categorias" },
-    botonSecundario: "Ahora no",
-    nota: "El precio web vale solo comprando en la página.",
-    notaEnlace: { texto: "Condiciones", enlace: "/terminos#5-precios" },
-    desde: null,
-    hasta: POPUP_HASTA_RESPALDO,
-    cadaDias: 7,
-  }),
+  popup: () => ({ ...POPUP_RESPALDO, botonPrincipal: { ...POPUP_RESPALDO.botonPrincipal }, notaEnlace: POPUP_RESPALDO.notaEnlace ? { ...POPUP_RESPALDO.notaEnlace } : null }),
   slides: () => [
     {
       id: "fachada",
@@ -196,7 +145,6 @@ const RESPALDOS: { [K in ClaveContenido]: () => ValoresContenido[K] } = {
     tituloMasVendidos: "Los más vendidos",
     tituloFierroPerfiles: "Fierro, perfiles y techumbre",
     tituloMarcas: "Marcas que trabajamos",
-    pieDescripcion:
-      "Fierros y materiales de construcción en Molina. Retiro en el local o despacho a domicilio en Molina, Curicó, Talca y alrededores.",
+    pieDescripcion: PIE_DESCRIPCION_RESPALDO,
   }),
 };

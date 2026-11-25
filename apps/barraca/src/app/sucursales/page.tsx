@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
 import { whatsappCtaSucursal } from '@jurmaq/shared/whatsapp';
 import { safeJsonLd } from '@jurmaq/shared/seo/jsonld';
-import { LEGAL_INFO, DISTANCIAS_BARRACA, HORARIO_BARRACA } from '@jurmaq/shared/seo';
+import { DISTANCIAS_BARRACA } from '@jurmaq/shared/seo';
+import { leerLocal } from '@/lib/contenido/lectura';
 import { ZONAS_DESPACHO } from '@/lib/despacho/zonas';
 import { LUGARES_DESPACHO } from '@/lib/cobertura';
 
@@ -35,24 +36,28 @@ import { LUGARES_DESPACHO } from '@/lib/cobertura';
  * esta página muestra ahora, con los tiempos reales de despacho.
  */
 
-const BARRACA = LEGAL_INFO.brands.barraca;
-
 const TITLE = 'Dónde estamos · Barraca en Molina · Despacho a Curicó, Talca y alrededores · JURMAQ';
-const DESCRIPTION =
-  `Nuestra barraca de fierros está en Av. Poniente 2157, Molina. Retiro en el local y despacho en camión a ${LUGARES_DESPACHO}. Horarios, teléfono y WhatsApp directo.`;
+const descripcion = (direccionCorta: string) =>
+  `Nuestra barraca de fierros está en ${direccionCorta}. Retiro en el local y despacho en camión a ${LUGARES_DESPACHO}. Horarios, teléfono y WhatsApp directo.`;
 
-export const metadata: Metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
-  alternates: { canonical: 'https://barraca.jurmaq.cl/sucursales' },
-  openGraph: {
+// Datos del local de la fuente única (D1 con respaldo en código); se regenera cada 5 minutos y al publicar.
+export const revalidate = 300;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const DESCRIPTION = descripcion((await leerLocal()).direccionCorta);
+  return {
     title: TITLE,
     description: DESCRIPTION,
-    url: 'https://barraca.jurmaq.cl/sucursales',
-    locale: 'es_CL',
-    type: 'website',
-  },
-};
+    alternates: { canonical: 'https://barraca.jurmaq.cl/sucursales' },
+    openGraph: {
+      title: TITLE,
+      description: DESCRIPTION,
+      url: 'https://barraca.jurmaq.cl/sucursales',
+      locale: 'es_CL',
+      type: 'website',
+    },
+  };
+}
 
 /**
  * Lugares donde despacha el camión: SOLO los de ZONAS_DESPACHO (no hay
@@ -64,7 +69,8 @@ function ciudadesDespacho() {
   return ZONAS_DESPACHO.map((z) => ({ slug: z.id, nombre: z.nombre, d: DISTANCIAS_BARRACA[z.id] ?? null }));
 }
 
-export default function SucursalesPage() {
+export default async function SucursalesPage() {
+  const BARRACA = await leerLocal();
   const despacho = ciudadesDespacho();
 
   // UN solo local. `areaServed` es lo que comunica el alcance real, sin
@@ -82,19 +88,19 @@ export default function SucursalesPage() {
     telephone: BARRACA.telefono,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: BARRACA.streetAddress,
-      addressLocality: BARRACA.addressLocality,
-      addressRegion: BARRACA.addressRegion,
-      postalCode: BARRACA.postalCode,
-      addressCountry: BARRACA.addressCountry,
+      streetAddress: BARRACA.calle,
+      addressLocality: BARRACA.comuna,
+      addressRegion: BARRACA.region,
+      postalCode: BARRACA.codigoPostal,
+      addressCountry: 'CL',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: BARRACA.geo.latitude,
-      longitude: BARRACA.geo.longitude,
+      latitude: BARRACA.geo.lat,
+      longitude: BARRACA.geo.lng,
     },
     // Misma constante que el JSON-LD del layout, la barra superior y el pie.
-    openingHoursSpecification: HORARIO_BARRACA.openingHoursSpecification,
+    openingHoursSpecification: BARRACA.h.openingHoursSpecification,
     areaServed: despacho.map((c) => ({
       '@type': 'City',
       name: c.nombre,
@@ -107,7 +113,7 @@ export default function SucursalesPage() {
     })),
   };
 
-  const mapsQuery = encodeURIComponent(`${BARRACA.streetAddress}, ${BARRACA.addressLocality}, Chile`);
+  const mapsQuery = encodeURIComponent(`${BARRACA.calle}, ${BARRACA.comuna}, Chile`);
 
   return (
     <>
@@ -160,11 +166,11 @@ export default function SucursalesPage() {
                   <div>
                     <dt className="text-gray-500">Horario</dt>
                     <dd className="mt-0.5 text-navy-950">
-                      {HORARIO_BARRACA.semana}.
+                      {BARRACA.h.semana}.
                       <br />
-                      {HORARIO_BARRACA.sabado}.
+                      {BARRACA.h.sabado}.
                       <br />
-                      {HORARIO_BARRACA.domingo}.
+                      {BARRACA.h.domingo}.
                     </dd>
                   </div>
                   <div>
@@ -178,10 +184,10 @@ export default function SucursalesPage() {
                       </a>
                       <br />
                       <a
-                        href="mailto:contacto@jurmaq.cl"
+                        href={`mailto:${BARRACA.email}`}
                         className="hover:text-marca-600 transition-colors"
                       >
-                        contacto@jurmaq.cl
+                        {BARRACA.email}
                       </a>
                     </dd>
                   </div>
@@ -190,7 +196,7 @@ export default function SucursalesPage() {
 
               <div className="flex flex-col gap-2.5 sm:justify-center">
                 <a
-                  href={whatsappCtaSucursal('Molina', { slug: 'molina' })}
+                  href={whatsappCtaSucursal('Molina', { slug: 'molina', phone: BARRACA.whatsapp })}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors"

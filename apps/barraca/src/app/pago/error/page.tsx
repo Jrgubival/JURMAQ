@@ -3,10 +3,11 @@
 import Link from "@/components/barraca/Enlace";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { HQ } from "@jurmaq/shared/seo";
+import { useLocal } from "@/components/barraca/TiendaContexto";
 
 function ErrorContent() {
   const searchParams = useSearchParams();
+  const local = useLocal();
   const externalReference = searchParams.get("external_reference");
 
   return (
@@ -59,17 +60,17 @@ function ErrorContent() {
           <p className="text-sm text-gray-500">
             Si el problema persiste, contactanos al{" "}
             <a
-              href={`tel:${HQ.telefono}`}
+              href={local.telUrl}
               className="text-marca-600 font-semibold hover:underline"
             >
-              {HQ.telefonoDisplay}
+              {local.telefonoDisplay}
             </a>{" "}
             o a{" "}
             <a
-              href="mailto:contacto@jurmaq.cl"
+              href={`mailto:${local.email}`}
               className="text-marca-600 font-semibold hover:underline"
             >
-              contacto@jurmaq.cl
+              {local.email}
             </a>
           </p>
         </div>

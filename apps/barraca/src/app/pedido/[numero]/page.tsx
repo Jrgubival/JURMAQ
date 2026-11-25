@@ -3,7 +3,7 @@ import { textoCombo } from "@/lib/combos";
 import { cookies } from "next/headers";
 import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
-import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
+import { leerLocal } from "@/lib/contenido/lectura";
 import { logSafeError } from "@jurmaq/shared/logging";
 import { pedidos, PATRON_NUMERO, ETIQUETA_ESTADO, MOTIVOS_RECHAZO, type Pedido } from "@/lib/pedidos";
 import { puedeVerPedido } from "@/lib/pedidos/enlace";
@@ -73,6 +73,8 @@ export default async function PedidoPage({
   const { numero } = await params;
   const sp = await searchParams;
   const jar = await cookies();
+  // Datos del local (teléfono, dirección, horario): fuente única con respaldo en código.
+  const local = await leerLocal();
 
   let pedido: Pedido | null = null;
   if (PATRON_NUMERO.test(numero)) {
@@ -86,7 +88,7 @@ export default async function PedidoPage({
         <h1 className="text-2xl font-semibold text-[#111111] mb-3">No encontramos este pedido</h1>
         <p className="text-[#5A5A57] mb-8">
           Para verlo abre el enlace «Ver tu pedido» del correo que te mandamos al comprar.
-          Si tienes dudas, escríbenos a contacto@jurmaq.cl o al +56 9 7667 3577.
+          Si tienes dudas, escríbenos a {local.email} o al {local.telefonoDisplay}.
         </p>
         <Link href="/categorias" className="inline-flex items-center px-6 py-3 bg-navy-950 text-white text-sm font-medium rounded-lg">
           Volver al catálogo
@@ -242,8 +244,8 @@ export default async function PedidoPage({
         <h2 className="text-[17px] font-semibold text-[#111111] mb-3">Entrega</h2>
         {pedido.entrega === "retiro" ? (
           <p className="text-[15px] text-[#5A5A57]">
-            <strong className="text-[#111111]">Retiro en la barraca</strong>: Av. Poniente 2157, Molina.<br />
-            {HORARIO_BARRACA.semana}. {HORARIO_BARRACA.sabado}.
+            <strong className="text-[#111111]">Retiro en la barraca</strong>: {local.direccionCorta}.<br />
+            {local.h.semana}. {local.h.sabado}.
           </p>
         ) : (
           <p className="text-[15px] text-[#5A5A57]">
