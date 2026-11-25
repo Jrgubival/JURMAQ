@@ -331,6 +331,6 @@ test("el mantenimiento no se cae si la base de ofertas falla en una tarea", asyn
   const T = tienda();
   const r = await Mant.ejecutarMantenimiento({ prepare: () => { throw new Error("D1 caída"); }, batch: async () => { throw new Error("x"); } }, T.deps, Date.UTC(2026, 10, 26, 12, 5, 0));
   assert.equal(r.ofertas, null);
-  assert.equal(r.limpieza.fallidas.length, 5);
+  assert.equal(r.limpieza.fallidas.length, 6);
   assert.ok(db);
 });

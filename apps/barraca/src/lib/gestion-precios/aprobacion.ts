@@ -13,13 +13,21 @@
  * entre medio la huella no coincide y se pide una aprobación nueva.
  * Todo corre a nombre del mismo usuario que pidió el cambio (la aprobación está
  * ligada a su id y nadie más puede gastarla).
+ *
+ * MODO `avisar` (mcp/modo-aprobacion.ts, leído en cada llamada): en vez de esperar el OK de Jorge, la primera llamada
+ * crea una aprobación automática (sin enlace; `crearAprobacionAutomatica`) y responde «pendiente: repite la misma
+ * llamada». La segunda la gasta y aplica; al gastarla `consumirAprobacion` registra el aviso a Jorge, que el servidor
+ * MCP envía al terminar la llamada. Si falta BARRACA_APROBADOR_EMAIL válido (o es el mismo correo de quien pide) el modo
+ * `avisar` se comporta como `exigir`, que bloquea. Es el ÚNICO punto central: las herramientas no repiten esta lógica.
  */
 import type { D1Like, UsuarioGestion } from "../gestion/index.ts";
 import { type CambioEvaluable, cifrasDeCambios, lineasDeCambios } from "./reglas.ts";
 import {
-  TEXTO_MOTIVO, TTL_APROBACION_MS, consumirAprobacion, devolverAprobacion, estadoAprobacion,
-  type DatosSolicitud, type MotivoAprobacion, type ResultadoSolicitud,
+  TEXTO_MOTIVO, TTL_APROBACION_MS, consumirAprobacion, crearAprobacionAutomatica, devolverAprobacion, estadoAprobacion,
+  mismoCorreo, motivosAvisables, type DatosSolicitud, type MotivoAprobacion, type ResultadoSolicitud,
 } from "../mcp/aprobaciones.ts";
+import { correoAprobadorDeEntorno } from "../mcp/aviso-operacion.ts";
+import { leerModoAprobacion } from "../mcp/modo-aprobacion.ts";
 
 export interface DepsAprobacionGestion {
   solicitar(db: D1Like, datos: DatosSolicitud): Promise<ResultadoSolicitud>;
@@ -66,13 +74,29 @@ export async function exigirAprobacion(
     // pendiente / vencida / usada / rechazada antigua: se pide (o se reutiliza la pendiente).
   }
 
-  const r = await deps.solicitar(db, {
+  const detalle = p.cambios && p.cambios.length > 0
+    ? { cifras: cifrasDeCambios(p.cambios), lineas: lineasDeCambios(p.cambios), ...(p.detalle && typeof p.detalle === "object" && !Array.isArray(p.detalle) ? (p.detalle as Record<string, unknown>) : p.detalle === undefined ? {} : { detalle: p.detalle }) }
+    : p.detalle;
+  const datos: DatosSolicitud = {
     usuario: { id: p.usuario.id, email: p.usuario.email ?? null },
-    herramienta: p.herramienta, motivos: p.motivos, resumen: p.resumen, huella: p.huella,
-    detalle: p.cambios && p.cambios.length > 0
-      ? { cifras: cifrasDeCambios(p.cambios), lineas: lineasDeCambios(p.cambios), ...(p.detalle && typeof p.detalle === "object" && !Array.isArray(p.detalle) ? (p.detalle as Record<string, unknown>) : p.detalle === undefined ? {} : { detalle: p.detalle }) }
-      : p.detalle,
-  });
+    herramienta: p.herramienta, motivos: p.motivos, resumen: p.resumen, huella: p.huella, detalle,
+  };
+
+  // Modo `avisar`: vista previa ahora, se aplica en la siguiente llamada y se avisa a Jorge. Sin aprobador válido, cae a `exigir`.
+  if (leerModoAprobacion() === "avisar" && motivosAvisables(p.motivos) && p.usuario.email && (() => {
+    const para = correoAprobadorDeEntorno();
+    return !!para && !mismoCorreo(para, p.usuario.email);
+  })()) {
+    const auto = await crearAprobacionAutomatica(db, datos, ahora);
+    if (!auto) return { tipo: "bloqueada", mensaje: "Hay demasiados cambios en modo avisar en la última hora. No se cambió nada; espera un rato y vuelve a intentar." };
+    return {
+      tipo: "pendiente",
+      id: auto.id,
+      mensaje: `Este cambio normalmente necesitaría el OK de Jorge (${textoMotivos(p.motivos)}), pero está el modo AVISAR: se aplica sin esperar su OK, en dos llamadas, y después a Jorge le llega un correo con lo que cambió y el enlace para deshacerlo. Esto es la vista previa: ${p.resumen}\nNo se cambió nada todavía. Muéstrale este resumen al usuario y, si está de acuerdo, repite esta misma llamada para aplicarlo.`,
+    };
+  }
+
+  const r = await deps.solicitar(db, datos);
   if (r.ok) {
     const horas = Math.round(TTL_APROBACION_MS / 3_600_000);
     return {

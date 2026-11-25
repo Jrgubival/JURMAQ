@@ -11,7 +11,8 @@ import { depsReales } from '@/lib/gestion-precios/deps-reales';
  * Tareas programadas de la gestión por MCP:
  *   1. Ofertas con fecha: empieza las que ya les toca y termina las vencidas
  *      (devuelve el precio anterior sin pisar lo que alguien haya cambiado).
- *   2. Limpieza (una vez por hora): OAuth, límites de uso, aprobaciones,
+ *   2. Reintento de los avisos a Jorge que no salieron (modo avisar y operaciones de dinero o borrado).
+ *   3. Limpieza (una vez por hora): OAuth, límites de uso, aprobaciones,
  *      vistas previas vencidas y ofertas viejas.
  * Idempotente: dos corridas a la vez o repetidas no duplican nada. Si la base
  * de gestión todavía no existe, responde ok sin hacer nada. No toca el aviso
@@ -39,8 +40,9 @@ export async function POST(request: NextRequest) {
   try {
     const db = await obtenerGestionDb();
     if (!db) return NextResponse.json({ ok: true, gestion: false });
-    const r = await ejecutarMantenimiento(db, depsReales());
-    return NextResponse.json({ ok: true, gestion: true, ofertas: r.ofertas, limpieza: r.limpieza });
+    const { depsAvisoReales } = await import('@/lib/mcp/aviso-servidor');
+    const r = await ejecutarMantenimiento(db, depsReales(), Date.now(), depsAvisoReales());
+    return NextResponse.json({ ok: true, gestion: true, ofertas: r.ofertas, avisos: r.avisos, limpieza: r.limpieza });
   } catch (e) {
     // Sin mensaje ni detalles: podrían traer datos internos.
     console.error('[mantenimiento-gestion-fallo]', { tipo: e instanceof Error ? e.name : typeof e });

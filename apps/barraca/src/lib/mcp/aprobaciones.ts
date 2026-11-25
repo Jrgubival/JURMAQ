@@ -19,6 +19,16 @@ import { desdeJson, huellaDeDatos, idUuid } from "../gestion/util.ts";
 import { secretoAleatorio, sha256Hex } from "./cripto.ts";
 import { HORA, DIA } from "./config.ts";
 import { normalizarEmail } from "../cupones/normalizar.ts";
+import { cancelarAvisosDeAprobacion, registrarAvisoCambio } from "./aviso-operacion.ts";
+import { leerModoAprobacion } from "./modo-aprobacion.ts";
+
+/**
+ * Las aprobaciones del modo `avisar` no tienen enlace: nacen YA aprobadas (para que la segunda llamada, la que repite la
+ * misma petición, las gaste) y su `token_hash` empieza con esta marca (nunca coincide con el hash de un enlace real, así
+ * que /aprobar no las encuentra). Solo valen mientras el modo vigente siga siendo `avisar`: si Jorge pasa el interruptor a
+ * `exigir`, dejan de servir al instante (ver `estadoEfectivo` y `consumirAprobacion`).
+ */
+export const PREFIJO_TOKEN_AVISAR = "avisar:";
 
 export const UMBRAL_PRODUCTOS_24H = 300;
 export const UMBRAL_VARIACION_PCT = 30;
@@ -27,6 +37,8 @@ export const MARGEN_MINIMO = 0.15;
 /** El enlace del correo vive poco. */
 export const TTL_APROBACION_MS = 4 * HORA;
 const MAX_SOLICITUDES_POR_HORA = 10;
+/** Tope de «vistas previas» automáticas del modo `avisar` por usuario y hora (cada una termina en un correo de aviso). */
+const MAX_AUTOMATICAS_POR_HORA = 40;
 /** Tope del detalle que ve Jorge. Si se pasa, NO se recorta en silencio: queda marcado como incompleto y la página y el correo lo avisan. */
 export const MAX_DETALLE_BYTES = 256 * 1024;
 
@@ -46,6 +58,17 @@ export type MotivoAprobacion =
   | "sin_costo_baja"         // baja de precio de un producto sin costo cargado (no se puede medir el margen)
   | "texto_desvio"
   | "escritura_libre";       // cambio que normalmente es libre, pero Jorge pidió aprobarlo (mcp/escrituras-libres.ts)          // un texto de la tienda agrega un teléfono, un correo o un enlace a otro sitio
+
+/**
+ * Motivos que NUNCA pasan a «avisar» aunque el modo lo sea: siempre esperan el OK de Jorge. Hoy ninguno (todo lo que pedía
+ * aprobación se aplica avisando en el modo `avisar`); aquí se agregaría uno si algún día hiciera falta. Los topes duros
+ * (precio 0 o negativo, bajo el 50 % del costo) no son motivos de aprobación: son errores en ambos modos.
+ */
+export const MOTIVOS_SOLO_CON_OK: ReadonlySet<MotivoAprobacion> = new Set<MotivoAprobacion>();
+
+export function motivosAvisables(motivos: readonly MotivoAprobacion[]): boolean {
+  return motivos.length > 0 && motivos.every((m) => !MOTIVOS_SOLO_CON_OK.has(m));
+}
 
 export const TEXTO_MOTIVO: Record<MotivoAprobacion, string> = {
   masivo_cantidad: "Cambia más de 300 productos en 24 horas",
@@ -207,7 +230,7 @@ export async function solicitarAprobacion(
   if (existente) return { ok: true, id: existente.id, estado: "pendiente", venceEn: existente.expira_en, nueva: false };
 
   const recientes = await db
-    .prepare("SELECT COUNT(*) AS n FROM aprobaciones WHERE usuario_id = ? AND creado_en > ?")
+    .prepare("SELECT COUNT(*) AS n FROM aprobaciones WHERE usuario_id = ? AND creado_en > ? AND token_hash NOT LIKE 'avisar:%'")
     .bind(d.usuario.id, ahora - HORA)
     .first<{ n: number }>();
   if ((recientes?.n ?? 0) >= MAX_SOLICITUDES_POR_HORA) return { ok: false, estado: "bloqueada", motivo: "limite" };
@@ -251,7 +274,7 @@ export type EstadoAprobacion =
   | "no_existe" | "pendiente" | "aprobada" | "rechazada" | "usada" | "vencida" | "datos_cambiaron";
 
 interface FilaAprobacion {
-  id: string; usuario_id: string; usuario_email: string | null; herramienta: string; motivos: string; resumen: string;
+  id: string; token_hash: string; usuario_id: string; usuario_email: string | null; herramienta: string; motivos: string; resumen: string;
   detalle: string | null; huella: string; estado: string; creado_en: number; expira_en: number;
 }
 
@@ -271,33 +294,100 @@ export async function estadoAprobacion(
 function estadoEfectivo(f: FilaAprobacion, ahora: number, huellaActual?: string): EstadoAprobacion {
   if (f.estado === "usada" || f.estado === "rechazada") return f.estado;
   if (f.expira_en <= ahora) return "vencida";
+  // Una aprobación automática del modo `avisar` no vale si el modo vigente ya no es `avisar` (cambio a `exigir`).
+  if (f.token_hash.startsWith(PREFIJO_TOKEN_AVISAR) && leerModoAprobacion() !== "avisar") return "vencida";
   if (huellaActual !== undefined && huellaActual !== f.huella) return "datos_cambiaron";
   return f.estado as EstadoAprobacion;
 }
 
-/** Gasta una aprobación 'aprobada' (una sola vez, atómico). Devuelve true si la gastó. */
+/**
+ * Gasta una aprobación 'aprobada' (una sola vez, atómico). Devuelve true si la gastó.
+ * Si es una aprobación automática del modo `avisar` (y el modo vigente sigue siéndolo), además deja REGISTRADO el aviso
+ * a Jorge (ver aviso-operacion.ts) ANTES de devolver true: si no se puede registrar, la aprobación se devuelve y se lanza
+ * el error (el cambio no se aplica). El correo lo envía el servidor MCP al terminar la llamada.
+ */
 export async function consumirAprobacion(
   db: D1Like, id: string, o: { usuarioId: string; huellaActual: string }, ahora: number = Date.now(),
 ): Promise<boolean> {
+  const avisar = leerModoAprobacion() === "avisar" ? 1 : 0;
   const f = await db
-    .prepare("UPDATE aprobaciones SET estado = 'usada', usada_en = ? WHERE id = ? AND usuario_id = ? AND estado = 'aprobada' AND expira_en > ? AND huella = ? RETURNING id")
-    .bind(ahora, id, o.usuarioId, ahora, o.huellaActual)
-    .first<{ id: string }>();
-  return !!f;
+    .prepare(
+      `UPDATE aprobaciones SET estado = 'usada', usada_en = ?
+        WHERE id = ? AND usuario_id = ? AND estado = 'aprobada' AND expira_en > ? AND huella = ?
+          AND (token_hash NOT LIKE 'avisar:%' OR ? = 1)
+        RETURNING id, token_hash, usuario_id, usuario_email, herramienta, motivos, resumen, detalle`,
+    )
+    .bind(ahora, id, o.usuarioId, ahora, o.huellaActual, avisar)
+    .first<{ id: string; token_hash: string; usuario_id: string; usuario_email: string | null; herramienta: string; motivos: string; resumen: string; detalle: string | null }>();
+  if (!f) return false;
+  if (f.token_hash.startsWith(PREFIJO_TOKEN_AVISAR)) {
+    try {
+      await registrarAvisoCambio(db, {
+        aprobacionId: f.id, usuario: { id: f.usuario_id, email: f.usuario_email }, herramienta: f.herramienta,
+        motivosTexto: (desdeJson<MotivoAprobacion[]>(f.motivos) ?? []).filter((m) => m in TEXTO_MOTIVO).map((m) => TEXTO_MOTIVO[m]),
+        resumen: f.resumen, detalle: desdeJson(f.detalle), ahora,
+      });
+    } catch (e) {
+      await db.prepare("UPDATE aprobaciones SET estado = 'aprobada', usada_en = NULL WHERE id = ? AND estado = 'usada'").bind(f.id).run().catch(() => undefined);
+      throw e;
+    }
+  }
+  return true;
 }
 
 /**
  * Devuelve una aprobación recién gastada cuando el cambio que la usaba NO se aplicó (falló después de gastarla):
  * vuelve a 'aprobada' mientras no haya vencido. Solo la puede devolver su dueño y solo si está 'usada'.
+ * Si era del modo `avisar`, el aviso pendiente de ese cambio se cancela (no hubo cambio que avisar).
  */
 export async function devolverAprobacion(
   db: D1Like, id: string, o: { usuarioId: string; huellaActual: string }, ahora: number = Date.now(),
 ): Promise<boolean> {
   const f = await db
-    .prepare("UPDATE aprobaciones SET estado = 'aprobada', usada_en = NULL WHERE id = ? AND usuario_id = ? AND estado = 'usada' AND expira_en > ? AND huella = ? RETURNING id")
+    .prepare("UPDATE aprobaciones SET estado = 'aprobada', usada_en = NULL WHERE id = ? AND usuario_id = ? AND estado = 'usada' AND expira_en > ? AND huella = ? RETURNING id, token_hash")
     .bind(id, o.usuarioId, ahora, o.huellaActual)
-    .first<{ id: string }>();
+    .first<{ id: string; token_hash: string }>();
+  if (f?.token_hash.startsWith(PREFIJO_TOKEN_AVISAR)) await cancelarAvisosDeAprobacion(db, f.id, ahora).catch(() => undefined);
   return !!f;
+}
+
+/**
+ * MODO `avisar`: crea una aprobación que nace YA aprobada y sin enlace (la «vista previa» de la primera llamada; la
+ * segunda llamada, con la misma huella, la gasta con `consumirAprobacion` y ahí se registra el aviso a Jorge). Vale 4 horas
+ * y solo mientras el modo siga siendo `avisar`. Tope de 40 por hora por usuario (si se pasa, devuelve null y quien llama
+ * debe tratarlo como bloqueado). Reutiliza la ya creada para la misma huella.
+ */
+export async function crearAprobacionAutomatica(
+  db: D1Like, d: DatosSolicitud, ahora: number = Date.now(),
+): Promise<{ id: string; venceEn: number; nueva: boolean } | null> {
+  const existente = await db
+    .prepare("SELECT id, expira_en FROM aprobaciones WHERE usuario_id = ? AND herramienta = ? AND huella = ? AND estado = 'aprobada' AND token_hash LIKE 'avisar:%' AND expira_en > ?")
+    .bind(d.usuario.id, d.herramienta, d.huella, ahora)
+    .first<{ id: string; expira_en: number }>();
+  if (existente) return { id: existente.id, venceEn: existente.expira_en, nueva: false };
+  const recientes = await db
+    .prepare("SELECT COUNT(*) AS n FROM aprobaciones WHERE usuario_id = ? AND creado_en > ? AND token_hash LIKE 'avisar:%'")
+    .bind(d.usuario.id, ahora - HORA)
+    .first<{ n: number }>();
+  if ((recientes?.n ?? 0) >= MAX_AUTOMATICAS_POR_HORA) return null;
+  let detalle: string | null = null;
+  try { detalle = d.detalle === undefined || d.detalle === null ? null : (JSON.stringify(d.detalle) ?? null); } catch { detalle = null; }
+  if (detalle && new TextEncoder().encode(detalle).length > MAX_DETALLE_BYTES) {
+    detalle = JSON.stringify({ detalleIncompleto: true, cifras: cifrasDeDetalle(d.detalle) ?? null });
+  }
+  const id = idUuid();
+  const venceEn = ahora + TTL_APROBACION_MS;
+  await db
+    .prepare(
+      `INSERT INTO aprobaciones (id, token_hash, usuario_id, usuario_email, herramienta, motivos, resumen, detalle, huella, estado, creado_en, expira_en, resuelto_en)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'aprobada', ?, ?, ?)`,
+    )
+    .bind(
+      id, `${PREFIJO_TOKEN_AVISAR}${idUuid()}`, d.usuario.id, d.usuario.email ?? null, d.herramienta, JSON.stringify(d.motivos),
+      d.resumen.replace(/[\u0000-\u0008\u000b-\u001f]/g, " ").slice(0, 600), detalle, d.huella, ahora, venceEn, ahora,
+    )
+    .run();
+  return { id, venceEn, nueva: true };
 }
 
 // ───────── Página pública /aprobar/[token] ─────────

@@ -22,6 +22,7 @@ import { herramientaPideOk } from "./escrituras-libres.ts";
 import { huellaDeDatos } from "../gestion/util.ts";
 import { exigirAprobacion } from "../gestion-precios/aprobacion.ts";
 import type { DatosSolicitud, ResultadoSolicitud } from "./aprobaciones.ts";
+import { conSeguimientoDeAvisos, enviarAvisosDeLlamada, type DepsAviso, type ResultadoAviso } from "./aviso-operacion.ts";
 import { autenticarAcceso, revocarFamilia, scopeIncluye, type AccesoValido, type ResultadoUsuario } from "./oauth.ts";
 import { ErrorHerramienta, z, type ContextoHerramienta, type Herramienta, type Registro, type SalidaHerramienta } from "./tools/registro.ts";
 
@@ -35,6 +36,8 @@ export interface DepsServidor {
   ahora?: number;
   /** Pide el OK de Jorge (correo). Solo se usa si el interruptor de escrituras libres lo exige; por defecto, el real. */
   solicitarAprobacion?: (db: D1Like, datos: DatosSolicitud) => Promise<ResultadoSolicitud>;
+  /** Envía los avisos a Jorge del modo `avisar` (al terminar cada llamada). Por defecto, el real (correo por Resend). */
+  aviso?: () => Promise<DepsAviso> | DepsAviso;
 }
 
 export interface PeticionMcp {
@@ -286,7 +289,38 @@ function resultadoError(id: unknown, texto: string): RespuestaMcp {
   return ok(id, armarResultadoHerramienta(texto, { isError: true }));
 }
 
+/**
+ * Anexa a la respuesta de una herramienta lo que pasó con los avisos a Jorge (modo `avisar`): una línea de texto (en
+ * `structuredContent.texto` y en `content`, que deben seguir iguales) y `structuredContent.avisos`. Si el aviso falló, queda
+ * a la vista (y en Administración, Conexiones).
+ */
+export function anexarAvisos(r: RespuestaMcp, avisos: ResultadoAviso[]): RespuestaMcp {
+  const resultado = (r.body as { result?: { content?: Array<{ type: string; text?: string }>; structuredContent?: Record<string, unknown> } } | undefined)?.result;
+  if (!resultado?.structuredContent || !Array.isArray(resultado.content) || avisos.length === 0) return r;
+  const linea = [...new Set(avisos.map((a) => a.mensaje))].join(" ");
+  resultado.structuredContent.texto = `${String(resultado.structuredContent.texto ?? "")}\n${linea}`;
+  resultado.structuredContent.avisos = avisos.map((a) => ({ estado: a.estado, id: a.id.slice(0, 8) }));
+  resultado.content = [{ type: "text", text: resultado.structuredContent.texto as string }];
+  return r;
+}
+
 async function llamarHerramienta(
+  id: unknown, params: Record<string, unknown>, acceso: AccesoValido, usuario: { id: string; email: string | null },
+  deps: DepsServidor, base: string, ahora: number,
+): Promise<RespuestaMcp> {
+  // Todo lo que registre un aviso de cambio (modo `avisar`) durante la llamada se envía al terminar, salga bien o mal.
+  const { valor, ids } = await conSeguimientoDeAvisos(() => llamarHerramientaInterna(id, params, acceso, usuario, deps, base, ahora));
+  if (ids.length === 0) return valor;
+  let depsAviso: DepsAviso | null = null;
+  try {
+    depsAviso = await (deps.aviso ?? (() => import("./aviso-servidor.ts").then((m) => m.depsAvisoReales())))();
+  } catch {
+    depsAviso = null;
+  }
+  return anexarAvisos(valor, await enviarAvisosDeLlamada(deps.db, depsAviso, ids, ahora));
+}
+
+async function llamarHerramientaInterna(
   id: unknown, params: Record<string, unknown>, acceso: AccesoValido, usuario: { id: string; email: string | null },
   deps: DepsServidor, base: string, ahora: number,
 ): Promise<RespuestaMcp> {
