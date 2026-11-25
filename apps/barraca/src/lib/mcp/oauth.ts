@@ -92,10 +92,17 @@ export async function registrarCliente(
   if (!Array.isArray(uris) || uris.length === 0 || uris.length > MAX_REDIRECTS_POR_CLIENTE || uris.some((u) => typeof u !== "string")) {
     return { ok: false, error: "invalid_redirect_uri", descripcion: "redirect_uris inválidas." };
   }
-  const lista = [...new Set(uris as string[])];
+  const lista = [...new Set(uris as string[])].sort();
   if (!lista.every(esRedirectPermitida)) {
     return { ok: false, error: "invalid_redirect_uri", descripcion: "Alguna redirect_uri no está permitida." };
   }
+  // Mismo nombre y mismas redirect_uris: se reutiliza el cliente (no se llena el cupo registrando lo mismo).
+  const nombreLimpio = limpiarNombre(entrada.nombre);
+  const igual = await db
+    .prepare("SELECT id, nombre, redirect_uris, creado_en FROM oauth_clientes WHERE nombre = ? AND redirect_uris = ? ORDER BY creado_en DESC LIMIT 1")
+    .bind(nombreLimpio, JSON.stringify(lista))
+    .first<{ id: string; nombre: string; redirect_uris: string; creado_en: number }>();
+  if (igual) return { ok: true, cliente: { id: igual.id, nombre: igual.nombre, redirectUris: lista, creadoEn: igual.creado_en } };
   // Anti llenado: tope de clientes que nunca emitieron un token.
   const sinUso = await db
     .prepare(`SELECT COUNT(*) AS n FROM oauth_clientes c WHERE NOT EXISTS (SELECT 1 FROM oauth_tokens t WHERE t.cliente_id = c.id)`)
@@ -103,7 +110,7 @@ export async function registrarCliente(
   if ((sinUso?.n ?? 0) >= MAX_CLIENTES_SIN_USO) {
     return { ok: false, error: "limite", descripcion: "Demasiados registros pendientes. Intenta más tarde." };
   }
-  const cliente: ClienteOauth = { id: `mcpcli_${idUuid()}`, nombre: limpiarNombre(entrada.nombre), redirectUris: lista, creadoEn: ahora };
+  const cliente: ClienteOauth = { id: `mcpcli_${idUuid()}`, nombre: nombreLimpio, redirectUris: lista, creadoEn: ahora };
   await db
     .prepare("INSERT INTO oauth_clientes (id, nombre, redirect_uris, creado_en, ip_hash) VALUES (?, ?, ?, ?, ?)")
     .bind(cliente.id, cliente.nombre, JSON.stringify(lista), ahora, entrada.ipHash ?? null)
@@ -412,6 +419,7 @@ export async function limpiarOauth(db: D1Like, ahora: number = Date.now()): Prom
   await db.batch([
     db.prepare("DELETE FROM oauth_codigos WHERE expira_en < ?").bind(ahora - 3600_000),
     db.prepare("DELETE FROM oauth_tokens WHERE (revocado_en IS NOT NULL AND revocado_en < ?) OR refresh_expira_en < ?").bind(ahora - 30 * DIA, ahora - 30 * DIA),
-    db.prepare("DELETE FROM oauth_clientes WHERE creado_en < ? AND NOT EXISTS (SELECT 1 FROM oauth_tokens t WHERE t.cliente_id = oauth_clientes.id)").bind(ahora - 7 * DIA),
+    // Clientes registrados que nunca emitieron un token y tienen más de 24 h: se barren (liberan el cupo).
+    db.prepare("DELETE FROM oauth_clientes WHERE creado_en < ? AND NOT EXISTS (SELECT 1 FROM oauth_tokens t WHERE t.cliente_id = oauth_clientes.id)").bind(ahora - DIA),
   ]);
 }

@@ -126,7 +126,10 @@ test("no existe herramienta de pagos, anulaciones ni devoluciones, y el enum no 
 
 test("las herramientas que cambian algo exigen permiso de escritura; las de lectura no cambian nada", async () => {
   const { h } = await montar([]);
-  for (const n of ["listar_pedidos", "ver_pedido", "previsualizar_estado_pedido"]) assert.equal(h(n).anotaciones.readOnlyHint, true, n);
+  for (const n of ["listar_pedidos", "ver_pedido"]) assert.equal(h(n).anotaciones.readOnlyHint, true, n);
+  // La vista previa escribe en D1 (guarda el id): NO es de solo lectura y por eso exige el permiso de escritura.
+  assert.equal(h("previsualizar_estado_pedido").anotaciones.readOnlyHint, false);
+  assert.equal(h("previsualizar_estado_pedido").anotaciones.idempotentHint, false);
   for (const n of ["confirmar_estado_pedido", "agregar_nota_pedido"]) { assert.equal(h(n).anotaciones.readOnlyHint, false, n); assert.ok(h(n).revertidor, n); }
 });
 

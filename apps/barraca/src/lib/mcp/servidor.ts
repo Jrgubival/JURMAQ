@@ -16,7 +16,8 @@ import {
   LIMITE_ESCRITURAS_POR_MIN, LIMITE_MCP_POR_MIN, MAX_BODY_MCP_BYTES, MAX_SALIDA_HERRAMIENTA_BYTES, MIN,
   ORIGENES_MCP_EXTRA, SCOPE_ESCRIBIR, baseCanonica, encabezadoNoAutenticado,
 } from "./config.ts";
-import { limitar } from "./limites.ts";
+import { consultarLimite, limitar } from "./limites.ts";
+import { sha256Hex } from "./cripto.ts";
 import { autenticarAcceso, revocarFamilia, scopeIncluye, type AccesoValido, type ResultadoUsuario } from "./oauth.ts";
 import { ErrorHerramienta, z, type ContextoHerramienta, type Herramienta, type Registro } from "./tools/registro.ts";
 
@@ -79,6 +80,7 @@ function jsonSchemaDe(h: Herramienta): Record<string, unknown> {
   return s;
 }
 
+const LIMITE_TOKENS_MALOS_POR_MIN = 30;
 const esEscritura = (h: Herramienta) => !h.anotaciones.readOnlyHint;
 
 function origenPermitido(origen: string | null, base: string): boolean {
@@ -98,9 +100,18 @@ export async function manejarSolicitudMcp(p: PeticionMcp, deps: DepsServidor): P
   if (p.metodo !== "POST") return { status: 405, headers: { Allow: "POST" }, body: jsonrpcError(null, -32000, "Método no permitido.") };
   if (!origenPermitido(p.cabecera("origin"), base)) return { status: 403, body: jsonrpcError(null, -32000, "Origen no permitido.") };
 
-  // 1. Token.
-  const a = await autenticarAcceso(deps.db, extraerBearer(p.cabecera("authorization")), ahora, { base });
+  // 1. Token. Los tokens con forma válida pero que no existen consultan D1: tienen tope por IP (solo los fallidos
+  // suman; Claude, que llega desde pocas IPs con tokens buenos, no se ve afectado).
+  const ipHash = (await sha256Hex(`mcp-ip:${p.cabecera("cf-connecting-ip") || p.cabecera("x-forwarded-for")?.split(",")[0]?.trim() || "desconocida"}`)).slice(0, 32);
+  const claveMalos = `mcp-tok-malo:${ipHash}`;
+  const bearer = extraerBearer(p.cabecera("authorization"));
+  if (bearer) {
+    const antes = await consultarLimite(deps.db, claveMalos, LIMITE_TOKENS_MALOS_POR_MIN, MIN, ahora);
+    if (!antes.permitido) return limitado(antes.reintentarEnSeg);
+  }
+  const a = await autenticarAcceso(deps.db, bearer, ahora, { base });
   if (!a.ok) {
+    if (a.motivo === "invalido") await limitar(deps.db, claveMalos, LIMITE_TOKENS_MALOS_POR_MIN, MIN, ahora).catch(() => undefined);
     return a.motivo === "ausente" ? noAutenticado(base) : noAutenticado(base, "invalid_token", "El token no es válido o venció.");
   }
   const acceso = a.acceso;

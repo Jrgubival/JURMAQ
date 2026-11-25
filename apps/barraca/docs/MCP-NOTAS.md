@@ -330,3 +330,38 @@ Código en `src/lib/gestion-precios/`, herramientas en `src/lib/mcp/tools/{produ
 - `barraca_zonas_despacho` debe existir en Supabase (migración `2026_10_31_barraca_admin.sql`); si no, `cambiar_despacho` avisa y `ver_zonas_despacho` muestra las tarifas fijas del código.
 - Subpeticiones de Workers: cada ficha escrita y cada consulta cuentan; un masivo de 1.200 fichas puede acercarse al límite del plan. Si se corta, lo aplicado queda auditado y el resto se rehace con una vista previa nueva.
 - No se probó contra Supabase ni D1 reales (no existen en este entorno); sí con tienda falsa y D1 simulada. `precio-web.ts` ahora importa `./stock.ts` en vez de `@/lib/stock` para poder cargarse en pruebas.
+
+## Correcciones de la auditoría (25-11-2026, segunda vuelta)
+
+Pruebas: `scripts/mcp-correcciones.test.mjs` (nuevo) más ampliaciones en `cupones.test.mjs`, `mcp-contenido-cupones.test.mjs`, `gestion-precios.test.mjs`.
+
+### Cupones
+- Todo cupón que queda ACTIVO por MCP (`crear_cupon` activo, `editar_cupon` de uno activo, `activar_cupon`) queda pendiente de Jorge (motivo `cupon_activo`, vía `exigirAprobacion`; se repite la misma llamada cuando aprueba). Crear apagado, editar uno apagado y apagar son libres. Sin aprobador (o aprobador = usuario) queda bloqueado.
+- Validación dura (`validarCuponMcp`): tope de usos (`max_usos_total`, `un_uso_por_cliente` o `max_usos_por_cliente`); `un_uso_por_cliente` y tope total no van juntos; un monto fijo exige compra mínima de al menos valor + $1.000.
+- Deshacer de un cupón que quedaría activo también pide el OK de Jorge (`deshacer_cupon`); deshacer una creación sigue apagando.
+- PISO COBRABLE (decisión): los productos de un pedido nunca quedan bajo max($1.000, 1 % del subtotal), tampoco con el 2 % de transferencia (`lib/cupones/totales.ts`: `pisoCobrable`, `descuentoMaximoCupon`). El descuento se limita en `evaluarCuponCheckout` (así el cliente ve el mismo valor con Webpay o transferencia) y `totalesPedido` lo vuelve a aplicar por seguridad. Con subtotal bajo $1.000 el cupón no da descuento.
+- `huellaCliente` (`CUPONES_PEPPER`): sin el secreto lanza error y el cupón no se aplica (el checkout muestra «no pudimos revisar el cupón»). El secreto `CUPONES_PEPPER` debe estar en el worker antes de encender los cupones.
+
+### Precios, combos y sin costo
+- El precio unitario implícito del combo (`combo_precio / combo_cantidad`) cuenta como variación (contra el combo anterior o el precio web) y como precio contra el costo, en `evaluarCambioPrecios`. `combo_precio = 1` pide aprobación.
+- Producto sin costo cargado: una baja de precio (web o combo) no se puede medir → motivo `sin_costo_baja`, pendiente de Jorge. Subir o dejar igual es libre. Ojo: ofertas y masivos sobre productos sin costo también quedan pendientes.
+- Deshacer (`revertirEntradas(deps, {db, usuario, ahora}, entradas)`): primero clasifica, luego evalúa con las mismas reglas lo que se restauraría (costo, 15 %, 30 %, 300, sin costo); las zonas de despacho siempre piden OK. Si hace falta, queda pendiente (herramienta `deshacer_lote`), no toca nada, y al aprobar hay que repetir `previsualizar_deshacer_lote` y `deshacer_lote` (la vista previa anterior se gastó).
+
+### Aprobaciones (correo y página)
+- `BARRACA_APROBADOR_EMAIL` igual al correo de quien pide (comparado en minúsculas, sin espacios ni `+etiqueta`) → bloqueado, motivo `mismo_usuario`. Hoy el usuario es `contacto@jurmaq.cl`: el secreto debe ser OTRO correo (el personal de Jorge).
+- `exigirAprobacion` acepta `cambios` (los `CambioEvaluable`): el detalle guarda `cifras` (productos, fichas, mayor variación %, bajo costo, menos de 15 %, sin costo) y `lineas` completas (una por ficha). El correo muestra las cifras. Textos legales: el detalle guarda el `textoCompleto`; datos del local: `cambiosCompletos` (campo, antes, después).
+- La página `/aprobar/<token>` (`lib/mcp/detalle-aprobacion.ts`) muestra cifras, texto legal y detalle COMPLETOS en cajas con scroll, más la huella. Tope del detalle 256 KB; si se pasa NO se recorta en silencio: queda `detalleIncompleto` y la página y el correo avisan en grande. (Antes un detalle grande se perdía sin aviso.)
+- Datos del local: publicar cambios de WhatsApp, teléfono, correo, dirección (calle, comuna, región, código postal, geo) o RUT/razón social necesita OK de Jorge (`publicacionRequiereAprobacion` en `contenido/tipos.ts`, usado por el repositorio y las herramientas; flujo igual al de términos: queda pendiente y se aplica con `aplicar_aprobacion_contenido` clave `datos_local`). Horario, nombre e Instagram son libres. Deshacer una publicación de datos del local que cambie esos campos se rechaza (usar `restaurar_version_contenido` y publicar con OK).
+
+### Público, OAuth y límites
+- `POST /api/public/carrito-abandonado/track`: zod estricto (`lib/carritos/track.ts`); del navegador solo se aceptan `producto_id` y cantidad; nombre, precio y total salen de `barraca_productos`. `reporte_carritos_abandonados` entrega los nombres como `datoDeCliente`. Notas internas de pedido también salen como dato.
+- OAuth: `registrarCliente` reutiliza el cliente con mismo nombre y `redirect_uris` (se guardan ordenadas); `limpiarOauth` (cron, 1 vez por hora) borra clientes sin tokens de más de 24 h (antes 7 días).
+- Tokens MCP con forma válida pero inexistentes: máximo 30 por minuto por IP (`mcp-tok-malo:<hash>`, solo los fallidos suman; sobre el tope no se consulta D1 y responde 429). `/aprobar` GET no escribe en D1 con un enlace bueno (solo `consultarLimite`); los enlaces inexistentes suman a `aprobar-malo:<ip>` (20 por minuto).
+- `previsualizar_estado_pedido` ya no es de solo lectura (escribe una vista previa en D1): exige el permiso de escritura.
+- `moderar_opinion` «mostrar» solo devuelve opiniones que esta herramienta ocultó (registro en auditoría); las pendientes o rechazadas en el panel se aprueban en el panel.
+- `wrangler.jsonc`: `workers_dev` y `preview_urls` en false; el cron llama a `barraca.jurmaq.cl` por referencia propia, así que no depende de workers.dev. `mismoOrigen` acepta solo el origen canónico (`baseCanonica()`), issuer y metadata ya salían de ahí.
+
+### Pendientes / riesgos nuevos
+- Poner `CUPONES_PEPPER` y un `BARRACA_APROBADOR_EMAIL` distinto de contacto@jurmaq.cl antes de publicar. Sin lo segundo, todo lo que pida aprobación queda bloqueado.
+- Apagar `workers_dev` solo se ve al hacer deploy; hasta entonces el host workers.dev sigue activo en producción.
+- No se probó contra Supabase, D1 ni Cloudflare reales; sí con D1 simulada y tienda falsa. La página de aprobación no se vio en un navegador (no se prende el servidor local).

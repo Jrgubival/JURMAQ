@@ -11,6 +11,7 @@ const { crearHerramientasReportes } = await import("../src/lib/mcp/tools/reporte
 const { resumenVentas, masVendidos } = await import("../src/lib/reportes/ventas.ts");
 const { reporteCatalogo, sinFoto, sinStock, bajoCosto, margenMenor15 } = await import("../src/lib/reportes/catalogo.ts");
 const { resumenCarritos } = await import("../src/lib/reportes/carritos.ts");
+const { datoDeCliente } = await import("../src/lib/mcp/tools/contenido-comun.ts");
 const { ErrorHerramienta } = await import("../src/lib/mcp/tools/registro.ts");
 
 const T0 = Date.UTC(2026, 10, 25, 15, 0, 0); // 25-nov-2026
@@ -176,7 +177,9 @@ test("carritos abandonados: solo cantidad, montos y productos; ningún dato pers
   assert.equal(r.datos.carritos, 3);
   assert.equal(r.datos.montoTotal, 24000);
   assert.equal(r.datos.montoPromedio, 8000);
-  assert.deepEqual(r.datos.productosMasDejados[0], { nombre: "Fierro 10mm", unidades: 4, carritos: 2 });
+  // Los nombres salen como dato de cliente (marcadores), nunca como texto libre.
+  assert.deepEqual(r.datos.productosMasDejados[0], { nombre: datoDeCliente("Fierro 10mm", 120), unidades: 4, carritos: 2 });
+  assert.match(r.texto, /<<<TEXTO_DE_CLIENTE/);
   const todo = JSON.stringify(r);
   for (const x of ["secreto@correo", "otro@correo", "+56912345678", "SESION-123", "@"]) assert.ok(!todo.includes(x), `no debería salir ${x}`);
   // Aunque la fuente trajera columnas de más, el resumen no las puede transportar.

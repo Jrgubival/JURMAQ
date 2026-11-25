@@ -173,6 +173,7 @@ export function detallePedido(p: PedidoCrudo, notas: NotaInterna[] = []): Detall
     notaComprobante: datoCliente(p.comprobante_nota, 300),
     razonSocialFactura: p.documento_solicitado === 'factura' ? datoCliente(p.factura_razon_social, 100) : null,
     seguimiento: p.courier_seguimiento ? limpiar(p.courier_seguimiento).slice(0, 40) : null,
-    notasInternas: notas,
+    // Las escribe el equipo o una IA, pero igual se entregan como dato (evita instrucciones persistidas).
+    notasInternas: notas.map((n) => ({ ...n, texto: datoCliente(n.texto, 500) ?? '' })),
   };
 }

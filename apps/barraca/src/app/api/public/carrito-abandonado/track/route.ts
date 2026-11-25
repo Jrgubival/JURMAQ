@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@jurmaq/shared/supabase';
 import { isValidOrigin, isValidEmail, sanitizeString, escapeLikePattern } from '@jurmaq/shared/sanitize';
 import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
+import { esquemaTrack, itemsDesdeCatalogo, type ProductoTrack } from '@/lib/carritos/track';
 
 /**
  * POST /api/public/carrito-abandonado/track
@@ -10,32 +11,14 @@ import { getClientIp, rateLimit } from '@jurmaq/shared/rate-limit';
  * permanece > 60s sin checkout. Crea/actualiza un registro en
  * barraca_carrito_abandonado con snapshot del carrito.
  *
- * Body: { email, session_id, items: [{producto_id, nombre, precio, cantidad}], total }
+ * Body: { email, session_id, items: [{producto_id, cantidad}] }. Del cliente solo se toman ids y
+ * cantidades: nombre, precio y total salen de la tabla de productos (lib/carritos/track.ts).
  *
  * Cuando el usuario completa la compra, otra parte del código marca
  * converted_at=now en el record correspondiente.
  */
 
 export const runtime = 'nodejs';
-
-interface Item {
-  producto_id?: number;
-  nombre?: string;
-  precio?: number;
-  cantidad?: number;
-}
-
-interface Body {
-  email?: string;
-  /** Tier 4 D7: teléfono para SMS recovery @ 15 min. */
-  telefono?: string;
-  session_id?: string;
-  items?: Item[];
-  total?: number;
-  // NOTA (audit jun-2026, IDOR): `usuario_id` NO se acepta del body — un
-  // anónimo podía asociar su carrito a la cuenta de otro. Se deriva del token
-  // de sesión si está presente.
-}
 
 export async function POST(request: NextRequest) {
   if (!isValidOrigin(request)) {
@@ -48,14 +31,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Demasiados tracks' }, { status: 429 });
   }
 
-  const body = (await request.json().catch(() => ({}))) as Body;
+  const parsed = esquemaTrack.safeParse(await request.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false, error: 'Datos inválidos' }, { status: 400 });
+  }
+  const body = parsed.data;
   // Sin cuentas de cliente (oct-2026): nunca hay usuario_id (y jamás del body).
   const usuarioId: number | null = null;
   const email = sanitizeString(body.email)?.toLowerCase();
   const telefono = sanitizeString(body.telefono)?.trim();
   const sessionId = sanitizeString(body.session_id);
-  const items = Array.isArray(body.items) ? body.items : [];
-  const total = Number(body.total) || 0;
 
   // Necesitamos al menos email o session_id para trackear.
   if (!email && !sessionId) {
@@ -64,6 +49,11 @@ export async function POST(request: NextRequest) {
   if (email && !isValidEmail(email)) {
     return NextResponse.json({ ok: false, error: 'Email inválido' }, { status: 400 });
   }
+  // Nombres y precios desde la tabla de productos, nunca del navegador.
+  const ids = [...new Set(body.items.map((i) => i.producto_id))];
+  const { data: filas } = await supabaseAdmin.from('barraca_productos').select('id, nombre, precio').in('id', ids).eq('activo', true);
+  const catalogo = new Map<number, ProductoTrack>((filas ?? []).map((f: ProductoTrack) => [Number(f.id), { id: Number(f.id), nombre: String(f.nombre ?? ''), precio: Number(f.precio) }]));
+  const { items, total } = itemsDesdeCatalogo(body.items, catalogo);
   if (items.length === 0 || total <= 0) {
     return NextResponse.json({ ok: false, error: 'Items requeridos' }, { status: 400 });
   }

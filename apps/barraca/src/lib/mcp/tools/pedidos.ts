@@ -153,7 +153,8 @@ export function crearHerramientasPedidos(deps: DepsPedidos = depsPedidosReales):
       numero: zNumero.describe("Número del pedido."),
       estado: z.enum(ESTADOS_OPERATIVOS).describe("Estado al que se quiere pasar: en_preparacion, listo_retiro, despachado o entregado."),
     }),
-    anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    // Escribe una vista previa en D1 (aunque no cambie el pedido): NO es de solo lectura, así que exige el permiso de escritura.
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     async ejecutar({ numero, estado }, ctx) {
       const puerto = await deps.puerto();
       const p = await puerto.porNumero(numero);

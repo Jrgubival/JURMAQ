@@ -116,10 +116,11 @@ export function paginaError(titulo: string, mensaje: string, status = 400): Resp
 /** ¿La petición viene de nuestro propio sitio? (anti CSRF junto con el paquete firmado). */
 export function mismoOrigen(req: Request, base: string): boolean {
   const origen = req.headers.get("origin");
-  const permitidos = new Set([new URL(base).origin, new URL(req.url).origin]);
-  if (origen) return permitidos.has(origen);
+  // Solo el origen canónico (https://barraca.jurmaq.cl): nunca otro host por el que haya llegado la petición (p. ej. workers.dev).
+  const canonico = new URL(base).origin;
+  if (origen) return origen === canonico;
   const sitio = req.headers.get("sec-fetch-site");
-  return sitio === "same-origin";
+  return sitio === "same-origin" && new URL(req.url).origin === canonico;
 }
 
 export function secretoFirma(): string | null {

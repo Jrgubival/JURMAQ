@@ -13,6 +13,7 @@ import type { D1Like } from "../../gestion/index.ts";
 import { diaValido, limitesPeriodo, resolverPeriodo, textoPeriodo, type Periodo } from "../../admin/ventas.ts";
 import { masVendidos, resumenVentas, type PedidoReporte } from "../../reportes/ventas.ts";
 import { reporteCatalogo, TIPOS_REPORTE_CATALOGO, type FilaProducto } from "../../reportes/catalogo.ts";
+import { AVISO_DATO_DE_CLIENTE, datoDeCliente } from "./contenido-comun.ts";
 import { resumenCarritos, type CarritoAbandonadoFila } from "../../reportes/carritos.ts";
 import { usosDeCuponesConCodigo, type UsosCupon } from "../../cupones/reportes.ts";
 
@@ -187,10 +188,11 @@ export function crearHerramientasReportes(deps: DepsReportes = depsReportesReale
       const lim = limitesPeriodo(periodo);
       const { filas, truncado } = await deps.carritosAbandonados(lim.desde, lim.hasta, MAX_CARRITOS_REPORTE);
       const r = resumenCarritos(filas, a.limite_productos ?? 10);
-      const lineas = r.productosMasDejados.map((p) => `- ${p.nombre}: en ${p.carritos} carrito${p.carritos === 1 ? "" : "s"} (${p.unidades} un.)`);
+      // Los nombres vienen de una tabla que escribe el público (aunque hoy se sanea al guardar): se entregan como dato.
+      const lineas = r.productosMasDejados.map((p) => `- ${datoDeCliente(p.nombre, 120).replace(/\n/g, " ")}: en ${p.carritos} carrito${p.carritos === 1 ? "" : "s"} (${p.unidades} un.)`);
       return {
-        texto: `Carritos abandonados ${textoPeriodo(periodo)}: ${r.carritos}, por ${cl(r.montoTotal)} en total (promedio ${cl(r.montoPromedio)}).\n${lineas.length ? `Productos que más se dejaron:\n${lineas.join("\n")}` : "Sin productos para mostrar."}${truncado ? `\nAviso: hay ${MAX_CARRITOS_REPORTE} carritos o más y se contaron solo los más nuevos.` : ""}`,
-        datos: { desde: periodo.desde, hasta: periodo.hasta, ...r, truncado },
+        texto: `Carritos abandonados ${textoPeriodo(periodo)}: ${r.carritos}, por ${cl(r.montoTotal)} en total (promedio ${cl(r.montoPromedio)}).\n${lineas.length ? `Productos que más se dejaron:\n${lineas.join("\n")}` : "Sin productos para mostrar."}${truncado ? `\nAviso: hay ${MAX_CARRITOS_REPORTE} carritos o más y se contaron solo los más nuevos.` : ""}\n${AVISO_DATO_DE_CLIENTE}`,
+        datos: { desde: periodo.desde, hasta: periodo.hasta, ...r, productosMasDejados: r.productosMasDejados.map((p) => ({ ...p, nombre: datoDeCliente(p.nombre, 120) })), truncado },
       };
     },
   });
