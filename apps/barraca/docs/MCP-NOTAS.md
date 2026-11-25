@@ -122,7 +122,7 @@ Rama `claude/mcp-tienda` (base 7a4923b). Este archivo lo amplían todas las piez
 - Errores: las herramientas solo muestran `ErrorHerramienta`; cualquier otra falla sale como mensaje genérico y el log lleva solo el nombre del tipo de error (sin mensaje, sin datos).
 
 ### Pantalla de autorización y aprobación (anti clickjacking y CSRF)
-- Son rutas (no páginas) para controlar encabezados: `X-Frame-Options: DENY`, CSP `frame-ancestors 'none'`, `no-store`, `no-referrer`, `noindex`. El CSP global de `next.config.ts` (`frame-ancestors 'self'`) se suma; el más estricto gana.
+- Son rutas (no páginas) para controlar encabezados: `X-Frame-Options: DENY`, CSP `frame-ancestors 'none'`, `no-store`, `same-origin`, `noindex`. Estas rutas están EXCLUIDAS de la regla global de `next.config.ts` (si no, el CSP global y `strict-origin` pisaban a los propios: se vio en producción).
 - Autorizar: el paquete firmado (HMAC con subclave de `AUTH_SECRET`, atado al usuario, 10 min) viaja en un campo oculto; POST exige mismo origen, sesión viva, usuario revalidado y vuelve a validar la solicitud contra la base. El retorno al cliente es una página con `meta refresh` + enlace, no un 302: Chrome aplica `form-action` del CSP global a las redirecciones de un formulario y bloquearía `claude.ai`.
 - Texto de lo que Claude puede/no puede hacer: `src/lib/mcp/permisos-texto.ts` (las piezas de herramientas deben mantenerlo fiel).
 
@@ -513,3 +513,11 @@ No hay campo ni tabla de marca: `lib/marcas.ts` las reconoce por el nombre del p
 - Aplicar `0008_seo_guias_relacionados.sql` en la D1 real (sin ella las herramientas avisan y la tienda queda igual). Tras un deploy, el texto propio de páginas con `revalidate` largo (categorías 24 h, fichas 7 días) aparece al regenerarse; `POST /api/contenido/revalidar` NO incluye `/guias`, `/calculadora-fierro` ni `/categorias` (lo cubre el `revalidate`).
 - No se probó contra Supabase ni D1 reales ni con un cliente MCP (no se prende servidor): sí con D1 simulada y tienda falsa. Las páginas no se vieron en navegador.
 - Un título propio no actualiza solo el `og:title` de páginas que ya traen uno distinto en código (p. ej. portada): hay que dar `og_titulo` si se quiere cambiar también al compartir.
+
+
+## Hotfix 25-11-2026: "Solicitud rechazada" al pulsar Autorizar
+- **Causa**: las pantallas con botones (autorizar, `/oauth/decision`, `/aprobar/[token]`) usaban `Referrer-Policy: no-referrer` (meta y encabezado). Con esa política el navegador manda `Origin: null` en el POST del formulario, y `mismoOrigen` (estricto, no acepta `null`) lo rechazaba.
+- **Regla**: toda pantalla HTML con un formulario POST protegido por `mismoOrigen` usa `Referrer-Policy: same-origin` (meta y encabezado). `mismoOrigen` sigue estricto. No pasar a `no-referrer` ni a `same-origin` en una pantalla nueva sin probar el POST en un navegador real.
+- Además `next.config.ts` excluye esas tres rutas de la regla global de encabezados (CSP propia con `frame-ancestors 'none'` y referrer propio). Pruebas en `scripts/mcp-web.test.mjs`.
+- Versión desplegada: `95799db6-bb0a-42a8-bcde-a96bd15c43a0`. Rollback: `d9c253b8-9f14-4367-b7b3-5d85403b39b9`.
+- `tools/list` pesa unos 68 KB (55 herramientas, unos 17.000 tokens de contexto). Los esquemas son válidos; si Claude se pone lento, evaluar acortar descripciones de `editar_slides`, `editar_avisos`, `crear_cupon`.

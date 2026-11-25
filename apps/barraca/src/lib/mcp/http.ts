@@ -84,12 +84,12 @@ pre{white-space:pre-wrap;word-break:break-word;margin:0;font:14px/1.45 ui-monosp
 export function paginaHtml(opciones: { titulo: string; cuerpo: string; cabeza?: string }): string {
   return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="same-origin">
 <title>${escapar(opciones.titulo)}</title>${opciones.cabeza ?? ""}<style>${CSS}</style></head>
 <body><div class="marca"><b>JURMAQ</b><span></span></div><main>${opciones.cuerpo}</main></body></html>`;
 }
 
-/** Encabezados de una pantalla con botones: sin caché, sin marcos, sin Referer, sin indexar. */
+/** Encabezados de una pantalla con botones: sin caché, sin marcos, Referer solo hacia nuestro origen, sin indexar. */
 export function respuestaHtml(html: string, status = 200, extra: Record<string, string> = {}): Response {
   return new Response(html, {
     status,
@@ -98,7 +98,12 @@ export function respuestaHtml(html: string, status = 200, extra: Record<string, 
       ...SIN_CACHE,
       "X-Frame-Options": "DENY",
       "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
-      "Referrer-Policy": "no-referrer",
+      // same-origin (NO no-referrer): con no-referrer el navegador manda "Origin: null" en el POST del
+      // formulario y mismoOrigen lo rechaza ("La solicitud no vino de esta página"). Fuera de nuestro
+      // origen no se manda nada, así que los enlaces con token no se filtran a terceros.
+      "Referrer-Policy": "same-origin",
+      "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+      "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
       "X-Robots-Tag": "noindex, nofollow, noarchive",
       "X-Content-Type-Options": "nosniff",
       ...extra,
