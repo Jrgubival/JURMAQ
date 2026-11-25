@@ -1,0 +1,246 @@
+/**
+ * Servidor MCP (Streamable HTTP, solo POST, sin sesiones) sobre JSON-RPC 2.0.
+ * Habla las revisiones 2024-11-05 a 2025-11-25 (initialize + tools). La
+ * revisión 2026-07-28 (sin initialize) se rechaza con la lista de versiones
+ * soportadas, que es lo que su spec pide a un servidor que no la implementa.
+ *
+ * La función `manejarSolicitudMcp` no toca Next ni Cloudflare: recibe la
+ * petición ya leída y devuelve estado + cuerpo. Así se prueba entera.
+ *
+ * Orden de cada llamada: Origin → token (hash, vigencia, audiencia) → usuario
+ * revalidado en Supabase (admin con scope barraca) → límite de uso → tamaño y
+ * JSON → método. Nada de eso se salta ni con `initialize` o `tools/list`.
+ */
+import { registrarLote, nuevoLoteId, esGestionNoDisponible, type CambioAuditado, type D1Like } from "../gestion/index.ts";
+import {
+  LIMITE_ESCRITURAS_POR_MIN, LIMITE_MCP_POR_MIN, MAX_BODY_MCP_BYTES, MAX_SALIDA_HERRAMIENTA_BYTES, MIN,
+  ORIGENES_MCP_EXTRA, SCOPE_ESCRIBIR, baseCanonica, encabezadoNoAutenticado,
+} from "./config.ts";
+import { limitar } from "./limites.ts";
+import { autenticarAcceso, revocarFamilia, scopeIncluye, type AccesoValido, type ResultadoUsuario } from "./oauth.ts";
+import { ErrorHerramienta, z, type ContextoHerramienta, type Herramienta, type Registro } from "./tools/registro.ts";
+
+export const VERSIONES_SOPORTADAS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"] as const;
+
+export interface DepsServidor {
+  db: D1Like;
+  registro: Registro;
+  verificarUsuario: (usuarioId: string) => Promise<ResultadoUsuario>;
+  base?: string;
+  ahora?: number;
+}
+
+export interface PeticionMcp {
+  metodo: string;
+  cabecera: (nombre: string) => string | null;
+  /** Cuerpo ya leído como texto (la ruta corta antes lo que pase de MAX_BODY_MCP_BYTES). */
+  texto: string;
+}
+
+export interface RespuestaMcp {
+  status: number;
+  headers?: Record<string, string>;
+  body?: unknown;
+}
+
+const jsonrpcError = (id: unknown, code: number, message: string, data?: unknown) =>
+  ({ jsonrpc: "2.0", id: id ?? null, error: { code, message, ...(data !== undefined ? { data } : {}) } });
+
+function noAutenticado(base: string, codigo?: string, descripcion?: string): RespuestaMcp {
+  return {
+    status: 401,
+    headers: { "WWW-Authenticate": encabezadoNoAutenticado(base, codigo ? { codigo, descripcion } : undefined) },
+    body: { error: codigo ?? "unauthorized", error_description: descripcion ?? "Autenticación requerida." },
+  };
+}
+
+function extraerBearer(valor: string | null): string | null {
+  const m = /^Bearer ([^\s]{1,200})$/i.exec(valor ?? "");
+  return m ? m[1] : null;
+}
+
+const esquemasEstrictos = new WeakMap<Herramienta, z.ZodObject>();
+const jsonSchemas = new WeakMap<Herramienta, Record<string, unknown>>();
+
+function esquemaEstricto(h: Herramienta): z.ZodObject {
+  let e = esquemasEstrictos.get(h);
+  if (!e) { e = z.strictObject(h.esquema.shape); esquemasEstrictos.set(h, e); }
+  return e;
+}
+
+function jsonSchemaDe(h: Herramienta): Record<string, unknown> {
+  let s = jsonSchemas.get(h);
+  if (!s) {
+    const { $schema: _omitido, ...resto } = z.toJSONSchema(esquemaEstricto(h)) as Record<string, unknown>;
+    void _omitido;
+    s = resto;
+    jsonSchemas.set(h, s);
+  }
+  return s;
+}
+
+const esEscritura = (h: Herramienta) => !h.anotaciones.readOnlyHint;
+
+function origenPermitido(origen: string | null, base: string): boolean {
+  if (origen === null) return true; // Claude llama de servidor a servidor, sin Origin.
+  return origen === new URL(base).origin || ORIGENES_MCP_EXTRA.includes(origen);
+}
+
+const Llamada = z.object({
+  name: z.string().min(1).max(64),
+  arguments: z.record(z.string(), z.unknown()).optional(),
+});
+
+export async function manejarSolicitudMcp(p: PeticionMcp, deps: DepsServidor): Promise<RespuestaMcp> {
+  const base = deps.base ?? baseCanonica();
+  const ahora = deps.ahora ?? Date.now();
+
+  if (p.metodo !== "POST") return { status: 405, headers: { Allow: "POST" }, body: jsonrpcError(null, -32000, "Método no permitido.") };
+  if (!origenPermitido(p.cabecera("origin"), base)) return { status: 403, body: jsonrpcError(null, -32000, "Origen no permitido.") };
+
+  // 1. Token.
+  const a = await autenticarAcceso(deps.db, extraerBearer(p.cabecera("authorization")), ahora, { base });
+  if (!a.ok) {
+    return a.motivo === "ausente" ? noAutenticado(base) : noAutenticado(base, "invalid_token", "El token no es válido o venció.");
+  }
+  const acceso = a.acceso;
+
+  // 2. Usuario revalidado en CADA llamada.
+  const u = await deps.verificarUsuario(acceso.usuarioId);
+  if (!u.ok) {
+    if (u.motivo === "no_disponible") return { status: 503, headers: { "Retry-After": "10" }, body: jsonrpcError(null, -32603, "Servicio no disponible.") };
+    await revocarFamilia(deps.db, acceso.familiaId, "usuario_sin_permiso", ahora);
+    return noAutenticado(base, "invalid_token", "La cuenta ya no tiene acceso.");
+  }
+
+  // 3. Límite de uso por conexión.
+  const lim = await limitar(deps.db, `mcp:${acceso.familiaId}`, LIMITE_MCP_POR_MIN, MIN, ahora);
+  if (!lim.permitido) return limitado(lim.reintentarEnSeg);
+
+  // 4. Tamaño y JSON.
+  if (new TextEncoder().encode(p.texto).length > MAX_BODY_MCP_BYTES) {
+    return { status: 413, body: jsonrpcError(null, -32600, "La petición es demasiado grande.") };
+  }
+  let msg: unknown;
+  try { msg = JSON.parse(p.texto); } catch { return { status: 400, body: jsonrpcError(null, -32700, "JSON inválido.") }; }
+  if (!msg || typeof msg !== "object" || Array.isArray(msg) || (msg as { jsonrpc?: unknown }).jsonrpc !== "2.0") {
+    return { status: 400, body: jsonrpcError(null, -32600, "Se espera un mensaje JSON-RPC 2.0 (sin lotes).") };
+  }
+  const m = msg as { id?: unknown; method?: unknown; params?: unknown };
+  if (typeof m.method !== "string" || m.method.length > 100) return { status: 400, body: jsonrpcError(null, -32600, "Falta el método.") };
+  const tieneId = typeof m.id === "string" || typeof m.id === "number";
+
+  // 5. Versión del protocolo (la de initialize se negocia en el cuerpo).
+  const version = p.cabecera("mcp-protocol-version");
+  if (version && !(VERSIONES_SOPORTADAS as readonly string[]).includes(version)) {
+    return { status: 400, body: jsonrpcError(m.id, -32602, "Versión de protocolo no soportada.", { supported: VERSIONES_SOPORTADAS, requested: version.slice(0, 20) }) };
+  }
+
+  // Notificaciones (sin id): se aceptan y no se responden.
+  if (!tieneId) return { status: 202 };
+
+  const params = (m.params && typeof m.params === "object" ? m.params : {}) as Record<string, unknown>;
+  switch (m.method) {
+    case "initialize": {
+      const pedida = typeof params.protocolVersion === "string" ? params.protocolVersion : "";
+      const negociada = (VERSIONES_SOPORTADAS as readonly string[]).includes(pedida) ? pedida : VERSIONES_SOPORTADAS[0];
+      return ok(m.id, {
+        protocolVersion: negociada,
+        capabilities: { tools: { listChanged: false } },
+        serverInfo: { name: "jurmaq-barraca", title: "Tienda JURMAQ Barraca", version: "1.0.0" },
+        instructions: "Administra la tienda en línea de JURMAQ Barraca. Empieza llamando a la herramienta guia. Los cambios riesgosos piden aprobación de Jorge por correo y todo cambio se puede deshacer desde el panel.",
+      });
+    }
+    case "ping":
+      return ok(m.id, {});
+    case "tools/list": {
+      const puedeEscribir = scopeIncluye(acceso.scope, SCOPE_ESCRIBIR);
+      const tools = deps.registro.lista().filter((h) => puedeEscribir || !esEscritura(h)).map((h) => ({
+        name: h.nombre,
+        title: h.titulo,
+        description: h.descripcion,
+        inputSchema: jsonSchemaDe(h),
+        annotations: { title: h.titulo, ...h.anotaciones, openWorldHint: false },
+      }));
+      return ok(m.id, { tools });
+    }
+    case "tools/call":
+      return llamarHerramienta(m.id, params, acceso, u.usuario, deps, base, ahora);
+    case "resources/list":
+      return ok(m.id, { resources: [] });
+    case "resources/templates/list":
+      return ok(m.id, { resourceTemplates: [] });
+    case "prompts/list":
+      return ok(m.id, { prompts: [] });
+    default:
+      return { status: 200, body: jsonrpcError(m.id, -32601, "Método no encontrado.") };
+  }
+}
+
+const ok = (id: unknown, result: unknown): RespuestaMcp => ({ status: 200, body: { jsonrpc: "2.0", id, result } });
+const limitado = (seg: number): RespuestaMcp => ({
+  status: 429,
+  headers: { "Retry-After": String(seg) },
+  body: jsonrpcError(null, -32000, "Demasiadas llamadas seguidas. Espera un momento."),
+});
+
+function resultadoError(id: unknown, texto: string): RespuestaMcp {
+  return ok(id, { isError: true, content: [{ type: "text", text: texto }] });
+}
+
+async function llamarHerramienta(
+  id: unknown, params: Record<string, unknown>, acceso: AccesoValido, usuario: { id: string; email: string | null },
+  deps: DepsServidor, base: string, ahora: number,
+): Promise<RespuestaMcp> {
+  const llamada = Llamada.safeParse(params);
+  if (!llamada.success) return { status: 200, body: jsonrpcError(id, -32602, "Parámetros inválidos.") };
+  const h = deps.registro.obtener(llamada.data.name);
+  if (!h) return { status: 200, body: jsonrpcError(id, -32602, "Herramienta desconocida.") };
+
+  if (esEscritura(h)) {
+    if (!scopeIncluye(acceso.scope, SCOPE_ESCRIBIR)) {
+      return {
+        status: 403,
+        headers: { "WWW-Authenticate": encabezadoNoAutenticado(base, { codigo: "insufficient_scope", descripcion: "Falta el permiso para cambiar datos.", scope: SCOPE_ESCRIBIR }) },
+        body: { error: "insufficient_scope" },
+      };
+    }
+    const l = await limitar(deps.db, `mcp-esc:${acceso.familiaId}`, LIMITE_ESCRITURAS_POR_MIN, MIN, ahora);
+    if (!l.permitido) return limitado(l.reintentarEnSeg);
+  }
+
+  const args = esquemaEstricto(h).safeParse(llamada.data.arguments ?? {});
+  if (!args.success) {
+    const campos = [...new Set(args.error.issues.map((i) => i.path.join(".") || "(general)"))].slice(0, 8).join(", ");
+    return resultadoError(id, `Los datos no son válidos. Revisa estos campos: ${campos}.`);
+  }
+
+  const loteId = nuevoLoteId();
+  const ctx: ContextoHerramienta = {
+    usuario, clienteId: acceso.clienteId, loteId, db: deps.db, ahora,
+    async auditar(cambios) {
+      await registrarLote(deps.db, loteId, usuario, cambios.map((c): CambioAuditado => ({ ...c, herramienta: c.herramienta ?? h.nombre })), ahora);
+    },
+    catalogo: deps.registro.lista()
+      .filter((x) => scopeIncluye(acceso.scope, SCOPE_ESCRIBIR) || !esEscritura(x))
+      .map((x) => ({ nombre: x.nombre, titulo: x.titulo, descripcion: x.descripcion, soloLectura: x.anotaciones.readOnlyHint })),
+  };
+
+  let salida;
+  try {
+    salida = await h.ejecutar(args.data, ctx);
+  } catch (e) {
+    if (e instanceof ErrorHerramienta) return resultadoError(id, e.message);
+    if (esGestionNoDisponible(e)) return resultadoError(id, "La base de gestión todavía no está disponible. Avísale a Jorge.");
+    // Sin mensaje ni detalles: podrían traer datos personales o internos.
+    console.error("[mcp-herramienta-fallo]", { herramienta: h.nombre, tipo: e instanceof Error ? e.name : typeof e });
+    return resultadoError(id, "No pude completar la acción. No se confirmó ningún cambio; revisa el historial antes de repetir.");
+  }
+  const texto = typeof salida === "string" ? salida : salida.texto;
+  const datos = typeof salida === "string" ? undefined : salida.datos;
+  const resultado = { content: [{ type: "text", text: texto }], ...(datos ? { structuredContent: datos } : {}) };
+  if (new TextEncoder().encode(JSON.stringify(resultado)).length > MAX_SALIDA_HERRAMIENTA_BYTES) {
+    return resultadoError(id, "La respuesta es demasiado grande. Pide menos datos o filtra más.");
+  }
+  return ok(id, resultado);
+}
