@@ -186,6 +186,11 @@ export function crearStoreArchivo(): PedidosStore {
     async cambiarEstado(numero, estado) {
       editar(numero, (p) => { p.estado = estado; });
     },
+    async cambiarEstadoSi(numero, desde, hacia) {
+      let cambiado = false;
+      editar(numero, (p) => { if (p.estado === desde) { p.estado = hacia; cambiado = true; } });
+      return cambiado;
+    },
     async informarTransferencia(numero, comprobantePath, nota) {
       let informado = false;
       editar(numero, (p) => {

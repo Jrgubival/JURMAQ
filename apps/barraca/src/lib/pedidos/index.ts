@@ -230,6 +230,12 @@ export interface PedidosStore {
   tomarDevolucionHecha(numero: string, r: Reembolso): Promise<boolean>;
   cambiarEstado(numero: string, estado: EstadoPedido): Promise<void>;
   /**
+   * Cambia el estado SOLO si el pedido sigue en `desde` (update condicional).
+   * Devuelve false si otro cambio se adelantó (p. ej. lo cancelaron). Lo usa el
+   * MCP para que un cambio operativo no reviva un pedido que se cerró en medio.
+   */
+  cambiarEstadoSi(numero: string, desde: EstadoPedido, hacia: EstadoPedido): Promise<boolean>;
+  /**
    * "Ya transferí": pasa a 'transferencia_informada' sólo si es transferencia
    * y seguía 'pendiente_pago'. Condicional: false si ya se había informado.
    */
@@ -383,6 +389,11 @@ const storeSupabase: PedidosStore = {
   async cambiarEstado(numero, estado) {
     const { error } = await db.from('barraca_pedidos').update({ estado }).eq('numero', numero);
     if (error) throw error;
+  },
+  async cambiarEstadoSi(numero, desde, hacia) {
+    const { data, error } = await db.from('barraca_pedidos').update({ estado: hacia }).eq('numero', numero).eq('estado', desde).select('numero');
+    if (error) throw error;
+    return (data ?? []).length > 0;
   },
   async informarTransferencia(numero, comprobantePath, nota) {
     const { data, error } = await db
@@ -556,7 +567,7 @@ export function nuevoNumeroPedido(fecha = new Date()): string {
   return `BJ-${parte('year')}${parte('month')}${parte('day')}-${sufijo}`;
 }
 
-export const PATRON_NUMERO = /^BJ-\d{6}-[2-9A-HJKMNP-Z]{4}$/;
+export { PATRON_NUMERO } from './numero';
 
 export function nuevoTokenAcceso(): { token: string; hash: string } {
   const token = crypto.randomBytes(32).toString('base64url');

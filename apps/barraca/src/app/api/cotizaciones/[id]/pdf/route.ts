@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
 import { rateLimit, getClientIp } from '@jurmaq/shared/rate-limit';
 import { LEGAL_INFO } from '@jurmaq/shared/seo';
+import { leerLocalSeguro } from '@/lib/contenido/local-seguro';
 function formatDate(dateStr: string): string {
   try {
     const date = new Date(dateStr);
@@ -207,6 +208,9 @@ export async function GET(
       ? `<span class="badge badge-${safeEstado}">${escapeHtml(safeEstado.charAt(0).toUpperCase() + safeEstado.slice(1))}</span>`
       : '';
 
+    const local = await leerLocalSeguro();
+    // Sin tildes en la región, como estaba escrito en la plantilla.
+    const regionSinTilde = local.region.normalize('NFD').replace(/\p{M}/gu, '');
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -487,10 +491,10 @@ export async function GET(
         <div class="subtitle">${LEGAL_INFO.brands.barraca.razonSocial}</div>
       </div>
       <div class="header-right">
-        Av. Poniente 2157, Molina<br>
-        Region del Maule, Chile<br>
-        Tel: +56 9 7667 3577<br>
-        contacto@jurmaq.cl
+        ${escapeHtml(local.direccionCorta)}<br>
+        ${escapeHtml(regionSinTilde)}, Chile<br>
+        Tel: ${escapeHtml(local.telefonoDisplay)}<br>
+        ${escapeHtml(local.email)}
       </div>
     </div>
 
@@ -591,8 +595,8 @@ export async function GET(
     </div>
 
     <div class="footer">
-      <p><strong>${LEGAL_INFO.brands.barraca.razonSocial}</strong> - ${LEGAL_INFO.brands.barraca.direccion}, Chile</p>
-      <p>Tel: ${LEGAL_INFO.brands.barraca.telefonoDisplay} | contacto@jurmaq.cl</p>
+      <p><strong>${LEGAL_INFO.brands.barraca.razonSocial}</strong> - ${escapeHtml(local.direccion)}, Chile</p>
+      <p>Tel: ${escapeHtml(local.telefonoDisplay)} | ${escapeHtml(local.email)}</p>
       <p style="margin-top: 8px; font-style: italic;">Los precios son referenciales y pueden variar segun disponibilidad. Cotizacion valida por 15 dias.</p>
     </div>
   </div>

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "@/components/barraca/Enlace";
 import { formatCLP } from "@jurmaq/shared/format";
-import { HORARIO_BARRACA } from "@jurmaq/shared/seo";
+import { useLocal } from "@/components/barraca/TiendaContexto";
 import { trackEvents } from "@/lib/analytics";
 import { useCarrito } from "@/lib/useCarrito";
 import { totalLinea } from "@/lib/combos";
@@ -39,11 +39,15 @@ function codigoGuardado(v: unknown): string {
   const n = v.trim().toLowerCase();
   return ZONAS_DESPACHO.find((z) => z.nombre.toLowerCase() === n || z.comuna === v)?.id ?? "";
 }
-const WHATSAPP_OTRA_COMUNA = buildWhatsappUrl({
-  text: `${SALUDO_WEB_BARRACA} y quiero cotizar un despacho a mi comuna`,
-  utm_content: "barraca_checkout_otra_comuna",
-  utm_campaign: "barraca_despacho",
-});
+/** Cotizar un despacho fuera de las zonas: va al WhatsApp de la fuente única del local. */
+function whatsappOtraComuna(numero: string): string {
+  return buildWhatsappUrl({
+    text: `${SALUDO_WEB_BARRACA} y quiero cotizar un despacho a mi comuna`,
+    utm_content: "barraca_checkout_otra_comuna",
+    utm_campaign: "barraca_despacho",
+    phone: numero,
+  });
+}
 /** Zona elegida en el selector del header, si hay. */
 function zonaDelHeader(): string {
   try {
@@ -262,6 +266,7 @@ export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false }: 
   }, [cargando, items]);
 
   const despacho = entrega === "despacho";
+  const local = useLocal();
   const zonas = useZonas();
   // Costo del despacho para la comuna elegida. Es sólo para mostrarlo: al
   // crear el pedido el servidor lo calcula de nuevo y cobra ese. La respuesta
@@ -271,7 +276,7 @@ export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false }: 
   const consulta = despacho && !otraComuna && CODIGOS.has(datos.comuna) && claveItems ? `${datos.comuna}|${claveItems}` : null;
   const [respuesta, setRespuesta] = useState<{ consulta: string; cotizacion: Cotizacion } | null>(null);
   const cotizacion: Cotizacion | null = otraComuna
-    ? { estado: "sin_servicio", motivo: "Por ahora despachamos sólo a las zonas de la lista. Puedes retirar gratis en la barraca o cotizar el despacho a tu comuna por WhatsApp.", whatsapp: WHATSAPP_OTRA_COMUNA }
+    ? { estado: "sin_servicio", motivo: "Por ahora despachamos sólo a las zonas de la lista. Puedes retirar gratis en la barraca o cotizar el despacho a tu comuna por WhatsApp.", whatsapp: whatsappOtraComuna(local.whatsapp) }
     : !consulta
     ? null
     : respuesta?.consulta === consulta ? respuesta.cotizacion : { estado: "cargando" };
@@ -575,7 +580,7 @@ export default function CheckoutClient({ pagoEnLinea, cuponesActivos = false }: 
             <div className="grid gap-3" role="radiogroup" aria-label="Forma de entrega">
               <Opcion nombre="entrega" valor="retiro" actual={entrega} onChange={(v) => setEntrega(v as "retiro")}
                 titulo="Retiro en la barraca · gratis"
-                detalle={`Av. Poniente 2157, Molina. ${HORARIO_BARRACA.semana}.`} />
+                detalle={`${local.direccionCorta}. ${local.h.semana}.`} />
               <Opcion nombre="entrega" valor="despacho" actual={entrega} onChange={(v) => setEntrega(v as "despacho")}
                 titulo="Despacho a domicilio"
                 detalle="A Molina, Curicó, Sagrada Familia, Teno, Talca y alrededores. Otras comunas: cotiza por WhatsApp." />

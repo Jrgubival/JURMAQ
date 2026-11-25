@@ -7,8 +7,8 @@
  */
 
 import type { EstadoPedido } from '@/lib/pedidos';
-import { MOTIVOS_CANCELACION, MOTIVOS_RECHAZO, type MotivoCancelacion, type MotivoRechazo } from '@/lib/pedidos/motivos';
-import { ZONAS_DESPACHO } from '@/lib/despacho/zonas';
+import { MOTIVOS_CANCELACION, MOTIVOS_RECHAZO, type MotivoCancelacion, type MotivoRechazo } from '../pedidos/motivos.ts';
+import { ZONAS_DESPACHO } from '../despacho/zonas.ts';
 
 export const TZ = 'America/Santiago';
 

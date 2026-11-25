@@ -1,5 +1,6 @@
 import 'server-only';
 import { logSafeError } from '@jurmaq/shared/logging';
+import { leerLocalSeguro } from '@/lib/contenido/local-seguro';
 import { buildWhatsappUrl, SALUDO_WEB_BARRACA } from '@jurmaq/shared/whatsapp';
 import type { LineaRevisada } from '@/lib/tienda';
 import { COMUNAS, type Comuna } from './comunas';
@@ -89,12 +90,13 @@ export function consolidar(bultos: Bulto[]): Paquete {
   };
 }
 
-function whatsappDespacho(comuna: Comuna, lineas: LineaRevisada[]): string {
+function whatsappDespacho(comuna: Comuna, lineas: LineaRevisada[], numero: string): string {
   const detalle = lineas.slice(0, 10).map((l) => `${l.cantidad} x ${l.nombre}`).join(', ');
   return buildWhatsappUrl({
     text: `${SALUDO_WEB_BARRACA} y quiero cotizar el despacho a ${comuna.nombre} de: ${detalle}`,
     utm_content: 'barraca_checkout_despacho',
     utm_campaign: 'barraca_despacho',
+    phone: numero,
   });
 }
 
@@ -123,7 +125,7 @@ export async function cotizarDespacho(lineas: LineaRevisada[], destino: string):
   const comuna = comunaPorCodigo(destino);
   if (!comuna) return null;
 
-  const whatsapp = whatsappDespacho(comuna, lineas);
+  const whatsapp = whatsappDespacho(comuna, lineas, (await leerLocalSeguro()).whatsapp);
   const courier = courierActivo();
   if (!courier) {
     return {

@@ -4,6 +4,7 @@ import { transporter } from '@jurmaq/shared/mail/transport';
 import { env } from '@jurmaq/shared/env';
 import { safeSecretEquals } from '@jurmaq/shared/crypto/secret';
 import { estaDeBaja, urlBaja } from '@/lib/baja-correos';
+import { leerLocalSeguro } from '@/lib/contenido/local-seguro';
 
 /**
  * POST /api/cron/carrito-recovery
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
         // Pidió la baja: no se envía nada a ese correo.
         if (await estaDeBaja(c.email)) continue;
         const recoveryNum = cfg.count + 1;
-        const html = renderRecoveryEmail(c, recoveryNum, urlBaja(c.email));
+        const html = renderRecoveryEmail(c, recoveryNum, urlBaja(c.email), (await leerLocalSeguro()).direccionCorta);
         const subject =
           recoveryNum === 1
             ? '¿Olvidaste algo en tu carrito?'
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
   });
 }
 
-function renderRecoveryEmail(c: Carrito, recoveryNum: number, enlaceBaja: string): string {
+function renderRecoveryEmail(c: Carrito, recoveryNum: number, enlaceBaja: string, direccionCorta: string): string {
   const itemsHtml = (c.items || [])
     .slice(0, 5)
     .map(
@@ -161,6 +162,6 @@ function renderRecoveryEmail(c: Carrito, recoveryNum: number, enlaceBaja: string
 <p style="font-size:16px"><strong>Total: $${c.total.toLocaleString('es-CL')}</strong></p>
 <p style="margin:24px 0"><a href="${carritoUrl}" style="display:inline-block;padding:12px 24px;background:#ea580c;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Volver a mi carrito</a></p>
 <hr style="border:0;border-top:1px solid #e5e5e5;margin:32px 0 16px"/>
-<p style="font-size:11px;color:#999">Si ya completaste tu compra, ignora este mensaje. Barraca de Fierros JURMAQ SpA · Av. Poniente 2157, Molina. <a href="${enlaceBaja}" style="color:#999">No quiero recibir más correos</a>.</p>
+<p style="font-size:11px;color:#999">Si ya completaste tu compra, ignora este mensaje. Barraca de Fierros JURMAQ SpA · ${direccionCorta.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}. <a href="${enlaceBaja}" style="color:#999">No quiero recibir más correos</a>.</p>
 </body></html>`;
 }

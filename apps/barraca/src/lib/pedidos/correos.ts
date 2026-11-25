@@ -5,8 +5,9 @@ import { textoCombo } from '@/lib/combos';
 import { avisosBarraca } from '@jurmaq/shared/mail/barraca';
 import { botonesContacto, filaDato } from '@jurmaq/shared/mail/aviso-contacto';
 import { logSafeError } from '@jurmaq/shared/logging';
-import { HORARIO_BARRACA } from '@jurmaq/shared/seo';
 import { montoDespacho, textoDespacho } from '@/lib/despacho/texto';
+import { textosDelLocal } from './local-correos';
+import type { TextosLocal } from './textos-local';
 import { ETIQUETA_ESTADO, MOTIVOS_CANCELACION, MOTIVOS_RECHAZO, type DocumentoTributario, type Pedido } from './index';
 import { urlVerPedido, urlOpinar } from './enlace';
 import { MIME_COMPROBANTE, type TipoComprobante } from './comprobantes';
@@ -62,10 +63,10 @@ export function datosTransferencia() {
 /** Enlace permanente a los Términos: la confirmación escrita del art. 12 A. */
 const URL_TERMINOS = 'https://barraca.jurmaq.cl/terminos';
 
-function bloqueEntrega(p: Pedido): string {
+function bloqueEntrega(p: Pedido, loc: TextosLocal): string {
   if (p.entrega === 'retiro') {
-    return `<p style="margin:0 0 4px;"><strong>Retiro en la barraca</strong>: Av. Poniente 2157, Molina.</p>
-<p style="margin:0;color:#6b7280;font-size:13px;">${escapeHtml(HORARIO_BARRACA.semana)}. ${escapeHtml(HORARIO_BARRACA.sabado)}. Te avisamos cuando esté listo.</p>`;
+    return `<p style="margin:0 0 4px;"><strong>Retiro en la barraca</strong>: ${escapeHtml(loc.direccionCorta)}.</p>
+<p style="margin:0;color:#6b7280;font-size:13px;">${escapeHtml(loc.horarioSemana)}. ${escapeHtml(loc.horarioSabado)}. Te avisamos cuando esté listo.</p>`;
   }
   const d = textoDespacho(p);
   return `<p style="margin:0 0 4px;"><strong>${escapeHtml(d.titulo)}</strong>: ${escapeHtml(p.direccion || '')}, ${escapeHtml(p.comuna || '')}.</p>
@@ -114,7 +115,7 @@ function bloqueVerPedido(p: Pedido): string {
 <p style="margin:0 0 16px;color:#6b7280;font-size:12px;">Este enlace es personal: abre tu pedido sin contraseña. No lo reenvíes.</p>`;
 }
 
-function cuerpo(p: Pedido, intro: string, conEnlace = true): string {
+function cuerpo(p: Pedido, intro: string, loc: TextosLocal, conEnlace = true): string {
   return `
 <p style="margin:0 0 16px;">${intro}</p>
 ${renderOrderItems(p.items.map((i) => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio, subtotal: i.subtotal, nota: i.combo ? textoCombo(i.combo) : null })))}
@@ -122,7 +123,7 @@ ${p.entrega === 'despacho' ? `<p style="margin:16px 0 0;font-size:14px;">Despach
 ${(p.cupon_descuento ?? 0) > 0 ? `<p style="margin:8px 0 0;font-size:14px;color:#2F7F4E;">Cupón ${escapeHtml(p.cupon_codigo ?? '')}: −${formatCLP(p.cupon_descuento ?? 0)}</p>` : ''}
 ${(p.descuento_transferencia ?? 0) > 0 ? `<p style="margin:8px 0 0;font-size:14px;color:#2F7F4E;">Descuento transferencia: −${formatCLP(p.descuento_transferencia ?? 0)}</p>` : ''}
 <p style="margin:16px 0;font-size:16px;"><strong>Total: ${formatCLP(p.total)}</strong> <span style="color:#6b7280;font-size:13px;">IVA incluido${p.entrega === 'despacho' && p.costo_despacho == null ? ' · despacho aparte' : ''}</span></p>
-<div style="margin:0 0 16px;">${bloqueEntrega(p)}</div>
+<div style="margin:0 0 16px;">${bloqueEntrega(p, loc)}</div>
 <div style="margin:0 0 16px;">${bloqueDocumento(p)}</div>
 <div style="margin:0 0 16px;">${bloquePago(p)}</div>
 ${conEnlace ? bloqueVerPedido(p) : ''}
@@ -132,6 +133,7 @@ ${conEnlace ? bloqueVerPedido(p) : ''}
 export async function correoConfirmacionComprador(p: Pedido) {
   if (modoPrueba()) return;
   try {
+    const loc = await textosDelLocal();
     const titulo = p.estado === 'pagado' ? `Pago recibido · pedido ${p.numero}` : `Recibimos tu pedido ${p.numero}`;
     await transporter.sendMail({
       to: p.email,
@@ -139,7 +141,7 @@ export async function correoConfirmacionComprador(p: Pedido) {
       html: renderEmailLayout({
         title: titulo,
         preheader: `Pedido ${p.numero} por ${formatCLP(p.total)}`,
-        bodyHtml: cuerpo(p, `Hola ${escapeHtml(p.nombre.split(' ')[0])}, este es el detalle de tu pedido <strong>${escapeHtml(p.numero)}</strong>.`),
+        bodyHtml: cuerpo(p, `Hola ${escapeHtml(p.nombre.split(' ')[0])}, este es el detalle de tu pedido <strong>${escapeHtml(p.numero)}</strong>.`, loc),
       }),
       skipAdminBcc: true,
     });
@@ -152,6 +154,7 @@ export async function correoAvisoBarraca(p: Pedido, motivo: 'nuevo' | 'pagado') 
   if (modoPrueba()) return;
   const destino = avisosBarraca();
   try {
+    const loc = await textosDelLocal();
     const titulo = motivo === 'pagado' ? `Pedido PAGADO ${p.numero}` : `Pedido nuevo ${p.numero} (${p.metodo_pago === 'transferencia' ? 'transferencia' : 'pago en línea pendiente'})`;
     const formaPago = p.metodo_pago === 'transferencia' ? 'Transferencia' : 'Pago en línea (Webpay)';
     const entrega = p.entrega === 'retiro' ? 'Retiro en la barraca' : `Despacho a ${escapeHtml(p.comuna || 'comuna sin indicar')}`;
@@ -169,7 +172,7 @@ ${botonesContacto({ telefono: p.telefono, mensajeWhatsApp: `Hola ${primerNombre}
     await transporter.sendMail({
       to: destino,
       subject: `${titulo} · ${formatCLP(p.total)}`,
-      html: renderEmailLayout({ title: titulo, bodyHtml: datos + cuerpo(p, `Detalle del pedido <strong>${escapeHtml(p.numero)}</strong> desde la tienda web.`, false) }),
+      html: renderEmailLayout({ title: titulo, bodyHtml: datos + cuerpo(p, `Detalle del pedido <strong>${escapeHtml(p.numero)}</strong> desde la tienda web.`, loc, false) }),
       skipAdminBcc: true,
     });
   } catch (error) {
@@ -184,6 +187,7 @@ ${botonesContacto({ telefono: p.telefono, mensajeWhatsApp: `Hola ${primerNombre}
  */
 export async function correoRechazoComprador(p: Pedido) {
   if (modoPrueba()) return;
+  const loc = await textosDelLocal();
   const motivo = p.rechazo_motivo ? MOTIVOS_RECHAZO[p.rechazo_motivo] : 'No pudimos cumplir el pedido';
   const pagado = !!p.pagado_at;
   const devolucion = !pagado
@@ -192,9 +196,9 @@ export async function correoRechazoComprador(p: Pedido) {
       ? `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>. Ya anulamos el cobro en Webpay; el abono aparece en tu tarjeta según los plazos de tu banco.</p>`
       : p.reembolso?.medio === 'webpay'
       ? `<p style="margin:0 0 12px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)}), despacho incluido</strong>, anulando el cobro en Webpay. Te avisamos cuando esté hecho; el abono aparece en tu tarjeta según los plazos de tu banco.</p>`
-      : devolucionTransferencia(p);
+      : devolucionTransferencia(p, loc);
   const retiro = p.rechazo_motivo === 'sin_despacho'
-    ? '<p style="margin:0 0 12px;">Si te sirve, puedes retirar el pedido en la barraca (Av. Poniente 2157, Molina) en vez de la devolución: respóndenos este correo.</p>'
+    ? `<p style="margin:0 0 12px;">Si te sirve, puedes retirar el pedido en la barraca (${escapeHtml(loc.direccionCorta)}) en vez de la devolución: respóndenos este correo.</p>`
     : '';
   try {
     const titulo = `No pudimos aprobar tu pedido ${p.numero}`;
@@ -209,7 +213,7 @@ export async function correoRechazoComprador(p: Pedido) {
 <p style="margin:0 0 12px;"><strong>Motivo:</strong> ${escapeHtml(motivo)}.</p>
 ${retiro}${devolucion}
 <div style="margin:0 0 12px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
-<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a contacto@jurmaq.cl o al +56 9 7667 3577.</p>
+<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a ${escapeHtml(loc.email)} o al ${escapeHtml(loc.whatsappDisplay)}.</p>
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 8.4: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
       // Copia a la barraca (BCC automático del transporte).
@@ -220,11 +224,9 @@ ${retiro}${devolucion}
   }
 }
 
-const WHATSAPP_BARRACA = '+56 9 7667 3577';
-
 /** Lo que debe mandar el cliente para devolverle una transferencia (Términos 12.1 y 12.2). */
-function devolucionTransferencia(p: Pedido): string {
-  return `<p style="margin:0 0 8px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)})</strong> por transferencia, a una cuenta de la que seas titular. Respóndenos este correo o escríbenos por WhatsApp al ${WHATSAPP_BARRACA} con:</p>
+function devolucionTransferencia(p: Pedido, loc: TextosLocal): string {
+  return `<p style="margin:0 0 8px;">Te devolvemos el <strong>100% de lo pagado (${formatCLP(p.total)})</strong> por transferencia, a una cuenta de la que seas titular. Respóndenos este correo o escríbenos por WhatsApp al ${escapeHtml(loc.whatsappDisplay)} con:</p>
 <ul style="margin:0 0 12px;padding-left:20px;">
 <li>Banco</li><li>Tipo de cuenta</li><li>Número de cuenta</li><li>RUT del titular</li><li>Nombre del titular</li>
 </ul>
@@ -243,6 +245,7 @@ function resumenItems(p: Pedido): string {
  * transferencia o anulación en Webpay). Copia a la barraca.
  */
 export async function correoCancelacionComprador(p: Pedido) {
+  const loc = await textosDelLocal();
   const motivo = p.cancelacion_motivo;
   const pagado = !!p.pagado_at;
   const nombre = escapeHtml(p.nombre.split(' ')[0]);
@@ -257,11 +260,11 @@ export async function correoCancelacionComprador(p: Pedido) {
           : `Hola ${nombre}, anulamos tu pedido <strong>${numero}</strong>.`;
   const plata = !pagado
     ? motivo === 'transferencia_no_recibida' || motivo === 'vencido'
-      ? `<p style="margin:0 0 12px;">No hay nada que devolver. Si crees que sí transferiste, respóndenos este correo o escríbenos por WhatsApp al ${WHATSAPP_BARRACA} con el comprobante y lo revisamos.</p>`
+      ? `<p style="margin:0 0 12px;">No hay nada que devolver. Si crees que sí transferiste, respóndenos este correo o escríbenos por WhatsApp al ${escapeHtml(loc.whatsappDisplay)} con el comprobante y lo revisamos.</p>`
       : '<p style="margin:0 0 12px;">No se cobró nada, así que no tienes que hacer nada más.</p>'
     : p.reembolso?.medio === 'webpay'
       ? `<p style="margin:0 0 12px;">${p.reembolso.estado === 'hecho' ? 'Ya anulamos' : 'Estamos anulando'} el cobro de <strong>${formatCLP(p.total)}</strong> en Webpay. El abono vuelve a la misma tarjeta y el plazo en que lo ves depende de tu banco o emisor.</p>`
-      : devolucionTransferencia(p);
+      : devolucionTransferencia(p, loc);
   try {
     const titulo = `Anulamos tu pedido ${p.numero}`;
     await enviarOGuardar(`${p.numero}-cancelacion`, {
@@ -276,7 +279,7 @@ ${motivo ? `<p style="margin:0 0 12px;"><strong>Motivo:</strong> ${escapeHtml(MO
 ${resumenItems(p)}
 ${plata}
 <div style="margin:0 0 12px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
-<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a contacto@jurmaq.cl o al ${WHATSAPP_BARRACA}.</p>
+<p style="margin:0 0 12px;">Si tienes dudas, escríbenos a ${escapeHtml(loc.email)} o al ${escapeHtml(loc.whatsappDisplay)}.</p>
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
       // Copia a la barraca (BCC automático del transporte).
@@ -289,6 +292,7 @@ ${plata}
 
 /** La barraca marcó en el panel que ya transfirió la devolución. */
 export async function correoDevolucionHecha(p: Pedido) {
+  const loc = await textosDelLocal();
   const c = p.reembolso?.cuenta;
   const cuenta = c ? `${escapeHtml(c.banco)}, cuenta terminada en ${escapeHtml(c.numero.slice(-4))}` : 'la cuenta que nos indicaste';
   try {
@@ -301,7 +305,7 @@ export async function correoDevolucionHecha(p: Pedido) {
         preheader: `Transferimos ${formatCLP(p.reembolso?.monto ?? p.total)}`,
         bodyHtml: `
 <p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, te transferimos <strong>${formatCLP(p.reembolso?.monto ?? p.total)}</strong> del pedido <strong>${escapeHtml(p.numero)}</strong> a ${cuenta}.</p>
-<p style="margin:0 0 12px;">Si no ves el abono, respóndenos este correo o escríbenos por WhatsApp al ${WHATSAPP_BARRACA}.</p>
+<p style="margin:0 0 12px;">Si no ves el abono, respóndenos este correo o escríbenos por WhatsApp al ${escapeHtml(loc.whatsappDisplay)}.</p>
 <p style="margin:0;color:#6b7280;font-size:12px;">Términos y Condiciones, sección 12: <a href="${URL_TERMINOS}" style="color:#6b7280;">${URL_TERMINOS}</a></p>`,
       }),
       skipAdminBcc: false,
@@ -400,14 +404,14 @@ export async function correoTransferenciaInformada(p: Pedido, adjunto: AdjuntoCo
  * el panel. Plantilla fija; todo dato del pedido va con escapeHtml. Nunca
  * lanza. En pruebas locales no se envía ('omitido').
  */
-export function armarCorreoDocumentoTributario(p: Pedido, tipo: DocumentoTributario, pdf: Buffer) {
+export function armarCorreoDocumentoTributario(p: Pedido, tipo: DocumentoTributario, pdf: Buffer, emailContacto: string) {
   const nombreDoc = tipo === 'factura' ? 'factura' : 'boleta';
   const titulo = `Tu ${nombreDoc} del pedido ${p.numero}`;
   const bodyHtml = `
 <p style="margin:0 0 12px;">Hola ${escapeHtml(p.nombre.split(' ')[0])}, te adjuntamos la ${nombreDoc} de tu pedido <strong>${escapeHtml(p.numero)}</strong> por <strong>${formatCLP(p.total)}</strong>.</p>
 ${tipo === 'factura' && p.factura_razon_social ? `<p style="margin:0 0 12px;font-size:14px;color:#374151;">Emitida a ${escapeHtml(p.factura_razon_social)}${p.factura_rut ? ` · RUT ${escapeHtml(p.factura_rut)}` : ''}.</p>` : ''}
 <div style="margin:0 0 16px;">${renderButton({ href: urlVerPedido(p.numero), label: 'Ver tu pedido', color: 'navy' })}</div>
-<p style="margin:0;color:#6b7280;font-size:12px;">Si algún dato está mal, respóndenos este correo o escríbenos a contacto@jurmaq.cl.</p>`;
+<p style="margin:0;color:#6b7280;font-size:12px;">Si algún dato está mal, respóndenos este correo o escríbenos a ${escapeHtml(emailContacto)}.</p>`;
   return {
     to: p.email,
     subject: `${titulo} | Barraca JURMAQ`,
@@ -418,8 +422,8 @@ ${tipo === 'factura' && p.factura_razon_social ? `<p style="margin:0 0 12px;font
 }
 
 export async function correoDocumentoTributario(p: Pedido, tipo: DocumentoTributario, pdf: Buffer): Promise<'enviado' | 'omitido' | 'error'> {
-  const correo = armarCorreoDocumentoTributario(p, tipo, pdf);
   if (modoPrueba()) return 'omitido';
+  const correo = armarCorreoDocumentoTributario(p, tipo, pdf, (await textosDelLocal()).email);
   try {
     const r = await transporter.sendMail(correo);
     return r.error ? 'error' : 'enviado';

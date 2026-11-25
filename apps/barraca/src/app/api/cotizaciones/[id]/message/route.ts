@@ -5,6 +5,8 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { NextRequest, NextResponse } from 'next/server';
 import { formatCLP } from "@jurmaq/shared/format";
 import { whatsappCtaConsultaCotizacion } from "@jurmaq/shared/whatsapp";
+import { leerLocalSeguro } from "@/lib/contenido/local-seguro";
+import type { VistaLocal } from "@/lib/contenido/derivados";
 
 type MessageTipo = 'aprobada' | 'rechazada' | 'info' | 'pago' | 'custom';
 
@@ -64,8 +66,9 @@ function buildEmailHtml(params: {
   mensaje: string;
   linkPago?: string;
   total?: number;
+  local: Pick<VistaLocal, 'telefonoDisplay' | 'email' | 'direccion'>;
 }): string {
-  const { tipo, numero, nombre, mensaje, linkPago, total } = params;
+  const { tipo, numero, nombre, mensaje, linkPago, total, local } = params;
 
   const paymentButton =
     linkPago
@@ -144,9 +147,9 @@ function buildEmailHtml(params: {
               <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; text-align: center;">
                 <p style="margin: 0 0 8px; color: #0c1d3a; font-size: 14px; font-weight: 600;">Contacto</p>
                 <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.8;">
-                  Tel: +56 9 7667 3577<br>
-                  Email: contacto@jurmaq.cl<br>
-                  Av. Poniente 2157, Molina, Maule, Chile
+                  Tel: ${escapeHtml(local.telefonoDisplay)}<br>
+                  Email: ${escapeHtml(local.email)}<br>
+                  ${escapeHtml(local.direccion)}, Chile
                 </p>
               </div>
 
@@ -247,6 +250,7 @@ export async function POST(
       mensaje: mensaje.trim(),
       linkPago,
       total: cotizacion.contraoferta_total || cotizacion.total,
+      local: await leerLocalSeguro(),
     });
 
     await transporter.sendMail({

@@ -8,6 +8,7 @@ import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { pedidos, PATRON_NUMERO, MOTIVOS_CANCELACION } from '@/lib/pedidos';
 import { correoCancelacionComprador, correoConfirmacionComprador } from '@/lib/pedidos/correos';
 import { devolverWebpay, pagadoConWebpay } from '@/lib/pedidos/rechazo';
+import { CANCELABLE_PAGADO, DESDE_PANEL } from '@/lib/pedidos/transiciones';
 
 /**
  * PATCH /api/admin/pedidos/[numero] — cambia el estado de un pedido.
@@ -19,9 +20,6 @@ const schema = z.object({
   // Obligatorio al cancelar. 'vencido' lo pone sólo el sistema (48 h sin pago).
   motivoCancelacion: z.enum(['cliente', 'transferencia_no_recibida', 'otro']).optional(),
 });
-
-/** Un pedido pagado también se puede cancelar, pero con devolución: sólo quien puede reembolsar. */
-const CANCELABLE_PAGADO = ['pagado', 'en_preparacion', 'listo_retiro'];
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ numero: string }> }) {
   if (!isValidOrigin(request)) {
@@ -41,18 +39,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (!pedido) return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 });
     let reembolso: 'hecho' | 'error' | 'transferencia' | null = null;
 
-    // Sólo transiciones razonables: un pedido cerrado no revive y uno sin pago no se salta el pago.
-    const desde: Record<string, string[]> = {
-      pagado: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado'],
-      en_preparacion: ['pagado'],
-      listo_retiro: ['en_preparacion'],
-      despachado: ['en_preparacion'],
-      entregado: ['listo_retiro', 'despachado'],
-      // 'pago_discrepancia' no: se cobró un monto distinto y sólo se cierra con
-      // 'No aprobar' + devolución (sólo administrador).
-      cancelado: ['pendiente_pago', 'transferencia_informada', 'pago_rechazado', ...CANCELABLE_PAGADO],
-    };
-    if (!desde[parsed.data.estado]?.includes(pedido.estado)) {
+    // Sólo transiciones razonables (tabla compartida con el MCP: lib/pedidos/transiciones.ts).
+    if (!DESDE_PANEL[parsed.data.estado]?.includes(pedido.estado)) {
       return NextResponse.json({ error: 'Ese cambio de estado no corresponde para este pedido' }, { status: 409 });
     }
     const motivo = parsed.data.motivoCancelacion;
