@@ -133,3 +133,10 @@ test("next.config: las pantallas del conector quedan fuera de los encabezados gl
     assert.equal(re.test(ruta), true, `${ruta} sí debe recibirlos`);
   }
 });
+
+test("WWW-Authenticate: la descripcion del error va en ASCII (una tilde llegaba rota en el encabezado)", async () => {
+  const { encabezadoNoAutenticado } = await import("../src/lib/mcp/config.ts");
+  const h = encabezadoNoAutenticado("https://barraca.jurmaq.cl", { codigo: "invalid_token", descripcion: "El token no es válido o venció." });
+  assert.match(h, /error_description="El token no es valido o vencio\."/);
+  assert.equal(/^[\x20-\x7e]*$/.test(h), true);
+});
