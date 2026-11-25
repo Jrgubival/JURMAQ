@@ -1,0 +1,567 @@
+/**
+ * Herramientas de CUPONES de descuento: listar, ver, crear, editar, activar,
+ * desactivar, usos por período y el interruptor general del checkout.
+ *
+ * Seguridad (reglas de Jorge):
+ *  - Los cupones existentes NO funcionan solos: el checkout solo los aplica con
+ *    el interruptor `cupones_checkout` (D1, tabla ajustes) encendido.
+ *  - Encender el interruptor exige la aprobación de Jorge. `solicitar_encender_cupones`
+ *    SOLO crea la solicitud (correo con enlace de un solo uso); `aplicar_encendido_cupones`
+ *    enciende únicamente si esa aprobación existe, no venció, no se usó y los
+ *    cupones activos siguen siendo los mismos que él vio. Sin el secreto
+ *    BARRACA_APROBADOR_EMAIL todo queda bloqueado. Ningún otro camino enciende.
+ *  - Antes de encender hay que aplicar la migración de Supabase
+ *    supabase/migrations/2026_11_26_barraca_cupones_pedidos.sql y actualizar los
+ *    términos (hoy dicen que no hay cupones). Esto se avisa en cada respuesta.
+ *  - Topes de la herramienta (una IA no debe poder regalar la tienda): porcentaje
+ *    hasta 50 % y monto fijo hasta $200.000. Más que eso se crea desde el panel.
+ *  - Solo cifras: nunca se entregan correos, RUT ni huellas de clientes.
+ */
+import type { D1Like } from "../../gestion/tipos.ts";
+import { huellaDeDatos } from "../../gestion/util.ts";
+import {
+  activarCupon,
+  crearCupon,
+  desactivarCupon,
+  editarCupon,
+  listarCuponesAdmin,
+  type CambiosCupon,
+  type CuponListado,
+  type RepoCuponesAdmin,
+} from "../../cupones/admin.ts";
+import { apagarInterruptorCupones, encenderInterruptorCupones, leerInterruptorCupones, type HookAprobacion } from "../../cupones/interruptor.ts";
+import { leerReglas, type ReglasCupon } from "../../cupones/reglas.ts";
+import { usosDeCuponesConCodigo, usosDeCuponesPorDia } from "../../cupones/reportes.ts";
+import type { CuponRegistro } from "../../cupones/servicio.ts";
+import {
+  consumirAprobacion,
+  estadoAprobacion,
+  requiereAprobacion,
+  TEXTO_MOTIVO,
+  type DatosSolicitud,
+  type EstadoAprobacion,
+  type ResultadoSolicitud,
+} from "../aprobaciones.ts";
+import { defineHerramienta, ErrorHerramienta, z, type Herramienta, type Revertidor } from "./registro.ts";
+import { aEnteroSeguro, fechaChileAMs, recortar, usuarioDe } from "./contenido-comun.ts";
+
+export const MAX_PORCENTAJE_HERRAMIENTA = 50;
+export const MAX_MONTO_FIJO_HERRAMIENTA = 200_000;
+export const MIGRACION_PEDIDOS_CUPON = "supabase/migrations/2026_11_26_barraca_cupones_pedidos.sql";
+
+export interface CategoriaTienda { id: number; nombre: string; slug: string; padre_id: number | null }
+
+export interface DepsCupones {
+  repo: RepoCuponesAdmin;
+  /** ¿Ya está aplicada la migración de pedidos con cupón en Supabase? */
+  esquemaPedidosConCupon(): Promise<boolean>;
+  categorias(): Promise<CategoriaTienda[]>;
+  solicitarAprobacion(db: D1Like, datos: DatosSolicitud): Promise<ResultadoSolicitud>;
+}
+
+export function depsCuponesReales(): DepsCupones {
+  const repoReal = async () => (await import("../../cupones/repo-supabase.ts")).repoAdminSupabase;
+  // El repositorio real se resuelve al usarlo (importa Supabase); estos envoltorios solo reenvían.
+  const repo: RepoCuponesAdmin = {
+    listar: async (l) => (await repoReal()).listar(l),
+    porId: async (id) => (await repoReal()).porId(id),
+    insertar: async (f) => (await repoReal()).insertar(f),
+    actualizar: async (id, c) => (await repoReal()).actualizar(id, c),
+    codigosPorIds: async (ids) => (await repoReal()).codigosPorIds(ids),
+  };
+  return {
+    repo,
+    esquemaPedidosConCupon: async () => (await import("../../cupones/repo-supabase.ts")).esquemaPedidosConCupon(),
+    async categorias() {
+      const { supabaseAdmin } = await import("@jurmaq/shared/supabase");
+      const { data, error } = await (supabaseAdmin as unknown as { from: (t: string) => { select: (c: string) => Promise<{ data: unknown; error: unknown }> } })
+        .from("barraca_categorias").select("id, nombre, slug, padre_id");
+      if (error) throw new Error("categorias");
+      return (data ?? []) as CategoriaTienda[];
+    },
+    async solicitarAprobacion(db, datos) {
+      const m = await import("../aprobaciones-servidor.ts");
+      return m.solicitarAprobacionReal(db, datos);
+    },
+  };
+}
+
+// ───────── Presentación ─────────
+
+const clp = (n: number) => `$${Math.round(n).toLocaleString("es-CL")}`;
+const fecha = (iso: string | null) => (iso ? iso.slice(0, 10) : "—");
+
+function textoReglas(r: ReglasCupon, nombres: Map<number, string>): string {
+  const partes: string[] = [];
+  if (r.categoriasModo !== "todas") partes.push(`${r.categoriasModo === "incluir" ? "solo en" : "excepto en"} categorías: ${r.categoriasIds.map((i) => nombres.get(i) ?? `#${i}`).join(", ") || "(ninguna)"}`);
+  if (r.unUsoPorCliente) partes.push("un uso por cliente (correo y RUT)");
+  if (r.noAcumulable) partes.push("no se suma a productos con oferta, combo o promoción");
+  return partes.length ? partes.join("; ") : "sin restricciones";
+}
+
+function lineaCupon(c: CuponListado, nombres: Map<number, string>): string {
+  const desc = c.tipo === "porcentaje" ? `${Number(c.valor)} %` : clp(Number(c.valor));
+  return `- ${c.codigo} · ${desc} · compra mínima ${clp(Number(c.monto_minimo_compra))} · ${fecha(c.valido_desde)} a ${fecha(c.valido_hasta)} · ${c.activo ? "ACTIVO" : "apagado"} · usos en pedidos ${c.usosPedidos}${c.reservasVigentes ? ` (+${c.reservasVigentes} reservados)` : ""} · ${textoReglas(c.reglas, nombres)}${c.descripcion ? ` · «${recortar(c.descripcion, 80)}»` : ""}`;
+}
+
+const AVISO_ENCENDIDO =
+  `Recuerda: los cupones solo funcionan en el checkout con el interruptor encendido (se enciende con la aprobación de Jorge). Antes hay que aplicar en Supabase la migración ${MIGRACION_PEDIDOS_CUPON} y actualizar los términos, que hoy dicen que no hay cupones.`;
+
+const TERMINOS_SIN_CUPONES = /no tiene cupones de descuento/i;
+
+async function terminosDicenSinCupones(db: D1Like): Promise<boolean> {
+  try {
+    const { obtenerEstado } = await import("../../contenido/repositorio.ts");
+    const e = await obtenerEstado(db, "terminos");
+    return TERMINOS_SIN_CUPONES.test(String((e.efectivo as { texto: string }).texto));
+  } catch {
+    return true; // ante la duda, se advierte
+  }
+}
+
+// ───────── Entradas ─────────
+
+const codigoSchema = z.string().trim().min(3).max(30).describe("Código del cupón, como aparece en listar_cupones (se acepta en minúsculas).");
+const fechaCupon = z.string().trim().max(40).nullable().optional().describe("AAAA-MM-DD o fecha y hora ISO. «hasta» en AAAA-MM-DD vale hasta el fin de ese día (hora de Chile). null en «hasta» = sin vencimiento.");
+
+const camposCupon = {
+  descripcion: z.string().max(200).nullable().optional(),
+  tipo: z.enum(["porcentaje", "monto_fijo"]).optional().describe("porcentaje (valor 1 a 50) o monto_fijo (pesos, hasta 200000)."),
+  valor: z.number().positive().max(MAX_MONTO_FIJO_HERRAMIENTA).optional(),
+  compra_minima: z.number().int().min(0).max(100_000_000).optional().describe("Pesos. Se mide sobre lo que califica para el cupón."),
+  max_usos_total: z.number().int().positive().max(1_000_000).nullable().optional().describe("Tope total de usos. No va junto con «un_uso_por_cliente»."),
+  max_usos_por_cliente: z.number().int().min(0).max(1000).optional(),
+  valido_desde: fechaCupon,
+  valido_hasta: fechaCupon,
+  categorias_modo: z.enum(["todas", "incluir", "excluir"]).optional().describe("todas, solo en las categorías indicadas (incluir) o todas menos esas (excluir). Las subcategorías heredan."),
+  categorias_ids: z.array(z.number().int().positive()).max(100).optional(),
+  categorias_slugs: z.array(z.string().trim().min(1).max(120)).max(100).optional().describe("Alternativa a categorias_ids: los slugs que muestra categorias_para_cupones."),
+  un_uso_por_cliente: z.boolean().optional().describe("Cada cliente (correo y RUT) puede usarlo una sola vez."),
+  no_acumulable: z.boolean().optional().describe("No se suma a productos con oferta, combo o promoción de categoría."),
+};
+
+type EntradaCampos = { [K in keyof typeof camposCupon]?: z.infer<(typeof camposCupon)[K]> };
+
+function fechaParaLib(v: string | null | undefined, esDesde: boolean): string | null | undefined {
+  if (v === undefined || v === null) return v;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+    fechaChileAMs(v); // valida que exista
+    return esDesde ? `${v}T00:00:00-03:00` : v;
+  }
+  return v;
+}
+
+function aCambiosLib(i: EntradaCampos): CambiosCupon {
+  const c: CambiosCupon = {};
+  if (i.descripcion !== undefined) c.descripcion = i.descripcion;
+  if (i.tipo !== undefined) c.tipo = i.tipo;
+  if (i.valor !== undefined) c.valor = i.valor;
+  if (i.compra_minima !== undefined) c.montoMinimoCompra = i.compra_minima;
+  if (i.max_usos_total !== undefined) c.maxUsosTotal = i.max_usos_total;
+  if (i.max_usos_por_cliente !== undefined) c.maxUsosPorUsuario = i.max_usos_por_cliente;
+  if (i.valido_desde !== undefined) c.validoDesde = fechaParaLib(i.valido_desde, true);
+  if (i.valido_hasta !== undefined) c.validoHasta = fechaParaLib(i.valido_hasta, false);
+  return c;
+}
+
+function tocaReglas(i: EntradaCampos) {
+  return i.categorias_modo !== undefined || i.categorias_ids !== undefined || i.categorias_slugs !== undefined || i.un_uso_por_cliente !== undefined || i.no_acumulable !== undefined;
+}
+
+function topes(tipo: string | undefined, valor: number | undefined) {
+  if (valor === undefined) return;
+  if (tipo === "porcentaje" && valor > MAX_PORCENTAJE_HERRAMIENTA) {
+    throw new ErrorHerramienta(`Por seguridad, desde aquí no se crean cupones de más de ${MAX_PORCENTAJE_HERRAMIENTA} %. Si de verdad hace falta, que Jorge lo cree desde el panel.`);
+  }
+  if (tipo === "monto_fijo" && valor > MAX_MONTO_FIJO_HERRAMIENTA) {
+    throw new ErrorHerramienta(`Por seguridad, desde aquí no se crean cupones de más de ${clp(MAX_MONTO_FIJO_HERRAMIENTA)}. Si de verdad hace falta, que Jorge lo cree desde el panel.`);
+  }
+}
+
+const CAMPOS_SNAKE = {
+  descripcion: "descripcion", tipo: "tipo", valor: "valor", montoMinimoCompra: "monto_minimo_compra", maxUsosTotal: "max_usos_total",
+  maxUsosPorUsuario: "max_usos_por_usuario", validoDesde: "valido_desde", validoHasta: "valido_hasta",
+} as const;
+
+const SNAKE_A_CAMEL: Record<string, keyof typeof CAMPOS_SNAKE> = Object.fromEntries(Object.entries(CAMPOS_SNAKE).map(([c, s]) => [s, c])) as never;
+
+const pick = (o: Record<string, unknown>, claves: string[]) => Object.fromEntries(claves.map((k) => [k, o[k] ?? null]));
+const mismoNumero = (a: unknown, b: unknown) => (typeof a === "number" || typeof b === "number" ? Number(a) === Number(b) : (a ?? null) === (b ?? null));
+const mismoFecha = (a: unknown, b: unknown) => (a == null || b == null ? (a ?? null) === (b ?? null) : Date.parse(String(a)) === Date.parse(String(b)));
+
+function cuponIgual(actual: Record<string, unknown>, esperado: Record<string, unknown>): boolean {
+  return Object.entries(esperado).every(([k, v]) => {
+    if (k === "valido_desde" || k === "valido_hasta") return mismoFecha(actual[k], v);
+    if (k === "activo") return Boolean(actual[k]) === Boolean(v);
+    return mismoNumero(actual[k], v);
+  });
+}
+
+// ───────── Revertidor de cupones ─────────
+
+function crearRevertidorCupones(deps: () => DepsCupones): Revertidor {
+  return async ({ db, usuario, ahora, entradas }) => {
+    const repo = deps().repo;
+    const mensajes: string[] = [];
+    for (const e of entradas) {
+      const id = e.entidadId;
+      const antes = e.antes as { cupon?: Record<string, unknown>; reglas?: ReglasCupon } | null;
+      const despues = (e.despues ?? {}) as { cupon?: Record<string, unknown>; reglas?: ReglasCupon };
+      const actual = await repo.porId(id);
+      if (!actual) return { ok: false, mensaje: "Ese cupón ya no existe." };
+      const act = actual as unknown as Record<string, unknown>;
+      if (despues.cupon && !cuponIgual(act, despues.cupon)) return { ok: false, mensaje: `El cupón ${actual.codigo} cambió después; no lo piso. Revísalo antes de deshacer.` };
+      if (despues.reglas) {
+        const r = await leerReglas(db, id);
+        if (JSON.stringify(r) !== JSON.stringify(despues.reglas)) return { ok: false, mensaje: `Las reglas del cupón ${actual.codigo} cambiaron después; no las piso.` };
+      }
+      if (antes === null) {
+        // Deshacer una creación: un cupón con historial no se borra, se apaga.
+        const r = await desactivarCupon(db, repo, usuario, id, ahora);
+        if (!r.ok) return { ok: false, mensaje: r.error };
+        mensajes.push(`El cupón ${actual.codigo} quedó apagado (no se borra porque podría tener historial).`);
+        continue;
+      }
+      const cambios: CambiosCupon = {};
+      for (const [k, v] of Object.entries(antes.cupon ?? {})) {
+        const camel = k === "activo" ? "activo" : SNAKE_A_CAMEL[k];
+        if (!camel) continue;
+        (cambios as Record<string, unknown>)[camel] = v;
+      }
+      if (antes.reglas) cambios.reglas = antes.reglas;
+      if (cambios.validoDesde === null) delete cambios.validoDesde; // la fecha de inicio no se puede borrar
+      const r = await editarCupon(db, repo, usuario, id, cambios, ahora, "cupones.deshacer");
+      if (!r.ok) return { ok: false, mensaje: r.error };
+      mensajes.push(`Cupón ${actual.codigo} vuelto a como estaba.`);
+    }
+    return { ok: true, mensaje: mensajes.join(" ") };
+  };
+}
+
+// ───────── Huella de lo que Jorge aprueba al encender ─────────
+
+async function instantaneaActivos(db: D1Like, repo: RepoCuponesAdmin, ahora: number) {
+  const { items } = await listarCuponesAdmin(db, repo, ahora);
+  const activos = items.filter((c) => c.activo);
+  return {
+    activos,
+    huella: await huellaDeDatos({
+      accion: "encender_interruptor_cupones",
+      cupones: activos.map((c) => ({ id: c.id, codigo: c.codigo, tipo: c.tipo, valor: Number(c.valor), min: Number(c.monto_minimo_compra), hasta: c.valido_hasta, reglas: c.reglas, maxTotal: c.max_usos_total })).sort((a, b) => a.codigo.localeCompare(b.codigo)),
+    }),
+  };
+}
+
+function textoEstadoAprobacion(e: EstadoAprobacion): string {
+  switch (e) {
+    case "pendiente": return "Jorge todavía no aprueba. Dile que revise su correo (el enlace vale 4 horas). No cambié nada.";
+    case "rechazada": return "Jorge rechazó el encendido. Los cupones siguen apagados.";
+    case "vencida": return "La aprobación venció. Hay que pedirla de nuevo con solicitar_encender_cupones.";
+    case "usada": return "Esa aprobación ya se usó.";
+    case "datos_cambiaron": return "Los cupones activos cambiaron desde que Jorge aprobó (o el id es de otro cambio). No se encendió nada: pídele la aprobación de nuevo.";
+    case "no_existe": return "No encontré esa aprobación (o no es tuya).";
+    default: return "Estado de aprobación desconocido; no se encendió nada.";
+  }
+}
+
+// ───────── Fábrica ─────────
+
+export function crearHerramientasCupones(depsInyectadas?: Partial<DepsCupones>): Herramienta[] {
+  const deps = (): DepsCupones => ({ ...depsCuponesReales(), ...depsInyectadas });
+  const revertir = crearRevertidorCupones(deps);
+
+  async function nombresCategorias(): Promise<Map<number, string>> {
+    try { return new Map((await deps().categorias()).map((c) => [c.id, c.nombre])); } catch { return new Map(); }
+  }
+
+  async function idsDeCategorias(i: EntradaCampos): Promise<number[] | undefined> {
+    if (i.categorias_ids === undefined && i.categorias_slugs === undefined) return undefined;
+    const ids = new Set<number>(i.categorias_ids ?? []);
+    if (i.categorias_slugs?.length) {
+      const todas = await deps().categorias();
+      const faltan: string[] = [];
+      for (const s of i.categorias_slugs) {
+        const c = todas.find((x) => x.slug === s.trim().toLowerCase());
+        if (c) ids.add(c.id); else faltan.push(s);
+      }
+      if (faltan.length) throw new ErrorHerramienta(`No existe una categoría con el slug: ${faltan.join(", ")}. Mira categorias_para_cupones.`);
+    }
+    return [...ids];
+  }
+
+  async function reglasDeEntrada(i: EntradaCampos, base: ReglasCupon | null): Promise<ReglasCupon | undefined> {
+    if (!tocaReglas(i)) return undefined;
+    const ids = await idsDeCategorias(i);
+    const b: ReglasCupon = base ?? { categoriasModo: "todas", categoriasIds: [], unUsoPorCliente: false, noAcumulable: false };
+    const modo = i.categorias_modo ?? (ids && ids.length && b.categoriasModo === "todas" ? "incluir" : b.categoriasModo);
+    return {
+      categoriasModo: modo,
+      categoriasIds: modo === "todas" ? [] : (ids ?? b.categoriasIds),
+      unUsoPorCliente: i.un_uso_por_cliente ?? b.unUsoPorCliente,
+      noAcumulable: i.no_acumulable ?? b.noAcumulable,
+    };
+  }
+
+  async function buscarPorCodigo(codigoCrudo: string): Promise<CuponRegistro> {
+    const codigo = codigoCrudo.trim().toUpperCase();
+    const lista = await deps().repo.listar(500);
+    const c = lista.find((x) => x.codigo === codigo);
+    if (!c) throw new ErrorHerramienta(`No existe un cupón con el código ${codigo}. Mira listar_cupones.`);
+    return c;
+  }
+
+  const categorias_para_cupones = defineHerramienta({
+    nombre: "categorias_para_cupones",
+    titulo: "Categorías de la tienda (para reglas de cupones)",
+    descripcion: "Lista las categorías de la tienda con su id y slug, para armar las reglas «categorías incluidas o excluidas» de un cupón. Las subcategorías heredan la regla de su categoría padre.",
+    esquema: z.object({}),
+    anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    async ejecutar() {
+      const cats = (await deps().categorias()).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+      const nombre = new Map(cats.map((c) => [c.id, c.nombre]));
+      const lineas = cats.slice(0, 200).map((c) => `- id ${c.id} · slug ${c.slug} · ${c.nombre}${c.padre_id ? ` (dentro de ${nombre.get(c.padre_id) ?? `#${c.padre_id}`})` : ""}`);
+      return { texto: lineas.join("\n") || "No hay categorías.", datos: { total: cats.length } };
+    },
+  });
+
+  const listar_cupones = defineHerramienta({
+    nombre: "listar_cupones",
+    titulo: "Listar cupones",
+    descripcion: "Lista los cupones con su descuento, compra mínima, vigencia, estado (activo o apagado), reglas (categorías, un uso por cliente, no acumulable) y cuántas veces se usaron en pedidos. También dice si el interruptor del checkout está encendido: si está apagado, ningún cupón funciona aunque esté activo.",
+    esquema: z.object({ solo_activos: z.boolean().optional(), limite: z.number().int().min(1).max(100).optional() }),
+    anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    async ejecutar({ solo_activos, limite }, ctx) {
+      const [{ items, gestionDisponible }, encendido, nombres] = await Promise.all([listarCuponesAdmin(ctx.db, deps().repo, ctx.ahora), leerInterruptorCupones(ctx.db), nombresCategorias()]);
+      const filtrados = items.filter((c) => !solo_activos || c.activo).slice(0, aEnteroSeguro(limite, 50, 1, 100));
+      const cab = `Interruptor de cupones en el checkout: ${encendido ? "ENCENDIDO" : "APAGADO (ningún cupón se aplica a los clientes)"}.${gestionDisponible ? "" : " Ojo: no pude leer reglas y usos."}`;
+      return { texto: `${cab}\n${filtrados.map((c) => lineaCupon(c, nombres)).join("\n") || "No hay cupones."}\nTotal: ${items.length}.`, datos: { interruptorEncendido: encendido, total: items.length, mostrados: filtrados.length } };
+    },
+  });
+
+  const ver_cupon = defineHerramienta({
+    nombre: "ver_cupon",
+    titulo: "Ver un cupón",
+    descripcion: "Muestra un cupón completo por su código: descuento, compra mínima, topes, vigencia, reglas y usos.",
+    esquema: z.object({ codigo: codigoSchema }),
+    anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    async ejecutar({ codigo }, ctx) {
+      const c = await buscarPorCodigo(codigo);
+      const [{ items }, nombres] = await Promise.all([listarCuponesAdmin(ctx.db, deps().repo, ctx.ahora), nombresCategorias()]);
+      const full = items.find((x) => x.id === c.id);
+      if (!full) throw new ErrorHerramienta("No pude leer ese cupón.");
+      const extra = [
+        `Tope total de usos: ${full.max_usos_total ?? "sin tope"} · máximo por cliente (flujo antiguo): ${full.max_usos_por_usuario}`,
+        `Usos antiguos (cotizaciones): ${full.usos_actuales}`,
+      ];
+      return { texto: `${lineaCupon(full, nombres)}\n${extra.join("\n")}`, datos: { codigo: full.codigo, activo: full.activo } };
+    },
+  });
+
+  const crear_cupon = defineHerramienta({
+    nombre: "crear_cupon",
+    titulo: "Crear un cupón",
+    descripcion: `Crea un cupón. Obligatorios: codigo (3 a 30 caracteres: letras, números, guion), tipo y valor. Tope de seguridad: porcentaje hasta ${MAX_PORCENTAJE_HERRAMIENTA} %, monto fijo hasta ${clp(MAX_MONTO_FIJO_HERRAMIENTA)}. Reglas opcionales: categorías incluidas o excluidas, un uso por cliente (por correo y RUT; no va junto con un tope total) y no acumulable (no se suma a ofertas ni combos). Crearlo no lo hace funcionar en la tienda: eso depende del interruptor general, que aprueba Jorge. Muestra el resumen al usuario y pide su OK antes de crear.`,
+    esquema: z.object({ codigo: codigoSchema, activo: z.boolean().optional().describe("Por defecto true."), ...camposCupon, tipo: z.enum(["porcentaje", "monto_fijo"]), valor: z.number().positive().max(MAX_MONTO_FIJO_HERRAMIENTA) }),
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    async ejecutar(a, ctx) {
+      topes(a.tipo, a.valor);
+      const reglas = await reglasDeEntrada(a, null);
+      const r = await crearCupon(ctx.db, deps().repo, usuarioDe(ctx), {
+        codigo: a.codigo, activo: a.activo, tipo: a.tipo, valor: a.valor, ...aCambiosLib(a), reglas,
+      } as never, ctx.ahora);
+      if (!r.ok) throw new ErrorHerramienta(r.error);
+      const c = r.valor.cupon as unknown as Record<string, unknown>;
+      await ctx.auditar([{
+        entidad: "cupon", entidadId: r.valor.cupon.id, antes: null,
+        despues: { cupon: pick(c, ["tipo", "valor", "monto_minimo_compra", "max_usos_total", "valido_hasta", "activo"]), reglas: r.valor.reglas },
+      }]);
+      const nombres = await nombresCategorias();
+      return { texto: `Cupón ${r.valor.cupon.codigo} creado (${r.valor.cupon.activo ? "activo" : "apagado"}). Reglas: ${textoReglas(r.valor.reglas, nombres)}.\n${AVISO_ENCENDIDO}\nSe puede deshacer (queda apagado).`, datos: { codigo: r.valor.cupon.codigo } };
+    },
+    revertidor: revertir,
+  });
+
+  const editar_cupon = defineHerramienta({
+    nombre: "editar_cupon",
+    titulo: "Editar un cupón",
+    descripcion: `Cambia solo lo que indiques de un cupón existente (descuento, compra mínima, topes, vigencia, reglas). El código no se puede cambiar. Mismos topes de seguridad que crear_cupon (${MAX_PORCENTAJE_HERRAMIENTA} % o ${clp(MAX_MONTO_FIJO_HERRAMIENTA)}). Para encender o apagar un cupón usa activar_cupon o desactivar_cupon.`,
+    esquema: z.object({ codigo: codigoSchema, ...camposCupon }),
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    async ejecutar(a, ctx) {
+      const cupon = await buscarPorCodigo(a.codigo);
+      const cambios = aCambiosLib(a);
+      topes(a.tipo ?? cupon.tipo, a.valor);
+      if (a.tipo === "porcentaje" && a.valor === undefined) topes("porcentaje", Number(cupon.valor));
+      const reglasAntes = await leerReglas(ctx.db, cupon.id);
+      const reglas = await reglasDeEntrada(a, reglasAntes);
+      if (reglas) cambios.reglas = reglas;
+      if (Object.keys(cambios).length === 0) throw new ErrorHerramienta("No indicaste nada que cambiar.");
+      const snake = Object.keys(cambios).filter((k) => k !== "reglas").map((k) => CAMPOS_SNAKE[k as keyof typeof CAMPOS_SNAKE]).filter(Boolean) as string[];
+      const antesC = pick(cupon as unknown as Record<string, unknown>, snake);
+      const r = await editarCupon(ctx.db, deps().repo, usuarioDe(ctx), cupon.id, cambios, ctx.ahora);
+      if (!r.ok) throw new ErrorHerramienta(r.error);
+      await ctx.auditar([{
+        entidad: "cupon", entidadId: cupon.id,
+        antes: { cupon: antesC, ...(reglas ? { reglas: reglasAntes } : {}) },
+        despues: { cupon: pick(r.valor.cupon as unknown as Record<string, unknown>, snake), ...(reglas ? { reglas: r.valor.reglas } : {}) },
+      }]);
+      return { texto: `Cupón ${cupon.codigo} actualizado. Se puede deshacer.\n${AVISO_ENCENDIDO}`, datos: { codigo: cupon.codigo } };
+    },
+    revertidor: revertir,
+  });
+
+  const cambiarEstado = (nombre: string, titulo: string, descripcion: string, activo: boolean) =>
+    defineHerramienta({
+      nombre, titulo, descripcion,
+      esquema: z.object({ codigo: codigoSchema }),
+      anotaciones: { readOnlyHint: false, destructiveHint: !activo, idempotentHint: true },
+      async ejecutar({ codigo }, ctx) {
+        const cupon = await buscarPorCodigo(codigo);
+        if (Boolean(cupon.activo) === activo) return `El cupón ${cupon.codigo} ya estaba ${activo ? "activo" : "apagado"}.`;
+        const r = await (activo ? activarCupon : desactivarCupon)(ctx.db, deps().repo, usuarioDe(ctx), cupon.id, ctx.ahora);
+        if (!r.ok) throw new ErrorHerramienta(r.error);
+        await ctx.auditar([{ entidad: "cupon", entidadId: cupon.id, antes: { cupon: { activo: !activo } }, despues: { cupon: { activo } } }]);
+        const encendido = await leerInterruptorCupones(ctx.db);
+        return `Cupón ${cupon.codigo} ${activo ? "activado" : "apagado"}. ${encendido ? "" : "Ojo: el interruptor general de cupones está apagado, así que los clientes aún no pueden usar ninguno."} Se puede deshacer.`;
+      },
+      revertidor: revertir,
+    });
+
+  const activar_cupon = cambiarEstado("activar_cupon", "Activar un cupón", "Deja un cupón activo (aplicable). Para que los clientes lo usen, además el interruptor general de cupones debe estar encendido (lo aprueba Jorge).", true);
+  const desactivar_cupon = cambiarEstado("desactivar_cupon", "Apagar un cupón", "Apaga un cupón: deja de aplicarse a nuevos pedidos. No se borra ni afecta los pedidos ya hechos.", false);
+
+  const ver_usos_cupones = defineHerramienta({
+    nombre: "ver_usos_cupones",
+    titulo: "Ver usos de cupones por período",
+    descripcion: "Cuántas veces se usó cada cupón entre dos fechas (confirmados, reservados, liberados), cuánto descontó y cuánto compraron en total. Solo cifras: no incluye datos de clientes. Con «por_dia» agrega el detalle diario. Fechas AAAA-MM-DD (hora de Chile), máximo 366 días.",
+    esquema: z.object({
+      desde: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), hasta: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).describe("Incluida."),
+      codigo: codigoSchema.optional(), por_dia: z.boolean().optional(),
+    }),
+    anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    async ejecutar({ desde, hasta, codigo, por_dia }, ctx) {
+      const d = fechaChileAMs(desde);
+      const h = fechaChileAMs(hasta, true);
+      if (h <= d) throw new ErrorHerramienta("«hasta» debe ser igual o posterior a «desde».");
+      if (h - d > 366 * 86_400_000) throw new ErrorHerramienta("El período máximo es de 366 días.");
+      const cupon = codigo ? await buscarPorCodigo(codigo) : null;
+      const opciones = { desde: d, hasta: h, cuponId: cupon?.id, ahora: ctx.ahora };
+      const filas = await usosDeCuponesConCodigo(ctx.db, deps().repo, opciones);
+      const lineas = filas.map((f) => `- ${f.codigo ?? f.cuponId}: ${f.confirmados} usos confirmados · ${f.reservadosVigentes} reservados · ${f.liberados} liberados · descontó ${clp(f.descuentoTotal)} sobre compras de ${clp(f.montoCompraTotal)}`);
+      let dias = "";
+      if (por_dia) {
+        const x = await usosDeCuponesPorDia(ctx.db, opciones);
+        dias = `\nPor día:\n${x.map((f) => `  ${f.dia}: ${f.confirmados} usos, ${clp(f.descuentoTotal)}`).join("\n") || "  (sin usos)"}`;
+      }
+      return { texto: `Usos de cupones del ${desde} al ${hasta}${codigo ? ` (solo ${codigo.toUpperCase()})` : ""}:\n${lineas.join("\n") || "Sin usos en el período."}${dias}`, datos: { filas } };
+    },
+  });
+
+  const estado_cupones = defineHerramienta({
+    nombre: "estado_cupones",
+    titulo: "Estado del interruptor de cupones",
+    descripcion: "Dice si los cupones están encendidos en el checkout, si ya está aplicada la migración de pedidos en Supabase y si los términos todavía dicen que no hay cupones. Úsala antes de pedir encenderlos.",
+    esquema: z.object({}),
+    anotaciones: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    async ejecutar(_a, ctx) {
+      const [encendido, esquema, sinCupones, { items }] = await Promise.all([leerInterruptorCupones(ctx.db), deps().esquemaPedidosConCupon(), terminosDicenSinCupones(ctx.db), listarCuponesAdmin(ctx.db, deps().repo, ctx.ahora)]);
+      const lineas = [
+        `Interruptor: ${encendido ? "ENCENDIDO" : "APAGADO"}.`,
+        `Migración de pedidos con cupón en Supabase (${MIGRACION_PEDIDOS_CUPON}): ${esquema ? "aplicada" : "NO aplicada (sin ella no se puede encender)"}.`,
+        `Términos: ${sinCupones ? "todavía dicen que no hay cupones (hay que actualizarlos antes de encender)" : "no dicen que no hay cupones"}.`,
+        `Cupones activos: ${items.filter((c) => c.activo).length} de ${items.length}.`,
+      ];
+      return { texto: lineas.join("\n"), datos: { encendido, esquemaAplicado: esquema, terminosDicenSinCupones: sinCupones } };
+    },
+  });
+
+  const solicitar_encender_cupones = defineHerramienta({
+    nombre: "solicitar_encender_cupones",
+    titulo: "Pedir a Jorge que encienda los cupones",
+    descripcion: "SOLO crea la solicitud de aprobación: le llega un correo a Jorge con un enlace de un solo uso (vale 4 horas) y no enciende nada. Antes hay que aplicar en Supabase la migración supabase/migrations/2026_11_26_barraca_cupones_pedidos.sql y actualizar los términos, que hoy dicen que no hay cupones; si la migración falta, no pido la aprobación. Cuando Jorge apruebe, usa aplicar_encendido_cupones. Si cambian los cupones activos entremedio, la aprobación deja de servir.",
+    esquema: z.object({}),
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    async ejecutar(_a, ctx) {
+      if (await leerInterruptorCupones(ctx.db)) return "Los cupones ya están encendidos. No hace falta pedir nada.";
+      if (!(await deps().esquemaPedidosConCupon())) {
+        return { texto: `Todavía no se puede. Antes hay que aplicar en Supabase la migración ${MIGRACION_PEDIDOS_CUPON} (sin ella, los pedidos con cupón fallarían) y actualizar los términos, que hoy dicen que no hay cupones. No pedí la aprobación. Avísale a Jorge.`, datos: { solicitada: false, motivo: "esquema_incompleto" } };
+      }
+      const { activos, huella } = await instantaneaActivos(ctx.db, deps().repo, ctx.ahora);
+      if (activos.length === 0) throw new ErrorHerramienta("No hay ningún cupón activo: encenderlos no serviría de nada. Crea o activa uno primero.");
+      const sinCupones = await terminosDicenSinCupones(ctx.db);
+      const nombres = await nombresCategorias();
+      const decision = requiereAprobacion({ banderas: ["cupones_interruptor"] });
+      const sol = await deps().solicitarAprobacion(ctx.db, {
+        usuario: usuarioDe(ctx), herramienta: "solicitar_encender_cupones", motivos: decision.motivos,
+        resumen: `Encender los cupones en el checkout. Cupones activos que empezarían a aplicarse: ${activos.map((c) => c.codigo).join(", ")}.${sinCupones ? " OJO: los términos todavía dicen que no hay cupones." : ""}`,
+        detalle: { cupones: activos.map((c) => ({ codigo: c.codigo, tipo: c.tipo, valor: Number(c.valor), compraMinima: Number(c.monto_minimo_compra), hasta: c.valido_hasta, reglas: textoReglas(c.reglas, nombres) })), terminosDicenSinCupones: sinCupones },
+        huella,
+      });
+      if (!sol.ok) {
+        const porque = sol.motivo === "sin_aprobador" ? "el correo de aprobación de Jorge no está configurado" : sol.motivo === "limite" ? "se pidieron demasiadas aprobaciones en la última hora" : "no pude enviar el correo a Jorge";
+        return { texto: `BLOQUEADO: ${porque}. Los cupones siguen apagados. Avísale a Jorge.`, datos: { solicitada: false, estado: "bloqueada", motivo: sol.motivo } };
+      }
+      await ctx.auditar([{ entidad: "ajuste", entidadId: "cupones_checkout", antes: { encendido: false }, despues: { solicitud: sol.id, estado: "pendiente" } }]);
+      return {
+        texto: `Le mandé un correo a Jorge para aprobar el encendido de los cupones (${decision.motivos.map((m) => TEXTO_MOTIVO[m]).join("; ")}). No se encendió nada. Cuando apruebe, llama a aplicar_encendido_cupones con aprobacion_id ${sol.id}.${sinCupones ? " Ojo: los términos todavía dicen que no hay cupones; hay que actualizarlos antes de que se vea." : ""}\n${AVISO_ENCENDIDO}`,
+        datos: { solicitada: true, aprobacionId: sol.id, venceEn: sol.venceEn },
+      };
+    },
+    // Sin revertidor: no cambia datos de la tienda (solo crea una solicitud).
+  });
+
+  const aplicar_encendido_cupones = defineHerramienta({
+    nombre: "aplicar_encendido_cupones",
+    titulo: "Encender los cupones (solo con aprobación de Jorge)",
+    descripcion: "Enciende el interruptor de cupones del checkout ÚNICAMENTE si Jorge ya aprobó la solicitud hecha con solicitar_encender_cupones, la aprobación no venció ni se usó, los cupones activos siguen siendo los que él vio y la migración de pedidos está aplicada. En cualquier otro caso no cambia nada. La aprobación sirve una sola vez.",
+    esquema: z.object({ aprobacion_id: z.string().min(8).max(64) }),
+    anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    async ejecutar({ aprobacion_id }, ctx) {
+      if (await leerInterruptorCupones(ctx.db)) return "Los cupones ya estaban encendidos.";
+      const { huella } = await instantaneaActivos(ctx.db, deps().repo, ctx.ahora);
+      let estadoVisto: EstadoAprobacion = "no_existe";
+      const aprobar: HookAprobacion = async () => {
+        estadoVisto = await estadoAprobacion(ctx.db, aprobacion_id, { usuarioId: ctx.usuario.id, huellaActual: huella }, ctx.ahora);
+        if (estadoVisto !== "aprobada") return false;
+        const gasto = await consumirAprobacion(ctx.db, aprobacion_id, { usuarioId: ctx.usuario.id, huellaActual: huella }, ctx.ahora);
+        if (!gasto) { estadoVisto = "usada"; return false; }
+        return { aprobada: true, aprobacionId: aprobacion_id };
+      };
+      const r = await encenderInterruptorCupones(ctx.db, { usuario: usuarioDe(ctx), aprobar, verificarEsquema: () => deps().esquemaPedidosConCupon(), ahora: ctx.ahora });
+      if (!r.ok) {
+        if (r.motivo === "esquema_incompleto") {
+          return { texto: `No se encendió: falta aplicar en Supabase la migración ${MIGRACION_PEDIDOS_CUPON}. La aprobación sigue vigente (4 horas).`, datos: { encendido: false, motivo: "esquema_incompleto" } };
+        }
+        return { texto: textoEstadoAprobacion(estadoVisto), datos: { encendido: false, estado: estadoVisto } };
+      }
+      await ctx.auditar([{ entidad: "ajuste", entidadId: "cupones_checkout", antes: { encendido: false }, despues: { encendido: true, aprobacionId: aprobacion_id } }]);
+      return { texto: `Cupones ENCENDIDOS con la aprobación de Jorge. Desde ahora el checkout acepta los cupones activos. Para apagarlos: apagar_cupones.`, datos: { encendido: true } };
+    },
+    revertidor: async ({ db, usuario, ahora, entradas }) => {
+      // Deshacer un encendido es apagar: siempre es seguro.
+      if (!entradas.length) return { ok: true };
+      await apagarInterruptorCupones(db, usuario, ahora);
+      return { ok: true, mensaje: "Cupones apagados." };
+    },
+  });
+
+  const apagar_cupones = defineHerramienta({
+    nombre: "apagar_cupones",
+    titulo: "Apagar los cupones del checkout",
+    descripcion: "Apaga el interruptor general: ningún cupón se aplica a nuevos pedidos hasta que Jorge apruebe volver a encenderlos. No pide aprobación porque es la dirección segura. Los pedidos ya hechos no cambian.",
+    esquema: z.object({}),
+    anotaciones: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
+    async ejecutar(_a, ctx) {
+      if (!(await leerInterruptorCupones(ctx.db))) return "Los cupones ya estaban apagados.";
+      await apagarInterruptorCupones(ctx.db, usuarioDe(ctx), ctx.ahora);
+      await ctx.auditar([{ entidad: "ajuste", entidadId: "cupones_checkout", antes: { encendido: true }, despues: { encendido: false } }]);
+      return "Cupones apagados. Volver a encenderlos necesita la aprobación de Jorge (solicitar_encender_cupones).";
+    },
+    // Sin revertidor: deshacer un apagado sería encender, y eso solo con aprobación.
+  });
+
+  return [
+    categorias_para_cupones, listar_cupones, ver_cupon, crear_cupon, editar_cupon, activar_cupon, desactivar_cupon,
+    ver_usos_cupones, estado_cupones, solicitar_encender_cupones, aplicar_encendido_cupones, apagar_cupones,
+  ] as unknown as Herramienta[];
+}
