@@ -584,14 +584,45 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
     },
   });
 
+  // Deshacer de restaurar_version_contenido: la versión N como borrador (como siempre) o la versión 0 («volver al código»), que
+  // se deshace republicando la versión que estaba (misma regla que deshacer una publicación: lo legal o con desvío no vuelve solo).
+  const revertirRestauracion: Revertidor = async (c) => {
+    const borradores = c.entradas.filter((e) => e.entidad === "contenido_borrador");
+    const publicaciones = c.entradas.filter((e) => e.entidad === "contenido");
+    const mensajes: string[] = [];
+    if (publicaciones.length > 0) {
+      const r = await revertirPublicacion({ ...c, entradas: publicaciones });
+      if (!r.ok) return r;
+      if (r.mensaje) mensajes.push(r.mensaje);
+    }
+    if (borradores.length > 0) {
+      const r = await revertirBorrador({ ...c, entradas: borradores });
+      if (!r.ok) return r;
+      if (r.mensaje) mensajes.push(r.mensaje);
+    }
+    return { ok: true, mensaje: mensajes.join(" ") };
+  };
+
   const restaurar_version_contenido = defineHerramienta({
     nombre: "restaurar_version_contenido",
-    titulo: "Volver a una versión anterior (como borrador)",
+    titulo: "Volver a una versión anterior",
     descripcion:
-    "Pone una versión anterior (ver_historial_contenido) como BORRADOR; el historial se conserva. Para verla en la tienda hay que publicarla.",
-    esquema: z.object({ clave: claveSchema, version: z.number().int().min(1).max(100000) }),
+    "Con version N (ver_historial_contenido) pone esa versión como BORRADOR; el historial se conserva y para verla en la tienda hay que publicarla. Con version 0 la tienda vuelve AL INSTANTE al texto original del código (queda sin versión publicada; el historial se conserva y no hace falta aprobación).",
+    esquema: z.object({ clave: claveSchema, version: z.number().int().min(0).max(100000).describe("0 = volver al texto original del código.") }),
     anotaciones: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     async ejecutar({ clave, version }, ctx) {
+      if (version === 0) {
+        const estado = await conGestion(() => repo.obtenerEstado(ctx.db, clave));
+        if (estado.versionPublicada === null) return { texto: `${etiqueta(clave)} ya muestra el texto original del código; no hay nada que quitar.`, datos: { clave, version: 0, cambio: false } };
+        const r = await repo.volverAlCodigo(ctx.db, { clave, usuario: usuarioDe(ctx), esperada: estado.versionPublicada, ahora: ctx.ahora });
+        if (!r.ok) throw new ErrorHerramienta(`${etiqueta(clave)} cambió justo ahora; vuelve a intentar.`);
+        await ctx.auditar([{ entidad: "contenido", entidadId: clave, antes: { version: estado.versionPublicada }, despues: { version: null, estado: "codigo" } }]);
+        await deps().revalidar(clave);
+        return {
+          texto: `${etiqueta(clave)} volvió al texto original del código (la versión ${estado.versionPublicada} quedó en el historial, que se conserva). Las páginas se regeneran en unos minutos. Se puede deshacer.`,
+          datos: { clave, version: 0, cambio: true, versionAnterior: estado.versionPublicada, origen: "codigo" },
+        };
+      }
       const { base, esBorrador } = await conGestion(() => baseDeEdicion(ctx.db, clave));
       const v = await repo.obtenerVersion(ctx.db, clave, version);
       if (!v || !v.valor) throw new ErrorHerramienta(`No encontré la versión ${version} de ${etiqueta(clave)}.`);
@@ -600,7 +631,11 @@ export function crearHerramientasContenido(depsInyectadas?: Partial<DepsContenid
       await guardarBorradorAuditado(ctx, clave, v.valor, base, esBorrador);
       return { texto: `La versión ${version} de ${etiqueta(clave)} quedó como borrador. ${TEXTO_SIGUIENTE}`, datos: { clave, version } };
     },
-    revertidor: revertirBorrador,
+    revertidor: revertirRestauracion,
+    puedeDeshacer: (c) => {
+      const publicaciones = c.entradas.filter((e) => e.entidad === "contenido");
+      return publicaciones.length > 0 ? revertirPublicacion({ ...c, entradas: publicaciones, simular: true }) : Promise.resolve({ ok: true as const });
+    },
   });
 
   // ── Publicar en dos pasos ──

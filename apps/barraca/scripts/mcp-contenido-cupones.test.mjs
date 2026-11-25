@@ -1191,3 +1191,69 @@ test("modo avisar: encender cupones = pedir (queda lista la aprobación automát
     assert.match((await m.llamar("aplicar_encendido_cupones", { aprobacion_id: s.datos.aprobacionId }, { ahora: T0 + 4000 })).texto, /ya estaban encendidos|ya se usó/);
   });
 });
+
+// ───────── restaurar_version_contenido con versión 0 = volver al texto del código ─────────
+test("restaurar versión 0: publicar un aviso, quitarlo, volver al código (sin versión publicada) con el historial intacto; y se puede deshacer", async () => {
+  const m = montar();
+  const publicar = async (ahora) => {
+    const p = await m.llamar("previsualizar_publicacion_contenido", { clave: "avisos" }, { ahora });
+    assert.ok(p.datos?.vistaPreviaId, p.error ?? p.texto);
+    const c = await m.llamar("confirmar_publicacion_contenido", { clave: "avisos", vista_previa_id: p.datos.vistaPreviaId }, { ahora });
+    assert.ok(!c.error, c.error);
+    return c;
+  };
+  // v1: un aviso. v2: lista vacía (el caso real que quedó en producción: no se podía volver a «codigo»).
+  await m.llamar("editar_avisos", { operaciones: [{ op: "agregar", id: "feriado-dic", tipo: "feriado", severidad: "aviso", titulo: "Cerrado el 8", texto: "Volvemos el 9.", donde: ["tienda"] }] });
+  await publicar(T0);
+  await m.llamar("editar_avisos", { operaciones: [{ op: "quitar", id: "feriado-dic" }] }, { ahora: T0 + MIN });
+  await publicar(T0 + MIN);
+  let est = await Repo.obtenerEstado(m.db, "avisos");
+  assert.equal(est.origen, "d1");
+  assert.equal(est.versionPublicada, 2);
+  assert.deepEqual(est.publicado, []);
+  const versionesAntes = (await Repo.listarVersiones(m.db, "avisos")).map((v) => v.version).sort();
+
+  // Restaurar a 0: la tienda vuelve al código.
+  const r = await m.llamar("restaurar_version_contenido", { clave: "avisos", version: 0 }, { ahora: T0 + 2 * MIN });
+  assert.ok(!r.error, r.error);
+  assert.equal(r.datos.cambio, true);
+  assert.equal(r.datos.origen, "codigo");
+  assert.match(r.texto, /texto original del código/);
+  est = await Repo.obtenerEstado(m.db, "avisos");
+  assert.equal(est.origen, "codigo");
+  assert.equal(est.publicado, null);
+  assert.equal(est.versionPublicada, null);
+  assert.deepEqual(est.efectivo, (await Repo.obtenerEstado(crearD1Simulada(), "avisos")).efectivo, "muestra exactamente el respaldo del código");
+  const versiones = await Repo.listarVersiones(m.db, "avisos");
+  assert.deepEqual(versiones.map((v) => v.version).sort(), versionesAntes, "el historial queda intacto: no se borra ninguna versión");
+  assert.ok(versiones.every((v) => v.estado !== "publicada"), "ninguna versión sigue como publicada");
+  assert.ok(m.revalidadas.at(-1) === "avisos", "se regeneran las páginas");
+  // El historial lo sigue mostrando.
+  assert.match((await m.llamar("ver_historial_contenido", { clave: "avisos" })).texto, /v2/);
+  // Repetirlo no hace nada.
+  assert.match((await m.llamar("restaurar_version_contenido", { clave: "avisos", version: 0 }, { ahora: T0 + 3 * MIN })).texto, /ya muestra el texto original/);
+  // Y se puede volver a publicar una versión del historial (versión 1 → borrador → publicar).
+  const b = await m.llamar("restaurar_version_contenido", { clave: "avisos", version: 1 }, { ahora: T0 + 4 * MIN });
+  assert.ok(!b.error, b.error);
+  assert.equal((await Repo.obtenerEstado(m.db, "avisos")).origen, "codigo", "restaurar N sigue siendo solo borrador");
+
+  // Deshacer el «volver al código» republica la versión que estaba (como versión nueva).
+  const lista = await m.llamar("ver_historial", { limite: 10 }, { ahora: T0 + 5 * MIN });
+  assert.equal(lista.datos.lotes.find((l) => l.loteId === r.loteId).sePuedeDeshacer, true);
+  const prev = await m.llamar("previsualizar_deshacer_lote", { lote_id: r.loteId }, { ahora: T0 + 5 * MIN });
+  assert.ok(prev.datos?.vistaPreviaId, prev.error ?? prev.texto);
+  const d = await m.llamar("deshacer_lote", { lote_id: r.loteId, vista_previa_id: prev.datos.vistaPreviaId }, { ahora: T0 + 6 * MIN });
+  assert.ok(!d.error, d.error);
+  est = await Repo.obtenerEstado(m.db, "avisos");
+  assert.equal(est.origen, "d1");
+  assert.deepEqual(est.publicado, []);
+  assert.ok(est.versionPublicada >= 3);
+});
+
+test("restaurar versión 0 funciona también sin que haya nada publicado, y con claves que no existen en D1 no inventa nada", async () => {
+  const m = montar();
+  const r = await m.llamar("restaurar_version_contenido", { clave: "cinta", version: 0 });
+  assert.match(r.texto, /ya muestra el texto original/);
+  assert.equal(r.datos.cambio, false);
+  assert.equal((await m.llamar("restaurar_version_contenido", { clave: "cinta", version: 7 })).error?.includes("No encontré la versión 7"), true);
+});
