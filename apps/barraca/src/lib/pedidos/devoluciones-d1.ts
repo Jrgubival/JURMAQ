@@ -86,6 +86,10 @@ export async function sincronizarDevolucionPanel(
     ? ["devolucion_reservada", "devolucion_en_curso"]
     : hacia === "devolucion_en_curso"
     ? ["devolucion_reservada"]
-    : hacia === "devolucion_incierta" ? ["devolucion_reservada", "devolucion_en_curso"] : [...ESTADOS_A_MEDIAS];
+    : hacia === "devolucion_incierta" ? ["devolucion_reservada", "devolucion_en_curso"]
+    // «Ya se devolvió» también cierra una devolución que quedó «rechazada» (error que luego se resolvió a mano) o con la
+    // transferencia pendiente (la barraca ya transfirió desde el panel): si no, la fila quedaba bloqueando el pedido.
+    : hacia === "devolucion_hecha" ? [...ESTADOS_A_MEDIAS, "devolucion_rechazada", "transferencia_pendiente"]
+    : [...ESTADOS_A_MEDIAS];
   return pasarDevolucion(db, numero, desde, hacia, ahora, detalle);
 }

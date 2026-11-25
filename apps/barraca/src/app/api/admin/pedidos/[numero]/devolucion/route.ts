@@ -4,7 +4,7 @@ import { isValidOrigin } from '@jurmaq/shared/sanitize';
 import { z, parseBody } from '@jurmaq/shared/validation';
 import { logSafe, logSafeError } from '@jurmaq/shared/logging';
 import { pedidos, PATRON_NUMERO } from '@/lib/pedidos';
-import { registrarDevolucionTransferenciaPendiente } from '@/lib/pedidos/rechazo';
+import { registrarDevolucionTransferenciaPendiente, sincronizarConMcp } from '@/lib/pedidos/rechazo';
 import { correoDevolucionHecha } from '@/lib/pedidos/correos';
 import { rutValido, formatearRut } from '@/lib/rut';
 
@@ -79,6 +79,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       ...r, estado: 'hecho', hecho_at: new Date().toISOString(), hecho_por: session.user?.email ?? null,
     });
     if (!tomado) return NextResponse.json({ error: 'La devolución ya estaba marcada como hecha' }, { status: 409 });
+    // Pone al día la reserva de D1 (transferencia pendiente → hecha): si no, quedaría pendiente y bloquearía archivar el pedido.
+    await sincronizarConMcp(numero, 'devolucion_hecha');
     const actualizado = await store.porNumero(numero);
     if (actualizado) await correoDevolucionHecha(actualizado);
     await store.registrarEvento(numero, pedido.estado, session.user?.email ?? null, 'Devolución por transferencia hecha').catch((e) =>

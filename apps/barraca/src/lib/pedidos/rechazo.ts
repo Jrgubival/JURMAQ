@@ -70,7 +70,7 @@ export async function rechazarPedido(numero: string, motivo: MotivoRechazo, nota
  * Pone al día `devoluciones_mcp` (D1) cuando el panel cambia el resultado de una devolución. Mejor esfuerzo: si no hay D1 o
  * la tabla, no pasa nada (el panel manda; la fila solo guía al MCP). Nunca lanza.
  */
-async function sincronizarConMcp(numero: string, hacia: 'devolucion_hecha' | 'devolucion_rechazada' | 'devolucion_incierta' | 'transferencia_pendiente') {
+export async function sincronizarConMcp(numero: string, hacia: 'devolucion_hecha' | 'devolucion_rechazada' | 'devolucion_incierta' | 'transferencia_pendiente') {
   try {
     const { usarGestion } = await import('../gestion/d1');
     await usarGestion((db) => sincronizarDevolucionPanel(db, numero, hacia, Date.now()));
