@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { firmarSolicitud, abrirSolicitud, urlRetorno } from "../src/lib/mcp/autorizar.ts";
 import { empaquetarFirmado, abrirFirmado, pkceCoincide, desafioS256, igualesSeguro } from "../src/lib/mcp/cripto.ts";
-import { escapar, leerTextoLimitado, mismoOrigen, paginaHtml, respuestaHtml, respuestaJson } from "../src/lib/mcp/http.ts";
+import { escapar, leerTextoLimitado, mismoOrigen, paginaError, paginaHtml, respuestaHtml, respuestaJson } from "../src/lib/mcp/http.ts";
 import { construirCorreoAprobacion } from "./pruebas/correo-aprobacion-sin-servidor.mjs";
 
 const SECRETO = "secreto-de-prueba-0123456789";
@@ -69,7 +69,8 @@ test("HTML: todo se escapa y la página sale con encabezados anti clickjacking",
   assert.match(r.headers.get("content-security-policy"), /frame-ancestors 'none'/);
   assert.match(r.headers.get("content-security-policy"), /default-src 'none'/);
   assert.equal(r.headers.get("cache-control"), "no-store");
-  assert.equal(r.headers.get("referrer-policy"), "no-referrer");
+  assert.equal(r.headers.get("referrer-policy"), "same-origin");
+  assert.match(html, /<meta name="referrer" content="same-origin">/);
   assert.equal(respuestaJson({ a: 1 }).headers.get("cache-control"), "no-store");
 });
 
@@ -101,4 +102,34 @@ test("correo de aprobación: escapa el contenido y no filtra nada más", async (
   assert.match(html, /aprobar\/mcpv_x/);
   assert.match(html, /Cambia más de 300 productos/);
   assert.ok(asunto.length < 80);
+});
+
+test("pantallas con POST: Referrer-Policy same-origin (con no-referrer el navegador manda Origin: null y se rechaza todo)", async () => {
+  const base = "https://barraca.jurmaq.cl";
+  for (const r of [respuestaHtml(paginaHtml({ titulo: "t", cuerpo: "c" })), paginaError("t", "m")]) {
+    assert.equal(r.headers.get("referrer-policy"), "same-origin");
+    assert.match(r.headers.get("content-security-policy"), /frame-ancestors 'none'/);
+    assert.match(r.headers.get("content-security-policy"), /form-action 'self'/);
+    assert.equal(r.headers.get("x-frame-options"), "DENY");
+  }
+  const post = (h) => new Request(`${base}/oauth/decision`, { method: "POST", headers: h });
+  // Lo que manda el navegador según la política: con no-referrer, "null" (rechazado); con same-origin, el origen propio.
+  assert.equal(mismoOrigen(post({ origin: "null" }), base), false);
+  assert.equal(mismoOrigen(post({ origin: base }), base), true);
+});
+
+test("next.config: las pantallas del conector quedan fuera de los encabezados globales (si no, los pisan)", async () => {
+  // next.config.ts no se puede importar en Node (usa __dirname): se lee el texto de la regla global.
+  const { readFileSync } = await import("node:fs");
+  const texto = readFileSync(new URL("../next.config.ts", import.meta.url), "utf8");
+  const m = texto.match(/source: "(\/\(\(\?!aprobar[^"]*)",\s*headers: \[\s*\{\s*key: "Content-Security-Policy"/);
+  const global = m ? { source: m[1] } : null;
+  assert.ok(global, "debe existir la regla global con exclusiones");
+  const re = new RegExp(`^${global.source}$`);
+  for (const ruta of ["/aprobar/abc123", "/oauth/decision", "/admin/conexiones/autorizar"]) {
+    assert.equal(re.test(ruta), false, `${ruta} no debe recibir los encabezados globales`);
+  }
+  for (const ruta of ["/", "/admin/conexiones", "/producto/x", "/oauth/token", "/api/mcp"]) {
+    assert.equal(re.test(ruta), true, `${ruta} sí debe recibirlos`);
+  }
 });
