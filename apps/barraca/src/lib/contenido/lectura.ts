@@ -9,8 +9,18 @@ import { crearLector } from "./lector.ts";
 import { vistaLocal, type VistaLocal } from "./derivados.ts";
 import type { ClaveContenido, ValoresContenido } from "./tipos.ts";
 
+/**
+ * Al compilar (`next build`) y en `next dev` NO se toca D1: OpenNext levantaría
+ * un miniflare local por cada worker de generación estática (lento y sin datos
+ * reales). Ahí la tienda sale con el respaldo en código; en el Worker de
+ * producción (ISR/ejecución) sí se lee D1.
+ */
+function sinLecturaDeD1(): boolean {
+  return process.env.NEXT_PHASE === "phase-production-build" || process.env.NODE_ENV === "development";
+}
+
 const lector = crearLector({
-  obtenerDb: obtenerGestionDb,
+  obtenerDb: async () => (sinLecturaDeD1() ? null : obtenerGestionDb()),
   alFallar: (motivo) => {
     if (motivo !== "sin_db") console.warn(`[contenido] D1 no respondió (${motivo}): la tienda usa el respaldo en código.`);
   },

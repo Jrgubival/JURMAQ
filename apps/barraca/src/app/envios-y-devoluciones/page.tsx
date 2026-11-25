@@ -2,14 +2,22 @@ import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
 import { formatCLP } from '@jurmaq/shared/format';
 import { zonasDespachoVigentes } from '@/lib/despacho/tarifas-db';
+import { LUGARES_DESPACHO } from '@/lib/cobertura';
+import { leerContenidoConOrigen, leerLocal } from '@/lib/contenido/lectura';
+import { sustituirMarcadores, valoresDeMarcadores } from '@/lib/contenido/marcadores';
+import { renderizar } from '@/components/barraca/DocumentoLegal';
 
 /**
  * /envios-y-devoluciones — resumen claro de las políticas de despacho,
  * retiro, devoluciones y reembolsos. El texto que obliga es el de los
  * Términos (secciones 9, 11 y 12); acá se resume y se enlaza. Las tarifas
  * salen de la misma tabla que cobra el checkout (panel → Despacho).
+ *
+ * El texto sale del contenido editable (D1); si no hay nada publicado o D1
+ * falla, se muestra el de código (idéntico al de siempre). En el texto editable,
+ * la línea {{tarifas}} marca dónde va la tabla de zonas (siempre en vivo).
  */
-export const revalidate = 3600;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'Envíos y devoluciones · Barraca JURMAQ',
@@ -19,39 +27,55 @@ export const metadata: Metadata = {
 
 const h2 = 'text-xl font-bold text-navy-950 mt-10 mb-3';
 
+const CONTENEDOR = 'max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-[16px] leading-relaxed text-[#37352F]';
+
 export default async function EnviosPage() {
-  const { zonas } = await zonasDespachoVigentes();
+  const [{ zonas }, local, { valor, origen }] = await Promise.all([zonasDespachoVigentes(), leerLocal(), leerContenidoConOrigen('envios')]);
+  const tabla = (
+    <div className="rounded-xl border border-[#EAEAEA] bg-white overflow-hidden">
+      <table className="w-full text-[15px]">
+        <thead className="bg-[#F7F7F5] text-left text-[13px] text-[#787774]">
+          <tr><th className="px-4 py-2 font-medium">Zona</th><th className="px-4 py-2 font-medium text-right">Despacho</th></tr>
+        </thead>
+        <tbody>
+          {zonas.map((z) => (
+            <tr key={z.id} className="border-t border-[#EAEAEA]">
+              <td className="px-4 py-2">{z.nombre}</td>
+              <td className="px-4 py-2 text-right tabular-nums">
+                {z.costo === 0 ? 'Gratis' : formatCLP(z.costo)}
+                {z.costo > 0 && z.gratisDesde != null && <span className="block text-[12px] text-[#787774]">gratis desde {formatCLP(z.gratisDesde)}</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+  if (origen === 'd1') {
+    const md = sustituirMarcadores(valor.texto, valoresDeMarcadores(local, { lugaresDespacho: LUGARES_DESPACHO }));
+    const partes = md.split(/^\s*\{\{tarifas\}\}\s*$/m);
+    return (
+      <div className={CONTENEDOR}>
+        {renderizar(partes[0], 'pagina')}
+        {partes.length > 1 && <div className="mb-4">{tabla}</div>}
+        {partes.length > 1 && renderizar(partes.slice(1).join('\n'), 'pagina')}
+      </div>
+    );
+  }
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-[16px] leading-relaxed text-[#37352F]">
+    <div className={CONTENEDOR}>
       <h1 className="text-3xl font-bold text-navy-950 mb-4">Envíos y devoluciones</h1>
       <p>Resumen de cómo entregamos y cómo devolver. El detalle está en los <Link href="/terminos" className="underline underline-offset-2">Términos y condiciones</Link>.</p>
 
       <h2 className={h2}>Retiro en el local</h2>
-      <p>Gratis, en Av. Poniente 2157, Molina, en horario de atención. Te avisamos cuando el pedido esté listo.</p>
+      <p>Gratis, en {local.direccionCorta}, en horario de atención. Te avisamos cuando el pedido esté listo.</p>
 
       <h2 className={h2}>Despacho en camión</h2>
       <p className="mb-4">
         Preparamos el pedido en 1 a 5 días hábiles y te llamamos para coordinar el día de entrega. Despachamos a estas zonas, con
         el costo que ves en el checkout antes de pagar:
       </p>
-      <div className="rounded-xl border border-[#EAEAEA] bg-white overflow-hidden">
-        <table className="w-full text-[15px]">
-          <thead className="bg-[#F7F7F5] text-left text-[13px] text-[#787774]">
-            <tr><th className="px-4 py-2 font-medium">Zona</th><th className="px-4 py-2 font-medium text-right">Despacho</th></tr>
-          </thead>
-          <tbody>
-            {zonas.map((z) => (
-              <tr key={z.id} className="border-t border-[#EAEAEA]">
-                <td className="px-4 py-2">{z.nombre}</td>
-                <td className="px-4 py-2 text-right tabular-nums">
-                  {z.costo === 0 ? 'Gratis' : formatCLP(z.costo)}
-                  {z.costo > 0 && z.gratisDesde != null && <span className="block text-[12px] text-[#787774]">gratis desde {formatCLP(z.gratisDesde)}</span>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {tabla}
       <p className="mt-3 text-[14px] text-[#5A5A57]">Para otras comunas, escríbenos por WhatsApp y te cotizamos, o retira en Molina.</p>
 
       <h2 className={h2}>Devoluciones (derecho a retracto)</h2>

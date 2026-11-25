@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import DocumentoLegal, { leerDocumento, tieneMarcas } from "@/components/barraca/DocumentoLegal";
 
-// Texto de los abogados (src/content/legal/privacidad.md). Se arma al compilar.
-export const dynamic = "force-static";
+// Texto de los abogados: el publicado en D1 o, si no hay, src/content/legal/privacidad.md
+// (embebido en código). Se regenera cada 5 minutos y al publicar contenido: así un
+// deploy nuevo no deja mucho tiempo un texto viejo. Sigue siendo una página estática en caché.
+export const revalidate = 300;
 
-export function generateMetadata(): Metadata {
-  const borrador = tieneMarcas(leerDocumento("privacidad"));
+export async function generateMetadata(): Promise<Metadata> {
+  const borrador = tieneMarcas(await leerDocumento("privacidad"));
   return {
     title: "Política de Privacidad · Barraca JURMAQ",
     description: "Política de Privacidad de la tienda online de Barraca de Fierros JURMAQ SpA, Molina.",

@@ -1,28 +1,56 @@
 import type { Metadata } from 'next';
 import Link from '@/components/barraca/Enlace';
-import { LEGAL_INFO } from '@jurmaq/shared/seo';
 import { LUGARES_DESPACHO } from '@/lib/cobertura';
+import { leerContenidoConOrigen, leerLocal } from '@/lib/contenido/lectura';
+import { sustituirMarcadores, valoresDeMarcadores } from '@/lib/contenido/marcadores';
+import { renderizar } from '@/components/barraca/DocumentoLegal';
 
 /**
  * /nosotros — quiénes somos, sólo con datos verificables del negocio (sin
  * años de trayectoria, premios ni "los mejores precios" que no se puedan
  * respaldar: Google Merchant Center los trata como afirmaciones engañosas).
+ *
+ * El texto sale del contenido editable (D1); si no hay nada publicado o D1
+ * falla, se muestra el de código (idéntico al de siempre). Los datos del local
+ * (razón social, RUT, dirección) salen de la fuente única de datos del local.
  */
-const B = LEGAL_INFO.brands.barraca;
+export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: 'Quiénes somos · Barraca de Fierros JURMAQ, Molina',
-  description: `${B.razonSocial}: barraca de fierros y materiales de construcción en Av. Poniente 2157, Molina. Venta en el local y en línea, retiro en Molina y despacho en camión propio.`,
-  alternates: { canonical: 'https://barraca.jurmaq.cl/nosotros' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const B = await leerLocal();
+  return {
+    title: 'Quiénes somos · Barraca de Fierros JURMAQ, Molina',
+    description: `${B.razonSocial}: barraca de fierros y materiales de construcción en ${B.direccionCorta}. Venta en el local y en línea, retiro en Molina y despacho en camión propio.`,
+    alternates: { canonical: 'https://barraca.jurmaq.cl/nosotros' },
+  };
+}
 
-export default function NosotrosPage() {
+const CONTENEDOR = 'max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-[16px] leading-relaxed text-[#37352F]';
+
+export default async function NosotrosPage() {
+  const [B, { valor, origen }] = await Promise.all([leerLocal(), leerContenidoConOrigen('nosotros')]);
+  const enlaces = (
+    <p className="text-[15px]">
+      <Link href="/contacto" className="text-navy-950 font-medium underline underline-offset-2">Contacto y horario</Link> ·{' '}
+      <Link href="/envios-y-devoluciones" className="text-navy-950 underline underline-offset-2">Envíos y devoluciones</Link> ·{' '}
+      <Link href="/terminos" className="text-navy-950 underline underline-offset-2">Términos y condiciones</Link>
+    </p>
+  );
+  if (origen === 'd1') {
+    const md = sustituirMarcadores(valor.texto, valoresDeMarcadores(B, { lugaresDespacho: LUGARES_DESPACHO }));
+    return (
+      <div className={CONTENEDOR}>
+        {renderizar(md, 'pagina')}
+        <div className="mt-8">{enlaces}</div>
+      </div>
+    );
+  }
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 text-[16px] leading-relaxed text-[#37352F]">
+    <div className={CONTENEDOR}>
       <h1 className="text-3xl font-bold text-navy-950 mb-6">Quiénes somos</h1>
       <p className="mb-4">
         Somos <strong>{B.razonSocial}</strong> (RUT {B.rut}), una barraca de fierros y materiales de construcción con local
-        en <strong>Av. Poniente 2157, Molina</strong>, Región del Maule.
+        en <strong>{B.direccionCorta}</strong>, Región del Maule.
       </p>
       <p className="mb-4">
         Vendemos fierro de construcción, perfiles, planchas, tubos, mallas, techumbre, herramientas, pinturas y materiales de obra,
@@ -35,11 +63,7 @@ export default function NosotrosPage() {
       <p className="mb-8">
         Pagas con tarjeta de débito o crédito en Webpay (Transbank) o por transferencia bancaria a la cuenta de la empresa.
       </p>
-      <p className="text-[15px]">
-        <Link href="/contacto" className="text-navy-950 font-medium underline underline-offset-2">Contacto y horario</Link> ·{' '}
-        <Link href="/envios-y-devoluciones" className="text-navy-950 underline underline-offset-2">Envíos y devoluciones</Link> ·{' '}
-        <Link href="/terminos" className="text-navy-950 underline underline-offset-2">Términos y condiciones</Link>
-      </p>
+      {enlaces}
     </div>
   );
 }

@@ -25,6 +25,10 @@ const Marc = await import("../src/lib/contenido/marcadores.ts");
 const { HORARIO_BARRACA, LEGAL_INFO, HQ } = await import("@jurmaq/shared/seo");
 const { buildJsonLdGraph } = await import("@jurmaq/shared/seo/jsonld");
 const { FIN_AVISO_MS } = await import("../src/lib/aviso-promo.ts");
+const W = await import("../src/lib/contenido/whatsapp.ts");
+const AP = await import("../src/lib/aviso-promo.ts");
+const { whatsappCtaBarracaCotizar, whatsappCtaBarracaCiudad } = await import("@jurmaq/shared/whatsapp");
+const LR = await import("../src/lib/contenido/local-respaldo.ts");
 const { TERMINOS_MD, PRIVACIDAD_MD } = await import("../src/lib/contenido/legal-embebido.ts");
 
 const ANA = { id: "u-ana", email: "ana@example.com" };
@@ -700,4 +704,35 @@ test("subir desde URL: el tipo real manda; un SVG o HTML servido como image/png 
 
 test("legal-embebido.ts calza con src/content/legal/*.md (si falla: node scripts/generar-legal.mjs)", () => {
   assert.doesNotThrow(() => execFileSync(process.execPath, ["scripts/generar-legal.mjs", "--check"], { cwd: new URL("..", import.meta.url), stdio: "pipe" }));
+});
+
+// ───────── Integración con la tienda (lógica pura) ─────────
+
+test("WhatsApp: con el respaldo, los enlaces son idénticos a los de siempre; con otro número cambian", () => {
+  const local = R.respaldoDe("datos_local");
+  for (const origen of ["shell_fab", "footer"]) assert.equal(W.whatsappCotizar(local.whatsapp, origen), whatsappCtaBarracaCotizar(origen));
+  assert.equal(
+    W.whatsappConTexto(local.whatsapp, "Hola, vengo de la web y necesito cotizar materiales para una obra en Talca", { content: "barraca_ciudad_talca", campaign: "barraca_ciudad" }),
+    whatsappCtaBarracaCiudad("talca", "Talca"),
+  );
+  assert.match(W.whatsappCotizar("56911112222", "footer"), /^https:\/\/wa\.me\/56911112222\?/);
+});
+
+test("el pie de la tienda y los textos de portada de respaldo coinciden", () => {
+  assert.equal(R.respaldoDe("textos").pieDescripcion, LR.PIE_DESCRIPCION_RESPALDO);
+});
+
+test("popup: el cierre guardado usa la clave de siempre para el de código y otra para uno nuevo; respeta cada cuántos días", () => {
+  const base = R.respaldoDe("popup");
+  assert.equal(AP.claveCierreDe(base, base), AP.CLAVE_CIERRE);
+  const nuevo = { ...base, titular: "Liquidación de fin de año" };
+  assert.notEqual(AP.claveCierreDe(nuevo, base), AP.CLAVE_CIERRE);
+  assert.match(AP.claveCierreDe(nuevo, base), new RegExp(`^${AP.CLAVE_CIERRE}:`));
+  assert.equal(AP.claveCierreDe({ ...base, texto: "otro" }, base) === AP.claveCierreDe(nuevo, base), false);
+  const dia = 86_400_000;
+  const guardado = String(T0);
+  assert.equal(AP.cierreVigente(guardado, T0 + 2 * dia, 3 * dia), true);
+  assert.equal(AP.cierreVigente(guardado, T0 + 3 * dia, 3 * dia), false);
+  assert.equal(AP.cierreVigente(guardado, T0 + 6 * dia), true, "por defecto 7 días, como antes");
+  assert.equal(AP.cierreVigente(guardado, T0 + 7 * dia), false);
 });
