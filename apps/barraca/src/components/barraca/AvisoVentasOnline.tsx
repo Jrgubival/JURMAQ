@@ -4,13 +4,18 @@ import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } f
 import { usePathname } from "next/navigation";
 import Link from "@/components/barraca/Enlace";
 import {
-  CLAVE_CIERRE,
   CLAVE_COOKIES,
-  avisoVigente,
+  claveCierreDe,
   cierreVigente,
   cookiesPendientes,
   rutaSinAviso,
 } from "@/lib/aviso-promo";
+import { useContenidoPublico } from "@/lib/contenido/cliente";
+import { popupPublico, popupVigente } from "@/lib/contenido/publico";
+import { POPUP_RESPALDO } from "@/lib/contenido/popup-respaldo";
+
+const RESPALDO = popupPublico(POPUP_RESPALDO);
+const DIA_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Aviso de "ventas online": se monta en el layout, aparece una sola vez unos
@@ -23,7 +28,10 @@ import {
  * - Si el carrito, el menú del celular o el panel de filtros están abiertos
  *   (bloquean el scroll con la clase `overflow-hidden` o `style.overflow` en
  *   el body), reintenta cada 2 s.
- * - Reglas puras (fechas, rutas, 7 días) en lib/aviso-promo.ts.
+ * - Reglas puras (fechas, rutas, días) en lib/aviso-promo.ts.
+ * - El contenido (textos, foto, botones, fechas, cada cuántos días) viene de
+ *   /api/contenido/publico (D1). Si esa ruta falla, sale el popup que estaba en
+ *   código (POPUP_RESPALDO), igual que antes. Mientras carga no se muestra nada.
  */
 
 const ESPERA_MS = 4000;
@@ -32,17 +40,17 @@ const REINTENTO_MS = 2000;
 
 const FOCALIZABLES = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function leerCierre(): string | null {
+function leerCierre(clave: string): string | null {
   try {
-    return localStorage.getItem(CLAVE_CIERRE);
+    return localStorage.getItem(clave);
   } catch {
     return null;
   }
 }
 
-function guardarCierre() {
+function guardarCierre(clave: string) {
   try {
-    localStorage.setItem(CLAVE_CIERRE, String(Date.now()));
+    localStorage.setItem(clave, String(Date.now()));
   } catch {
     /* sin localStorage: el cierre vale sólo en memoria (yaMostrado) */
   }
@@ -58,7 +66,11 @@ function leerCookies(): string | null {
 
 export default function AvisoVentasOnline() {
   const pathname = usePathname();
-  const habilitado = !rutaSinAviso(pathname);
+  const publico = useContenidoPublico();
+  // undefined = cargando; null = sin popup (apagado o vencido); objeto = el popup a mostrar.
+  const cfg = publico === undefined ? undefined : publico === null ? RESPALDO : publico.popup;
+  const clave = cfg ? claveCierreDe(cfg, RESPALDO) : "";
+  const habilitado = !rutaSinAviso(pathname) && !!cfg;
   const [abierto, setAbierto] = useState(false);
   const yaMostrado = useRef(false);
   const rutaAlAbrir = useRef<string | null>(null);
@@ -69,15 +81,16 @@ export default function AvisoVentasOnline() {
   const idTexto = useId();
 
   const cerrar = useCallback((devolverFoco: boolean) => {
-    guardarCierre();
+    if (clave) guardarCierre(clave);
     setAbierto(false);
     if (devolverFoco) foco.current?.focus?.();
-  }, []);
+  }, [clave]);
 
   // Programa la aparición.
   useEffect(() => {
-    if (!habilitado || yaMostrado.current) return;
-    if (!avisoVigente(Date.now()) || cierreVigente(leerCierre(), Date.now())) return;
+    if (!habilitado || !cfg || yaMostrado.current) return;
+    const duracion = cfg.cadaDias * DIA_MS;
+    if (!popupVigente(cfg, Date.now()) || cierreVigente(leerCierre(clave), Date.now(), duracion)) return;
 
     let timer: ReturnType<typeof setTimeout> | undefined;
     let esperaCookies = cookiesPendientes(leerCookies());
@@ -88,7 +101,7 @@ export default function AvisoVentasOnline() {
     };
     function intentar() {
       if (esperaCookies) return; // sigue el evento de cookies
-      if (!avisoVigente(Date.now())) return;
+      if (!popupVigente(cfg!, Date.now())) return;
       if (document.body.classList.contains("overflow-hidden") || document.body.style.overflow === "hidden") return programar(REINTENTO_MS);
       yaMostrado.current = true;
       foco.current = document.activeElement as HTMLElement | null;
@@ -113,7 +126,7 @@ export default function AvisoVentasOnline() {
       window.removeEventListener("jurmaq:consent", alElegirCookies);
       window.removeEventListener("jurmaq:configurar-cookies", alReabrirCookies);
     };
-  }, [habilitado]);
+  }, [habilitado, cfg, clave]);
 
   // Foco inicial en la acción principal.
   useEffect(() => {
@@ -150,7 +163,7 @@ export default function AvisoVentasOnline() {
     }
   };
 
-  if (!abierto || !habilitado) return null;
+  if (!abierto || !habilitado || !cfg) return null;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] [@media(max-width:639px)_and_(max-height:760px)]:pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:items-center sm:py-4">
@@ -177,54 +190,61 @@ export default function AvisoVentasOnline() {
 
         {/* Foto de la bodega con el titular pegado abajo, sobre un degradado azul. */}
         <div className={`relative h-[200px] shrink-0 overflow-hidden border-b-4 border-marca-600 bg-navy-950 [@media(max-width:639px)_and_(max-height:700px)]:h-[148px] sm:h-auto sm:min-h-[360px] sm:w-[44%] sm:border-b-0 sm:border-r-4`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/aviso-bodega-perfiles.webp"
-            alt=""
-            width={640}
-            height={712}
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-[50%_38%]"
-          />
+          {cfg.imagen && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={cfg.imagen}
+              alt=""
+              width={640}
+              height={712}
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover object-[50%_38%]"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/75 to-navy-950/5 sm:via-navy-950/45 sm:to-transparent" aria-hidden="true" />
           <h2
             id={idTitulo}
             className={`absolute inset-x-0 bottom-0 px-4 pb-3.5 pr-12 text-[25px] font-extrabold leading-[1.04] tracking-[-0.03em] text-white [@media(max-width:639px)_and_(max-height:700px)]:pb-2.5 [@media(max-width:639px)_and_(max-height:700px)]:text-[21px] sm:px-6 sm:pb-6 sm:pr-6 sm:text-[34px] sm:leading-[1.02]`}
           >
-            Estamos recién partiendo con la venta en línea
+            {cfg.titular}
           </h2>
         </div>
 
         <div className="px-4 pb-1 pt-3.5 sm:flex sm:flex-1 sm:flex-col sm:justify-center sm:px-8 sm:pb-6 sm:pt-12">
           <p id={idTexto} className={`text-[14px] leading-[1.4] text-gray-700 [@media(max-width:639px)_and_(max-height:700px)]:text-[13px] [@media(max-width:639px)_and_(max-height:700px)]:leading-[1.35] sm:text-[16px] sm:leading-normal`}>
-            Por eso, hasta el 1 de diciembre, comprar en la página sale más barato que en el local. Más de 900 productos con precio web.
+            {cfg.texto}
           </p>
 
           <div className={`mt-3 flex gap-2 [@media(max-width:639px)_and_(max-height:700px)]:mt-2 sm:mt-6`}>
             <Link
               ref={botonPrincipal}
-              href="/categorias"
+              href={cfg.botonPrincipal.enlace}
               onClick={() => cerrar(false)}
               className="flex h-11 flex-[1.4] items-center justify-center rounded-lg bg-marca-600 px-3 text-sm font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-marca-700 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-950"
             >
-              Ver precios web
+              {cfg.botonPrincipal.texto}
             </Link>
             <button
               type="button"
               onClick={() => cerrar(true)}
               className="flex h-11 flex-1 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 text-sm font-semibold text-navy-950 transition-[border-color,transform] duration-150 ease-out hover:border-gray-400 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy-950"
             >
-              Ahora no
+              {cfg.botonSecundario}
             </button>
           </div>
 
-          <p className="mt-2 text-[12px] leading-4 text-gray-500 sm:mt-3">
-            El precio web vale solo comprando en la página.{" "}
-            <Link href="/terminos#5-precios" onClick={() => cerrar(false)} className="-mx-1 inline-flex h-11 items-center px-1 underline underline-offset-2 hover:text-navy-950 sm:h-8">
-              Condiciones
-            </Link>
-          </p>
+          {(cfg.nota || cfg.notaEnlace) && (
+            <p className="mt-2 text-[12px] leading-4 text-gray-500 sm:mt-3">
+              {cfg.nota}
+              {cfg.nota && cfg.notaEnlace ? " " : ""}
+              {cfg.notaEnlace && (
+                <Link href={cfg.notaEnlace.enlace} onClick={() => cerrar(false)} className="-mx-1 inline-flex h-11 items-center px-1 underline underline-offset-2 hover:text-navy-950 sm:h-8">
+                  {cfg.notaEnlace.texto}
+                </Link>
+              )}
+            </p>
+          )}
         </div>
       </div>
     </div>
